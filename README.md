@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ForgeNursing
+
+AI-powered clinical reasoning tutor for NCLEX preparation.
 
 ## Getting Started
 
@@ -16,9 +18,21 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Clinical Reasoning Tutoring**: AI-powered guidance to help nursing students think like nurses
+- **NCLEX Preparation**: Focused on exam-style reasoning and prioritization frameworks
+- **Material Upload**: Upload your course materials (PDFs, notes, slides) for personalized tutoring
+- **Strict NCLEX Mode**: Simulate exam conditions with less guidance
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: Supabase (PostgreSQL with pgvector)
+- **AI**: OpenAI GPT-4o
+- **UI Components**: shadcn/ui, Radix UI
 
 ## Learn More
 
@@ -26,8 +40,6 @@ To learn more about Next.js, take a look at the following resources:
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
 ## Deploy on Vercel
 

@@ -1,0 +1,139 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e5]:
+        - link "F ForgeNursing" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e8]: F
+          - generic [ref=e9]: ForgeNursing
+        - link "Log In" [ref=e11] [cursor=pointer]:
+          - /url: /login
+    - main [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e15]:
+          - generic [ref=e16]:
+            - heading "Stop memorizing answers. Start thinking like a nurse." [level=1] [ref=e17]
+            - paragraph [ref=e18]:
+              - text: ForgeNursing teaches clinical reasoning for the NCLEX using
+              - strong [ref=e19]: your actual lecture notes and textbooks
+              - text: — not generic question banks.
+            - generic [ref=e20]:
+              - link "Start Free Preview" [ref=e21] [cursor=pointer]:
+                - /url: /signup
+                - text: Start Free Preview
+                - img [ref=e22]
+              - paragraph [ref=e24]: No credit card required.
+            - paragraph [ref=e26]: Notes Mode • Clinical reasoning frameworks • Saved learning moments
+          - generic [ref=e35]:
+            - img [ref=e37]
+            - paragraph [ref=e39]: Tutor Preview
+        - generic [ref=e40]:
+          - heading "How studying finally clicks" [level=2] [ref=e41]
+          - generic [ref=e42]:
+            - generic [ref=e43]:
+              - generic [ref=e52]:
+                - img [ref=e54]
+                - paragraph [ref=e56]: Binder
+              - heading "Upload what you're actually studying" [level=3] [ref=e57]
+              - paragraph [ref=e58]: Upload lecture notes, slides, and textbooks. ForgeNursing studies your curriculum — not a generic one.
+            - generic [ref=e59]:
+              - generic [ref=e68]:
+                - img [ref=e70]
+                - paragraph [ref=e72]: Chat
+              - heading "Ask one question. Get real reasoning." [level=3] [ref=e73]
+              - paragraph [ref=e74]: No answer dumping. We guide you through priorities, risks, and next steps — how NCLEX expects you to think.
+            - generic [ref=e75]:
+              - generic [ref=e84]:
+                - img [ref=e86]
+                - paragraph [ref=e88]: Saved Clips
+              - heading "Keep what matters. Forget the clutter." [level=3] [ref=e89]
+              - paragraph [ref=e90]: Save the moments that finally make sense and revisit them before exams. Sessions fade — learning stays.
+        - generic [ref=e91]:
+          - heading "Built for how nurses actually learn" [level=2] [ref=e92]
+          - paragraph [ref=e93]: Every feature is designed to reduce cognitive load — not add more.
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - heading "ForgeMap™ — See the logic" [level=3] [ref=e96]
+              - paragraph [ref=e97]: "Turn complex topics into scannable clinical reasoning blocks: cause → effect → priorities → interventions → monitoring."
+            - generic [ref=e98]:
+              - heading "ForgeClips™ — Keep the breakthroughs" [level=3] [ref=e99]
+              - paragraph [ref=e100]: Save key explanations into a personal study library — organized, searchable, ready before exams.
+            - generic [ref=e101]:
+              - heading "Smart Study Sessions — Clean, focused, calm" [level=3] [ref=e102]
+              - paragraph [ref=e103]: Chats don't become chaos. Sessions archive gracefully while your learning stays organized.
+        - generic [ref=e104]:
+          - heading "If this sounds like you…" [level=2] [ref=e105]
+          - generic [ref=e106]:
+            - generic [ref=e107]:
+              - generic [ref=e108]: •
+              - paragraph [ref=e109]: I know the content but freeze on questions.
+            - generic [ref=e110]:
+              - generic [ref=e111]: •
+              - paragraph [ref=e112]: I don't know what to do first.
+            - generic [ref=e113]:
+              - generic [ref=e114]: •
+              - paragraph [ref=e115]: Everything blurs together before exams.
+            - generic [ref=e116]:
+              - generic [ref=e117]: •
+              - paragraph [ref=e118]: I keep re-asking the same questions.
+          - paragraph [ref=e119]: ForgeNursing was built for this exact moment.
+        - generic [ref=e120]:
+          - paragraph [ref=e121]: Built for nursing students who want to pass once — with confidence.
+          - heading "Simple pricing" [level=2] [ref=e122]
+          - paragraph [ref=e123]: Designed to replace question banks — not add another one.
+          - generic [ref=e124]:
+            - generic [ref=e125]:
+              - heading "Monthly" [level=3] [ref=e126]
+              - generic [ref=e127]: $39/mo
+              - list [ref=e128]:
+                - listitem [ref=e129]:
+                  - img [ref=e130]
+                  - text: Unlimited clinical questions
+                - listitem [ref=e132]:
+                  - img [ref=e133]
+                  - text: Material uploads
+                - listitem [ref=e135]:
+                  - img [ref=e136]
+                  - text: Progress tracking
+              - link "Get Started" [ref=e138] [cursor=pointer]:
+                - /url: /signup
+            - generic [ref=e139]:
+              - generic [ref=e140]: Get 3 Months Free
+              - generic [ref=e141]:
+                - heading "Annual" [level=3] [ref=e142]
+                - generic [ref=e143]: Best Value
+              - generic [ref=e144]: $351/yr
+              - paragraph [ref=e145]: Covers your entire academic year + summer NCLEX prep.
+              - paragraph [ref=e146]: Save $117 vs monthly.
+              - list [ref=e147]:
+                - listitem [ref=e148]:
+                  - img [ref=e149]
+                  - text: Everything in Monthly
+                - listitem [ref=e151]:
+                  - img [ref=e152]
+                  - text: 3 months free
+              - link "Get Started" [ref=e154] [cursor=pointer]:
+                - /url: /signup
+          - paragraph [ref=e155]: No credit card required for preview.
+        - generic [ref=e157]:
+          - paragraph [ref=e158]: We don't help you guess better.
+          - paragraph [ref=e159]: We help you know why.
+          - link "Start Free Preview" [ref=e161] [cursor=pointer]:
+            - /url: /signup
+            - text: Start Free Preview
+            - img [ref=e162]
+    - contentinfo [ref=e164]:
+      - generic [ref=e166]:
+        - generic [ref=e167]:
+          - link "Terms of Service" [ref=e168] [cursor=pointer]:
+            - /url: /terms
+          - link "Privacy Policy" [ref=e169] [cursor=pointer]:
+            - /url: /privacy
+          - 'link "Contact: support@forgenursing.com" [ref=e170] [cursor=pointer]':
+            - /url: mailto:support@forgenursing.com
+        - paragraph [ref=e172]: © 2025 MJR Intelligence Group LLC
+  - alert [ref=e173]
+```
