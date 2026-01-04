@@ -174,7 +174,7 @@ export default function SignupPage() {
           hasSession: !!data.session 
         })
         
-        // This likely means the email already exists
+        // This likely means the email already exists (verified user)
         setMessage({ 
           text: `This email address is already registered. Please sign in instead.`, 
           type: 'error' 
@@ -183,6 +183,41 @@ export default function SignupPage() {
         return
       }
       
+      // Check if user exists but is unverified (no session)
+      // This happens when user signed up before but never verified
+      if (data.user && !data.session) {
+        console.log('User exists but unverified, resending verification email')
+        
+        // Try to resend the verification email
+        const { error: resendError } = await supabase.auth.resend({
+          type: 'signup',
+          email: email,
+          options: {
+            emailRedirectTo: callbackUrl,
+          },
+        })
+        
+        if (resendError) {
+          console.error('Error resending verification email:', resendError)
+          setMessage({ 
+            text: `This email was used before but never verified. We tried to resend the verification email. Please check your inbox (including spam). If you don't receive it, try signing in instead.`, 
+            type: 'error' 
+          })
+          setLoading(false)
+          return
+        }
+        
+        // Successfully resent the email
+        setShowSuccess(true)
+        setIsVerifying(true)
+        setMessage({ 
+          text: "We've resent the verification email. Please check your inbox (including spam). We'll automatically redirect you once you verify.", 
+          type: 'success' 
+        })
+        return
+      }
+      
+      // New user created successfully
       setShowSuccess(true)
       setIsVerifying(true)
       setMessage({ 
