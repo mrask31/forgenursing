@@ -252,7 +252,10 @@ export default function SignupPage() {
     }
   }
 
-  const handleResendEmail = async () => {
+  const handleResendEmail = async (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
+    
     console.log('Resend button clicked, email:', email)
     
     if (!email) {
@@ -413,7 +416,11 @@ export default function SignupPage() {
                     <div className="flex flex-col gap-3">
                       <button
                         type="button"
-                        onClick={handleResendEmail}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          handleResendEmail(e)
+                        }}
                         disabled={resending}
                         className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
