@@ -34,6 +34,8 @@ export async function GET(request: Request) {
     if (!error) {
       // Ensure profile exists with correct subscription status
       const { data: { user } } = await supabase.auth.getUser()
+      let subscriptionStatus = 'pending_payment'
+      
       if (user) {
         // Check if profile exists, create/update if needed
         const { data: profile } = await supabase
@@ -50,12 +52,17 @@ export async function GET(request: Request) {
               id: user.id,
               subscription_status: 'pending_payment',
             })
-        } else if (!profile.subscription_status) {
+        } else {
+          // Store the current subscription status
+          subscriptionStatus = profile.subscription_status || 'pending_payment'
+          
           // Update existing profile to set status if missing
-          await supabase
-            .from('profiles')
-            .update({ subscription_status: 'pending_payment' })
-            .eq('id', user.id)
+          if (!profile.subscription_status) {
+            await supabase
+              .from('profiles')
+              .update({ subscription_status: 'pending_payment' })
+              .eq('id', user.id)
+          }
         }
       }
 
@@ -64,6 +71,17 @@ export async function GET(request: Request) {
       if (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) {
         return NextResponse.redirect(`${origin}/checkout?plan=${plan}`)
       }
+      
+      // If user needs to pay (pending_payment, canceled, past_due, unpaid), redirect to checkout
+      // This handles cases where they verified via an old email link without a plan parameter
+      if (subscriptionStatus === 'pending_payment' || 
+          subscriptionStatus === 'canceled' || 
+          subscriptionStatus === 'past_due' || 
+          subscriptionStatus === 'unpaid') {
+        // Default to monthly plan if no plan specified
+        return NextResponse.redirect(`${origin}/checkout?plan=monthly`)
+      }
+      
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
