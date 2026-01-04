@@ -187,7 +187,7 @@ export default function SignupPage() {
       
       // Check if user exists but is unverified (no session)
       // This happens when user signed up before but never verified
-      // Supabase logs this as "user_repeated_signup" and may not send a new email
+      // Supabase logs this as "user_repeated_signup" and WILL send a new email
       if (data.user && !data.session) {
         console.log('User exists but unverified (repeated signup detected)', {
           userId: data.user.id,
@@ -195,14 +195,13 @@ export default function SignupPage() {
           emailConfirmed: data.user.email_confirmed_at
         })
         
-        // For repeated signups, Supabase may not send a new verification email
-        // Show the user a message and allow them to manually request a resend
+        // Supabase WILL send a verification email for repeated signups
+        // Show success state and wait for verification
         setShowSuccess(true)
         setIsVerifying(true)
-        setCanResend(true)
         setMessage({ 
-          text: "This email is already registered but not yet verified. Please check your inbox (including spam) for the original verification email. If you can't find it, use the 'Resend Verification Email' button below.", 
-          type: 'info' 
+          text: "A verification email has been sent. Please check your inbox (including spam) and click the verification link. We'll automatically redirect you once you verify.", 
+          type: 'success' 
         })
         setLoading(false)
         return
