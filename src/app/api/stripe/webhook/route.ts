@@ -3,15 +3,31 @@ import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-12-15.clover',
-})
+// Lazy initialization function for Stripe client
+// This prevents Stripe from being initialized during build time
+function getStripeClient(): Stripe {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-12-15.clover',
+  })
+}
 
 export const dynamic = 'force-dynamic'
 
 // This endpoint handles Stripe webhooks to update subscription status
 export async function POST(req: Request) {
   try {
+    // Check if Stripe secret key is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('[Stripe Webhook] STRIPE_SECRET_KEY is missing from environment variables')
+      return NextResponse.json(
+        { error: 'Stripe is not configured. Please contact support.' },
+        { status: 500 }
+      )
+    }
+
     const body = await req.text()
     const signature = headers().get('stripe-signature')
 
@@ -30,6 +46,9 @@ export async function POST(req: Request) {
         { status: 500 }
       )
     }
+
+    // Initialize Stripe client only when needed (not at module level)
+    const stripe = getStripeClient()
 
     // Verify webhook signature
     let event: Stripe.Event

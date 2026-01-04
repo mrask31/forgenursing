@@ -2,13 +2,16 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 
-// Initialize Stripe client
-// Note: Stripe will start a 7-day trial and only charge after the trial ends
-// Make sure to install: npm install stripe
-// And set STRIPE_SECRET_KEY in your .env.local
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-12-15.clover',
-})
+// Lazy initialization function for Stripe client
+// This prevents Stripe from being initialized during build time
+function getStripeClient(): Stripe {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-12-15.clover',
+  })
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -22,6 +25,9 @@ export async function POST(req: Request) {
         { status: 500 }
       )
     }
+
+    // Initialize Stripe client only when needed (not at module level)
+    const stripe = getStripeClient()
 
     // 1. Authenticate user
     const supabase = createClient()
