@@ -14,6 +14,8 @@ export default function SignupPage() {
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
+  const [canResend, setCanResend] = useState(false)
+  const [resending, setResending] = useState(false)
   const router = useRouter()
 
   const supabase = createBrowserClient(
@@ -186,10 +188,15 @@ export default function SignupPage() {
       // Check if user exists but is unverified (no session)
       // This happens when user signed up before but never verified
       if (data.user && !data.session) {
-        console.log('User exists but unverified, resending verification email')
+        console.log('User exists but unverified, attempting to resend verification email', {
+          userId: data.user.id,
+          email: data.user.email,
+          emailConfirmed: data.user.email_confirmed_at
+        })
         
         // Try to resend the verification email
-        const { error: resendError } = await supabase.auth.resend({
+        // Note: Supabase resend requires the email to match the user's email
+        const { data: resendData, error: resendError } = await supabase.auth.resend({
           type: 'signup',
           email: email,
           options: {
@@ -197,17 +204,29 @@ export default function SignupPage() {
           },
         })
         
+        console.log('Resend result:', { resendData, resendError })
+        
         if (resendError) {
           console.error('Error resending verification email:', resendError)
-          setMessage({ 
-            text: `This email was used before but never verified. We tried to resend the verification email. Please check your inbox (including spam). If you don't receive it, try signing in instead.`, 
-            type: 'error' 
-          })
+          
+          // Check if it's a rate limit or other specific error
+          const errorMsg = resendError.message?.toLowerCase() || ''
+          if (errorMsg.includes('rate limit') || errorMsg.includes('too many')) {
+            setMessage({ 
+              text: `Verification email was recently sent. Please check your inbox (including spam). If you don't see it, wait a few minutes and try again.`, 
+              type: 'error' 
+            })
+          } else {
+            setMessage({ 
+              text: `This email was used before but never verified. We tried to resend the verification email but encountered an error. Please check your inbox for the original email, or try signing in if you remember your password.`, 
+              type: 'error' 
+            })
+          }
           setLoading(false)
           return
         }
         
-        // Successfully resent the email
+        // Successfully resent the email (or at least no error was returned)
         setShowSuccess(true)
         setIsVerifying(true)
         setMessage({ 
@@ -230,6 +249,69 @@ export default function SignupPage() {
       setMessage({ text: errorMessage, type: 'error' })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleResendEmail = async () => {
+    setResending(true)
+    setMessage(null)
+    
+    // Get plan from localStorage
+    const plan = localStorage.getItem('forgenursing-pending-plan')
+    
+    // Build callback URL with plan parameter if present
+    let baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+    
+    // Ensure baseUrl has a protocol
+    if (baseUrl && !baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+      const protocol = baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1') ? 'http://' : 'https://'
+      baseUrl = `${protocol}${baseUrl}`
+    }
+    
+    let callbackUrl = `${baseUrl}/auth/callback`
+    if (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) {
+      callbackUrl += `?plan=${plan}`
+    }
+
+    try {
+      const { data: resendData, error: resendError } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: callbackUrl,
+        },
+      })
+      
+      console.log('Manual resend result:', { resendData, resendError })
+      
+      if (resendError) {
+        console.error('Error resending verification email:', resendError)
+        const errorMsg = resendError.message?.toLowerCase() || ''
+        if (errorMsg.includes('rate limit') || errorMsg.includes('too many')) {
+          setMessage({ 
+            text: `Email was recently sent. Please wait a few minutes before requesting another.`, 
+            type: 'error' 
+          })
+        } else {
+          setMessage({ 
+            text: `Failed to resend email: ${resendError.message}. Please check your spam folder or try signing in.`, 
+            type: 'error' 
+          })
+        }
+      } else {
+        setMessage({ 
+          text: "Verification email sent! Please check your inbox (including spam).", 
+          type: 'success' 
+        })
+      }
+    } catch (error: any) {
+      console.error('Unexpected error resending email:', error)
+      setMessage({ 
+        text: `An error occurred. Please try again or contact support.`, 
+        type: 'error' 
+      })
+    } finally {
+      setResending(false)
     }
   }
 
@@ -311,12 +393,32 @@ export default function SignupPage() {
                       <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
                       <span>Waiting for email verification...</span>
                     </div>
-                    <Link
-                      href="/login"
-                      className="inline-flex items-center gap-2 px-4 py-2 text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors"
-                    >
-                      Back to Sign In
-                    </Link>
+                    <div className="flex flex-col gap-3">
+                      <button
+                        type="button"
+                        onClick={handleResendEmail}
+                        disabled={resending}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {resending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="h-4 w-4" />
+                            Resend Verification Email
+                          </>
+                        )}
+                      </button>
+                      <Link
+                        href="/login"
+                        className="inline-flex items-center gap-2 px-4 py-2 text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors"
+                      >
+                        Back to Sign In
+                      </Link>
+                    </div>
                   </>
                 )}
               </div>
