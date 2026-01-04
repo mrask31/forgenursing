@@ -4,6 +4,7 @@ import { useChat } from '@ai-sdk/react'
 import { Send, Stethoscope, User, Brain, FileText, Pill, Paperclip, FileIcon, ClipboardCheck, Bookmark, Map, Star, AlertCircle } from 'lucide-react'
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
+import TextWithMedicalTerms from '../tutor/TextWithMedicalTerms'
 import { useDensity } from '@/contexts/DensityContext'
 import { getDensityTokens } from '@/lib/density-tokens'
 import SaveClipModal from '@/components/clips/SaveClipModal'
@@ -768,6 +769,11 @@ export default function ClinicalTutorWorkspace({
                         ol: ({children}) => <ol className="list-decimal pl-5 space-y-1">{children}</ol>,
                         li: ({children}) => <li className="my-1 text-slate-700">{children}</li>,
                         strong: ({children}) => <strong className="font-semibold text-slate-900">{children}</strong>,
+                        text: ({children}) => {
+                          // Wrap text nodes to detect medical terms
+                          const text = String(children)
+                          return <TextWithMedicalTerms text={text} />
+                        },
                         code: ({children}) => <code className="bg-slate-50 px-1.5 py-0.5 rounded text-xs font-mono text-slate-900 border border-slate-200">{children}</code>,
                         pre: ({children}) => (
                           <pre className="max-w-full overflow-x-auto bg-slate-50 p-4 rounded-lg border border-slate-200 my-4">
