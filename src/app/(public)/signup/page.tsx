@@ -253,11 +253,23 @@ export default function SignupPage() {
   }
 
   const handleResendEmail = async () => {
+    console.log('Resend button clicked, email:', email)
+    
+    if (!email) {
+      console.error('No email available for resend')
+      setMessage({ 
+        text: 'Email address not found. Please try signing up again.', 
+        type: 'error' 
+      })
+      return
+    }
+    
     setResending(true)
     setMessage(null)
     
     // Get plan from localStorage
     const plan = localStorage.getItem('forgenursing-pending-plan')
+    console.log('Resending email with plan:', plan)
     
     // Build callback URL with plan parameter if present
     let baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
@@ -274,6 +286,8 @@ export default function SignupPage() {
     }
 
     try {
+      console.log('Calling supabase.auth.resend with:', { email, callbackUrl })
+      
       const { data: resendData, error: resendError } = await supabase.auth.resend({
         type: 'signup',
         email: email,
@@ -294,11 +308,12 @@ export default function SignupPage() {
           })
         } else {
           setMessage({ 
-            text: `Failed to resend email: ${resendError.message}. Please check your spam folder or try signing in.`, 
+            text: `Failed to resend email: ${resendError.message || 'Unknown error'}. Please check your spam folder or try signing in.`, 
             type: 'error' 
           })
         }
       } else {
+        console.log('Email resend successful!')
         setMessage({ 
           text: "Verification email sent! Please check your inbox (including spam).", 
           type: 'success' 
@@ -306,11 +321,13 @@ export default function SignupPage() {
       }
     } catch (error: any) {
       console.error('Unexpected error resending email:', error)
+      const errorMessage = error?.message || error?.toString() || 'Unknown error'
       setMessage({ 
-        text: `An error occurred. Please try again or contact support.`, 
+        text: `An error occurred: ${errorMessage}. Please try again or contact support.`, 
         type: 'error' 
       })
     } finally {
+      console.log('Resend function finished, setting resending to false')
       setResending(false)
     }
   }
