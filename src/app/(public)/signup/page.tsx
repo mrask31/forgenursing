@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, MessageSquare, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
@@ -12,6 +13,8 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [isVerifying, setIsVerifying] = useState(false)
+  const router = useRouter()
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,6 +32,65 @@ export default function SignupPage() {
     }
   }, [])
 
+  // Listen for auth state changes and poll for email verification
+  useEffect(() => {
+    if (!showSuccess) return // Only listen if we're waiting for verification
+
+    let pollInterval: NodeJS.Timeout | null = null
+
+    const checkAuthAndRedirect = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user) {
+        // User has verified their email and is now signed in
+        setIsVerifying(true)
+        setMessage({ 
+          text: 'Email verified! Redirecting...', 
+          type: 'success' 
+        })
+
+        // Clear polling
+        if (pollInterval) {
+          clearInterval(pollInterval)
+        }
+
+        // Get plan from localStorage
+        const plan = localStorage.getItem('forgenursing-pending-plan')
+        
+        // Small delay to show the success message
+        setTimeout(() => {
+          if (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) {
+            // Redirect to checkout with the plan
+            router.push(`/checkout?plan=${plan}`)
+          } else {
+            // Redirect to default route
+            router.push('/tutor')
+          }
+        }, 1000)
+      }
+    }
+
+    // Listen for auth state changes (works for same device/tab)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        await checkAuthAndRedirect()
+      }
+    })
+
+    // Also poll every 2 seconds to catch cross-device verification
+    pollInterval = setInterval(checkAuthAndRedirect, 2000)
+
+    // Initial check
+    checkAuthAndRedirect()
+
+    return () => {
+      subscription.unsubscribe()
+      if (pollInterval) {
+        clearInterval(pollInterval)
+      }
+    }
+  }, [showSuccess, router, supabase])
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -45,28 +107,92 @@ export default function SignupPage() {
     const plan = params.get('plan') || localStorage.getItem('forgenursing-pending-plan')
     
     // Build callback URL with plan parameter if present
-    let callbackUrl = `${window.location.origin}/auth/callback`
+    // Use NEXT_PUBLIC_APP_URL if available (production), otherwise use current origin
+    let baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+    
+    // Ensure baseUrl has a protocol (required for email redirects)
+    if (baseUrl && !baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+      // Default to https:// unless it's localhost
+      const protocol = baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1') ? 'http://' : 'https://'
+      baseUrl = `${protocol}${baseUrl}`
+    }
+    
+    let callbackUrl = `${baseUrl}/auth/callback`
     if (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) {
       callbackUrl += `?plan=${plan}`
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: callbackUrl,
         },
       })
-      if (error) throw error
+      
+      if (error) {
+        // Log the error for debugging (remove in production if needed)
+        console.log('Signup error:', { 
+          message: error.message, 
+          code: error.code, 
+          status: error.status 
+        })
+        
+        // Check if the error is due to email already being registered
+        const errorMessage = error.message?.toLowerCase() || ''
+        const isEmailExists = 
+          errorMessage.includes('user already registered') ||
+          errorMessage.includes('email already registered') ||
+          errorMessage.includes('already been registered') ||
+          errorMessage.includes('already exists') ||
+          errorMessage.includes('user with this email address has already been registered') ||
+          error.code === 'signup_disabled' ||
+          error.status === 422 || // Unprocessable Entity often means duplicate
+          (error.status === 400 && errorMessage.includes('already'))
+        
+        if (isEmailExists) {
+          setMessage({ 
+            text: `This email address is already registered. Please sign in instead.`, 
+            type: 'error' 
+          })
+          setLoading(false)
+          return
+        }
+        
+        // For other errors, show the error message
+        throw error
+      }
+      
+      // Check if user was actually created
+      // Supabase may return success but not create a user if email already exists
+      // In this case, data.user will be null
+      if (!data.user) {
+        // Log for debugging
+        console.log('Signup returned no user:', { 
+          hasUser: !!data.user, 
+          hasSession: !!data.session 
+        })
+        
+        // This likely means the email already exists
+        setMessage({ 
+          text: `This email address is already registered. Please sign in instead.`, 
+          type: 'error' 
+        })
+        setLoading(false)
+        return
+      }
       
       setShowSuccess(true)
+      setIsVerifying(true)
       setMessage({ 
-        text: "Check your email for the confirmation link!", 
+        text: "Check your email for the confirmation link! We'll automatically redirect you once you verify.", 
         type: 'success' 
       })
     } catch (error: any) {
-      setMessage({ text: error.message, type: 'error' })
+      // Handle other errors
+      const errorMessage = error.message || 'An error occurred. Please try again.'
+      setMessage({ text: errorMessage, type: 'error' })
     } finally {
       setLoading(false)
     }
@@ -92,40 +218,72 @@ export default function SignupPage() {
           <div className="flex items-center justify-center px-4 py-12 bg-white">
             <div className="w-full max-w-md">
               <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-lg text-center">
-                <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle className="w-10 h-10 text-green-600" />
-                </div>
-                <h1 className="text-2xl font-semibold text-slate-900 mb-3">
-                  Check your email
-                </h1>
-                <p className="text-base text-slate-600 mb-2">
-                  We've sent a confirmation link to
-                </p>
-                <p className="text-base font-semibold text-indigo-600 mb-6 break-all">
-                  {email}
-                </p>
-                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6 text-left">
-                  <div className="space-y-2 text-sm text-slate-700">
-                    <div className="flex items-start gap-2">
-                      <span className="text-indigo-600 mt-0.5">•</span>
-                      <span>Check your Spam/Junk folder if you don't see it</span>
+                {isVerifying && message?.text.includes('Email verified') ? (
+                  <>
+                    <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle className="w-10 h-10 text-green-600" />
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-indigo-600 mt-0.5">•</span>
-                      <span>Click the confirmation link to activate your account</span>
+                    <h1 className="text-2xl font-semibold text-slate-900 mb-3">
+                      Email verified!
+                    </h1>
+                    <p className="text-base text-slate-600 mb-6">
+                      Redirecting you now...
+                    </p>
+                    <div className="flex justify-center">
+                      <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-indigo-600 mt-0.5">•</span>
-                      <span>You'll be signed in automatically after confirming</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Mail className="w-10 h-10 text-indigo-600" />
                     </div>
-                  </div>
-                </div>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-2 px-4 py-2 text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors"
-                >
-                  Back to Sign In
-                </Link>
+                    <h1 className="text-2xl font-semibold text-slate-900 mb-3">
+                      Check your email
+                    </h1>
+                    <p className="text-base text-slate-600 mb-2">
+                      We've sent a confirmation link to
+                    </p>
+                    <p className="text-base font-semibold text-indigo-600 mb-6 break-all">
+                      {email}
+                    </p>
+                    <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6 text-left">
+                      <div className="space-y-2 text-sm text-slate-700">
+                        <div className="flex items-start gap-2">
+                          <span className="text-indigo-600 mt-0.5">•</span>
+                          <span>Check your Spam/Junk folder if you don't see it</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="text-indigo-600 mt-0.5">•</span>
+                          <span>Click the confirmation link (on any device)</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="text-indigo-600 mt-0.5">•</span>
+                          <span>This page will automatically refresh when verified</span>
+                        </div>
+                      </div>
+                    </div>
+                    {message && (
+                      <div className={`p-4 text-sm rounded-xl mb-4 ${
+                        message.type === 'error' 
+                          ? 'bg-red-50 text-red-700 border border-red-200' 
+                          : 'bg-green-50 text-green-700 border border-green-200'
+                      }`}>
+                        {message.text}
+                      </div>
+                    )}
+                    <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-4">
+                      <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+                      <span>Waiting for email verification...</span>
+                    </div>
+                    <Link
+                      href="/login"
+                      className="inline-flex items-center gap-2 px-4 py-2 text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors"
+                    >
+                      Back to Sign In
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -236,7 +394,18 @@ export default function SignupPage() {
                       ? 'bg-red-50 text-red-700 border border-red-200' 
                       : 'bg-green-50 text-green-700 border border-green-200'
                   }`}>
-                    {message.text}
+                    <div className="flex flex-col gap-2">
+                      <span>{message.text}</span>
+                      {message.type === 'error' && message.text.includes('already registered') && (
+                        <Link
+                          href="/login"
+                          className="inline-flex items-center gap-1 text-sm font-medium text-red-700 hover:text-red-800 underline mt-1"
+                        >
+                          Go to Sign In
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 )}
 
