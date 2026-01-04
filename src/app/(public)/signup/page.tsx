@@ -11,7 +11,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
+  const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
   const [canResend, setCanResend] = useState(false)
@@ -187,52 +187,24 @@ export default function SignupPage() {
       
       // Check if user exists but is unverified (no session)
       // This happens when user signed up before but never verified
+      // Supabase logs this as "user_repeated_signup" and may not send a new email
       if (data.user && !data.session) {
-        console.log('User exists but unverified, attempting to resend verification email', {
+        console.log('User exists but unverified (repeated signup detected)', {
           userId: data.user.id,
           email: data.user.email,
           emailConfirmed: data.user.email_confirmed_at
         })
         
-        // Try to resend the verification email
-        // Note: Supabase resend requires the email to match the user's email
-        const { data: resendData, error: resendError } = await supabase.auth.resend({
-          type: 'signup',
-          email: email,
-          options: {
-            emailRedirectTo: callbackUrl,
-          },
-        })
-        
-        console.log('Resend result:', { resendData, resendError })
-        
-        if (resendError) {
-          console.error('Error resending verification email:', resendError)
-          
-          // Check if it's a rate limit or other specific error
-          const errorMsg = resendError.message?.toLowerCase() || ''
-          if (errorMsg.includes('rate limit') || errorMsg.includes('too many')) {
-            setMessage({ 
-              text: `Verification email was recently sent. Please check your inbox (including spam). If you don't see it, wait a few minutes and try again.`, 
-              type: 'error' 
-            })
-          } else {
-            setMessage({ 
-              text: `This email was used before but never verified. We tried to resend the verification email but encountered an error. Please check your inbox for the original email, or try signing in if you remember your password.`, 
-              type: 'error' 
-            })
-          }
-          setLoading(false)
-          return
-        }
-        
-        // Successfully resent the email (or at least no error was returned)
+        // For repeated signups, Supabase may not send a new verification email
+        // Show the user a message and allow them to manually request a resend
         setShowSuccess(true)
         setIsVerifying(true)
+        setCanResend(true)
         setMessage({ 
-          text: "We've resent the verification email. Please check your inbox (including spam). We'll automatically redirect you once you verify.", 
-          type: 'success' 
+          text: "This email is already registered but not yet verified. Please check your inbox (including spam) for the original verification email. If you can't find it, use the 'Resend Verification Email' button below.", 
+          type: 'info' 
         })
+        setLoading(false)
         return
       }
       
@@ -299,7 +271,14 @@ export default function SignupPage() {
         },
       })
       
-      console.log('Manual resend result:', { resendData, resendError })
+      console.log('Manual resend result:', { 
+        resendData: JSON.stringify(resendData, null, 2), 
+        resendError: resendError ? {
+          message: resendError.message,
+          status: resendError.status,
+          code: resendError.code
+        } : null
+      })
       
       if (resendError) {
         console.error('Error resending verification email:', resendError)
@@ -316,9 +295,11 @@ export default function SignupPage() {
           })
         }
       } else {
-        console.log('Email resend successful!')
+        console.log('Email resend API call successful!', resendData)
+        // Note: Supabase resend() returns void on success, so if there's no error, 
+        // the email should be queued for delivery
         setMessage({ 
-          text: "Verification email sent! Please check your inbox (including spam).", 
+          text: "Verification email has been sent! Please check your inbox (including spam). If you don't receive it within a few minutes, the email service may be experiencing delays.", 
           type: 'success' 
         })
       }
@@ -553,6 +534,8 @@ export default function SignupPage() {
                   <div className={`p-4 text-sm rounded-xl ${
                     message.type === 'error' 
                       ? 'bg-red-50 text-red-700 border border-red-200' 
+                      : message.type === 'info'
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
                       : 'bg-green-50 text-green-700 border border-green-200'
                   }`}>
                     <div className="flex flex-col gap-2">
