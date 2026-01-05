@@ -65,6 +65,8 @@ interface ClinicalTutorWorkspaceProps {
   selectedMessageId?: string | null
   onSelectMessage?: (id: string) => void
   onMessagesChange?: (messages: any[]) => void
+  scrollToMessageId?: string
+  scrollContainerRef?: React.RefObject<HTMLDivElement>
 }
 
 export default function ClinicalTutorWorkspace({ 
@@ -78,6 +80,8 @@ export default function ClinicalTutorWorkspace({
   selectedMessageId,
   onSelectMessage,
   onMessagesChange,
+  scrollToMessageId,
+  scrollContainerRef,
 }: ClinicalTutorWorkspaceProps) {
   const [customError, setCustomError] = useState('')
   const tutorContext = useTutorContext()
@@ -268,6 +272,47 @@ export default function ClinicalTutorWorkspace({
 
     loadFlaggedMessages()
   }, [chatId])
+
+  // Scroll to specific message if scrollToMessageId is provided
+  useEffect(() => {
+    if (!scrollToMessageId || !scrollContainerRef?.current) return
+    
+    let attempts = 0
+    const maxAttempts = 30 // Try for up to 3 seconds (30 * 100ms)
+    
+    const tryScroll = () => {
+      attempts++
+      const container = scrollContainerRef.current
+      if (!container) return
+      
+      // Find the message element by data attribute
+      const messageElement = container.querySelector(`[data-message-id="${scrollToMessageId}"]`) as HTMLElement
+      if (messageElement) {
+        // Scroll to the message with some offset from top
+        const containerRect = container.getBoundingClientRect()
+        const elementRect = messageElement.getBoundingClientRect()
+        const scrollTop = container.scrollTop + elementRect.top - containerRect.top - 100 // 100px offset from top
+        
+        container.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth'
+        })
+        
+        // Temporarily highlight the message
+        messageElement.style.transition = 'background-color 0.3s'
+        messageElement.style.backgroundColor = 'rgba(99, 102, 241, 0.1)' // indigo-50
+        setTimeout(() => {
+          messageElement.style.backgroundColor = ''
+        }, 2000)
+      } else if (attempts < maxAttempts) {
+        // Message not found yet, try again
+        setTimeout(tryScroll, 100)
+      }
+    }
+    
+    // Start trying after messages have a chance to load
+    setTimeout(tryScroll, 300)
+  }, [scrollToMessageId, scrollContainerRef, messages.length]) // Retry when messages change
 
   const handleToggleNeedsHelp = async (messageId: string) => {
     if (!chatId || isTogglingHelp) return

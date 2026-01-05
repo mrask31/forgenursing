@@ -243,6 +243,7 @@ export default function ClinicalDashboard() {
       const params = new URLSearchParams()
       params.set('mode', 'tutor')
       params.set('sessionId', area.chatId)
+      if (area.messageId) params.set('messageId', area.messageId)
       router.push(`/tutor?${params.toString()}`)
     }
   }

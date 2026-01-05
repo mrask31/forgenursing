@@ -497,19 +497,19 @@ export default function TutorSession({
   }
 
   // Scroll to specific message if scrollToMessageId is provided
+  // This effect tries multiple times to find the message element as messages load asynchronously
   useEffect(() => {
-    if (!scrollToMessageId || !scrollContainerRef.current || messages.length === 0) return
+    if (!scrollToMessageId || !scrollContainerRef.current) return
     
-    // Find the message in the messages array
-    const targetMessage = messages.find(m => m.id === scrollToMessageId)
-    if (!targetMessage) return
+    let attempts = 0
+    const maxAttempts = 20 // Try for up to 2 seconds (20 * 100ms)
     
-    // Wait for DOM to update, then scroll to the message
-    setTimeout(() => {
+    const tryScroll = () => {
+      attempts++
       const container = scrollContainerRef.current
       if (!container) return
       
-      // Find the message element by data attribute or id
+      // Find the message element by data attribute
       const messageElement = container.querySelector(`[data-message-id="${scrollToMessageId}"]`) as HTMLElement
       if (messageElement) {
         // Scroll to the message with some offset from top
@@ -528,9 +528,15 @@ export default function TutorSession({
         setTimeout(() => {
           messageElement.style.backgroundColor = ''
         }, 2000)
+      } else if (attempts < maxAttempts) {
+        // Message not found yet, try again
+        setTimeout(tryScroll, 100)
       }
-    }, 300) // Longer delay to ensure messages are rendered
-  }, [scrollToMessageId, messages])
+    }
+    
+    // Start trying after a short delay to allow initial render
+    setTimeout(tryScroll, 200)
+  }, [scrollToMessageId, sessionId]) // Use sessionId as dependency to retry when session changes
 
   // Auto-scroll to bottom when messages change (only if user hasn't manually scrolled up and no scrollToMessageId)
   useEffect(() => {
@@ -594,6 +600,8 @@ export default function TutorSession({
             attachedFiles={attachedFiles}
             selectedMessageId={selectedMessageId}
             onSelectMessage={setSelectedMessageId}
+            scrollToMessageId={scrollToMessageId}
+            scrollContainerRef={scrollContainerRef}
             onMessagesChange={(msgs) => {
               const chatMessages = msgs as ChatMessage[]
               if (propOnMessagesChange) {

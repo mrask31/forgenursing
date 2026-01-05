@@ -312,9 +312,14 @@ export default function ChatMessageList({
                       li: ({children}) => <li className="my-1 text-slate-700">{children}</li>,
                       strong: ({children}) => <strong className="font-semibold text-slate-900">{children}</strong>,
                       text: ({children}) => {
-                        // Wrap text nodes to detect medical terms
+                        // Process text nodes to detect medical terms
+                        // ReactMarkdown passes text in fragments, so we need to handle each fragment
                         const text = String(children)
-                        return <TextWithMedicalTerms text={text} />
+                        // Only process if text has meaningful content (not just whitespace/punctuation)
+                        if (text.trim().length > 0 && /[a-zA-Z]/.test(text)) {
+                          return <TextWithMedicalTerms text={text} />
+                        }
+                        return <>{text}</>
                       },
                       code: ({children}) => <code className="bg-slate-50 px-1.5 py-0.5 rounded text-xs font-mono text-slate-900 border border-slate-200">{children}</code>,
                       pre: ({children}) => (
