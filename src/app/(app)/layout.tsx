@@ -16,7 +16,7 @@ export default function AppRouteLayout({
   return (
     <DensityProvider>
       {/* Top Level Container (Viewport) */}
-      <div className="flex h-screen w-full overflow-hidden bg-slate-50">
+      <div className="flex h-screen w-full bg-slate-50">
         <ComplianceDisclaimer />
         
         {/* Mobile Menu Button */}
@@ -55,8 +55,8 @@ export default function AppRouteLayout({
           <Sidebar onNavigate={() => setSidebarOpen(false)} />
         </aside>
         
-        {/* Column B: Main Content Area - Flexible, with overflow for scrolling */}
-        <main className="flex-1 min-w-0 h-full overflow-y-auto bg-slate-50 lg:ml-0">
+        {/* Column B: Main Content Area - Flexible, scrollable */}
+        <main className="flex-1 min-w-0 overflow-y-auto bg-slate-50 lg:ml-0">
           {children}
         </main>
       </div>
