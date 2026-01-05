@@ -44,12 +44,13 @@ export default function MessageWithMedicalTerms({
     text: ({ children, ...props }: { children?: ReactNode; [key: string]: any }) => {
       if (!children) return null
       const text = String(children)
-      const lowerText = text.toLowerCase()
       
       // If fragment is empty or just whitespace/punctuation, return as-is
       if (!text.trim() || text.trim().length === 0) {
         return <>{text}</>
       }
+      
+      const lowerText = text.toLowerCase()
       
       // Check if this fragment contains any medical terms
       const parts: ReactNode[] = []
@@ -61,6 +62,9 @@ export default function MessageWithMedicalTerms({
       
       // Find all term matches in this fragment
       for (const [lowerTerm, termInfo] of sortedTerms) {
+        // Skip if term is longer than the fragment
+        if (lowerTerm.length > lowerText.length) continue
+        
         // Simple indexOf search - we'll check word boundaries manually
         let searchIndex = 0
         
@@ -109,7 +113,7 @@ export default function MessageWithMedicalTerms({
         const originalTerm = text.slice(match.start, match.end)
         parts.push(
           <MedicalTermPopover
-            key={`term-${match.start}-${match.end}`}
+            key={`term-${match.start}-${match.end}-${Math.random()}`}
             term={match.termInfo.term}
             definition={match.termInfo.definition}
             category={match.termInfo.category}
