@@ -13,6 +13,9 @@ import {
 } from '@/components/ui/sheet'
 import { Checkbox } from '@/components/ui/checkbox'
 import { MessageSquare, FileText, Stethoscope, Brain } from 'lucide-react'
+import { listClasses } from '@/lib/api/classes'
+import { StudentClass } from '@/lib/types'
+import { createBrowserClient } from '@supabase/ssr'
 
 interface Chat {
   id: string
@@ -63,35 +66,48 @@ const getSessionBadge = (sessionType: string | null) => {
 export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
   const router = useRouter()
   const [chats, setChats] = useState<Chat[]>([])
+  const [classes, setClasses] = useState<StudentClass[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set<string>(['general']))
   const [selectedChatIds, setSelectedChatIds] = useState<Set<string>>(new Set<string>())
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Fetch chats for history
+  // Fetch chats and classes for history
   useEffect(() => {
     if (!isHistoryOpen) return
 
-    const fetchChats = async () => {
+    const fetchData = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch('/api/chats/list?includeArchived=true', {
+        // Fetch chats
+        const chatsResponse = await fetch('/api/chats/list?includeArchived=true', {
           credentials: 'include',
         })
 
-        if (response.ok) {
-          const data = await response.json()
-          setChats((data.chats || []) as Chat[])
+        if (chatsResponse.ok) {
+          const chatsData = await chatsResponse.json()
+          setChats((chatsData.chats || []) as Chat[])
+        }
+
+        // Fetch classes to map IDs to names
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const userClasses = await listClasses(user.id)
+          setClasses(userClasses)
         }
       } catch (error) {
-        console.error('[HistoryButton] Error fetching chats:', error)
+        console.error('[HistoryButton] Error fetching data:', error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchChats()
+    fetchData()
   }, [isHistoryOpen])
 
   const formatTime = (dateString: string) => {
@@ -117,6 +133,12 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
     yesterday.setDate(yesterday.getDate() - 1)
     const thisWeek = new Date(today)
     thisWeek.setDate(thisWeek.getDate() - 7)
+
+    // Create a map of classId -> class name/code
+    const classMap = new Map<string, { code: string; name: string }>()
+    classes.forEach((cls) => {
+      classMap.set(cls.id, { code: cls.code, name: cls.name })
+    })
 
     const chatsByClass = new Map<string, Chat[]>()
     
@@ -157,8 +179,20 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
 
       const filteredTimeGroups = timeGroups.filter(group => group.chats.length > 0)
       if (filteredTimeGroups.length > 0) {
+        // Get class name from map, or fallback to classId
+        let classLabel = 'General Tutor'
+        if (classId !== 'general') {
+          const classInfo = classMap.get(classId)
+          if (classInfo) {
+            classLabel = `${classInfo.code} - ${classInfo.name}`
+          } else {
+            // Fallback if class not found (might have been deleted)
+            classLabel = `Class ${classId.substring(0, 8)}...`
+          }
+        }
+        
         result.push({
-          classLabel: classId === 'general' ? 'General Tutor' : `Class ${classId}`,
+          classLabel,
           classId,
           timeGroups: filteredTimeGroups,
         })
@@ -166,7 +200,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
     })
 
     return result
-  }, [chats])
+  }, [chats, classes])
 
   const handleChatClick = (chatId: string, mode: string = 'tutor') => {
     const url = mode === 'reflections'
