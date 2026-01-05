@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 
 const Sheet = SheetPrimitive.Root
 
-const SheetTrigger = SheetPrimitive.Trigger
+const SheetTrigger: typeof SheetPrimitive.Trigger = SheetPrimitive.Trigger
 
 const SheetClose = SheetPrimitive.Close
 
