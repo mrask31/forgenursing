@@ -8,7 +8,7 @@ import MedicalTermPopover from '@/components/tutor/MedicalTermPopover'
 export default function DictionaryPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [savedWords, setSavedWords] = useState<Set<string>>(new Set())
+  const [savedWords, setSavedWords] = useState<Set<string>>(() => new Set<string>())
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -42,8 +42,12 @@ export default function DictionaryPage() {
     fetch('/api/wordbank')
       .then(res => res.json())
       .then(data => {
-        if (data.words) {
-          const saved = new Set(data.words.map((w: any) => w.term.toLowerCase()))
+        if (data.words && Array.isArray(data.words)) {
+          const saved = new Set<string>(
+            data.words
+              .map((w: any) => w?.term?.toLowerCase())
+              .filter((t: unknown): t is string => typeof t === 'string')
+          )
           setSavedWords(saved)
         }
       })
@@ -59,7 +63,11 @@ export default function DictionaryPage() {
       })
 
       if (response.ok || response.status === 409) {
-        setSavedWords(prev => new Set([...prev, term.toLowerCase()]))
+        setSavedWords(prev => {
+          const arr = Array.from(prev)
+          arr.push(term.toLowerCase())
+          return new Set<string>(arr)
+        })
       }
     } catch (error) {
       console.error('Failed to save word:', error)
@@ -108,7 +116,7 @@ export default function DictionaryPage() {
             {categories.map(category => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => setSelectedCategory(category || null)}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   selectedCategory === category
                     ? 'bg-indigo-600 text-white'
