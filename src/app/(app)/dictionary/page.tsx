@@ -8,7 +8,9 @@ import MedicalTermPopover from '@/components/tutor/MedicalTermPopover'
 export default function DictionaryPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [savedFilter, setSavedFilter] = useState<'all' | 'saved' | 'not-saved'>('all')
   const [savedWords, setSavedWords] = useState<Set<string>>(() => new Set<string>())
+  const [savedWordIds, setSavedWordIds] = useState<Map<string, string>>(() => new Map<string, string>())
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -16,7 +18,7 @@ export default function DictionaryPage() {
     return Array.from(cats).sort()
   }, [])
 
-  // Filter terms based on search and category
+  // Filter terms based on search, category, and saved status
   const filteredTerms = useMemo(() => {
     let filtered = MEDICAL_TERMS
 
@@ -34,8 +36,15 @@ export default function DictionaryPage() {
       )
     }
 
+    // Filter by saved status
+    if (savedFilter === 'saved') {
+      filtered = filtered.filter(t => savedWords.has(t.term.toLowerCase()))
+    } else if (savedFilter === 'not-saved') {
+      filtered = filtered.filter(t => !savedWords.has(t.term.toLowerCase()))
+    }
+
     return filtered.sort((a, b) => a.term.localeCompare(b.term))
-  }, [searchQuery, selectedCategory])
+  }, [searchQuery, selectedCategory, savedFilter, savedWords])
 
   // Load saved words on mount
   useEffect(() => {
@@ -43,12 +52,19 @@ export default function DictionaryPage() {
       .then(res => res.json())
       .then(data => {
         if (data.words && Array.isArray(data.words)) {
-          const saved = new Set<string>(
-            data.words
-              .map((w: any) => w?.term?.toLowerCase())
-              .filter((t: unknown): t is string => typeof t === 'string')
-          )
+          const saved = new Set<string>()
+          const wordIds = new Map<string, string>()
+          
+          data.words.forEach((w: any) => {
+            if (w?.term?.toLowerCase() && w?.id) {
+              const termLower = w.term.toLowerCase()
+              saved.add(termLower)
+              wordIds.set(termLower, w.id)
+            }
+          })
+          
           setSavedWords(saved)
+          setSavedWordIds(wordIds)
         }
       })
       .catch(() => {}) // Silently fail if not authenticated
@@ -62,15 +78,68 @@ export default function DictionaryPage() {
         body: JSON.stringify({ term, definition, category }),
       })
 
-      if (response.ok || response.status === 409) {
+      if (response.ok) {
+        const data = await response.json()
+        const termLower = term.toLowerCase()
         setSavedWords(prev => {
           const arr = Array.from(prev)
-          arr.push(term.toLowerCase())
+          arr.push(termLower)
+          return new Set<string>(arr)
+        })
+        if (data.word?.id) {
+          setSavedWordIds(prev => {
+            const newMap = new Map(prev)
+            newMap.set(termLower, data.word.id)
+            return newMap
+          })
+        }
+      } else if (response.status === 409) {
+        // Already saved, just update local state
+        const termLower = term.toLowerCase()
+        setSavedWords(prev => {
+          const arr = Array.from(prev)
+          if (!arr.includes(termLower)) {
+            arr.push(termLower)
+          }
           return new Set<string>(arr)
         })
       }
     } catch (error) {
       console.error('Failed to save word:', error)
+    }
+  }
+
+  const handleUnsaveWord = async (term: string) => {
+    try {
+      const termLower = term.toLowerCase()
+      const wordId = savedWordIds.get(termLower)
+      
+      if (!wordId) {
+        console.error('Word ID not found for term:', term)
+        return
+      }
+
+      const response = await fetch(`/api/wordbank?id=${wordId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setSavedWords(prev => {
+          const arr = Array.from(prev)
+          const index = arr.indexOf(termLower)
+          if (index > -1) {
+            arr.splice(index, 1)
+          }
+          return new Set<string>(arr)
+        })
+        setSavedWordIds(prev => {
+          const newMap = new Map(prev)
+          newMap.delete(termLower)
+          return newMap
+        })
+      }
+    } catch (error) {
+      console.error('Failed to unsave word:', error)
     }
   }
 
@@ -99,6 +168,40 @@ export default function DictionaryPage() {
               placeholder="Search medical terms..."
               className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
+          </div>
+
+          {/* Saved/Not Saved Filter */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <button
+              onClick={() => setSavedFilter('all')}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                savedFilter === 'all'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              All Terms
+            </button>
+            <button
+              onClick={() => setSavedFilter('saved')}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                savedFilter === 'saved'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              Saved
+            </button>
+            <button
+              onClick={() => setSavedFilter('not-saved')}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                savedFilter === 'not-saved'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              Not Saved
+            </button>
           </div>
 
           {/* Category Filters */}
@@ -156,11 +259,13 @@ export default function DictionaryPage() {
                         <p className="text-sm text-slate-700 leading-relaxed">{term.definition}</p>
                       </div>
                       <button
-                        onClick={() => !isSaved && handleSaveWord(term.term, term.definition, term.category)}
-                        disabled={isSaved}
+                        onClick={() => isSaved 
+                          ? handleUnsaveWord(term.term)
+                          : handleSaveWord(term.term, term.definition, term.category)
+                        }
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 ${
                           isSaved
-                            ? 'text-emerald-600 bg-emerald-50 cursor-default'
+                            ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700'
                             : 'text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50'
                         }`}
                       >

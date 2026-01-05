@@ -339,7 +339,10 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                  classItem.type === 'fundamentals' ? 'Fundamentals' : 'Other'}
               </Badge>
             </div>
-            <p className="text-sm text-slate-600 mb-3">
+            <p 
+              className="text-sm text-slate-600 mb-3 truncate" 
+              title={classItem.name}
+            >
               {classItem.name}
             </p>
             {classItem.nextExamDate && (
