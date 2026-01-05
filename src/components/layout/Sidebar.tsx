@@ -2,9 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, MessageSquare, FileText, Settings, Activity, Bookmark, GraduationCap, Library, BookOpen, Clock } from 'lucide-react'
-import { useDensity } from '@/contexts/DensityContext'
-import { getDensityTokens } from '@/lib/density-tokens'
+import { MessageSquare, FileText, Settings, Activity, GraduationCap, BookOpen } from 'lucide-react'
 import HistoryButton from './HistoryButton'
 
 const NAV_ITEMS = [
@@ -19,10 +17,8 @@ interface SidebarProps {
   onNavigate?: () => void
 }
 
-export default function Sidebar({ onNavigate }: SidebarProps = { onNavigate: undefined }) {
+export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   const pathname = usePathname()
-  const { density } = useDensity()
-  const tokens = getDensityTokens(density)
 
   return (
     <aside className="flex w-full h-full flex-col bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 text-indigo-100">

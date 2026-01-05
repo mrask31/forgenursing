@@ -1,56 +1,16 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ToggleLeft, ToggleRight, HelpCircle, Plus } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
-import { MessageSquare, FileText, Stethoscope, Brain } from 'lucide-react'
 import { useTutorContext } from './TutorContext'
 import ExamModeDialog from './ExamModeDialog'
 import { ExamPlan, StudentClass, NotebookTopic } from '@/lib/types'
 import { listExams } from '@/lib/api/exams'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-
 
 type Mode = 'tutor' | 'reflections'
-
-// Icon mapping for session types
-const getSessionIcon = (sessionType: string | null) => {
-  switch (sessionType) {
-    case 'reflection':
-      return Brain
-    case 'snapshot':
-      return Stethoscope
-    case 'question':
-      return MessageSquare
-    case 'notes':
-      return FileText
-    default:
-      return MessageSquare
-  }
-}
-
-// Badge text for session types
-const getSessionBadge = (sessionType: string | null) => {
-  switch (sessionType) {
-    case 'reflection':
-      return 'Reflection'
-    case 'snapshot':
-      return 'Snapshot'
-    case 'question':
-      return 'Question'
-    case 'notes':
-      return 'Notes'
-    default:
-      return 'General'
-  }
-}
 
 interface TutorHeaderProps {
   mode: Mode
