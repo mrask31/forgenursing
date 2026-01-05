@@ -56,19 +56,47 @@ export default function SignupPage() {
           clearInterval(pollInterval)
         }
 
-        // Get plan from localStorage
-        const plan = localStorage.getItem('forgenursing-pending-plan')
-        
-        // Small delay to show the success message
-        setTimeout(() => {
-          if (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) {
-            // Redirect to checkout with the plan
+        // Check subscription status before redirecting
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('subscription_status')
+            .eq('id', user.id)
+            .single()
+
+          const subscriptionStatus = profile?.subscription_status || 'pending_payment'
+          
+          // Get plan from localStorage
+          const plan = localStorage.getItem('forgenursing-pending-plan')
+          
+          // Small delay to show the success message
+          setTimeout(() => {
+            // If user needs payment, always redirect to checkout
+            if (subscriptionStatus === 'pending_payment' || 
+                subscriptionStatus === 'canceled' || 
+                subscriptionStatus === 'past_due' || 
+                subscriptionStatus === 'unpaid') {
+              // Use plan from localStorage or default to monthly
+              const checkoutPlan = (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) 
+                ? plan 
+                : 'monthly'
+              router.push(`/checkout?plan=${checkoutPlan}`)
+            } else if (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) {
+              // User has a plan selected but might already be subscribed, still go to checkout
+              router.push(`/checkout?plan=${plan}`)
+            } else {
+              // No plan and already subscribed, go to tutor
+              router.push('/tutor')
+            }
+          }, 1000)
+        } catch (error) {
+          console.error('Error checking subscription status:', error)
+          // On error, default to checkout with monthly plan
+          const plan = localStorage.getItem('forgenursing-pending-plan') || 'monthly'
+          setTimeout(() => {
             router.push(`/checkout?plan=${plan}`)
-          } else {
-            // Redirect to default route
-            router.push('/tutor')
-          }
-        }, 1000)
+          }, 1000)
+        }
       }
     }
 
@@ -79,8 +107,8 @@ export default function SignupPage() {
       }
     })
 
-    // Also poll every 2 seconds to catch cross-device verification
-    pollInterval = setInterval(checkAuthAndRedirect, 2000)
+    // Also poll every 1.5 seconds to catch cross-device verification more quickly
+    pollInterval = setInterval(checkAuthAndRedirect, 1500)
 
     // Initial check
     checkAuthAndRedirect()
@@ -394,6 +422,24 @@ export default function SignupPage() {
                       <span>Waiting for email verification...</span>
                     </div>
                     <div className="flex flex-col gap-3">
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          // Manually trigger auth check and refresh
+                          try {
+                            // Refresh the page to get latest auth state
+                            window.location.reload()
+                          } catch (error) {
+                            console.error('Error refreshing:', error)
+                          }
+                        }}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
+                      >
+                        <Loader2 className="h-4 w-4" />
+                        Refresh Page (if verified on another device)
+                      </button>
                       <button
                         type="button"
                         onClick={(e) => {
