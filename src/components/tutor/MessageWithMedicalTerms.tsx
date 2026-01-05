@@ -22,34 +22,21 @@ export default function MessageWithMedicalTerms({
   content, 
   markdownComponents 
 }: MessageWithMedicalTermsProps): ReactNode {
-  // Find all medical terms in the full content with their original casing
+  // Build a map of all medical terms for quick lookup
+  // We check ALL terms in fragments, not just ones found in initial scan
   const medicalTermMap = useMemo(() => {
-    const matches = findMedicalTerms(content)
     const map = new Map<string, { term: string; definition: string; category?: string }>()
     
-    for (const match of matches) {
-      // Store both the lowercase version (for matching) and the original casing
-      const originalTerm = content.slice(match.startIndex, match.endIndex)
-      // Find the category from MEDICAL_TERMS
-      const termData = MEDICAL_TERMS.find(t => t.term.toLowerCase() === match.term.toLowerCase())
-      map.set(originalTerm.toLowerCase(), {
-        term: match.term,
-        definition: match.definition,
-        category: termData?.category
+    for (const medicalTerm of MEDICAL_TERMS) {
+      map.set(medicalTerm.term.toLowerCase(), {
+        term: medicalTerm.term,
+        definition: medicalTerm.definition,
+        category: medicalTerm.category
       })
     }
     
     return map
-  }, [content])
-
-  // If no medical terms found, just render normally
-  if (medicalTermMap.size === 0) {
-    return (
-      <ReactMarkdown components={markdownComponents}>
-        {content}
-      </ReactMarkdown>
-    )
-  }
+  }, [])
 
   // Custom text component that checks fragments against our term map
   const enhancedComponents = {
