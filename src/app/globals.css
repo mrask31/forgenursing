@@ -309,3 +309,10 @@ pre, code {
   scrollbar-width: thin;
   scrollbar-color: #CBD5E1 #F1F5F9;
 }
+
+/* Auto-rows for equal height grid */
+@layer utilities {
+  .auto-rows-fr {
+    grid-auto-rows: 1fr;
+  }
+}

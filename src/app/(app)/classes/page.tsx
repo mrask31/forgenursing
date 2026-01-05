@@ -125,7 +125,7 @@ export default function ClassesPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
             {classes.map((classItem) => (
               <ClassWithMaterials
                 key={classItem.id}

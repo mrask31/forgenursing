@@ -22,7 +22,8 @@ import {
   X,
   Clock,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  ChevronDown
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toggleDocumentContext, deleteDocuments } from '@/app/actions/binder'
@@ -59,6 +60,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [uploadDocumentType, setUploadDocumentType] = useState<'syllabus' | 'textbook' | null>(null)
   const [isCreatingChat, setIsCreatingChat] = useState(false)
+  const [showSessions, setShowSessions] = useState(false) // Collapsible sessions
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -319,16 +321,16 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
   const textbooks = classMaterials.filter(f => f.document_type === 'textbook')
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all">
+    <div className="bg-gradient-to-br from-white to-slate-50/50 border border-slate-200 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group">
       {/* Class Header - Always Visible */}
-      <div className="p-6">
+      <div className="p-6 flex-1 flex flex-col min-h-0">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-xl font-semibold text-slate-900">
+              <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
                 {classItem.code}
               </h3>
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs bg-indigo-50 border-indigo-200 text-indigo-700">
                 {classItem.type === 'med_surg' ? 'Med-Surg' : 
                  classItem.type === 'pharm' ? 'Pharmacology' :
                  classItem.type === 'peds' ? 'Pediatrics' :
@@ -394,7 +396,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           <Button
             onClick={handleStudyClass}
             disabled={isCreatingChat}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all duration-200"
             size="lg"
           >
             {isCreatingChat ? (
@@ -524,11 +526,11 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
             <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
               Your Materials
             </h4>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
               {classMaterials.map((file) => (
                 <div
                   key={file.canonicalId}
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:border-indigo-300 transition-colors"
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-white rounded-lg border border-slate-200 hover:border-indigo-300 hover:shadow-sm transition-all duration-200"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <FileText className="w-4 h-4 text-slate-400 shrink-0" />
@@ -584,40 +586,48 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           )
         )}
 
-        {/* Saved Chats */}
+        {/* Saved Chats - Collapsible */}
         {savedChats.length > 0 && (
-          <div className="border-t border-slate-200 pt-4">
-            <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-              Recent Study Sessions
-            </h4>
-            <div className="space-y-2">
-              {savedChats.slice(0, 3).map((chat) => (
-                <button
-                  key={chat.id}
-                  onClick={() => handleOpenChat(chat.id)}
-                  className="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <MessageSquare className="w-4 h-4 text-slate-400 shrink-0 group-hover:text-indigo-600" />
-                      <span className="text-sm text-slate-700 truncate group-hover:text-indigo-600 font-medium">
-                        {chat.title || 'Untitled Chat'}
-                      </span>
+          <div className="border-t border-slate-200 pt-4 mt-auto">
+            <button
+              onClick={() => setShowSessions(!showSessions)}
+              className="w-full flex items-center justify-between mb-3 group"
+            >
+              <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide group-hover:text-indigo-600 transition-colors">
+                Recent Study Sessions ({savedChats.length})
+              </h4>
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${showSessions ? 'rotate-180' : ''}`} />
+            </button>
+            <div className={`overflow-hidden transition-all duration-300 ${showSessions ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+              <div className="space-y-2">
+                {savedChats.slice(0, 5).map((chat) => (
+                  <button
+                    key={chat.id}
+                    onClick={() => handleOpenChat(chat.id)}
+                    className="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:border-indigo-300 transition-all duration-200 group shadow-sm hover:shadow"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <MessageSquare className="w-4 h-4 text-slate-400 shrink-0 group-hover:text-indigo-600 transition-colors" />
+                        <span className="text-sm text-slate-700 truncate group-hover:text-indigo-600 font-medium">
+                          {chat.title || 'Untitled Chat'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Clock className="w-3 h-3 text-slate-400" />
+                        <span className="text-xs text-slate-500">
+                          {new Date(chat.updated_at).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Clock className="w-3 h-3 text-slate-400" />
-                      <span className="text-xs text-slate-500">
-                        {new Date(chat.updated_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
-              {savedChats.length > 3 && (
-                <p className="text-xs text-slate-500 text-center pt-1">
-                  +{savedChats.length - 3} more sessions
-                </p>
-              )}
+                  </button>
+                ))}
+                {savedChats.length > 5 && (
+                  <p className="text-xs text-slate-500 text-center pt-1">
+                    +{savedChats.length - 5} more sessions
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         )}
