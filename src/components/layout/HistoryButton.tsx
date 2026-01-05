@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Clock, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { 
@@ -62,7 +62,6 @@ const getSessionBadge = (sessionType: string | null) => {
 
 export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [chats, setChats] = useState<Chat[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
