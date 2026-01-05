@@ -16,8 +16,10 @@
 @layer base {
   html,
   body {
-    height: 100%;
-    overflow: hidden; /* Prevent body from scrolling - app layout handles scrolling */
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto; /* Allow vertical scrolling */
   }
 
   body {
@@ -25,7 +27,7 @@
   }
 
   #__next {
-    height: 100%;
+    min-height: 100%;
   }
 
 
@@ -82,11 +84,13 @@
 
 @layer base {
   html, body {
-    height: 100%;
+    height: auto;
+    min-height: 100%;
     background-color: #F8FAFC; /* Soft slate-50 */
     color: #0f172a;
     font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    overflow: hidden; /* Prevent body/html from scrolling - app layout handles scrolling */
+    overflow-x: hidden;
+    overflow-y: auto; /* Allow vertical scrolling for public pages */
   }
   
   body {
