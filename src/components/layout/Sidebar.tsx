@@ -2,14 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, MessageSquare, FileText, Settings, Activity, Bookmark, GraduationCap, Library } from 'lucide-react'
+import { Home, MessageSquare, FileText, Settings, Activity, Bookmark, GraduationCap, Library, BookOpen, Clock } from 'lucide-react'
 import { useDensity } from '@/contexts/DensityContext'
 import { getDensityTokens } from '@/lib/density-tokens'
+import HistoryButton from './HistoryButton'
 
 const NAV_ITEMS = [
   { label: 'Clinical Studio', href: '/tutor', icon: MessageSquare },
   { label: 'My Classes', href: '/classes', icon: GraduationCap },
   { label: 'Dashboard', href: '/readiness', icon: Activity },
+  { label: 'Medical Dictionary', href: '/dictionary', icon: BookOpen },
   { label: 'Settings', href: '/settings', icon: Settings },
 ]
 
@@ -37,7 +39,9 @@ export default function Sidebar({ onNavigate }: SidebarProps = { onNavigate: und
         {/* Nav Container - Increased padding */}
         <nav className="flex-1 space-y-2">
           {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href || (item.href === '/classes' && pathname.startsWith('/classes'))
+            const isActive = pathname === item.href || 
+              (item.href === '/classes' && pathname.startsWith('/classes')) ||
+              (item.href === '/dictionary' && pathname.startsWith('/dictionary'))
             const Icon = item.icon
 
             return (
@@ -58,6 +62,11 @@ export default function Sidebar({ onNavigate }: SidebarProps = { onNavigate: und
             )
           })}
         </nav>
+        
+        {/* History Button - Moved from TutorHeader */}
+        <div className="mt-4 pt-4 border-t border-indigo-900/50">
+          <HistoryButton onNavigate={onNavigate} />
+        </div>
         
         {/* User Profile / Footer */}
         <div className="mt-auto pt-6 border-t border-indigo-900/50">
