@@ -389,6 +389,39 @@ export default function ClinicalDashboard() {
           </div>
         </div>
 
+        {/* Study Activity by Class - New Section */}
+        {chatCountsByClass.length > 0 && (
+          <div className="bg-white border border-slate-200 rounded-lg shadow-sm mb-6">
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-200 px-4 py-3 rounded-t-lg">
+              <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-indigo-600" />
+                Study Activity by Class
+              </h3>
+              <p className="text-xs text-slate-600 mt-1">See where you're spending the most study time</p>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {chatCountsByClass.map((item) => (
+                  <div
+                    key={item.classId}
+                    className="p-3 bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-lg hover:border-indigo-300 hover:shadow-sm transition-all"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-semibold text-slate-900 truncate">
+                        {item.classCode}
+                      </span>
+                      <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                        {item.count} {item.count === 1 ? 'session' : 'sessions'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 truncate">{item.className}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main Content Grid - Medical Chart Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
           {/* Left Column: Flagged for Review & Graduation */}
