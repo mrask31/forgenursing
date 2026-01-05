@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 
 const Sheet = SheetPrimitive.Root
 
-const SheetTrigger: React.ComponentType<React.ComponentPropsWithoutRef<typeof SheetPrimitive.Trigger>> = SheetPrimitive.Trigger
+const SheetTrigger = SheetPrimitive.Trigger as React.ComponentType<React.ComponentPropsWithoutRef<typeof SheetPrimitive.Trigger>>
 
 const SheetClose = SheetPrimitive.Close
 
