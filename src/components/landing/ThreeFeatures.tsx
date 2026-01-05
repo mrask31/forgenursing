@@ -2,23 +2,23 @@ import { Check, Brain, Bookmark, MessageSquare, Target, Zap, TrendingUp } from '
 
 export default function ThreeFeatures() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-28 bg-gradient-to-br from-white via-indigo-50/30 to-white">
-      <div className="text-center mb-12 sm:mb-16 md:mb-20">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-4 sm:mb-6">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-white via-indigo-50/30 to-white">
+      <div className="text-center mb-8 sm:mb-12">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-3 sm:mb-4">
           Built for How Nurses Actually Learn
         </h2>
-        <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto px-4 font-medium leading-relaxed">
+        <p className="text-base sm:text-lg text-slate-700 max-w-2xl mx-auto px-4 leading-relaxed">
           Every feature is designed to reduce cognitive load — not add more
         </p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
         {/* Card A - Enhanced */}
-        <div className="bg-white/80 backdrop-blur-sm border-2 border-indigo-200/60 rounded-2xl p-6 sm:p-8 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-indigo-200/30 transition-all duration-300 transform hover:scale-[1.02]">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center mb-5 shadow-sm">
-            <Brain className="w-8 h-8 text-indigo-600" />
+        <div className="bg-white/80 backdrop-blur-sm border border-indigo-200/60 rounded-xl p-5 sm:p-6 shadow-md shadow-slate-200/50 hover:shadow-lg hover:shadow-indigo-200/30 transition-all duration-300 transform hover:scale-[1.01]">
+          <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center mb-4 shadow-sm">
+            <Brain className="w-6 h-6 text-indigo-600" />
           </div>
-          <h3 className="text-xl font-bold text-slate-900 mb-3">
+          <h3 className="text-lg font-bold text-slate-900 mb-2">
             ForgeMap™ — See the Logic
           </h3>
           <p className="text-slate-600 leading-relaxed mb-4">
@@ -84,8 +84,8 @@ export default function ThreeFeatures() {
       </div>
 
       {/* Additional Feature Highlights - Enhanced */}
-      <div className="bg-white/80 backdrop-blur-sm border-2 border-indigo-200/60 rounded-2xl p-8 sm:p-10 md:p-14 shadow-xl shadow-slate-200/50">
-        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 text-center mb-6 sm:mb-8">
+      <div className="bg-white/80 backdrop-blur-sm border border-indigo-200/60 rounded-xl p-6 sm:p-8 md:p-10 shadow-lg shadow-slate-200/50">
+        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 text-center mb-5 sm:mb-6">
           What Makes ForgeNursing Different
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">

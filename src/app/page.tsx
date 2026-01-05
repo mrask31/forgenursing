@@ -40,15 +40,15 @@ export default function HomePage() {
       <BeliefValidation />
 
       {/* Pricing - Enhanced */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 bg-gradient-to-br from-white via-indigo-50/30 to-white">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-white via-indigo-50/30 to-white">
+        <div className="text-center mb-10 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-4">
             Choose the plan that fits your journey
           </h2>
           
           {/* All Plans Include */}
-          <div className="mt-8 mb-12 max-w-3xl mx-auto">
-            <p className="text-sm font-semibold text-slate-700 mb-4">All plans include full access to:</p>
+          <div className="mt-6 mb-8 max-w-3xl mx-auto">
+            <p className="text-xs sm:text-sm font-semibold text-slate-700 mb-3">All plans include full access to:</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
@@ -237,9 +237,9 @@ export default function HomePage() {
         </div>
 
         {/* Trust + Clarity Section - Enhanced */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-10 md:p-14 mb-12 border-2 border-slate-200/60 shadow-lg shadow-slate-200/50">
-          <div className="text-center mb-10">
-            <h3 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-3">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 sm:p-8 md:p-10 mb-10 border border-slate-200/60 shadow-md shadow-slate-200/50">
+          <div className="text-center mb-8">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-2">
               Simple. Honest. Student-Friendly.
             </h3>
           </div>
@@ -247,8 +247,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* 7-Day Free Trial - Enhanced */}
             <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
-                <Sparkles className="w-10 h-10 text-indigo-600" />
+              <div className="w-14 h-14 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-md">
+                <Sparkles className="w-7 h-7 text-indigo-600" />
               </div>
               <h4 className="font-bold text-slate-900 mb-2">7-Day Free Trial — No Risk</h4>
               <p className="text-sm text-slate-600 leading-relaxed">
@@ -284,19 +284,19 @@ export default function HomePage() {
         </div>
 
         {/* Reassurance Section - Enhanced */}
-        <div className="bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-indigo-50/80 backdrop-blur-sm rounded-2xl p-10 md:p-14 border-2 border-indigo-200/60 shadow-lg shadow-indigo-200/30">
+        <div className="bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-indigo-50/80 backdrop-blur-sm rounded-xl p-6 sm:p-8 md:p-10 border border-indigo-200/60 shadow-md shadow-indigo-200/30">
           <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-3">
               Built for Future Nurses — Not Big Tech
             </h3>
-            <p className="text-lg text-slate-700 mb-6 leading-relaxed">
+            <p className="text-base sm:text-lg text-slate-700 mb-4 leading-relaxed">
               ForgeNursing doesn't replace your studying.<br />
               It guides your thinking, helps you recognize patterns, and builds the confidence you need to make safe clinical decisions.
             </p>
-            <p className="text-xl md:text-2xl font-semibold text-indigo-700">
+            <p className="text-lg sm:text-xl md:text-2xl font-semibold text-indigo-700">
               So when the NCLEX challenges you with complex patient scenarios…
             </p>
-            <p className="text-2xl md:text-3xl font-bold text-indigo-700 mt-2">
+            <p className="text-xl sm:text-2xl md:text-3xl font-bold text-indigo-700 mt-2">
               you'll already know how to think through them.
             </p>
           </div>
