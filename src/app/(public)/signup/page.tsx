@@ -87,30 +87,22 @@ export default function SignupPage() {
           
           // Small delay to show the success message
           setTimeout(() => {
-            // If user needs payment, always redirect to checkout
+            // If user needs payment, always redirect to checkout (without plan so user can choose)
             if (subscriptionStatus === 'pending_payment' || 
                 subscriptionStatus === 'canceled' || 
                 subscriptionStatus === 'past_due' || 
                 subscriptionStatus === 'unpaid') {
-              // Use plan from localStorage or default to monthly
-              const checkoutPlan = (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) 
-                ? plan 
-                : 'monthly'
-              router.push(`/checkout?plan=${checkoutPlan}`)
-            } else if (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) {
-              // User has a plan selected but might already be subscribed, still go to checkout
-              router.push(`/checkout?plan=${plan}`)
+              router.push('/checkout')
             } else {
-              // No plan and already subscribed, go to tutor
+              // User is already subscribed, go to tutor
               router.push('/tutor')
             }
           }, 1000)
         } catch (error) {
           console.error('Error checking subscription status:', error)
-          // On error, default to checkout with monthly plan
-          const plan = localStorage.getItem('forgenursing-pending-plan') || 'monthly'
+          // On error, default to checkout (without plan so user can choose)
           setTimeout(() => {
-            router.push(`/checkout?plan=${plan}`)
+            router.push('/checkout')
           }, 1000)
         }
       }

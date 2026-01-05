@@ -66,24 +66,20 @@ export default function LoginPage() {
 
           const subscriptionStatus = profile?.subscription_status || 'pending_payment'
           
-          // Get plan from localStorage if available
-          const plan = localStorage.getItem('forgenursing-pending-plan') || 'monthly'
-          
-          // If user needs payment, redirect to checkout
+          // If user needs payment, redirect to checkout (without plan so user can choose)
           if (subscriptionStatus === 'pending_payment' || 
               subscriptionStatus === 'canceled' || 
               subscriptionStatus === 'past_due' || 
               subscriptionStatus === 'unpaid') {
-            router.push(`/checkout?plan=${plan}`)
+            router.push('/checkout')
           } else {
             // User is already subscribed, go to tutor
             router.push(redirect)
           }
         } catch (error) {
           console.error('Error checking subscription status:', error)
-          // On error, default to checkout to be safe
-          const plan = localStorage.getItem('forgenursing-pending-plan') || 'monthly'
-          router.push(`/checkout?plan=${plan}`)
+          // On error, default to checkout to be safe (without plan so user can choose)
+          router.push('/checkout')
         }
       } else {
         router.push(redirect)
