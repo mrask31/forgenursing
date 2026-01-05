@@ -23,6 +23,22 @@ export default function SignupPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
+  // Check if user is already verified and signed in when page loads (but not if we're showing success screen)
+  useEffect(() => {
+    if (showSuccess) return // Don't redirect if we're already showing the verification waiting screen
+    
+    const checkExistingAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user && user.email_confirmed_at) {
+        // User is already verified and signed in, redirect to login with message
+        router.push('/login?verified=true&email=' + encodeURIComponent(user.email || ''))
+      }
+    }
+    
+    checkExistingAuth()
+  }, [router, supabase, showSuccess])
+
   // Store plan parameter from URL in localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -427,18 +443,20 @@ export default function SignupPage() {
                         onClick={async (e) => {
                           e.preventDefault()
                           e.stopPropagation()
-                          // Manually trigger auth check and refresh
-                          try {
-                            // Refresh the page to get latest auth state
+                          // Check if user is now verified
+                          const { data: { user } } = await supabase.auth.getUser()
+                          if (user && user.email_confirmed_at) {
+                            // User is verified, redirect to login with success message
+                            router.push('/login?verified=true&email=' + encodeURIComponent(user.email || email))
+                          } else {
+                            // Not verified yet, just refresh
                             window.location.reload()
-                          } catch (error) {
-                            console.error('Error refreshing:', error)
                           }
                         }}
                         className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
                       >
                         <Loader2 className="h-4 w-4" />
-                        Refresh Page (if verified on another device)
+                        Check Verification Status
                       </button>
                       <button
                         type="button"

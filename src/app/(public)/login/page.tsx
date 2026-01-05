@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
   const [redirect, setRedirect] = useState('/tutor')
+  const [showVerificationSuccess, setShowVerificationSuccess] = useState(false)
   
   const router = useRouter()
 
@@ -21,6 +22,18 @@ export default function LoginPage() {
       const redirectParam = params.get('redirect')
       if (redirectParam) {
         setRedirect(redirectParam)
+      }
+      
+      // Check if user just verified their email
+      const verified = params.get('verified')
+      const verifiedEmail = params.get('email')
+      if (verified === 'true' && verifiedEmail) {
+        setShowVerificationSuccess(true)
+        setEmail(verifiedEmail)
+        setMessage({ 
+          text: `Thanks for verifying your email! Please sign in to continue.`, 
+          type: 'success' 
+        })
       }
     }
   }, [])
@@ -36,13 +49,46 @@ export default function LoginPage() {
     setMessage(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       if (error) throw error
       
-      router.push(redirect)
+      if (data.user) {
+        // Check subscription status before redirecting
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('subscription_status')
+            .eq('id', data.user.id)
+            .single()
+
+          const subscriptionStatus = profile?.subscription_status || 'pending_payment'
+          
+          // Get plan from localStorage if available
+          const plan = localStorage.getItem('forgenursing-pending-plan') || 'monthly'
+          
+          // If user needs payment, redirect to checkout
+          if (subscriptionStatus === 'pending_payment' || 
+              subscriptionStatus === 'canceled' || 
+              subscriptionStatus === 'past_due' || 
+              subscriptionStatus === 'unpaid') {
+            router.push(`/checkout?plan=${plan}`)
+          } else {
+            // User is already subscribed, go to tutor
+            router.push(redirect)
+          }
+        } catch (error) {
+          console.error('Error checking subscription status:', error)
+          // On error, default to checkout to be safe
+          const plan = localStorage.getItem('forgenursing-pending-plan') || 'monthly'
+          router.push(`/checkout?plan=${plan}`)
+        }
+      } else {
+        router.push(redirect)
+      }
+      
       router.refresh()
     } catch (error: any) {
       setMessage({ text: error.message, type: 'error' })
@@ -108,12 +154,25 @@ export default function LoginPage() {
                 <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-xl mb-4 shadow-lg">
                   <MessageSquare className="w-7 h-7 text-white" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
-                  Welcome back
-                </h1>
-                <p className="text-sm text-slate-600">
-                  Sign in to continue your clinical reasoning journey
-                </p>
+                {showVerificationSuccess ? (
+                  <>
+                    <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
+                      Email Verified! 🎉
+                    </h1>
+                    <p className="text-sm text-slate-600">
+                      Thanks for verifying your email. Please sign in to continue.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
+                      Welcome back
+                    </h1>
+                    <p className="text-sm text-slate-600">
+                      Sign in to continue your clinical reasoning journey
+                    </p>
+                  </>
+                )}
               </div>
 
               {/* Form */}
