@@ -313,7 +313,7 @@ export default function ClinicalDashboard() {
           <div className="flex items-center justify-between mb-2">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight mb-1">
-                Clinical Dashboard
+                Clinical Dashboard 🧪 TEST CHANGE
               </h1>
               <p className="text-sm text-slate-600">
                 Patient ID: {new Date().toLocaleDateString()} • Last updated: {new Date().toLocaleTimeString()}
