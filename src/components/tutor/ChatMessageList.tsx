@@ -60,7 +60,6 @@ export default function ChatMessageList({
   onSendMessage,
 }: ChatMessageListProps) {
   const tutorContext = useTutorContext()
-  const [needsHelp, setNeedsHelp] = useState<boolean>(false)
   const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
   const [savedClipId, setSavedClipId] = useState<string | null>(null)
   const [showMapId, setShowMapId] = useState<string | null>(null)
