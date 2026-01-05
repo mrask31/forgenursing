@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown'
 
 interface MessageWithMedicalTermsProps {
   content: string
-  markdownComponents?: any
+  markdownComponents?: Record<string, React.ComponentType<any>>
 }
 
 /**
