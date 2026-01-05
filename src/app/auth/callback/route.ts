@@ -32,6 +32,11 @@ export async function GET(request: Request) {
     // Exchange the code for a session (Log them in!)
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
+    if (error) {
+      console.error('[Auth Callback] Error exchanging code for session:', error)
+      return NextResponse.redirect(`${origin}/login?error=auth-code-error`)
+    }
+    
     if (!error) {
       // Ensure profile exists with correct subscription status
       const { data: { user } } = await supabase.auth.getUser()
