@@ -6,7 +6,7 @@ import {
   AlertCircle, Calendar, 
   Flame, Target, GraduationCap, Bookmark, 
   CheckCircle2, Sparkles, Search, Folder, Tag,
-  Brain, ChevronRight
+  Brain, ChevronRight, MessageSquare
 } from 'lucide-react'
 import { useDensity } from '@/contexts/DensityContext'
 import { getDensityTokens } from '@/lib/density-tokens'
@@ -68,6 +68,7 @@ export default function ClinicalDashboard() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
   const [showAllClips, setShowAllClips] = useState(false)
+  const [chatCountsByClass, setChatCountsByClass] = useState<Array<{ classId: string; className: string; classCode: string; count: number }>>([])
 
   useEffect(() => {
     const loadData = async () => {
@@ -187,6 +188,26 @@ export default function ClinicalDashboard() {
           }))
 
           setFocusAreas(focusTopics)
+
+          // Calculate chat counts by class
+          const classChatCounts: Array<{ classId: string; className: string; classCode: string; count: number }> = []
+          for (const classItem of userClasses) {
+            const classChats = tutorChats.filter((chat: Chat) => {
+              const chatClassId = chat.metadata?.classId || chat.metadata?.class_id
+              return chatClassId === classItem.id
+            })
+            if (classChats.length > 0) {
+              classChatCounts.push({
+                classId: classItem.id,
+                className: classItem.name,
+                classCode: classItem.code,
+                count: classChats.length
+              })
+            }
+          }
+          // Sort by count (descending)
+          classChatCounts.sort((a, b) => b.count - a.count)
+          setChatCountsByClass(classChatCounts)
         }
 
         // Load all clips

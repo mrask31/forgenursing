@@ -23,7 +23,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = { onNavigate: und
   const tokens = getDensityTokens(density)
 
   return (
-    <aside className="flex w-full h-full flex-col bg-indigo-950 text-indigo-100">
+    <aside className="flex w-full h-full flex-col bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 text-indigo-100">
       {/* Sidebar Content */}
       <div className="flex h-full flex-col px-6 py-8">
         <div className="mb-10 px-2">
@@ -48,8 +48,8 @@ export default function Sidebar({ onNavigate }: SidebarProps = { onNavigate: und
                 className={`
                   group flex items-center gap-3 rounded-lg px-4 py-3.5 text-sm font-medium transition-all duration-200
                   ${isActive 
-                    ? "bg-indigo-900 text-white shadow-sm" 
-                    : "text-indigo-300 hover:bg-indigo-900/50 hover:text-indigo-100"}
+                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md" 
+                    : "text-indigo-300 hover:bg-gradient-to-r hover:from-indigo-900/50 hover:to-purple-900/50 hover:text-indigo-100"}
                 `}
               >
                 <Icon className="h-5 w-5" />
@@ -62,8 +62,8 @@ export default function Sidebar({ onNavigate }: SidebarProps = { onNavigate: und
         {/* User Profile / Footer */}
         <div className="mt-auto pt-6 border-t border-indigo-900/50">
           <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 rounded-full bg-indigo-900 border border-indigo-800/50 flex items-center justify-center">
-              <UserIcon className="w-5 h-5 text-indigo-200" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 border border-indigo-500/50 flex items-center justify-center shadow-sm">
+              <UserIcon className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-medium text-white">Student Account</span>

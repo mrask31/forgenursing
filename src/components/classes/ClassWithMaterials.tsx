@@ -383,12 +383,6 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
               <span className="text-slate-600">{activeCount} active</span>
             </div>
           )}
-          {savedChats.length > 0 && (
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-indigo-500" />
-              <span className="text-slate-600">{savedChats.length} {savedChats.length === 1 ? 'chat' : 'chats'}</span>
-            </div>
-          )}
         </div>
 
         {/* Primary Action Button */}

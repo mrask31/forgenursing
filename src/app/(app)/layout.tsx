@@ -22,7 +22,7 @@ export default function AppRouteLayout({
         {/* Mobile Menu Button */}
         <button
           onClick={() => setSidebarOpen(true)}
-          className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-indigo-950 text-white rounded-lg shadow-lg"
+          className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-lg"
           aria-label="Open menu"
         >
           <Menu className="w-6 h-6" />
@@ -39,7 +39,7 @@ export default function AppRouteLayout({
         {/* Column A: Left Sidebar (Navigation) - Hidden on mobile, drawer on mobile when open */}
         <aside className={`
           fixed lg:static inset-y-0 left-0 z-40
-          w-64 flex-shrink-0 bg-indigo-950 border-r border-indigo-900/50 h-full overflow-y-auto
+          w-64 flex-shrink-0 bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 border-r border-indigo-900/50 h-full overflow-y-auto
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
