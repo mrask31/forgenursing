@@ -56,7 +56,7 @@ export default function AppRouteLayout({
         </aside>
         
         {/* Column B: Main Content Area - Flexible, with overflow for scrolling */}
-        <main className="flex-1 min-w-0 overflow-y-auto bg-slate-50 lg:ml-0">
+        <main className="flex-1 min-w-0 h-full overflow-y-auto bg-slate-50 lg:ml-0">
           {children}
         </main>
       </div>
