@@ -46,45 +46,52 @@ export default function MessageWithMedicalTerms({
       const text = String(children)
       const lowerText = text.toLowerCase()
       
-      // If fragment is empty or just whitespace, return as-is
+      // If fragment is empty or just whitespace/punctuation, return as-is
       if (!text.trim() || text.trim().length === 0) {
         return <>{text}</>
       }
       
       // Check if this fragment contains any medical terms
-      // We need to check all terms and find matches, handling word boundaries
       const parts: ReactNode[] = []
       let lastIndex = 0
       const matches: Array<{ start: number; end: number; termInfo: { term: string; definition: string; category?: string } }> = []
       
+      // Sort terms by length (longest first) to match longer phrases first
+      const sortedTerms = Array.from(medicalTermMap.entries()).sort((a, b) => b[0].length - a[0].length)
+      
       // Find all term matches in this fragment
-      for (const [lowerTerm, termInfo] of Array.from(medicalTermMap.entries())) {
-        // Create regex that matches the term with word boundaries
-        // Escape special regex characters
-        const escapedTerm = lowerTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-        // Match word boundaries: start of string, whitespace, or punctuation before, and same after
-        const regex = new RegExp(`(^|[\\s.,;:!?()[\\]{}()-])(${escapedTerm})([\\s.,;:!?()[\\]{}()-]|$)`, 'gi')
-        let match
+      for (const [lowerTerm, termInfo] of sortedTerms) {
+        // Simple indexOf search - we'll check word boundaries manually
+        let searchIndex = 0
         
-        while ((match = regex.exec(lowerText)) !== null) {
-          // match[2] is the actual term (group 2)
-          const termStart = match.index + match[1].length // Skip the boundary char before
-          const termEnd = termStart + match[2].length
+        while (true) {
+          const index = lowerText.indexOf(lowerTerm, searchIndex)
+          if (index === -1) break
           
-          // Check if this match overlaps with a previous match
-          const overlaps = matches.some(m => 
-            (termStart >= m.start && termStart < m.end) ||
-            (termEnd > m.start && termEnd <= m.end) ||
-            (termStart <= m.start && termEnd >= m.end)
-          )
+          // Check word boundaries
+          const charBefore = index > 0 ? lowerText[index - 1] : ' '
+          const charAfter = index + lowerTerm.length < lowerText.length ? lowerText[index + lowerTerm.length] : ' '
+          const isWordBoundaryBefore = /[\s.,;:!?()[\]{}-]/.test(charBefore) || index === 0
+          const isWordBoundaryAfter = /[\s.,;:!?()[\]{}-]/.test(charAfter) || index + lowerTerm.length === lowerText.length
           
-          if (!overlaps) {
-            matches.push({
-              start: termStart,
-              end: termEnd,
-              termInfo
-            })
+          if (isWordBoundaryBefore && isWordBoundaryAfter) {
+            // Check if this match overlaps with a previous match
+            const overlaps = matches.some(m => 
+              (index >= m.start && index < m.end) ||
+              (index + lowerTerm.length > m.start && index + lowerTerm.length <= m.end) ||
+              (index <= m.start && index + lowerTerm.length >= m.end)
+            )
+            
+            if (!overlaps) {
+              matches.push({
+                start: index,
+                end: index + lowerTerm.length,
+                termInfo
+              })
+            }
           }
+          
+          searchIndex = index + 1
         }
       }
       
