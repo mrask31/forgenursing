@@ -61,14 +61,14 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-clinical-bg flex items-center justify-center">
+      <div className="h-full bg-clinical-bg flex items-center justify-center">
         <div className="text-clinical-text-secondary">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-clinical-bg">
+    <div className="bg-clinical-bg">
       <div className={`${tokens.containerMaxWidth} mx-auto ${tokens.sectionPadding} px-4 md:px-8`}>
         {/* Header */}
         <div className={`mb-8`}>
