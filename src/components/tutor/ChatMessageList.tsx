@@ -9,7 +9,7 @@ import clsx from 'clsx'
 import type { TutorEvidenceItem } from './TutorEvidencePanel'
 import FollowUpPrompts from './FollowUpPrompts'
 import { useState, useEffect } from 'react'
-import TextWithMedicalTerms from './TextWithMedicalTerms'
+import MessageWithMedicalTerms from './MessageWithMedicalTerms'
 
 export interface ChatMessage {
   id: string
