@@ -16,7 +16,7 @@ export default function AppRouteLayout({
   return (
     <DensityProvider>
       {/* Top Level Container (Viewport) */}
-      <div className="flex h-screen w-full bg-slate-50">
+      <div className="flex h-screen w-full bg-slate-50" style={{ border: '5px solid red' }}>
         <ComplianceDisclaimer />
         
         {/* Mobile Menu Button */}
