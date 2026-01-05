@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 
 const Sheet = SheetPrimitive.Root
 
-export const SheetTrigger = SheetPrimitive.Trigger
+const SheetTrigger: React.ComponentType<React.ComponentPropsWithoutRef<typeof SheetPrimitive.Trigger>> = SheetPrimitive.Trigger
 
 const SheetClose = SheetPrimitive.Close
 
@@ -126,12 +126,15 @@ const SheetDescription = React.forwardRef<
 ))
 SheetDescription.displayName = SheetPrimitive.Description.displayName
 
-export { Sheet }
-export { SheetPortal }
-export { SheetOverlay }
-export { SheetClose }
-export { SheetContent }
-export { SheetHeader }
-export { SheetFooter }
-export { SheetTitle }
-export { SheetDescription }
+export {
+  Sheet,
+  SheetPortal,
+  SheetOverlay,
+  SheetTrigger,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+}

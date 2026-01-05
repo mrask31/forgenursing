@@ -4,7 +4,13 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Clock, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetTrigger 
+} from '@/components/ui/sheet'
 import { Checkbox } from '@/components/ui/checkbox'
 import { MessageSquare, FileText, Stethoscope, Brain } from 'lucide-react'
 
@@ -275,13 +281,21 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                               <Checkbox
                                 checked={isSelected}
                                 onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedChatIds((prev: Set<string>) => new Set<string>([...prev, chat.id]))
+                                  const isChecked = checked === true
+                                  if (isChecked) {
+                                    setSelectedChatIds((prev: Set<string>) => {
+                                      const arr: string[] = Array.from(prev)
+                                      arr.push(chat.id)
+                                      return new Set<string>(arr)
+                                    })
                                   } else {
                                     setSelectedChatIds((prev: Set<string>) => {
-                                      const next = new Set<string>(prev)
-                                      next.delete(chat.id)
-                                      return next
+                                      const arr: string[] = Array.from(prev)
+                                      const index = arr.indexOf(chat.id)
+                                      if (index > -1) {
+                                        arr.splice(index, 1)
+                                      }
+                                      return new Set<string>(arr)
                                     })
                                   }
                                 }}
