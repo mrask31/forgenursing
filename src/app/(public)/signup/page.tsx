@@ -474,7 +474,7 @@ export default function SignupPage() {
                 </div>
                 <div>
                   <div className="font-semibold text-slate-900 text-sm mb-1">Free preview</div>
-                  <div className="text-xs text-slate-600">7-day access, no credit card required</div>
+                  <div className="text-xs text-slate-600">7-day free trial included</div>
                 </div>
               </div>
             </div>
@@ -591,7 +591,7 @@ export default function SignupPage() {
                     </span>
                   </label>
                   <p className="text-xs text-slate-500 text-center">
-                    Cancel anytime during your free preview • No credit card required
+                    Cancel anytime during your free preview • 7-day free trial included
                   </p>
                 </div>
               </form>

@@ -27,7 +27,7 @@ export default function ClosingCTA() {
             <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" />
           </Link>
           <p className="text-base text-slate-600 mt-4 sm:mt-6 font-medium">
-            No credit risk. Cancel anytime.
+            7-day free trial. Cancel anytime.
           </p>
         </div>
       </div>

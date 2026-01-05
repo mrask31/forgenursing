@@ -33,7 +33,7 @@ export default function Hero({ user }: HeroProps) {
                 <TrendingUp className="w-6 h-6" />
               </div>
               <div className="text-lg font-bold">Free Preview</div>
-              <div className="text-xs opacity-95 font-medium">No Credit Card</div>
+              <div className="text-xs opacity-95 font-medium">7-Day Trial</div>
             </div>
           </div>
         </div>
