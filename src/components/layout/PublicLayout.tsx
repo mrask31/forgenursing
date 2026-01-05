@@ -28,28 +28,28 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Top Navigation */}
-      <nav className="border-b border-slate-200 bg-white">
+      {/* Top Navigation - Enhanced */}
+      <nav className="border-b-2 border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            <Link href="/" className="flex items-center gap-1.5 sm:gap-2">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="font-semibold text-white text-base sm:text-lg">F</span>
+          <div className="flex justify-between items-center h-16 sm:h-18">
+            <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/30 group-hover:shadow-lg group-hover:shadow-indigo-500/40 transition-all duration-200">
+                <span className="font-bold text-white text-lg sm:text-xl">F</span>
               </div>
-              <span className="font-semibold text-base sm:text-lg text-slate-900">ForgeNursing</span>
+              <span className="font-bold text-lg sm:text-xl text-slate-900 bg-gradient-to-r from-slate-900 to-indigo-900 bg-clip-text text-transparent">ForgeNursing</span>
             </Link>
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               {user ? (
                 <Link
                   href="/clinical-desk"
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors min-h-[36px] sm:min-h-[40px] flex items-center"
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 min-h-[40px] sm:min-h-[44px] flex items-center transform hover:scale-105 active:scale-95"
                 >
                   Dashboard
                 </Link>
               ) : (
                 <Link
                   href="/login"
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 text-slate-700 hover:text-slate-900 text-xs sm:text-sm font-medium transition-colors min-h-[36px] sm:min-h-[40px] flex items-center"
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 text-slate-700 hover:text-indigo-700 text-xs sm:text-sm font-semibold transition-colors min-h-[40px] sm:min-h-[44px] flex items-center border-2 border-transparent hover:border-indigo-200 rounded-xl"
                 >
                   Log In
                 </Link>
@@ -64,8 +64,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white mt-auto">
+      {/* Footer - Enhanced */}
+      <footer className="border-t-2 border-slate-200/60 bg-white/80 backdrop-blur-sm mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 text-xs sm:text-sm text-slate-600">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-center sm:items-start">

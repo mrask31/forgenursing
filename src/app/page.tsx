@@ -39,10 +39,10 @@ export default function HomePage() {
       {/* If this sounds like you... */}
       <BeliefValidation />
 
-      {/* Pricing */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 bg-white">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+      {/* Pricing - Enhanced */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 bg-gradient-to-br from-white via-indigo-50/30 to-white">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-6">
             Choose the plan that fits your journey
           </h2>
           
@@ -80,8 +80,8 @@ export default function HomePage() {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
-          {/* Monthly Plan */}
-          <div className="bg-white border-2 border-slate-200 rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-shadow">
+          {/* Monthly Plan - Enhanced */}
+          <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl p-6 sm:p-8 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-indigo-200/30 transition-all duration-300 transform hover:scale-[1.02]">
             <h3 className="text-xl font-bold text-slate-900 mb-2">Monthly Access</h3>
             <div className="mb-4">
               <span className="text-4xl font-bold text-slate-900">$24.99</span>
@@ -111,7 +111,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => startStripeCheckout('monthly')}
-              className="w-full text-center px-4 py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
+              className="w-full text-center px-5 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm font-bold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
             >
               Start Your Free Trial
               <ArrowRight className="w-4 h-4 inline-block ml-2" />
@@ -124,8 +124,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Semester Plan - Most Popular */}
-          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-400 rounded-2xl p-4 sm:p-6 shadow-xl relative">
+          {/* Semester Plan - Most Popular - Enhanced */}
+          <div className="bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-indigo-50/80 backdrop-blur-sm border-2 border-indigo-400/60 rounded-2xl p-6 sm:p-8 shadow-xl shadow-indigo-500/20 relative transform hover:scale-[1.02] transition-all duration-300">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="bg-indigo-600 text-white text-[10px] px-2.5 py-0.5 rounded-full font-semibold shadow-lg">
                 Most Popular
@@ -163,7 +163,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => startStripeCheckout('semester')}
-              className="w-full text-center px-4 py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
+              className="w-full text-center px-5 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm font-bold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
             >
               Get Semester Access
               <ArrowRight className="w-4 h-4 inline-block ml-2" />
@@ -176,8 +176,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Annual Plan - Best Value */}
-          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-400 rounded-2xl p-4 sm:p-6 shadow-xl relative">
+          {/* Annual Plan - Best Value - Enhanced */}
+          <div className="bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-indigo-50/80 backdrop-blur-sm border-2 border-indigo-400/60 rounded-2xl p-6 sm:p-8 shadow-xl shadow-indigo-500/20 relative transform hover:scale-[1.02] transition-all duration-300">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="bg-indigo-600 text-white text-[10px] px-2.5 py-0.5 rounded-full font-semibold shadow-lg">
                 Best Value
@@ -215,7 +215,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => startStripeCheckout('annual')}
-              className="w-full text-center px-4 py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
+              className="w-full text-center px-5 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm font-bold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
             >
               Save With Annual Access
               <ArrowRight className="w-4 h-4 inline-block ml-2" />
@@ -236,19 +236,19 @@ export default function HomePage() {
           <p className="text-xs text-slate-500">Student-first pricing — no hidden fees</p>
         </div>
 
-        {/* Trust + Clarity Section */}
-        <div className="bg-slate-50 rounded-2xl p-8 md:p-12 mb-12 border border-slate-200">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
+        {/* Trust + Clarity Section - Enhanced */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-10 md:p-14 mb-12 border-2 border-slate-200/60 shadow-lg shadow-slate-200/50">
+          <div className="text-center mb-10">
+            <h3 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-3">
               Simple. Honest. Student-Friendly.
             </h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* 7-Day Free Trial */}
+            {/* 7-Day Free Trial - Enhanced */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-8 h-8 text-indigo-600" />
+              <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+                <Sparkles className="w-10 h-10 text-indigo-600" />
               </div>
               <h4 className="font-bold text-slate-900 mb-2">7-Day Free Trial — No Risk</h4>
               <p className="text-sm text-slate-600 leading-relaxed">
@@ -283,8 +283,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Reassurance Section */}
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-8 md:p-12 border border-indigo-200">
+        {/* Reassurance Section - Enhanced */}
+        <div className="bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-indigo-50/80 backdrop-blur-sm rounded-2xl p-10 md:p-14 border-2 border-indigo-200/60 shadow-lg shadow-indigo-200/30">
           <div className="max-w-3xl mx-auto text-center">
             <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
               Built for Future Nurses — Not Big Tech
