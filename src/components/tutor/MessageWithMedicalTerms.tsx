@@ -135,6 +135,11 @@ export default function MessageWithMedicalTerms({
         return <>{text}</>
       }
       
+      // Debug: Log when we find matches
+      if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development' && matches.length > 0) {
+        console.log('[MessageWithMedicalTerms] Found', matches.length, 'term(s) in fragment:', text.substring(0, 50), '...')
+      }
+      
       return <>{parts}</>
     }
   }
