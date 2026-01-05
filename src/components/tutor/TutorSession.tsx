@@ -25,6 +25,7 @@ interface TutorSessionProps {
   messages?: ChatMessage[] // Messages from parent for evidence derivation
   onMessagesChange?: (messages: ChatMessage[]) => void // Callback to update messages in parent
   onTopicsChange?: (topics: NotebookTopic[]) => void // Callback to update topics in parent for header
+  scrollToMessageId?: string // Optional message ID to scroll to when messages load
 }
 
 export default function TutorSession({
@@ -37,7 +38,8 @@ export default function TutorSession({
   onDetachFile,
   messages: propMessages = [],
   onMessagesChange: propOnMessagesChange,
-  onTopicsChange
+  onTopicsChange,
+  scrollToMessageId
 }: TutorSessionProps) {
   const router = useRouter()
   const tutorContext = useTutorContext()
@@ -494,9 +496,45 @@ export default function TutorSession({
     }
   }
 
-  // Auto-scroll to bottom when messages change (only if user hasn't manually scrolled up)
+  // Scroll to specific message if scrollToMessageId is provided
   useEffect(() => {
-    if (!scrollContainerRef.current || !shouldAutoScrollRef.current) return
+    if (!scrollToMessageId || !scrollContainerRef.current || messages.length === 0) return
+    
+    // Find the message in the messages array
+    const targetMessage = messages.find(m => m.id === scrollToMessageId)
+    if (!targetMessage) return
+    
+    // Wait for DOM to update, then scroll to the message
+    setTimeout(() => {
+      const container = scrollContainerRef.current
+      if (!container) return
+      
+      // Find the message element by data attribute or id
+      const messageElement = container.querySelector(`[data-message-id="${scrollToMessageId}"]`) as HTMLElement
+      if (messageElement) {
+        // Scroll to the message with some offset from top
+        const containerRect = container.getBoundingClientRect()
+        const elementRect = messageElement.getBoundingClientRect()
+        const scrollTop = container.scrollTop + elementRect.top - containerRect.top - 100 // 100px offset from top
+        
+        container.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth'
+        })
+        
+        // Temporarily highlight the message
+        messageElement.style.transition = 'background-color 0.3s'
+        messageElement.style.backgroundColor = 'rgba(99, 102, 241, 0.1)' // indigo-50
+        setTimeout(() => {
+          messageElement.style.backgroundColor = ''
+        }, 2000)
+      }
+    }, 300) // Longer delay to ensure messages are rendered
+  }, [scrollToMessageId, messages])
+
+  // Auto-scroll to bottom when messages change (only if user hasn't manually scrolled up and no scrollToMessageId)
+  useEffect(() => {
+    if (!scrollContainerRef.current || !shouldAutoScrollRef.current || scrollToMessageId) return
     
     const container = scrollContainerRef.current
     // Small delay to ensure DOM is updated
@@ -506,7 +544,7 @@ export default function TutorSession({
         behavior: 'smooth'
       })
     }, 100)
-  }, [messages])
+  }, [messages, scrollToMessageId])
 
   // Listen for scroll events to show/hide scroll-to-bottom button
   useEffect(() => {

@@ -172,7 +172,7 @@ export default function ChatMessageList({
             (index < messages.length - 1 && messages[index + 1]?.role === 'user')
 
           return (
-            <div key={m.id}>
+            <div key={m.id} data-message-id={m.id}>
               {showDivider && (
                 <div className="mb-6 md:mb-8 pt-4 border-t border-slate-200"></div>
               )}

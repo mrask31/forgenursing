@@ -47,6 +47,7 @@ function TutorPageContent() {
   const sessionIdParam = searchParams.get('sessionId') || searchParams.get('chatId') || searchParams.get('id')
   const modeParam = searchParams.get('mode') || 'tutor'
   const classIdParam = searchParams.get('classId') // Get classId from URL
+  const messageIdParam = searchParams.get('messageId') // Get messageId from URL for scrolling
   const currentModeFromUrl = modeParam === 'reflections' ? 'reflections' : 'tutor'
   
   // Note: classId sync is handled by TutorContext itself (see TutorContext.tsx useEffect)
@@ -812,6 +813,7 @@ function TutorPageContent() {
               onDetachFile={handleDetachFile}
               messages={messages}
               onMessagesChange={setMessages}
+              scrollToMessageId={messageIdParam || undefined}
             />
           ) : null}
         </div>

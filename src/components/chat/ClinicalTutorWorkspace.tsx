@@ -633,7 +633,7 @@ export default function ClinicalTutorWorkspace({
               (index < normalizedMessages.length - 1 && normalizedMessages[index + 1]?.role === 'user');
 
             return (
-              <div key={m.id}>
+              <div key={m.id} data-message-id={m.id}>
                 {/* Subtle divider between document blocks */}
                 {showDivider && (
                   <div className="mb-6 md:mb-8 pt-4 border-t border-slate-200"></div>
@@ -835,7 +835,7 @@ export default function ClinicalTutorWorkspace({
           } else {
             // User message - right-aligned bubble
             return (
-              <div key={m.id} className="flex justify-end">
+              <div key={m.id} data-message-id={m.id} className="flex justify-end">
                 <div className="ml-auto max-w-[70%]">
                   <div className="inline-block rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-medium text-white shadow-lg hover:shadow-xl transition-all duration-200 leading-relaxed">
                     {m.content}

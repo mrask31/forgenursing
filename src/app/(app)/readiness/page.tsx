@@ -39,6 +39,7 @@ interface Clip {
   created_at: string
   chat_id: string | null
   class_id: string | null
+  message_id: string | null
 }
 
 interface FocusArea {
@@ -252,6 +253,7 @@ export default function ClinicalDashboard() {
       params.set('mode', 'tutor')
       params.set('sessionId', clip.chat_id)
       if (clip.class_id) params.set('classId', clip.class_id)
+      if (clip.message_id) params.set('messageId', clip.message_id)
       router.push(`/tutor?${params.toString()}`)
     } else {
       if (typeof window !== 'undefined') {
