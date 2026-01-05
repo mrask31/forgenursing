@@ -16,7 +16,7 @@ export default function AppRouteLayout({
   return (
     <DensityProvider>
       {/* Top Level Container (Viewport) */}
-      <div className="flex h-screen w-full bg-slate-50">
+      <div className="flex h-screen w-full overflow-hidden bg-slate-50">
         <ComplianceDisclaimer />
         
         {/* Mobile Menu Button */}
@@ -56,7 +56,8 @@ export default function AppRouteLayout({
         </aside>
         
         {/* Column B: Main Content Area - Flexible, scrollable */}
-        <main className="flex-1 min-w-0 overflow-y-auto bg-slate-50 lg:ml-0">
+        {/* min-h-0 is CRITICAL: allows flex child to shrink below content size, enabling overflow */}
+        <main className="flex-1 min-w-0 min-h-0 overflow-y-auto bg-slate-50 lg:ml-0">
           {children}
         </main>
       </div>
