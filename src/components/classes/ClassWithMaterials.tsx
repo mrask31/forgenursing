@@ -321,7 +321,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
   const textbooks = classMaterials.filter(f => f.document_type === 'textbook')
 
   return (
-    <div className="bg-gradient-to-br from-white to-slate-50/50 border border-slate-200 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group">
+    <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-indigo-200/30 transition-all duration-300 flex flex-col h-full overflow-hidden group transform hover:scale-[1.02]">
       {/* Class Header - Always Visible */}
       <div className="p-6 flex-1 flex flex-col min-h-0">
         <div className="flex items-start justify-between mb-4">
@@ -330,7 +330,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
               <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
                 {classItem.code}
               </h3>
-              <Badge variant="outline" className="text-xs bg-indigo-50 border-indigo-200 text-indigo-700">
+              <Badge variant="outline" className="text-xs font-semibold bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200/60 text-indigo-700 shadow-sm">
                 {classItem.type === 'med_surg' ? 'Med-Surg' : 
                  classItem.type === 'pharm' ? 'Pharmacology' :
                  classItem.type === 'peds' ? 'Pediatrics' :
@@ -393,7 +393,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           <Button
             onClick={handleStudyClass}
             disabled={isCreatingChat}
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all duration-200"
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold"
             size="lg"
           >
             {isCreatingChat ? (
@@ -438,15 +438,15 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
 
           {/* Inline Upload UI */}
           {showUpload && (
-            <div className="mt-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="mt-3 p-4 bg-gradient-to-br from-slate-50/80 to-white/80 backdrop-blur-sm rounded-xl border-2 border-slate-200/60 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
                 <button
                   type="button"
                   onClick={() => setUploadDocumentType('syllabus')}
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                     uploadDocumentType === 'syllabus'
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
+                      : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50 shadow-sm'
                   }`}
                 >
                   📋 Syllabus
@@ -454,10 +454,10 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                 <button
                   type="button"
                   onClick={() => setUploadDocumentType('textbook')}
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                     uploadDocumentType === 'textbook'
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
+                      : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50 shadow-sm'
                   }`}
                 >
                   📚 Textbook/PDF

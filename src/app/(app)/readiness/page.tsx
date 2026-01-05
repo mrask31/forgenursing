@@ -345,10 +345,12 @@ export default function ClinicalDashboard() {
 
   if (isLoading) {
     return (
-      <div className="h-full bg-slate-50 flex items-center justify-center">
+      <div className="h-full bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading your dashboard...</p>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 mb-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent"></div>
+          </div>
+          <p className="text-lg font-medium text-slate-600">Loading your dashboard...</p>
         </div>
       </div>
     )
@@ -357,87 +359,102 @@ export default function ClinicalDashboard() {
   const displayClips = showAllClips ? filteredClips : filteredClips.slice(0, 6)
 
   return (
-    <div className="h-full overflow-y-auto bg-slate-50">
-      <div className={`${tokens.containerMaxWidth || 'max-w-7xl'} mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8`}>
-        {/* Medical Dashboard Header */}
-        <div className="mb-6 md:mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight mb-1">
-                Clinical Dashboard
-              </h1>
-              <p className="text-sm text-slate-600">
-                Patient ID: {new Date().toLocaleDateString()} • Last updated: {new Date().toLocaleTimeString()}
+    <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
+      <div className={`${tokens.containerMaxWidth || 'max-w-7xl'} mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-10`}>
+        {/* Medical Dashboard Header - Enhanced */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20">
+                  <Target className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
+                  Clinical Dashboard
+                </h1>
+              </div>
+              <p className="text-base text-slate-600 ml-14 max-w-2xl leading-relaxed">
+                Track your study progress and focus areas. Patient ID: {new Date().toLocaleDateString()} • Last updated: {new Date().toLocaleTimeString()}
               </p>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span className="text-xs font-medium text-emerald-700">Active</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl shadow-sm">
+              <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-sm shadow-emerald-500/50"></div>
+              <span className="text-sm font-semibold text-emerald-700">Active</span>
             </div>
           </div>
         </div>
 
-        {/* Vital Signs Row - Medical Style Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-          <div className="bg-white border-l-4 border-l-orange-500 rounded-lg p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <Flame className="w-4 h-4 text-orange-500" />
-              <span className="text-[10px] text-slate-500 uppercase tracking-wide">Streak</span>
+        {/* Vital Signs Row - Medical Style Metrics - Enhanced */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
+          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-orange-500 rounded-xl p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-orange-200/30 transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-gradient-to-br from-orange-100 to-orange-50 rounded-lg">
+                <Flame className="w-5 h-5 text-orange-600" />
+              </div>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Streak</span>
             </div>
-            <div className="text-2xl md:text-3xl font-bold text-slate-900">{studyStreak}</div>
-            <div className="text-xs text-slate-600 mt-0.5">day{studyStreak === 1 ? '' : 's'} consecutive</div>
+            <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{studyStreak}</div>
+            <div className="text-sm text-slate-600">day{studyStreak === 1 ? '' : 's'} consecutive</div>
           </div>
 
-          <div className="bg-white border-l-4 border-l-blue-500 rounded-lg p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <Calendar className="w-4 h-4 text-blue-500" />
-              <span className="text-[10px] text-slate-500 uppercase tracking-wide">This Week</span>
+          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-blue-500 rounded-xl p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-blue-200/30 transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg">
+                <Calendar className="w-5 h-5 text-blue-600" />
+              </div>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">This Week</span>
             </div>
-            <div className="text-2xl md:text-3xl font-bold text-slate-900">{activeDays}</div>
-            <div className="text-xs text-slate-600 mt-0.5">active day{activeDays === 1 ? '' : 's'}</div>
+            <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{activeDays}</div>
+            <div className="text-sm text-slate-600">active day{activeDays === 1 ? '' : 's'}</div>
           </div>
 
-          <div className="bg-white border-l-4 border-l-teal-500 rounded-lg p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <Brain className="w-4 h-4 text-teal-500" />
-              <span className="text-[10px] text-slate-500 uppercase tracking-wide">Concepts</span>
+          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-teal-500 rounded-xl p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-teal-200/30 transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-gradient-to-br from-teal-100 to-teal-50 rounded-lg">
+                <Brain className="w-5 h-5 text-teal-600" />
+              </div>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Concepts</span>
             </div>
-            <div className="text-2xl md:text-3xl font-bold text-slate-900">{topicsStudied}</div>
-            <div className="text-xs text-slate-600 mt-0.5">topics explored</div>
+            <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{topicsStudied}</div>
+            <div className="text-sm text-slate-600">topics explored</div>
           </div>
 
-          <div className="bg-white border-l-4 border-l-purple-500 rounded-lg p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <Bookmark className="w-4 h-4 text-purple-500" />
-              <span className="text-[10px] text-slate-500 uppercase tracking-wide">Saved</span>
+          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-purple-500 rounded-xl p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-purple-200/30 transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-gradient-to-br from-purple-100 to-purple-50 rounded-lg">
+                <Bookmark className="w-5 h-5 text-purple-600" />
+              </div>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Saved</span>
             </div>
-            <div className="text-2xl md:text-3xl font-bold text-slate-900">{clipsCount}</div>
-            <div className="text-xs text-slate-600 mt-0.5">learning moments</div>
+            <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{clipsCount}</div>
+            <div className="text-sm text-slate-600">learning moments</div>
           </div>
         </div>
 
-        {/* Study Activity by Class - New Section */}
+        {/* Study Activity by Class - Enhanced */}
         {chatCountsByClass.length > 0 && (
-          <div className="bg-white border border-slate-200 rounded-lg shadow-sm mb-6">
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-200 px-4 py-3 rounded-t-lg">
-              <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-indigo-600" />
+          <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 mb-8 overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-50/80 to-purple-50/80 border-b border-indigo-200/60 px-6 py-4">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2.5 mb-1">
+                <div className="p-1.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
+                  <MessageSquare className="w-4 h-4 text-white" />
+                </div>
                 Study Activity by Class
               </h3>
-              <p className="text-xs text-slate-600 mt-1">See where you're spending the most study time</p>
+              <p className="text-sm text-slate-600 ml-8">See where you're spending the most study time</p>
             </div>
-            <div className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {chatCountsByClass.map((item) => (
                   <div
                     key={item.classId}
-                    className="p-3 bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-lg hover:border-indigo-300 hover:shadow-sm transition-all"
+                    className="p-4 bg-gradient-to-br from-slate-50/80 to-white border border-slate-200/60 rounded-xl hover:border-indigo-300 hover:shadow-md hover:shadow-indigo-200/30 transition-all duration-200 transform hover:scale-[1.02]"
                   >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-slate-900 truncate">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-bold text-slate-900 truncate">
                         {item.classCode}
                       </span>
-                      <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                      <span className="text-xs font-bold text-indigo-700 bg-gradient-to-r from-indigo-50 to-purple-50 px-2.5 py-1 rounded-lg border border-indigo-200/50">
                         {item.count} {item.count === 1 ? 'session' : 'sessions'}
                       </span>
                     </div>
@@ -453,66 +470,72 @@ export default function ClinicalDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
           {/* Left Column: Flagged for Review & Graduation */}
           <div className="space-y-4 md:space-y-6">
-            {/* Focus Areas - Medical Alert Panel */}
-            <div className="bg-white border border-slate-200 rounded-lg shadow-sm">
-              <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 rounded-t-lg">
+            {/* Focus Areas - Medical Alert Panel - Enhanced */}
+            <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 overflow-hidden">
+              <div className="bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-b border-amber-200/60 px-6 py-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-amber-900 flex items-center gap-2">
-                    <Target className="w-4 h-4" />
+                  <h3 className="text-base font-bold text-amber-900 flex items-center gap-2.5">
+                    <div className="p-1.5 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg">
+                      <Target className="w-4 h-4 text-white" />
+                    </div>
                     Flagged for Review
                   </h3>
                   {focusAreas.length > 0 && (
-                    <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded">
+                    <span className="text-xs font-bold text-amber-700 bg-gradient-to-r from-amber-100 to-orange-100 px-3 py-1 rounded-lg border border-amber-200/50 shadow-sm">
                       {focusAreas.length}
                     </span>
                   )}
                 </div>
               </div>
-              <div className="p-4">
+              <div className="p-6">
                 {focusAreas.length > 0 ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {focusAreas.slice(0, 5).map((area, index) => (
                       <button
                         key={index}
                         onClick={() => handleFocusAreaClick(area)}
-                        className="w-full flex items-center justify-between gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg hover:border-amber-300 hover:bg-amber-100 transition-all group text-left"
+                        className="w-full flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-2 border-amber-200/60 rounded-xl hover:border-amber-300 hover:from-amber-100 hover:to-orange-100 transition-all duration-200 group text-left transform hover:scale-[1.02]"
                       >
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                          <span className="text-xs font-medium text-amber-900 truncate">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                          <span className="text-sm font-semibold text-amber-900 truncate">
                             {area.topic}
                           </span>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-amber-600 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+                        <ChevronRight className="w-5 h-5 text-amber-600 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-slate-500">
-                    <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-3 opacity-50" />
-                    <p className="text-xs font-medium">All clear</p>
-                    <p className="text-[10px] text-slate-400 mt-1">No topics flagged</p>
+                  <div className="text-center py-12">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 mb-4">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-700">All clear</p>
+                    <p className="text-xs text-slate-500 mt-1">No topics flagged</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Graduation Countdown - Medical Progress Indicator */}
+            {/* Graduation Countdown - Enhanced */}
             {graduationDate && daysUntilGrad !== null && (
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-lg shadow-sm">
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                      <GraduationCap className="w-4 h-4 text-indigo-600" />
+              <div className="bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-indigo-50/80 border-2 border-indigo-200/60 rounded-2xl shadow-lg shadow-indigo-200/30 overflow-hidden">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2.5">
+                      <div className="p-1.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
+                        <GraduationCap className="w-4 h-4 text-white" />
+                      </div>
                       Graduation
                     </h3>
-                    <Sparkles className="w-4 h-4 text-indigo-400" />
+                    <Sparkles className="w-5 h-5 text-indigo-500" />
                   </div>
                   {daysUntilGrad > 0 ? (
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-indigo-700 mb-2">{daysUntilGrad}</div>
-                      <div className="text-xs text-slate-700 mb-2">day{daysUntilGrad === 1 ? '' : 's'} remaining</div>
-                      <div className="text-[10px] text-slate-600">
+                      <div className="text-5xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent mb-3">{daysUntilGrad}</div>
+                      <div className="text-sm font-semibold text-slate-700 mb-2">day{daysUntilGrad === 1 ? '' : 's'} remaining</div>
+                      <div className="text-xs text-slate-600">
                         {new Date(graduationDate).toLocaleDateString('en-US', { 
                           month: 'short', 
                           day: 'numeric', 
@@ -522,8 +545,8 @@ export default function ClinicalDashboard() {
                     </div>
                   ) : (
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-indigo-700 mb-2">🎓 Complete!</div>
-                      <div className="text-xs text-slate-700">Graduation reached</div>
+                      <div className="text-3xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent mb-2">🎓 Complete!</div>
+                      <div className="text-sm font-semibold text-slate-700">Graduation reached</div>
                     </div>
                   )}
                 </div>
@@ -531,42 +554,44 @@ export default function ClinicalDashboard() {
             )}
           </div>
 
-          {/* Right Column: Learning Library - Medical Record View */}
+          {/* Right Column: Learning Library - Enhanced */}
           <div>
-            <div className="bg-white border border-slate-200 rounded-lg shadow-sm">
-              <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 rounded-t-lg">
+            <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-50/80 to-indigo-50/80 border-b border-purple-200/60 px-6 py-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                    <Bookmark className="w-4 h-4 text-purple-500" />
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2.5">
+                    <div className="p-1.5 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg">
+                      <Bookmark className="w-4 h-4 text-white" />
+                    </div>
                     Learning Library
                   </h3>
-                  <span className="text-xs text-slate-600">{clipsCount} total</span>
+                  <span className="text-sm font-bold text-slate-700 bg-white/60 px-3 py-1 rounded-lg border border-purple-200/50">{clipsCount} total</span>
                 </div>
               </div>
               
-              {/* Search and Filters */}
-              <div className="p-4 border-b border-slate-200 space-y-3">
+              {/* Search and Filters - Enhanced */}
+              <div className="p-6 border-b border-slate-200/60 space-y-4 bg-gradient-to-b from-slate-50/50 to-transparent">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search learning moments..."
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full pl-12 pr-4 py-3 text-sm font-medium border-2 border-slate-200 rounded-xl bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 transition-all duration-200 shadow-sm hover:shadow-md"
                   />
                 </div>
                 {(folders.length > 0 || tags.length > 0) && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     <button
                       onClick={() => {
                         setSelectedFolder(null)
                         setSelectedTag(null)
                       }}
-                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                      className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                         !selectedFolder && !selectedTag
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
+                          : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50 shadow-sm'
                       }`}
                     >
                       All
@@ -578,13 +603,13 @@ export default function ClinicalDashboard() {
                           setSelectedFolder(folder)
                           setSelectedTag(null)
                         }}
-                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors flex items-center gap-1 ${
+                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-1.5 ${
                           selectedFolder === folder
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
+                            : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50 shadow-sm'
                         }`}
                       >
-                        <Folder className="w-3 h-3" />
+                        <Folder className="w-3.5 h-3.5" />
                         {folder}
                       </button>
                     ))}
@@ -595,13 +620,13 @@ export default function ClinicalDashboard() {
                           setSelectedTag(tag)
                           setSelectedFolder(null)
                         }}
-                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors flex items-center gap-1 ${
+                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-1.5 ${
                           selectedTag === tag
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
+                            : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50 shadow-sm'
                         }`}
                       >
-                        <Tag className="w-3 h-3" />
+                        <Tag className="w-3.5 h-3.5" />
                         {tag}
                       </button>
                     ))}
@@ -609,10 +634,10 @@ export default function ClinicalDashboard() {
                 )}
               </div>
 
-              {/* Clips List - Medical Record Cards */}
-              <div className="p-4">
+              {/* Clips List - Enhanced */}
+              <div className="p-6">
                 {displayClips.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {displayClips.map((clip) => (
                       <div
                         key={clip.id}
@@ -620,31 +645,31 @@ export default function ClinicalDashboard() {
                       >
                         <button
                           onClick={() => handleReviewClip(clip)}
-                          className="w-full text-left p-4 rounded-lg border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all"
+                          className="w-full text-left p-5 rounded-xl border-2 border-slate-200/60 bg-gradient-to-br from-white to-slate-50/50 hover:border-purple-300 hover:from-purple-50/80 hover:to-indigo-50/80 transition-all duration-200 transform hover:scale-[1.01] shadow-sm hover:shadow-md hover:shadow-purple-200/30"
                         >
-                          <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2">
-                                <h4 className="text-sm font-semibold text-slate-900 truncate">
+                              <div className="flex items-center gap-2.5 mb-3 flex-wrap">
+                                <h4 className="text-base font-bold text-slate-900 truncate">
                                   {clip.title}
                                 </h4>
-                                <span className="text-[10px] text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
+                                <span className="text-xs font-semibold text-purple-700 bg-gradient-to-r from-purple-100 to-indigo-100 px-3 py-1 rounded-lg border border-purple-200/50">
                                   {clip.folder}
                                 </span>
                               </div>
-                              <div className="text-xs text-slate-600 line-clamp-2 mb-2">
+                              <div className="text-sm text-slate-600 line-clamp-2 mb-3 leading-relaxed">
                                 {clip.content.substring(0, 150)}...
                               </div>
-                              <div className="flex items-center gap-2 flex-wrap">
+                              <div className="flex items-center gap-2.5 flex-wrap">
                                 {clip.tags.slice(0, 3).map(tag => (
                                   <span
                                     key={tag}
-                                    className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded"
+                                    className="text-xs font-medium px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg border border-slate-200/50"
                                   >
                                     {tag}
                                   </span>
                                 ))}
-                                <span className="text-[10px] text-slate-400">
+                                <span className="text-xs text-slate-500 font-medium">
                                   {formatTimeAgo(clip.created_at)}
                                 </span>
                               </div>
@@ -652,13 +677,13 @@ export default function ClinicalDashboard() {
                             <div className="flex items-center gap-2 flex-shrink-0">
                               <button
                                 onClick={(e) => handleDeleteClip(clip.id, e)}
-                                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-all"
+                                className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 transform hover:scale-110"
                                 title="Delete this learning moment"
                                 aria-label="Delete clip"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
-                              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all" />
+                              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-200" />
                             </div>
                           </div>
                         </button>
@@ -666,24 +691,24 @@ export default function ClinicalDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 text-slate-500">
-                    <Bookmark className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p className="text-sm mb-1">
+                  <div className="text-center py-16">
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-100 to-indigo-100 mb-6">
+                      <Bookmark className="w-10 h-10 text-purple-400" />
+                    </div>
+                    <p className="text-base font-semibold text-slate-700 mb-2">
                       {allClips.length === 0 ? 'No learning moments saved yet' : 'No clips match your filters'}
                     </p>
-                    <p className="text-xs">
+                    <p className="text-sm text-slate-500">
                       {allClips.length === 0 && 'Save learning moments during study sessions'}
                     </p>
                   </div>
                 )}
                 
                 {filteredClips.length > 6 && (
-                  <div className="mt-4 text-center">
+                  <div className="mt-6 text-center">
                     <Button
-                      variant="outline"
-                      size="sm"
                       onClick={() => setShowAllClips(!showAllClips)}
-                      className="text-xs"
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold"
                     >
                       {showAllClips ? 'Show Less' : `Show All (${filteredClips.length})`}
                     </Button>

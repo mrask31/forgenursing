@@ -73,22 +73,29 @@ export default function ClassesPage() {
   }
 
   return (
-    <div className="h-full bg-slate-50 p-6">
+    <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50 p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        {/* Header - Enhanced with consistent design */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-                <GraduationCap className="w-8 h-8 text-indigo-600" />
-                My Classes & Materials
-              </h1>
-              <p className="text-slate-600 mt-2">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20">
+                  <GraduationCap className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
+                  My Classes & Materials
+                </h1>
+              </div>
+              <p className="text-base text-slate-600 ml-14 max-w-2xl leading-relaxed">
                 Organize your classes and study materials in one place. Upload materials, then study with your AI tutor.
               </p>
             </div>
             {!showForm && (
-              <Button onClick={handleAddClass} className="bg-indigo-600 hover:bg-indigo-700">
+              <Button 
+                onClick={handleAddClass} 
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 transform hover:scale-105 active:scale-95"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Class
               </Button>
@@ -98,8 +105,8 @@ export default function ClassesPage() {
 
         {/* Form or List */}
         {showForm ? (
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-slate-900 mb-6">
+          <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 p-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">
               {editingClass ? 'Edit Class' : 'Add New Class'}
             </h2>
             <ClassForm
@@ -109,17 +116,25 @@ export default function ClassesPage() {
             />
           </div>
         ) : loading ? (
-          <div className="text-center py-12 text-slate-600">
-            Loading your classes...
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 mb-4">
+              <GraduationCap className="w-8 h-8 text-slate-400 animate-pulse" />
+            </div>
+            <p className="text-lg font-medium text-slate-600">Loading your classes...</p>
           </div>
         ) : classes.length === 0 ? (
-          <div className="text-center py-12 bg-white border border-slate-200 rounded-2xl">
-            <BookOpen className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">No classes yet</h3>
-            <p className="text-slate-600 mb-6 max-w-md mx-auto">
+          <div className="text-center py-16 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 mb-6">
+              <BookOpen className="w-10 h-10 text-slate-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-3">No classes yet</h3>
+            <p className="text-base text-slate-600 mb-8 max-w-md mx-auto leading-relaxed">
               Add your first class to get started. You'll be able to upload materials and study with your AI tutor.
             </p>
-            <Button onClick={handleAddClass} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button 
+              onClick={handleAddClass} 
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 transform hover:scale-105 active:scale-95"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Add Your First Class
             </Button>

@@ -79,15 +79,15 @@ export default function TutorHeader({
 
   return (
     <>
-      <header className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200 bg-white px-3 sm:px-6 md:px-8 py-3 sm:py-3.5 rounded-lg shadow-sm mb-3 sm:mb-4 w-full">
+      <header className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200/60 bg-white/80 backdrop-blur-sm px-3 sm:px-6 md:px-8 py-4 sm:py-4 rounded-xl shadow-lg shadow-slate-200/50 mb-4 sm:mb-5 w-full">
         {/* Left: NCLEX Practice Mode */}
         <div className="flex items-center gap-2.5 flex-shrink-0">
           <button
             onClick={() => onStrictModeChange(!strictMode)}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 ${
               strictMode
-                ? 'bg-indigo-50 border-2 border-indigo-300 text-indigo-700 shadow-sm'
-                : 'text-slate-700 hover:text-indigo-600 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 text-indigo-700 shadow-md shadow-indigo-200/50'
+                : 'text-slate-700 hover:text-indigo-600 hover:bg-slate-50 border-2 border-transparent hover:border-indigo-200'
             }`}
           >
             {strictMode ? (
@@ -114,25 +114,25 @@ export default function TutorHeader({
           </div>
         </div>
 
-        {/* Center: Tutor / Reflections */}
+        {/* Center: Tutor / Reflections - Enhanced */}
         <div className="flex items-center justify-center">
-          <div className="flex items-center gap-1 bg-slate-200 rounded-full p-1 border border-slate-200">
+          <div className="flex items-center gap-1 bg-gradient-to-r from-slate-100 to-slate-200 rounded-full p-1.5 border border-slate-200/60 shadow-sm">
             <button
               onClick={() => handleModeChange('tutor')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                 currentMode === 'tutor'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'bg-transparent text-slate-500 hover:text-slate-700'
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
+                  : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-white/50'
               }`}
             >
               Tutor
             </button>
             <button
               onClick={() => handleModeChange('reflections')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                 currentMode === 'reflections'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'bg-transparent text-slate-500 hover:text-slate-700'
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
+                  : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-white/50'
               }`}
             >
               Reflections
@@ -151,7 +151,7 @@ export default function TutorHeader({
               <select
                 value={selectedClassId ?? ""}
                 onChange={(e) => onSelectClass?.(e.target.value || undefined)}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 max-w-[200px] truncate"
+                className="rounded-xl border-2 border-slate-200 bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 max-w-[200px] truncate transition-all duration-200"
               >
                 <option value="">General Tutor</option>
                 {classes.map((cls) => (
@@ -202,7 +202,7 @@ export default function TutorHeader({
                     router.push(`/tutor?${params.toString()}`)
                   }
                 }}
-                className="flex items-center gap-2 bg-white border-slate-300 shadow-sm hover:bg-slate-50 hover:border-slate-400 text-slate-700 whitespace-nowrap"
+                className="flex items-center gap-2 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 shadow-md shadow-indigo-200/30 hover:from-indigo-100 hover:to-purple-100 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-200/50 text-indigo-700 whitespace-nowrap transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold"
               >
                 <Plus className="w-4 h-4" />
                 <span className="text-sm font-medium">New Chat</span>

@@ -68,20 +68,25 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="bg-clinical-bg">
-      <div className={`${tokens.containerMaxWidth} mx-auto ${tokens.sectionPadding} px-4 md:px-8`}>
-        {/* Header */}
-        <div className={`mb-8`}>
-          <h1 className={`${tokens.heading} font-semibold text-clinical-text-primary tracking-tight mb-2`}>
-            Settings
-          </h1>
-          <p className={`${tokens.smallText} text-clinical-text-secondary`}>
+    <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
+      <div className={`${tokens.containerMaxWidth || 'max-w-4xl'} mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-10`}>
+        {/* Header - Enhanced */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20">
+              <Layout className="w-6 h-6 md:w-7 md:h-7 text-white" />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
+              Settings
+            </h1>
+          </div>
+          <p className="text-base text-slate-600 ml-14 max-w-2xl leading-relaxed">
             Manage your account and preferences.
           </p>
         </div>
 
-        {/* Display Density Section */}
-        <div className={`bg-clinical-card border border-clinical-border rounded-xl ${tokens.cardPadding} shadow-sm mb-6`}>
+        {/* Display Density Section - Enhanced */}
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'} mb-6`}>
           <div className="flex items-center gap-3 mb-4">
             <Layout className="w-5 h-5 text-clinical-text-secondary" />
             <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>
@@ -96,21 +101,21 @@ export default function SettingsPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setDensity('comfort')}
-                  className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
+                  className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                     density === 'comfort'
-                      ? 'bg-clinical-primary text-white border-clinical-primary'
-                      : 'bg-clinical-card text-clinical-text-primary border-clinical-border hover:border-clinical-primary'
-                  } ${tokens.bodyText} font-medium`}
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-transparent shadow-md shadow-indigo-500/30'
+                      : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                  } ${tokens.bodyText || 'text-sm'} font-semibold`}
                 >
                   Comfort
                 </button>
                 <button
                   onClick={() => setDensity('compact')}
-                  className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
+                  className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                     density === 'compact'
-                      ? 'bg-clinical-primary text-white border-clinical-primary'
-                      : 'bg-clinical-card text-clinical-text-primary border-clinical-border hover:border-clinical-primary'
-                  } ${tokens.bodyText} font-medium`}
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-transparent shadow-md shadow-indigo-500/30'
+                      : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                  } ${tokens.bodyText || 'text-sm'} font-semibold`}
                 >
                   Compact
                 </button>
@@ -119,8 +124,8 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Academic Goals Section */}
-        <div className={`bg-clinical-card border border-clinical-border rounded-xl ${tokens.cardPadding} shadow-sm mb-6`}>
+        {/* Academic Goals Section - Enhanced */}
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'} mb-6`}>
           <div className="flex items-center gap-3 mb-4">
             <GraduationCap className="w-5 h-5 text-clinical-text-secondary" />
             <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>
@@ -166,7 +171,7 @@ export default function SettingsPage() {
                     }
                   }}
                   disabled={isSaving}
-                  className={`px-4 py-2 bg-clinical-primary text-white rounded-lg ${tokens.smallText} font-medium hover:bg-clinical-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl ${tokens.smallText || 'text-sm'} font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40`}
                 >
                   {isSaving ? 'Saving...' : 'Save'}
                 </button>
@@ -178,8 +183,8 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Account Section */}
-        <div className={`bg-clinical-card border border-clinical-border rounded-xl ${tokens.cardPadding} shadow-sm mb-6`}>
+        {/* Account Section - Enhanced */}
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'} mb-6`}>
           <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary mb-4`}>
             Account
           </h2>
@@ -195,7 +200,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={handleLogout}
-              className={`inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg ${tokens.smallText} font-medium hover:bg-red-100 transition-colors`}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-50 to-rose-50 text-red-600 border-2 border-red-200 rounded-xl ${tokens.smallText || 'text-sm'} font-semibold hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md`}
             >
               <LogOut className="w-4 h-4" />
               Log out
@@ -203,8 +208,8 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Subscription Section */}
-        <div className={`bg-clinical-card border border-clinical-border rounded-xl ${tokens.cardPadding} shadow-sm mb-6`}>
+        {/* Subscription Section - Enhanced */}
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'} mb-6`}>
           <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary mb-4`}>
             Subscription
           </h2>
@@ -226,8 +231,8 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Support Section */}
-        <div className={`bg-clinical-card border border-clinical-border rounded-xl ${tokens.cardPadding} shadow-sm`}>
+        {/* Support Section - Enhanced */}
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'}`}>
           <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary mb-4`}>
             Support
           </h2>
