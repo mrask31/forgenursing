@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [user, setUser] = useState<any>(null)
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
 
   useEffect(() => {
     const supabase = createBrowserClient(
@@ -15,12 +16,45 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
     
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    const checkUserAndSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-    })
+      
+      // Check subscription status if user is logged in
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_status')
+          .eq('id', user.id)
+          .single()
+        
+        const subscriptionStatus = profile?.subscription_status
+        const isActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
+        setHasActiveSubscription(isActive)
+      } else {
+        setHasActiveSubscription(false)
+      }
+    }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    checkUserAndSubscription()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null)
+      
+      // Re-check subscription status when auth state changes
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_status')
+          .eq('id', session.user.id)
+          .single()
+        
+        const subscriptionStatus = profile?.subscription_status
+        const isActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
+        setHasActiveSubscription(isActive)
+      } else {
+        setHasActiveSubscription(false)
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -39,21 +73,21 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <span className="font-bold text-lg sm:text-xl text-slate-900 bg-gradient-to-r from-slate-900 to-indigo-900 bg-clip-text text-transparent">ForgeNursing</span>
             </Link>
             <div className="flex items-center gap-3 sm:gap-4">
-              {user ? (
+              {user && hasActiveSubscription && pathname !== '/checkout' ? (
                 <Link
                   href="/clinical-desk"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 min-h-[40px] sm:min-h-[44px] flex items-center transform hover:scale-105 active:scale-95"
                 >
                   Dashboard
                 </Link>
-              ) : (
+              ) : !user ? (
                 <Link
                   href="/login"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 text-slate-700 hover:text-indigo-700 text-xs sm:text-sm font-semibold transition-colors min-h-[40px] sm:min-h-[44px] flex items-center border-2 border-transparent hover:border-indigo-200 rounded-xl"
                 >
                   Log In
                 </Link>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
