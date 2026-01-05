@@ -76,6 +76,7 @@ export async function middleware(request: NextRequest) {
     // This is safe because we're only reading subscription_status, not sensitive data
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     let subscriptionStatus: string | undefined
+    let profileError: any = null
     
     if (serviceRoleKey) {
       // Use service role key to bypass RLS
@@ -83,20 +84,42 @@ export async function middleware(request: NextRequest) {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         serviceRoleKey
       )
-      const { data: profile } = await adminClient
+      const { data: profile, error } = await adminClient
         .from('profiles')
         .select('subscription_status')
         .eq('id', user.id)
         .single()
-      subscriptionStatus = profile?.subscription_status
+      
+      if (error) {
+        console.error('[Middleware] Error fetching profile with service role:', error)
+        profileError = error
+      } else {
+        subscriptionStatus = profile?.subscription_status
+      }
     } else {
       // Fallback to anon key (may be blocked by RLS)
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('subscription_status')
         .eq('id', user.id)
         .single()
-      subscriptionStatus = profile?.subscription_status
+      
+      if (error) {
+        console.error('[Middleware] Error fetching profile with anon key:', error)
+        profileError = error
+      } else {
+        subscriptionStatus = profile?.subscription_status
+      }
+    }
+
+    // If we couldn't fetch the profile, default to blocking access (fail secure)
+    if (profileError || subscriptionStatus === undefined) {
+      console.warn('[Middleware] Could not determine subscription status, blocking access', {
+        userId: user.id,
+        error: profileError?.message,
+        hasServiceRoleKey: !!serviceRoleKey
+      })
+      return NextResponse.redirect(new URL('/billing/payment-required', request.url))
     }
 
     const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
@@ -113,6 +136,7 @@ export async function middleware(request: NextRequest) {
     // Use service role key to bypass RLS for subscription status check
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     let subscriptionStatus: string | undefined
+    let profileError: any = null
     
     if (serviceRoleKey) {
       // Use service role key to bypass RLS
@@ -120,20 +144,42 @@ export async function middleware(request: NextRequest) {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         serviceRoleKey
       )
-      const { data: profile } = await adminClient
+      const { data: profile, error } = await adminClient
         .from('profiles')
         .select('subscription_status')
         .eq('id', user.id)
         .single()
-      subscriptionStatus = profile?.subscription_status
+      
+      if (error) {
+        console.error('[Middleware] Error fetching profile with service role:', error)
+        profileError = error
+      } else {
+        subscriptionStatus = profile?.subscription_status
+      }
     } else {
       // Fallback to anon key (may be blocked by RLS)
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('subscription_status')
         .eq('id', user.id)
         .single()
-      subscriptionStatus = profile?.subscription_status
+      
+      if (error) {
+        console.error('[Middleware] Error fetching profile with anon key:', error)
+        profileError = error
+      } else {
+        subscriptionStatus = profile?.subscription_status
+      }
+    }
+
+    // If we couldn't fetch the profile, default to blocking access (fail secure)
+    if (profileError || subscriptionStatus === undefined) {
+      console.warn('[Middleware] Could not determine subscription status, blocking access', {
+        userId: user.id,
+        error: profileError?.message,
+        hasServiceRoleKey: !!serviceRoleKey
+      })
+      return NextResponse.redirect(new URL('/billing/payment-required', request.url))
     }
 
     const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'

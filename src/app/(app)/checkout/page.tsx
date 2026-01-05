@@ -18,13 +18,13 @@ function CheckoutContent() {
       // Initiate Stripe checkout
       startStripeCheckout(plan).catch((error) => {
         console.error('Failed to start Stripe checkout:', error)
-        // If checkout fails, redirect to dashboard
-        router.push('/readiness')
+        // If checkout fails, redirect to payment required page (not dashboard!)
+        router.push('/billing/payment-required')
       })
     } else {
       console.warn('Invalid or missing plan parameter:', plan)
-      // No valid plan, redirect to dashboard
-      router.push('/readiness')
+      // No valid plan, redirect to payment required page
+      router.push('/billing/payment-required')
     }
   }, [plan, router])
 

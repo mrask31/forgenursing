@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
@@ -37,31 +38,53 @@ export async function GET(request: Request) {
       let subscriptionStatus = 'pending_payment'
       
       if (user) {
+        // Use service role key to bypass RLS for profile operations
+        // This is necessary because RLS might block the anon key
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+        let profileClient = supabase
+        
+        if (serviceRoleKey) {
+          // Use service role key to bypass RLS
+          profileClient = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            serviceRoleKey
+          ) as any
+        }
+        
         // Check if profile exists, create/update if needed
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await profileClient
           .from('profiles')
           .select('id, subscription_status')
           .eq('id', user.id)
           .single()
 
-        if (!profile) {
-          // Create profile with pending_payment status
-          await supabase
+        if (profileError || !profile) {
+          // Profile doesn't exist or query failed, create it with pending_payment status
+          const { error: insertError } = await profileClient
             .from('profiles')
             .insert({
               id: user.id,
               subscription_status: 'pending_payment',
             })
+          
+          if (insertError) {
+            console.error('[Auth Callback] Error creating profile:', insertError)
+            // Continue with default pending_payment status
+          }
         } else {
           // Store the current subscription status
           subscriptionStatus = profile.subscription_status || 'pending_payment'
           
           // Update existing profile to set status if missing
           if (!profile.subscription_status) {
-            await supabase
+            const { error: updateError } = await profileClient
               .from('profiles')
               .update({ subscription_status: 'pending_payment' })
               .eq('id', user.id)
+            
+            if (updateError) {
+              console.error('[Auth Callback] Error updating profile:', updateError)
+            }
           }
         }
       }
