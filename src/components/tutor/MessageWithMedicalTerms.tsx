@@ -51,7 +51,8 @@ export default function MessageWithMedicalTerms({
   // Custom text component that checks fragments against our term map
   const enhancedComponents = {
     ...markdownComponents,
-    text: ({ children }: { children: ReactNode }) => {
+    text: ({ children, ...props }: { children?: ReactNode; [key: string]: any }) => {
+      if (!children) return null
       const text = String(children)
       
       // Check if this fragment matches any medical term (case-insensitive)
