@@ -57,7 +57,8 @@ export default function AppRouteLayout({
         
         {/* Column B: Main Content Area - Flexible, scrollable */}
         {/* min-h-0 is CRITICAL: allows flex child to shrink below content size, enabling overflow */}
-        <main className="flex-1 min-w-0 min-h-0 overflow-y-auto bg-slate-50 lg:ml-0">
+        {/* h-0 with flex-1 ensures the element has a constrained height for children's h-full to work */}
+        <main className="flex-1 min-w-0 min-h-0 h-0 overflow-y-auto bg-slate-50 lg:ml-0">
           {children}
         </main>
       </div>
