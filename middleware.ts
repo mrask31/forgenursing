@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
@@ -71,13 +72,33 @@ export async function middleware(request: NextRequest) {
 
   // Check subscription status for authenticated users accessing protected routes
   if (user && isProtectedRoute && !isBillingRoute) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_status')
-      .eq('id', user.id)
-      .single()
+    // Use service role key to bypass RLS for subscription status check
+    // This is safe because we're only reading subscription_status, not sensitive data
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    let subscriptionStatus: string | undefined
+    
+    if (serviceRoleKey) {
+      // Use service role key to bypass RLS
+      const adminClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey
+      )
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
+      subscriptionStatus = profile?.subscription_status
+    } else {
+      // Fallback to anon key (may be blocked by RLS)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
+      subscriptionStatus = profile?.subscription_status
+    }
 
-    const subscriptionStatus = profile?.subscription_status
     const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
 
     if (!hasActiveSubscription) {
@@ -89,13 +110,32 @@ export async function middleware(request: NextRequest) {
   // Redirect authenticated users away from auth pages
   if (user && (pathname === '/login' || pathname === '/signup')) {
     // Check if they have active subscription before redirecting
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_status')
-      .eq('id', user.id)
-      .single()
+    // Use service role key to bypass RLS for subscription status check
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    let subscriptionStatus: string | undefined
+    
+    if (serviceRoleKey) {
+      // Use service role key to bypass RLS
+      const adminClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey
+      )
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
+      subscriptionStatus = profile?.subscription_status
+    } else {
+      // Fallback to anon key (may be blocked by RLS)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
+      subscriptionStatus = profile?.subscription_status
+    }
 
-    const subscriptionStatus = profile?.subscription_status
     const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
 
     if (hasActiveSubscription) {
