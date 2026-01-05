@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode, useMemo } from 'react'
-import { findMedicalTerms } from '@/lib/medicalTerms'
+import { findMedicalTerms, MEDICAL_TERMS } from '@/lib/medicalTerms'
 import MedicalTermPopover from './MedicalTermPopover'
 import ReactMarkdown from 'react-markdown'
 
@@ -25,14 +25,17 @@ export default function MessageWithMedicalTerms({
   // Find all medical terms in the full content with their original casing
   const medicalTermMap = useMemo(() => {
     const matches = findMedicalTerms(content)
-    const map = new Map<string, { term: string; definition: string }>()
+    const map = new Map<string, { term: string; definition: string; category?: string }>()
     
     for (const match of matches) {
       // Store both the lowercase version (for matching) and the original casing
       const originalTerm = content.slice(match.startIndex, match.endIndex)
+      // Find the category from MEDICAL_TERMS
+      const termData = MEDICAL_TERMS.find(t => t.term.toLowerCase() === match.term.toLowerCase())
       map.set(originalTerm.toLowerCase(), {
         term: match.term,
-        definition: match.definition
+        definition: match.definition,
+        category: termData?.category
       })
     }
     
@@ -65,6 +68,7 @@ export default function MessageWithMedicalTerms({
           <MedicalTermPopover
             term={termInfo.term}
             definition={termInfo.definition}
+            category={termInfo.category}
           >
             {text}
           </MedicalTermPopover>
@@ -94,6 +98,7 @@ export default function MessageWithMedicalTerms({
                 key={`term-${match.index}`}
                 term={termInfo.term}
                 definition={termInfo.definition}
+                category={termInfo.category}
               >
                 {originalTerm}
               </MedicalTermPopover>

@@ -13,68 +13,88 @@ function generateFollowUpPrompts(content: string): string[] {
   const prompts: string[] = []
   const lowerContent = content.toLowerCase()
 
-  // Detect topic/concept mentions
-  const hasConcept = /(concept|topic|idea|principle|theory)/i.test(content)
-  const hasMedication = /(medication|drug|med|dose|dosage|administration)/i.test(content)
-  const hasPathophysiology = /(pathophysiology|patho|disease|disorder|condition|syndrome)/i.test(content)
-  const hasAssessment = /(assessment|symptom|sign|finding|vital|lab)/i.test(content)
-  const hasIntervention = /(intervention|treatment|care|nursing action|management)/i.test(content)
-  const hasPriority = /(priority|first|immediate|urgent|abc|maslow)/i.test(content)
-  const hasNCLEX = /(nclex|question|exam|test|practice)/i.test(content)
-  const hasExplanation = /(explain|understand|clarify|break down|step by step)/i.test(content)
-  const hasExample = /(example|scenario|case|patient|situation)/i.test(content)
+  // STATIC PROMPTS (always available)
+  const staticPrompts = [
+    "Give me an NCLEX question based on this material",
+    "Give me a different example"
+  ]
 
-  // General follow-ups (always available)
-  prompts.push("Can you give me an example of this?")
-  prompts.push("What are the key nursing considerations?")
-  prompts.push("How would this appear on NCLEX?")
+  // Detect topic/concept mentions for adaptive prompts
+  const hasMedication = /(medication|drug|med|dose|dosage|administration|diuretic|beta-blocker|ace inhibitor|anticoagulant)/i.test(content)
+  const hasPathophysiology = /(pathophysiology|patho|disease|disorder|condition|syndrome|failure|congestion)/i.test(content)
+  const hasAssessment = /(assessment|symptom|sign|finding|vital|lab|monitor|auscultation|palpation)/i.test(content)
+  const hasIntervention = /(intervention|treatment|care|nursing action|management|administer|educate)/i.test(content)
+  const hasPriority = /(priority|first|immediate|urgent|abc|maslow|safety)/i.test(content)
+  const hasHeartFailure = /(heart failure|cardiac|edema|jugular|hepatomegaly|ascites)/i.test(content)
+  const hasRespiratory = /(respiratory|breathing|oxygen|dyspnea|crackles|wheezing|saturation)/i.test(content)
+  const hasComplications = /(complication|risk|adverse|side effect|contraindication|warning)/i.test(content)
 
-  // Context-specific prompts
-  if (hasMedication) {
-    prompts.push("What are the side effects I should watch for?")
-    prompts.push("What are the contraindications?")
-    prompts.push("How do I prioritize medication administration?")
+  // ADAPTIVE PROMPTS (context-specific, choose 2)
+  const adaptivePrompts: string[] = []
+
+  if (hasHeartFailure) {
+    adaptivePrompts.push("What's the difference between left-sided and right-sided heart failure?")
+    adaptivePrompts.push("What nursing interventions are priority for heart failure?")
+    adaptivePrompts.push("How do I assess for worsening heart failure?")
   }
 
-  if (hasPathophysiology) {
-    prompts.push("What are the early warning signs?")
-    prompts.push("What complications should I monitor for?")
-    prompts.push("How does this relate to other conditions?")
+  if (hasMedication) {
+    adaptivePrompts.push("What are the key side effects I should monitor for?")
+    adaptivePrompts.push("What are the contraindications for this medication?")
+    adaptivePrompts.push("How do I prioritize medication administration?")
+  }
+
+  if (hasPathophysiology && !hasHeartFailure) {
+    adaptivePrompts.push("What are the early warning signs of this condition?")
+    adaptivePrompts.push("What complications should I monitor for?")
+    adaptivePrompts.push("How does this relate to other conditions I've studied?")
   }
 
   if (hasAssessment) {
-    prompts.push("What other assessments should I perform?")
-    prompts.push("What findings would indicate a problem?")
-    prompts.push("How do I prioritize these assessments?")
+    adaptivePrompts.push("What other assessments should I perform?")
+    adaptivePrompts.push("What findings would indicate a problem?")
+    adaptivePrompts.push("How do I prioritize these assessments using ABCs?")
   }
 
   if (hasIntervention) {
-    prompts.push("What are the expected outcomes?")
-    prompts.push("What should I monitor after this intervention?")
-    prompts.push("Are there any safety considerations?")
+    adaptivePrompts.push("What are the expected outcomes of this intervention?")
+    adaptivePrompts.push("What should I monitor after this intervention?")
+    adaptivePrompts.push("Are there any safety considerations I need to know?")
   }
 
   if (hasPriority) {
-    prompts.push("Walk me through the priority reasoning")
-    prompts.push("What would change the priority?")
-    prompts.push("How does this apply to other scenarios?")
+    adaptivePrompts.push("Walk me through the priority reasoning step-by-step")
+    adaptivePrompts.push("What would change the priority in this scenario?")
+    adaptivePrompts.push("How does Maslow's hierarchy apply here?")
   }
 
-  if (hasNCLEX || hasExample) {
-    prompts.push("Give me another practice question")
-    prompts.push("What are common distractors for this topic?")
-    prompts.push("How do I recognize this pattern?")
+  if (hasRespiratory) {
+    adaptivePrompts.push("What are the priority assessments for respiratory distress?")
+    adaptivePrompts.push("How do I differentiate between different respiratory conditions?")
+    adaptivePrompts.push("What interventions are most critical for breathing problems?")
   }
 
-  if (hasExplanation || hasConcept) {
-    prompts.push("Can you break this down further?")
-    prompts.push("What's the most important thing to remember?")
-    prompts.push("How does this connect to what I already know?")
+  if (hasComplications) {
+    adaptivePrompts.push("What are the most serious complications to watch for?")
+    adaptivePrompts.push("How do I recognize early signs of complications?")
   }
 
-  // Remove duplicates and limit to 3-4 prompts
-  const uniquePrompts = Array.from(new Set(prompts))
-  return uniquePrompts.slice(0, 4)
+  // If no specific context detected, use general adaptive prompts
+  if (adaptivePrompts.length === 0) {
+    adaptivePrompts.push("What are the key nursing considerations here?")
+    adaptivePrompts.push("Can you break this down into simpler steps?")
+    adaptivePrompts.push("What's the most important thing to remember?")
+    adaptivePrompts.push("How would this appear on an NCLEX question?")
+  }
+
+  // Combine: 2 static + 2 adaptive (randomly selected from adaptive pool)
+  prompts.push(...staticPrompts)
+  
+  // Randomly select 2 adaptive prompts to ensure variety
+  const shuffledAdaptive = [...adaptivePrompts].sort(() => Math.random() - 0.5)
+  prompts.push(...shuffledAdaptive.slice(0, 2))
+
+  return prompts
 }
 
 export default function FollowUpPrompts({ 

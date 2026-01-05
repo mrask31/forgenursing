@@ -24,6 +24,11 @@ export const MEDICAL_TERMS: MedicalTerm[] = [
   { term: 'arrhythmia', definition: 'An irregular heart rhythm. Can be harmless or life-threatening depending on the type and underlying cause.', category: 'Cardiovascular' },
   { term: 'myocardial infarction', definition: 'Heart attack. Occurs when blood flow to part of the heart muscle is blocked, causing tissue damage or death. Key symptoms include chest pain, shortness of breath, and diaphoresis.', category: 'Cardiovascular' },
   { term: 'perfusion', definition: 'The passage of fluid (blood) through vessels to deliver oxygen and nutrients to tissues. Adequate perfusion is essential for organ function.', category: 'Cardiovascular' },
+  { term: 'jugular venous distention', definition: 'Abnormal bulging of the jugular veins in the neck, indicating increased central venous pressure. Common sign of right-sided heart failure, fluid overload, or cardiac tamponade.', category: 'Cardiovascular' },
+  { term: 'jugular venous distension', definition: 'Abnormal bulging of the jugular veins in the neck, indicating increased central venous pressure. Common sign of right-sided heart failure, fluid overload, or cardiac tamponade.', category: 'Cardiovascular' },
+  { term: 'JVD', definition: 'Jugular Venous Distention. Abnormal bulging of the jugular veins in the neck, indicating increased central venous pressure. Common sign of right-sided heart failure.', category: 'Cardiovascular' },
+  { term: 'hepatomegaly', definition: 'Enlargement of the liver. Can be caused by heart failure (especially right-sided), liver disease, infections, or tumors. Often assessed through palpation and percussion.', category: 'Cardiovascular' },
+  { term: 'ascites', definition: 'Accumulation of fluid in the peritoneal cavity (abdominal cavity). Common in right-sided heart failure, liver disease, and kidney failure. Manifests as abdominal distention and increased abdominal girth.', category: 'Cardiovascular' },
   
   // Respiratory Terms
   { term: 'oxygen saturation', definition: 'The percentage of hemoglobin binding sites in the bloodstream occupied by oxygen. Normal range is 95-100%. Measured via pulse oximetry (SpO2).', category: 'Respiratory' },
