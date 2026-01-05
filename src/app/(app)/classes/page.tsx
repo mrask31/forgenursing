@@ -73,7 +73,7 @@ export default function ClassesPage() {
   }
 
   return (
-    <div className="min-h-full bg-slate-50 p-6">
+    <div className="bg-slate-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
