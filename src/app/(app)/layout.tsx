@@ -55,8 +55,8 @@ export default function AppRouteLayout({
           <Sidebar onNavigate={() => setSidebarOpen(false)} />
         </aside>
         
-        {/* Column B: Main Content Area - Flexible, no overflow (children handle their own scrolling) */}
-        <main className="flex-1 min-w-0 overflow-hidden bg-slate-50 lg:ml-0">
+        {/* Column B: Main Content Area - Flexible, with overflow for scrolling */}
+        <main className="flex-1 min-w-0 overflow-y-auto bg-slate-50 lg:ml-0">
           {children}
         </main>
       </div>
