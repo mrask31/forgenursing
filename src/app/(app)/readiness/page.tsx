@@ -6,7 +6,7 @@ import {
   AlertCircle, Calendar, 
   Flame, Target, GraduationCap, Bookmark, 
   CheckCircle2, Sparkles, Search, Folder, Tag,
-  Brain, ChevronRight, MessageSquare
+  Brain, ChevronRight, MessageSquare, Trash2
 } from 'lucide-react'
 import { useDensity } from '@/contexts/DensityContext'
 import { getDensityTokens } from '@/lib/density-tokens'
@@ -285,6 +285,33 @@ export default function ClinicalDashboard() {
       params.set('mode', 'tutor')
       if (clip.class_id) params.set('classId', clip.class_id)
       router.push(`/tutor?${params.toString()}`)
+    }
+  }
+
+  const handleDeleteClip = async (clipId: string, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent triggering the review clip action
+    
+    if (!confirm('Are you sure you want to delete this learning moment? This cannot be undone.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/clips?id=${clipId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete clip')
+      }
+
+      // Remove from local state - this will trigger the useEffect to re-filter
+      const updatedClips = allClips.filter(c => c.id !== clipId)
+      setAllClips(updatedClips)
+      setClipsCount(prev => prev - 1)
+    } catch (error) {
+      console.error('Failed to delete clip:', error)
+      alert('Failed to delete clip. Please try again.')
     }
   }
 
@@ -587,41 +614,55 @@ export default function ClinicalDashboard() {
                 {displayClips.length > 0 ? (
                   <div className="space-y-3">
                     {displayClips.map((clip) => (
-                      <button
+                      <div
                         key={clip.id}
-                        onClick={() => handleReviewClip(clip)}
-                        className="w-full text-left p-4 rounded-lg border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all group"
+                        className="relative group"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="text-sm font-semibold text-slate-900 truncate">
-                                {clip.title}
-                              </h4>
-                              <span className="text-[10px] text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
-                                {clip.folder}
-                              </span>
-                            </div>
-                            <div className="text-xs text-slate-600 line-clamp-2 mb-2">
-                              {clip.content.substring(0, 150)}...
-                            </div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {clip.tags.slice(0, 3).map(tag => (
-                                <span
-                                  key={tag}
-                                  className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded"
-                                >
-                                  {tag}
+                        <button
+                          onClick={() => handleReviewClip(clip)}
+                          className="w-full text-left p-4 rounded-lg border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="text-sm font-semibold text-slate-900 truncate">
+                                  {clip.title}
+                                </h4>
+                                <span className="text-[10px] text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
+                                  {clip.folder}
                                 </span>
-                              ))}
-                              <span className="text-[10px] text-slate-400">
-                                {formatTimeAgo(clip.created_at)}
-                              </span>
+                              </div>
+                              <div className="text-xs text-slate-600 line-clamp-2 mb-2">
+                                {clip.content.substring(0, 150)}...
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {clip.tags.slice(0, 3).map(tag => (
+                                  <span
+                                    key={tag}
+                                    className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                                <span className="text-[10px] text-slate-400">
+                                  {formatTimeAgo(clip.created_at)}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <button
+                                onClick={(e) => handleDeleteClip(clip.id, e)}
+                                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-all"
+                                title="Delete this learning moment"
+                                aria-label="Delete clip"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all" />
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1" />
-                        </div>
-                      </button>
+                        </button>
+                      </div>
                     ))}
                   </div>
                 ) : (
