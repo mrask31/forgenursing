@@ -39,7 +39,7 @@ export async function GET(req: Request) {
 
     // 3. Build query
     let query = supabase
-      .from('clips')
+      .from('saved_clips')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })

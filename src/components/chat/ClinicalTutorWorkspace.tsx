@@ -82,7 +82,7 @@ export default function ClinicalTutorWorkspace({
   const [customError, setCustomError] = useState('')
   const tutorContext = useTutorContext()
   const [savingToNotebook, setSavingToNotebook] = useState<string | null>(null) // messageId being saved
-  const [needsHelp, setNeedsHelp] = useState<boolean>(false)
+  const [flaggedMessages, setFlaggedMessages] = useState<Set<string>>(new Set())
   const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
   
   // If selection props are provided, we'll use ChatMessageList for rendering
@@ -244,35 +244,43 @@ export default function ClinicalTutorWorkspace({
     }
   }, [initialMessages, isLoadingHistory, setMessages]);
 
-  // Load needsHelp status from chat metadata
+  // Load flagged messages from chat metadata
   useEffect(() => {
     if (!chatId) {
-      setNeedsHelp(false)
+      setFlaggedMessages(new Set())
       return
     }
 
-    const loadNeedsHelpStatus = async () => {
+    const loadFlaggedMessages = async () => {
       try {
         const response = await fetch(`/api/chats/metadata?chatId=${chatId}`, {
           credentials: 'include'
         })
         if (response.ok) {
           const data = await response.json()
-          setNeedsHelp(data.metadata?.needsHelp === true)
+          const flaggedMessageIds = data.metadata?.flaggedMessages || []
+          setFlaggedMessages(new Set(flaggedMessageIds))
         }
       } catch (error) {
-        console.error('[ClinicalTutorWorkspace] Error loading needsHelp status:', error)
+        console.error('[ClinicalTutorWorkspace] Error loading flagged messages:', error)
       }
     }
 
-    loadNeedsHelpStatus()
+    loadFlaggedMessages()
   }, [chatId])
 
-  const handleToggleNeedsHelp = async () => {
+  const handleToggleNeedsHelp = async (messageId: string) => {
     if (!chatId || isTogglingHelp) return
 
     setIsTogglingHelp(true)
-    const newValue = !needsHelp
+    const isCurrentlyFlagged = flaggedMessages.has(messageId)
+    const newFlaggedSet = new Set(flaggedMessages)
+    
+    if (isCurrentlyFlagged) {
+      newFlaggedSet.delete(messageId)
+    } else {
+      newFlaggedSet.add(messageId)
+    }
 
     try {
       const response = await fetch('/api/chats/metadata', {
@@ -281,17 +289,17 @@ export default function ClinicalTutorWorkspace({
         credentials: 'include',
         body: JSON.stringify({
           chatId,
-          metadata: { needsHelp: newValue }
+          metadata: { flaggedMessages: Array.from(newFlaggedSet) }
         })
       })
 
       if (response.ok) {
-        setNeedsHelp(newValue)
+        setFlaggedMessages(newFlaggedSet)
       } else {
-        console.error('[ClinicalTutorWorkspace] Failed to update needsHelp status')
+        console.error('[ClinicalTutorWorkspace] Failed to update flagged messages')
       }
     } catch (error) {
-      console.error('[ClinicalTutorWorkspace] Error toggling needsHelp:', error)
+      console.error('[ClinicalTutorWorkspace] Error toggling flagged messages:', error)
     } finally {
       setIsTogglingHelp(false)
     }
@@ -696,17 +704,17 @@ export default function ClinicalTutorWorkspace({
                       </button>
                       {chatId && (
                         <button
-                          onClick={handleToggleNeedsHelp}
+                          onClick={() => handleToggleNeedsHelp(m.id)}
                           disabled={isTogglingHelp}
                           className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all duration-200 ${
-                            needsHelp
-                              ? 'text-red-600 bg-red-50 hover:bg-red-100 font-medium'
-                              : 'text-slate-500 hover:text-red-600 hover:bg-red-50'
+                            flaggedMessages.has(m.id)
+                              ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 font-medium'
+                              : 'text-slate-500 hover:text-amber-600 hover:bg-amber-50'
                           } disabled:opacity-50`}
-                          title={needsHelp ? 'Marked as needs help - Click to remove' : 'Mark as needs more help'}
+                          title={flaggedMessages.has(m.id) ? 'Flagged for review - Click to remove. This appears in your Dashboard under "Flagged for Review"' : 'Flag this Q&A pair for focused review (appears in Dashboard)'}
                         >
                           <AlertCircle className="w-3 h-3" />
-                          <span>{needsHelp ? 'Needs Help' : 'Help'}</span>
+                          <span>{flaggedMessages.has(m.id) ? 'Flagged' : 'Flag'}</span>
                         </button>
                       )}
                       {tutorContext.selectedTopicId && !hasBinderContext && (

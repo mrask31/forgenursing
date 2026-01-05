@@ -46,6 +46,7 @@ interface FocusArea {
   priority: 'high' | 'medium' | 'low'
   lastStudied?: string
   chatId?: string
+  messageId?: string // For flagged message pairs
 }
 
 export default function ClinicalDashboard() {
@@ -149,23 +150,39 @@ export default function ClinicalDashboard() {
           )
           setTopicsStudied(uniqueTopics.size)
 
-          // Generate focus areas from chats marked as "needsHelp" by the student
-          const needsHelpChats = allChats
-            .filter(chat => {
-              const chatNeedsHelp = chat.metadata?.needsHelp === true
-              const isTutorChat = !chat.session_type || 
-                chat.session_type === 'general' || 
-                chat.session_type === 'question' || 
-                chat.session_type === 'snapshot'
-              return chatNeedsHelp && isTutorChat
-            })
-            .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-
-          const focusTopics: FocusArea[] = needsHelpChats.map(chat => ({
-            topic: chat.title || chat.metadata?.topicTitle || chat.metadata?.topicTerm || 'Untitled Topic',
+          // Generate focus areas from flagged message pairs
+          // Collect all flagged message IDs from all chats
+          const flaggedMessagePairs: Array<{ chatId: string; messageId: string; chatTitle: string; updatedAt: string }> = []
+          
+          for (const chat of allChats) {
+            const isTutorChat = !chat.session_type || 
+              chat.session_type === 'general' || 
+              chat.session_type === 'question' || 
+              chat.session_type === 'snapshot'
+            
+            if (isTutorChat && chat.metadata?.flaggedMessages && Array.isArray(chat.metadata.flaggedMessages)) {
+              const flaggedIds = chat.metadata.flaggedMessages as string[]
+              for (const messageId of flaggedIds) {
+                flaggedMessagePairs.push({
+                  chatId: chat.id,
+                  messageId,
+                  chatTitle: chat.title || chat.metadata?.topicTitle || chat.metadata?.topicTerm || 'Untitled Topic',
+                  updatedAt: chat.updated_at
+                })
+              }
+            }
+          }
+          
+          // Sort by most recently updated
+          flaggedMessagePairs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+          
+          // Create focus areas from flagged message pairs
+          const focusTopics: FocusArea[] = flaggedMessagePairs.map(pair => ({
+            topic: `${pair.chatTitle} (Flagged Q&A)`,
             priority: 'high' as const,
-            lastStudied: chat.updated_at,
-            chatId: chat.id
+            lastStudied: pair.updatedAt,
+            chatId: pair.chatId,
+            messageId: pair.messageId // Store messageId for navigation
           }))
 
           setFocusAreas(focusTopics)
