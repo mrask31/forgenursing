@@ -53,44 +53,55 @@ export default function LoginPage() {
         email,
         password,
       })
-      if (error) throw error
       
-      if (data.user) {
-        // Check subscription status before redirecting
-        try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('subscription_status')
-            .eq('id', data.user.id)
-            .single()
-
-          const subscriptionStatus = profile?.subscription_status || 'pending_payment'
-          
-          // If user needs payment, redirect to checkout (without plan so user can choose)
-          if (subscriptionStatus === 'pending_payment' || 
-              subscriptionStatus === 'canceled' || 
-              subscriptionStatus === 'past_due' || 
-              subscriptionStatus === 'unpaid') {
-            router.push('/checkout')
-          } else {
-            // User is already subscribed, go to tutor
-            router.push(redirect)
-          }
-        } catch (error) {
-          console.error('Error checking subscription status:', error)
-          // On error, default to checkout to be safe (without plan so user can choose)
-          router.push('/checkout')
-        }
-      } else {
-        router.push(redirect)
+      if (error) {
+        throw error
       }
       
-      router.refresh()
+      if (!data.user) {
+        throw new Error('Login failed: No user data returned')
+      }
+
+      // Check subscription status before redirecting
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('subscription_status')
+          .eq('id', data.user.id)
+          .single()
+
+        if (profileError) {
+          console.error('Error checking subscription status:', profileError)
+          // On error, default to checkout to be safe
+          window.location.href = '/checkout'
+          return
+        }
+
+        const subscriptionStatus = profile?.subscription_status || 'pending_payment'
+        
+        // If user needs payment, redirect to checkout (without plan so user can choose)
+        if (subscriptionStatus === 'pending_payment' || 
+            subscriptionStatus === 'canceled' || 
+            subscriptionStatus === 'past_due' || 
+            subscriptionStatus === 'unpaid') {
+          // Use window.location.href for a hard redirect to avoid caching issues
+          window.location.href = '/checkout'
+        } else {
+          // User is already subscribed, go to tutor
+          // Use window.location.href for a hard redirect to avoid caching issues
+          window.location.href = redirect
+        }
+      } catch (error) {
+        console.error('Error checking subscription status:', error)
+        // On error, default to checkout to be safe
+        window.location.href = '/checkout'
+      }
     } catch (error: any) {
-      setMessage({ text: error.message, type: 'error' })
-    } finally {
+      console.error('Login error:', error)
+      setMessage({ text: error.message || 'Failed to sign in. Please try again.', type: 'error' })
       setLoading(false)
     }
+    // Note: We don't set loading to false on success because we're redirecting
   }
 
   return (
