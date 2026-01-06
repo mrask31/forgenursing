@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Clock, Trash2, X } from 'lucide-react'
+import { Clock, Trash2, X, ChevronDown, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { 
   Sheet, 
@@ -69,7 +69,20 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
   const [classes, setClasses] = useState<StudentClass[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
-  const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set<string>(['general']))
+  const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set<string>())
+  
+  // Toggle class expansion
+  const toggleClass = (classId: string) => {
+    setExpandedClasses((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(classId)) {
+        newSet.delete(classId)
+      } else {
+        newSet.add(classId)
+      }
+      return newSet
+    })
+  }
   const [selectedChatIds, setSelectedChatIds] = useState<Set<string>>(new Set<string>())
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -286,81 +299,108 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
               <p className="text-xs">Start a conversation to see it here</p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {groupedChats.map((group) => (
-                <div key={group.classId}>
-                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-                    {group.classLabel}
-                  </h3>
-                  {group.timeGroups.map((timeGroup) => (
-                    <div key={timeGroup.label} className="mb-4">
-                      <h4 className="text-xs font-medium text-slate-400 mb-2">{timeGroup.label}</h4>
-                      <div className="space-y-1">
-                        {timeGroup.chats.map((chat) => {
-                          const Icon = getSessionIcon(chat.session_type)
-                          const badge = getSessionBadge(chat.session_type)
-                          const isSelected = selectedChatIds.has(chat.id)
-                          const mode = chat.session_type === 'reflection' ? 'reflections' : 'tutor'
-
-                          return (
-                            <div
-                              key={chat.id}
-                              className={`flex items-center gap-2 p-2 rounded-lg border transition-colors ${
-                                isSelected
-                                  ? 'bg-indigo-50 border-indigo-300'
-                                  : 'bg-white border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50'
-                              }`}
-                            >
-                              <Checkbox
-                                checked={isSelected}
-                                onCheckedChange={(checked) => {
-                                  const isChecked = checked === true
-                                  if (isChecked) {
-                                    setSelectedChatIds((prev: Set<string>) => {
-                                      const arr: string[] = Array.from(prev)
-                                      arr.push(chat.id)
-                                      return new Set<string>(arr)
-                                    })
-                                  } else {
-                                    setSelectedChatIds((prev: Set<string>) => {
-                                      const arr: string[] = Array.from(prev)
-                                      const index = arr.indexOf(chat.id)
-                                      if (index > -1) {
-                                        arr.splice(index, 1)
-                                      }
-                                      return new Set<string>(arr)
-                                    })
-                                  }
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <button
-                                onClick={() => handleChatClick(chat.id, mode)}
-                                className="flex-1 text-left min-w-0 flex items-center gap-2"
-                              >
-                                <Icon className="w-4 h-4 flex-shrink-0 text-slate-500" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-0.5">
-                                    <span className="text-sm font-medium text-slate-900 truncate">
-                                      {chat.title || 'Untitled Chat'}
-                                    </span>
-                                    <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded shrink-0">
-                                      {badge}
-                                    </span>
-                                  </div>
-                                  <span className="text-xs text-slate-500">
-                                    {formatTime(chat.updated_at)}
-                                  </span>
-                                </div>
-                              </button>
-                            </div>
-                          )
-                        })}
+            <div className="space-y-4">
+              {groupedChats.map((group) => {
+                const isExpanded = expandedClasses.has(group.classId)
+                const totalChats = group.timeGroups.reduce((sum, tg) => sum + tg.chats.length, 0)
+                
+                return (
+                  <div key={group.classId} className="border border-slate-200 rounded-lg overflow-hidden">
+                    {/* Class Header - Clickable to expand/collapse */}
+                    <button
+                      onClick={() => toggleClass(group.classId)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        {isExpanded ? (
+                          <ChevronDown className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                        )}
+                        <h3 className="text-sm font-semibold text-slate-700">
+                          {group.classLabel}
+                        </h3>
+                        <span className="text-xs text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full">
+                          {totalChats}
+                        </span>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
+                    </button>
+                    
+                    {/* Time Groups - Only show when expanded */}
+                    {isExpanded && (
+                      <div className="px-4 py-3 space-y-4 bg-white">
+                        {group.timeGroups.map((timeGroup) => (
+                          <div key={timeGroup.label}>
+                            <h4 className="text-xs font-medium text-slate-400 mb-2">{timeGroup.label}</h4>
+                            <div className="space-y-1">
+                              {timeGroup.chats.map((chat) => {
+                                const Icon = getSessionIcon(chat.session_type)
+                                const badge = getSessionBadge(chat.session_type)
+                                const isSelected = selectedChatIds.has(chat.id)
+                                const mode = chat.session_type === 'reflection' ? 'reflections' : 'tutor'
+
+                                return (
+                                  <div
+                                    key={chat.id}
+                                    className={`flex items-center gap-2 p-2 rounded-lg border transition-colors ${
+                                      isSelected
+                                        ? 'bg-indigo-50 border-indigo-300'
+                                        : 'bg-white border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50'
+                                    }`}
+                                  >
+                                    <Checkbox
+                                      checked={isSelected}
+                                      onCheckedChange={(checked) => {
+                                        const isChecked = checked === true
+                                        if (isChecked) {
+                                          setSelectedChatIds((prev: Set<string>) => {
+                                            const arr: string[] = Array.from(prev)
+                                            arr.push(chat.id)
+                                            return new Set<string>(arr)
+                                          })
+                                        } else {
+                                          setSelectedChatIds((prev: Set<string>) => {
+                                            const arr: string[] = Array.from(prev)
+                                            const index = arr.indexOf(chat.id)
+                                            if (index > -1) {
+                                              arr.splice(index, 1)
+                                            }
+                                            return new Set<string>(arr)
+                                          })
+                                        }
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <button
+                                      onClick={() => handleChatClick(chat.id, mode)}
+                                      className="flex-1 text-left min-w-0 flex items-center gap-2"
+                                    >
+                                      <Icon className="w-4 h-4 flex-shrink-0 text-slate-500" />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                          <span className="text-sm font-medium text-slate-900 truncate">
+                                            {chat.title || 'Untitled Chat'}
+                                          </span>
+                                          <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded shrink-0">
+                                            {badge}
+                                          </span>
+                                        </div>
+                                        <span className="text-xs text-slate-500">
+                                          {formatTime(chat.updated_at)}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
