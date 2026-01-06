@@ -99,14 +99,21 @@ export default function LoginPage() {
       console.log('[Login] Sign in successful, checking subscription...', { userId: data.user.id })
 
       // Check subscription status before redirecting
+      // Also check for stripe_subscription_id to see if they've completed checkout
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('subscription_status')
+        .select('subscription_status, stripe_subscription_id')
         .eq('id', data.user.id)
         .single()
 
       if (profileError) {
         console.error('[Login] Error checking subscription status:', profileError)
+        console.error('[Login] Profile error details:', {
+          message: profileError.message,
+          code: profileError.code,
+          details: profileError.details,
+          hint: profileError.hint
+        })
         // On error, default to checkout to be safe
         console.log('[Login] Redirecting to checkout (profile error)')
         window.location.replace('/checkout')
@@ -114,7 +121,31 @@ export default function LoginPage() {
       }
 
       const subscriptionStatus = profile?.subscription_status || 'pending_payment'
-      console.log('[Login] Subscription status:', subscriptionStatus)
+      const hasStripeSubscription = !!profile?.stripe_subscription_id
+      
+      console.log('[Login] Subscription check:', {
+        subscriptionStatus,
+        hasStripeSubscription,
+        profileExists: !!profile,
+        rawProfile: profile
+      })
+      
+      // Explicitly check for active subscription statuses (trialing or active)
+      const hasActiveSubscription = subscriptionStatus === 'trialing' || subscriptionStatus === 'active'
+      
+      // If user has a Stripe subscription ID but status is still pending_payment,
+      // the webhook might not have fired yet. In this case, allow access (they completed checkout)
+      if (hasStripeSubscription && subscriptionStatus === 'pending_payment') {
+        console.log('[Login] User has Stripe subscription ID but status is pending - likely in trial, allowing access')
+        // Update status to trialing as a best guess (webhook should update it properly)
+        await supabase
+          .from('profiles')
+          .update({ subscription_status: 'trialing' })
+          .eq('id', data.user.id)
+        console.log('[Login] Updated status to trialing, redirecting to tutor')
+        window.location.replace(redirect)
+        return
+      }
       
       // If user needs payment, redirect to checkout (without plan so user can choose)
       if (subscriptionStatus === 'pending_payment' || 
@@ -123,10 +154,14 @@ export default function LoginPage() {
           subscriptionStatus === 'unpaid') {
         console.log('[Login] Redirecting to checkout (payment needed)')
         window.location.replace('/checkout')
-      } else {
-        console.log('[Login] Redirecting to:', redirect)
-        // User is already subscribed, go to tutor
+      } else if (hasActiveSubscription) {
+        console.log('[Login] User has active subscription (trialing or active), redirecting to:', redirect)
+        // User is already subscribed (trialing or active), go to tutor
         window.location.replace(redirect)
+      } else {
+        // Unknown status - log and redirect to checkout to be safe
+        console.warn('[Login] Unknown subscription status:', subscriptionStatus, '- redirecting to checkout')
+        window.location.replace('/checkout')
       }
       // Note: We don't set loading to false on success because we're redirecting
     } catch (err) {
