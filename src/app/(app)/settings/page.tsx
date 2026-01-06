@@ -3,9 +3,21 @@
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
-import { Mail, LogOut, CreditCard, Layout, GraduationCap, Calendar } from 'lucide-react'
+import { Mail, LogOut, CreditCard, Layout, GraduationCap, Calendar, XCircle, CheckCircle } from 'lucide-react'
 import { useDensity } from '@/contexts/DensityContext'
 import { getDensityTokens } from '@/lib/density-tokens'
+
+interface SubscriptionData {
+  subscription: {
+    id: string
+    status: string
+    trialEnd: number | null
+    trialDaysRemaining: number | null
+    cancelAtPeriodEnd: boolean
+    currentPeriodEnd: number
+  } | null
+  status: string
+}
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -13,6 +25,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [graduationDate, setGraduationDate] = useState<string>('')
   const [isSaving, setIsSaving] = useState(false)
+  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
+  const [isCanceling, setIsCanceling] = useState(false)
   const { density, setDensity } = useDensity()
   const tokens = getDensityTokens(density)
 
@@ -39,6 +53,19 @@ export default function SettingsPage() {
           const date = new Date(profile.graduation_date)
           const formatted = date.toISOString().split('T')[0]
           setGraduationDate(formatted)
+        }
+
+        // Load subscription data
+        try {
+          const subRes = await fetch('/api/stripe/subscription', {
+            credentials: 'include',
+          })
+          if (subRes.ok) {
+            const subData = await subRes.json()
+            setSubscriptionData(subData)
+          }
+        } catch (error) {
+          console.error('Error loading subscription:', error)
         }
       }
       
@@ -210,24 +237,105 @@ export default function SettingsPage() {
 
         {/* Subscription Section - Enhanced */}
         <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'} mb-6`}>
-          <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary mb-4`}>
-            Subscription
-          </h2>
+          <div className="flex items-center gap-3 mb-4">
+            <CreditCard className="w-5 h-5 text-clinical-text-secondary" />
+            <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>
+              Subscription
+            </h2>
+          </div>
           <div className="space-y-4">
             <div>
               <p className={`${tokens.smallText} text-clinical-text-secondary mb-1`}>Status</p>
-              <p className={`${tokens.smallText} font-medium text-clinical-text-primary`}>
-                Free Preview
-              </p>
+              <div className="flex items-center gap-2">
+                {subscriptionData?.subscription ? (
+                  <>
+                    {subscriptionData.subscription.status === 'trialing' ? (
+                      <CheckCircle className="w-4 h-4 text-indigo-600" />
+                    ) : subscriptionData.subscription.status === 'active' ? (
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-red-600" />
+                    )}
+                    <p className={`${tokens.smallText} font-medium text-clinical-text-primary capitalize`}>
+                      {subscriptionData.subscription.status === 'trialing' ? '7-Day Free Trial' : 
+                       subscriptionData.subscription.status === 'active' ? 'Active' :
+                       subscriptionData.subscription.status === 'canceled' ? 'Canceled' :
+                       subscriptionData.status || 'Free Preview'}
+                    </p>
+                  </>
+                ) : (
+                  <p className={`${tokens.smallText} font-medium text-clinical-text-primary`}>
+                    Free Preview
+                  </p>
+                )}
+              </div>
             </div>
-            <button
-              disabled
-              className={`inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 border border-slate-200 rounded-lg ${tokens.smallText} font-medium cursor-not-allowed`}
-            >
-              <CreditCard className="w-4 h-4" />
-              Manage Billing
-              <span className="text-xs ml-1">(Coming soon)</span>
-            </button>
+
+            {/* Trial Days Remaining */}
+            {subscriptionData?.subscription?.trialDaysRemaining !== null && subscriptionData.subscription.trialDaysRemaining !== undefined && (
+              <div>
+                <p className={`${tokens.smallText} text-clinical-text-secondary mb-1`}>Trial Days Remaining</p>
+                <p className={`${tokens.smallText} font-semibold text-indigo-600`}>
+                  {subscriptionData.subscription.trialDaysRemaining} {subscriptionData.subscription.trialDaysRemaining === 1 ? 'day' : 'days'}
+                </p>
+              </div>
+            )}
+
+            {/* Cancel at Period End Notice */}
+            {subscriptionData?.subscription?.cancelAtPeriodEnd && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className={`${tokens.smallText} text-amber-800`}>
+                  Your subscription will be canceled at the end of the current billing period.
+                </p>
+              </div>
+            )}
+
+            {/* Cancel Subscription Button */}
+            {subscriptionData?.subscription && 
+             subscriptionData.subscription.status !== 'canceled' && 
+             !subscriptionData.subscription.cancelAtPeriodEnd && (
+              <button
+                onClick={async () => {
+                  if (!confirm('Are you sure you want to cancel your subscription? You will continue to have access until the end of your current billing period.')) {
+                    return
+                  }
+                  
+                  setIsCanceling(true)
+                  try {
+                    const res = await fetch('/api/stripe/cancel-subscription', {
+                      method: 'POST',
+                      credentials: 'include',
+                    })
+                    
+                    if (!res.ok) {
+                      const error = await res.json()
+                      throw new Error(error.error || 'Failed to cancel subscription')
+                    }
+                    
+                    // Reload subscription data
+                    const subRes = await fetch('/api/stripe/subscription', {
+                      credentials: 'include',
+                    })
+                    if (subRes.ok) {
+                      const subData = await subRes.json()
+                      setSubscriptionData(subData)
+                    }
+                    
+                    alert('Your subscription will be canceled at the end of the current billing period.')
+                  } catch (error: any) {
+                    console.error('Error canceling subscription:', error)
+                    alert(error.message || 'Failed to cancel subscription. Please try again or contact support.')
+                  } finally {
+                    setIsCanceling(false)
+                  }
+                }}
+                disabled={isCanceling}
+                className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-rose-50 text-red-600 border-2 border-red-200 rounded-lg ${tokens.smallText} font-semibold hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-sm hover:shadow-md`}
+              >
+                <XCircle className="w-4 h-4" />
+                {isCanceling ? 'Canceling...' : 'Cancel Subscription'}
+              </button>
+            )}
           </div>
         </div>
 

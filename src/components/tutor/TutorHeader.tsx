@@ -79,29 +79,29 @@ export default function TutorHeader({
 
   return (
     <>
-      <header className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200/60 bg-white/80 backdrop-blur-sm px-3 sm:px-6 md:px-8 py-4 sm:py-4 rounded-xl shadow-lg shadow-slate-200/50 mb-4 sm:mb-5 w-full">
+      <header className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200/60 bg-white/80 backdrop-blur-sm px-3 sm:px-4 md:px-6 py-3 sm:py-3.5 rounded-xl shadow-lg shadow-slate-200/50 mb-4 sm:mb-5 w-full overflow-hidden">
         {/* Left: NCLEX Practice Mode */}
-        <div className="flex items-center gap-2.5 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
           <button
             onClick={() => onStrictModeChange(!strictMode)}
-            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 ${
               strictMode
                 ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 text-indigo-700 shadow-md shadow-indigo-200/50'
                 : 'text-slate-700 hover:text-indigo-600 hover:bg-slate-50 border-2 border-transparent hover:border-indigo-200'
             }`}
           >
             {strictMode ? (
-              <ToggleRight className="w-6 h-6 text-indigo-600 flex-shrink-0" />
+              <ToggleRight className="w-5 h-5 text-indigo-600 flex-shrink-0" />
             ) : (
-              <ToggleLeft className="w-6 h-6 text-slate-400 flex-shrink-0" />
+              <ToggleLeft className="w-5 h-5 text-slate-400 flex-shrink-0" />
             )}
-            <span className={`font-medium text-sm whitespace-nowrap ${strictMode ? 'text-indigo-700 font-semibold' : ''}`}>
+            <span className={`font-medium text-xs sm:text-sm whitespace-nowrap ${strictMode ? 'text-indigo-700 font-semibold' : ''}`}>
               NCLEX Practice Mode
             </span>
           </button>
           {/* Help tooltip */}
-          <div className="relative group">
-            <HelpCircle className={`w-4 h-4 cursor-help transition-colors flex-shrink-0 ${
+          <div className="relative group flex-shrink-0">
+            <HelpCircle className={`w-4 h-4 sm:w-5 sm:h-5 cursor-help transition-colors ${
               strictMode ? 'text-indigo-500 hover:text-indigo-700' : 'text-slate-400 hover:text-slate-600'
             }`} />
             <div className="absolute top-full left-0 mt-2 w-72 max-w-[calc(100vw-2rem)] p-3 bg-slate-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-50">
@@ -115,11 +115,11 @@ export default function TutorHeader({
         </div>
 
         {/* Center: Tutor / Reflections - Enhanced */}
-        <div className="flex items-center justify-center">
-          <div className="flex items-center gap-1 bg-gradient-to-r from-slate-100 to-slate-200 rounded-full p-1.5 border border-slate-200/60 shadow-sm">
+        <div className="flex items-center justify-center flex-shrink-0">
+          <div className="flex items-center gap-1 bg-gradient-to-r from-slate-100 to-slate-200 rounded-full p-1 border border-slate-200/60 shadow-sm">
             <button
               onClick={() => handleModeChange('tutor')}
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
+              className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                 currentMode === 'tutor'
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
                   : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-white/50'
@@ -129,7 +129,7 @@ export default function TutorHeader({
             </button>
             <button
               onClick={() => handleModeChange('reflections')}
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
+              className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                 currentMode === 'reflections'
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
                   : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-white/50'
@@ -144,14 +144,14 @@ export default function TutorHeader({
         <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
           {/* Class select - hidden in Reflections mode (reflections are personal, not class-based) */}
           {currentMode === 'tutor' && (
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
+            <div className="flex items-center gap-1 flex-shrink-0 min-w-0">
+              <span className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap hidden sm:inline">
                 Class
               </span>
               <select
                 value={selectedClassId ?? ""}
                 onChange={(e) => onSelectClass?.(e.target.value || undefined)}
-                className="rounded-xl border-2 border-slate-200 bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 max-w-[200px] truncate transition-all duration-200"
+                className="rounded-lg border-2 border-slate-200 bg-white/80 backdrop-blur-sm px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 max-w-[140px] sm:max-w-[200px] truncate transition-all duration-200"
               >
                 <option value="">General Tutor</option>
                 {classes.map((cls) => (
@@ -202,10 +202,10 @@ export default function TutorHeader({
                     router.push(`/tutor?${params.toString()}`)
                   }
                 }}
-                className="flex items-center gap-2 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 shadow-md shadow-indigo-200/30 hover:from-indigo-100 hover:to-purple-100 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-200/50 text-indigo-700 whitespace-nowrap transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold"
+                className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 shadow-md shadow-indigo-200/30 hover:from-indigo-100 hover:to-purple-100 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-200/50 text-indigo-700 whitespace-nowrap transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold px-2 sm:px-3 py-1.5 sm:py-2"
               >
-                <Plus className="w-4 h-4" />
-                <span className="text-sm font-medium">New Chat</span>
+                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm font-medium">New Chat</span>
               </Button>
             </div>
           )}
