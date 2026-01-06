@@ -37,8 +37,8 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Desktop Sidebar - Hidden on mobile, visible on lg+ */}
-        <aside className="hidden lg:flex lg:w-64 xl:w-72 flex-shrink-0 bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 border-r border-indigo-900/50 h-screen-dynamic overflow-y-auto">
+        {/* Desktop Sidebar - Hidden on mobile, visible on lg+ - Sticky */}
+        <aside className="hidden lg:flex lg:w-64 xl:w-72 flex-shrink-0 bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 border-r border-indigo-900/50 h-screen-dynamic overflow-y-auto sticky top-0">
           <Sidebar />
         </aside>
         

@@ -745,9 +745,9 @@ function TutorPageContent() {
   return (
     <div className="flex flex-col h-full w-full">
       {/* Main chat column - centered with proper spacing */}
-      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 min-h-0">
-        {/* Header */}
-        <div className="flex-shrink-0">
+      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-3 sm:px-4 md:px-6 py-0 min-h-0">
+        {/* Header - Sticky */}
+        <div className="flex-shrink-0 sticky top-0 z-40 bg-slate-50 pt-3 pb-2">
           <TutorHeader
             mode={currentModeFromUrl}
             strictMode={strictMode}

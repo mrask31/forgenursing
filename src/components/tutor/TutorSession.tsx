@@ -74,10 +74,12 @@ export default function TutorSession({
   const [availableTopics, setAvailableTopics] = useState<NotebookTopic[]>([])
   const lastLoadedClassIdRef = useRef<string | undefined>(undefined) // Prevent duplicate loads
   
-  // Update localSessionId when prop changes
+  // Update localSessionId when prop changes and reset auto-scroll
   useEffect(() => {
     if (propSessionId) {
       setLocalSessionId(propSessionId)
+      // Reset auto-scroll when session changes
+      shouldAutoScrollRef.current = true
     }
   }, [propSessionId])
   

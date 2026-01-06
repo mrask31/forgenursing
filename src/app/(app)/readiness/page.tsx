@@ -360,7 +360,25 @@ export default function ClinicalDashboard() {
 
   return (
     <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
-      <div className={`${tokens.containerMaxWidth || 'max-w-7xl'} mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-10`}>
+      <div className={`${tokens.containerMaxWidth || 'max-w-7xl'} mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6`}>
+        {/* Graduation Date Reminder - Small at top */}
+        {graduationDate && daysUntilGrad !== null && (
+          <div className="mb-4 flex items-center justify-end">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50/60 border border-indigo-200/60 rounded-lg text-xs text-slate-600">
+              <GraduationCap className="w-3 h-3 text-indigo-600" />
+              <span className="font-medium">
+                {daysUntilGrad > 0 ? (
+                  <>
+                    {daysUntilGrad} day{daysUntilGrad === 1 ? '' : 's'} until {new Date(graduationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </>
+                ) : (
+                  <>Graduation reached</>
+                )}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Medical Dashboard Header - Enhanced */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
@@ -518,40 +536,6 @@ export default function ClinicalDashboard() {
               </div>
             </div>
 
-            {/* Graduation Countdown - Enhanced */}
-            {graduationDate && daysUntilGrad !== null && (
-              <div className="bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-indigo-50/80 border-2 border-indigo-200/60 rounded-2xl shadow-lg shadow-indigo-200/30 overflow-hidden">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2.5">
-                      <div className="p-1.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
-                        <GraduationCap className="w-4 h-4 text-white" />
-                      </div>
-                      Graduation
-                    </h3>
-                    <Sparkles className="w-5 h-5 text-indigo-500" />
-                  </div>
-                  {daysUntilGrad > 0 ? (
-                    <div className="text-center">
-                      <div className="text-5xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent mb-3">{daysUntilGrad}</div>
-                      <div className="text-sm font-semibold text-slate-700 mb-2">day{daysUntilGrad === 1 ? '' : 's'} remaining</div>
-                      <div className="text-xs text-slate-600">
-                        {new Date(graduationDate).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric', 
-                          year: 'numeric' 
-                        })}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <div className="text-3xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent mb-2">🎓 Complete!</div>
-                      <div className="text-sm font-semibold text-slate-700">Graduation reached</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Right Column: Learning Library - Enhanced */}
