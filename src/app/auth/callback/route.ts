@@ -42,12 +42,7 @@ export async function GET(request: Request) {
     
     if (error) {
       console.error('[Auth Callback] Error exchanging code for session:', error)
-      // Use appUrl for consistent redirects
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL 
-        ? (process.env.NEXT_PUBLIC_APP_URL.startsWith('http') 
-            ? process.env.NEXT_PUBLIC_APP_URL 
-            : `https://${process.env.NEXT_PUBLIC_APP_URL}`)
-        : origin
+      // Use appUrl for consistent redirects (already declared at top of function)
       return NextResponse.redirect(`${appUrl}/login?error=auth-code-error`)
     }
     
@@ -130,11 +125,6 @@ export async function GET(request: Request) {
   }
 
   // If something breaks, send them to the login page
-  // Use appUrl for consistent redirects
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL 
-    ? (process.env.NEXT_PUBLIC_APP_URL.startsWith('http') 
-        ? process.env.NEXT_PUBLIC_APP_URL 
-        : `https://${process.env.NEXT_PUBLIC_APP_URL}`)
-    : origin
+  // Use appUrl for consistent redirects (already declared at top of function)
   return NextResponse.redirect(`${appUrl}/login?error=auth-code-error`)
 }
