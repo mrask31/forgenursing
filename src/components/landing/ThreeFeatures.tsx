@@ -138,7 +138,7 @@ export default function ThreeFeatures() {
               <h4 className="font-bold text-slate-900 mb-2 hidden sm:block">✔ Guided reasoning — not just answers</h4>
               <h4 className="font-bold text-slate-900 mb-2 sm:hidden">Guided reasoning</h4>
               <p className="text-slate-700 text-sm hidden sm:block">
-                Medical dictionary with bookmarking
+                Step-by-step clinical reasoning guidance
               </p>
             </div>
           </div>

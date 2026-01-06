@@ -52,7 +52,7 @@ export default function Hero({ user }: HeroProps) {
               AI Tutor for NCLEX Prep
             </div>
             
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent tracking-tight mb-4 sm:mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent tracking-tight mb-4 sm:mb-6 leading-tight pb-1">
               <span className="hidden sm:inline">Stop Memorizing. Start Thinking Like a Nurse.</span>
               <span className="sm:hidden">Think Like a Nurse — Not a Memorizer</span>
             </h1>

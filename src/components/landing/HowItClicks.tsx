@@ -32,14 +32,14 @@ export default function HowItClicks() {
               </div>
             </div>
           </div>
-          <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-full text-base font-bold mb-4 shadow-md shadow-indigo-500/30">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-full text-xl font-bold mb-6 shadow-lg shadow-indigo-500/30">
             1
           </div>
-          <h3 className="text-xl font-bold text-slate-900 mb-3">
+          <h3 className="text-2xl font-bold text-slate-900 mb-4">
             <span className="hidden sm:inline">1️⃣ Upload your class materials</span>
             <span className="sm:hidden">Upload</span>
           </h3>
-          <p className="text-sm text-slate-700 leading-relaxed hidden sm:block">
+          <p className="text-slate-700 leading-relaxed font-medium hidden sm:block">
             Lecture notes, PDFs, and textbook chapters.
           </p>
         </div>
