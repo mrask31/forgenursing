@@ -7,7 +7,15 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const plan = searchParams.get('plan')
-  const next = searchParams.get('next') ?? '/clinical-desk'
+  const next = searchParams.get('next') ?? '/tutor'
+  
+  // Confirm redirectTo / callbackUrl matches production domain
+  // Use NEXT_PUBLIC_APP_URL if available, otherwise use request origin
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL 
+    ? (process.env.NEXT_PUBLIC_APP_URL.startsWith('http') 
+        ? process.env.NEXT_PUBLIC_APP_URL 
+        : `https://${process.env.NEXT_PUBLIC_APP_URL}`)
+    : origin
 
   if (code) {
     const cookieStore = cookies()
@@ -34,7 +42,13 @@ export async function GET(request: Request) {
     
     if (error) {
       console.error('[Auth Callback] Error exchanging code for session:', error)
-      return NextResponse.redirect(`${origin}/login?error=auth-code-error`)
+      // Use appUrl for consistent redirects
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL 
+        ? (process.env.NEXT_PUBLIC_APP_URL.startsWith('http') 
+            ? process.env.NEXT_PUBLIC_APP_URL 
+            : `https://${process.env.NEXT_PUBLIC_APP_URL}`)
+        : origin
+      return NextResponse.redirect(`${appUrl}/login?error=auth-code-error`)
     }
     
     if (!error) {
@@ -97,7 +111,7 @@ export async function GET(request: Request) {
       // If there's a plan parameter, redirect to checkout initiation page
       // This will trigger the Stripe checkout flow
       if (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) {
-        return NextResponse.redirect(`${origin}/checkout?plan=${plan}`)
+        return NextResponse.redirect(`${appUrl}/checkout?plan=${plan}`)
       }
       
       // If user needs to pay (pending_payment, canceled, past_due, unpaid), redirect to checkout
@@ -106,14 +120,21 @@ export async function GET(request: Request) {
           subscriptionStatus === 'canceled' || 
           subscriptionStatus === 'past_due' || 
           subscriptionStatus === 'unpaid') {
-        // Default to monthly plan if no plan specified
-        return NextResponse.redirect(`${origin}/checkout?plan=monthly`)
+        // Redirect to checkout without plan so user can choose
+        return NextResponse.redirect(`${appUrl}/checkout`)
       }
       
-      return NextResponse.redirect(`${origin}${next}`)
+      // Redirect to a valid route (e.g. /tutor), not a non-existent path
+      return NextResponse.redirect(`${appUrl}${next}`)
     }
   }
 
   // If something breaks, send them to the login page
-  return NextResponse.redirect(`${origin}/login?error=auth-code-error`)
+  // Use appUrl for consistent redirects
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL 
+    ? (process.env.NEXT_PUBLIC_APP_URL.startsWith('http') 
+        ? process.env.NEXT_PUBLIC_APP_URL 
+        : `https://${process.env.NEXT_PUBLIC_APP_URL}`)
+    : origin
+  return NextResponse.redirect(`${appUrl}/login?error=auth-code-error`)
 }

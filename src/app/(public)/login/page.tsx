@@ -39,88 +39,115 @@ export default function LoginPage() {
   }, [])
 
   // Memoize Supabase client to prevent recreation on every render
+  // Ensure Supabase client configuration for production
   const supabase = useMemo(() => {
-    return createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    // Sanity check: log warning in dev if env vars are missing
+    if (process.env.NODE_ENV === 'development') {
+      if (!supabaseUrl || !supabaseAnonKey) {
+        console.warn('⚠️ [Login] Supabase environment variables are missing!')
+        console.warn('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✓' : '✗')
+        console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✓' : '✗')
+      }
+    }
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase configuration is missing. Please check your environment variables.')
+    }
+
+    return createBrowserClient(supabaseUrl, supabaseAnonKey)
   }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
+    // Ensure spinner stops on login error - always set loading to false in finally
     setLoading(true)
     setMessage(null)
 
     try {
-      console.log('[Login] Attempting to sign in...', { email })
+      console.log('[Login] Attempting to sign in...', { email: email.trim() })
       
+      // Wrap the sign-in call in try/catch with defensive error handling
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       })
-      
+
+      // On error: Set isLoading back to false, store error state, show human-readable message
       if (error) {
-        console.error('[Login] Sign in error:', error)
-        throw error
+        console.error('[Login] Supabase sign-in error:', error)
+        setMessage({ 
+          text: error.message || 'Login failed. Please check your email and password.', 
+          type: 'error' 
+        })
+        return // Exit early, finally block will set loading to false
       }
-      
+
       if (!data || !data.user) {
-        console.error('[Login] No user data returned')
-        throw new Error('Login failed: No user data returned')
+        console.error('[Login] No user data returned from sign-in')
+        setMessage({ 
+          text: 'Login failed: No user data returned. Please try again.', 
+          type: 'error' 
+        })
+        return // Exit early, finally block will set loading to false
       }
 
       console.log('[Login] Sign in successful, checking subscription...', { userId: data.user.id })
 
       // Check subscription status before redirecting
-      try {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('subscription_status')
-          .eq('id', data.user.id)
-          .single()
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', data.user.id)
+        .single()
 
-        if (profileError) {
-          console.error('[Login] Error checking subscription status:', profileError)
-          // On error, default to checkout to be safe
-          console.log('[Login] Redirecting to checkout (profile error)')
-          window.location.href = '/checkout'
-          return
-        }
-
-        const subscriptionStatus = profile?.subscription_status || 'pending_payment'
-        console.log('[Login] Subscription status:', subscriptionStatus)
-        
-        // If user needs payment, redirect to checkout (without plan so user can choose)
-        if (subscriptionStatus === 'pending_payment' || 
-            subscriptionStatus === 'canceled' || 
-            subscriptionStatus === 'past_due' || 
-            subscriptionStatus === 'unpaid') {
-          console.log('[Login] Redirecting to checkout (payment needed)')
-          // Use window.location.replace for a hard redirect that can't be cached
-          window.location.replace('/checkout')
-        } else {
-          console.log('[Login] Redirecting to:', redirect)
-          // User is already subscribed, go to tutor
-          // Use window.location.replace for a hard redirect that can't be cached
-          window.location.replace(redirect)
-        }
-      } catch (error) {
-        console.error('[Login] Error checking subscription status:', error)
+      if (profileError) {
+        console.error('[Login] Error checking subscription status:', profileError)
         // On error, default to checkout to be safe
-        console.log('[Login] Redirecting to checkout (catch error)')
+        console.log('[Login] Redirecting to checkout (profile error)')
         window.location.replace('/checkout')
+        return // Exit early, redirecting so don't set loading to false
       }
-    } catch (error: any) {
-      console.error('[Login] Login error:', error)
+
+      const subscriptionStatus = profile?.subscription_status || 'pending_payment'
+      console.log('[Login] Subscription status:', subscriptionStatus)
+      
+      // If user needs payment, redirect to checkout (without plan so user can choose)
+      if (subscriptionStatus === 'pending_payment' || 
+          subscriptionStatus === 'canceled' || 
+          subscriptionStatus === 'past_due' || 
+          subscriptionStatus === 'unpaid') {
+        console.log('[Login] Redirecting to checkout (payment needed)')
+        window.location.replace('/checkout')
+      } else {
+        console.log('[Login] Redirecting to:', redirect)
+        // User is already subscribed, go to tutor
+        window.location.replace(redirect)
+      }
+      // Note: We don't set loading to false on success because we're redirecting
+    } catch (err) {
+      // In catch: console.error for debugging, show user-friendly error
+      console.error('[Login] Unexpected login error:', err)
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : 'Something went wrong. Please try again.'
       setMessage({ 
-        text: error.message || 'Failed to sign in. Please check your credentials and try again.', 
+        text: errorMessage, 
         type: 'error' 
       })
-      setLoading(false)
+    } finally {
+      // Make sure finally always runs so the spinner stops, even on failure
+      // Check if we're still on the login page before setting loading to false
+      // (If we redirected, the page will unmount anyway)
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
+      if (currentPath === '/login') {
+        setLoading(false)
+      }
     }
-    // Note: We don't set loading to false on success because we're redirecting
   }
 
   return (
