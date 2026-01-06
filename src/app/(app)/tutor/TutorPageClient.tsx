@@ -743,11 +743,11 @@ function TutorPageContent() {
   const evidence = assistantWithEvidence?.evidence ?? []
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="flex flex-col h-full w-full overflow-hidden">
       {/* Main chat column - centered with proper spacing */}
-      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-3 sm:px-4 md:px-6 py-0 min-h-0">
-        {/* Header - Sticky */}
-        <div className="flex-shrink-0 sticky top-0 z-40 bg-slate-50 pt-3 pb-2">
+      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-3 sm:px-4 md:px-6 min-h-0 overflow-hidden">
+        {/* Header - Fixed */}
+        <div className="flex-shrink-0 bg-slate-50 pt-3 pb-2 z-40">
           <TutorHeader
             mode={currentModeFromUrl}
             strictMode={strictMode}
@@ -776,7 +776,7 @@ function TutorPageContent() {
         </div>
 
         {/* Chat area with scrollable messages and fixed input */}
-        <div className="flex-1 flex flex-col min-h-0 mt-4">
+        <div className="flex-1 flex flex-col min-h-0 mt-4 overflow-hidden">
           {showLanding ? (
             <>
               <div className="flex-1 overflow-y-auto">

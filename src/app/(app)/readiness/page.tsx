@@ -360,7 +360,7 @@ export default function ClinicalDashboard() {
 
   return (
     <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
-      <div className={`${tokens.containerMaxWidth || 'max-w-7xl'} mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6`}>
+      <div className={`${tokens.containerMaxWidth || 'max-w-7xl'} mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 pb-safe-b`}>
         {/* Graduation Date Reminder - Small at top */}
         {graduationDate && daysUntilGrad !== null && (
           <div className="mb-4 flex items-center justify-end">

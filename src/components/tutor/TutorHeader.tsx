@@ -165,49 +165,47 @@ export default function TutorHeader({
 
           {/* Start New Chat button - only show when there's an active session */}
           {currentSessionId && (
-            <div className="flex-shrink-0 relative z-10">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={async () => {
-                  if (!currentSessionId) return
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                if (!currentSessionId) return
+                
+                // Archive the current chat
+                try {
+                  const archiveRes = await fetch('/api/chats/archive', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ chatId: currentSessionId }),
+                  })
                   
-                  // Archive the current chat
-                  try {
-                    const archiveRes = await fetch('/api/chats/archive', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ chatId: currentSessionId }),
-                    })
-                    
-                    if (!archiveRes.ok) {
-                      console.error('[TutorHeader] Failed to archive chat')
-                      // Continue anyway - don't block user
-                    }
-                  } catch (error) {
-                    console.error('[TutorHeader] Error archiving chat:', error)
+                  if (!archiveRes.ok) {
+                    console.error('[TutorHeader] Failed to archive chat')
                     // Continue anyway - don't block user
                   }
-                  
-                  // Clear session and show landing page
-                  if (onStartNewSession) {
-                    onStartNewSession()
-                  } else {
-                    // Fallback: navigate to clear session
-                    const params = new URLSearchParams(searchParams.toString())
-                    params.delete('sessionId')
-                    params.delete('chatId')
-                    params.delete('id')
-                    router.push(`/tutor?${params.toString()}`)
-                  }
-                }}
-                className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 shadow-md shadow-indigo-200/30 hover:from-indigo-100 hover:to-purple-100 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-200/50 text-indigo-700 whitespace-nowrap transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold px-2 sm:px-3 py-1.5 sm:py-2"
-              >
-                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm font-medium">New Chat</span>
-              </Button>
-            </div>
+                } catch (error) {
+                  console.error('[TutorHeader] Error archiving chat:', error)
+                  // Continue anyway - don't block user
+                }
+                
+                // Clear session and show landing page
+                if (onStartNewSession) {
+                  onStartNewSession()
+                } else {
+                  // Fallback: navigate to clear session
+                  const params = new URLSearchParams(searchParams.toString())
+                  params.delete('sessionId')
+                  params.delete('chatId')
+                  params.delete('id')
+                  router.push(`/tutor?${params.toString()}`)
+                }
+              }}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-0 shadow-md shadow-indigo-500/30 hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 font-semibold px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>New Chat</span>
+            </Button>
           )}
 
           {/* History button removed - now in sidebar */}
