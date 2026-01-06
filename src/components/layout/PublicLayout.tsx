@@ -82,8 +82,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   Go to Tutor
                 </Link>
               )}
-              {/* Always show "Log In" when user is not logged in */}
-              {!user && (
+              {/* Show "Log In" when user is not logged in OR when on landing page (even if logged in without subscription) */}
+              {(!user || (pathname === '/' && !hasActiveSubscription)) && (
                 <Link
                   href="/login"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 text-slate-700 hover:text-indigo-700 text-xs sm:text-sm font-semibold transition-colors min-h-[40px] sm:min-h-[44px] flex items-center border-2 border-transparent hover:border-indigo-200 rounded-xl"
@@ -91,8 +91,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   Log In
                 </Link>
               )}
-              {/* Only show "Get Started" on landing page when user is not logged in */}
-              {!user && pathname === '/' && (
+              {/* Show "Get Started" on landing page when user is not logged in OR doesn't have active subscription */}
+              {pathname === '/' && (!user || !hasActiveSubscription) && (
                 <Link
                   href="/signup?plan=monthly"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 min-h-[40px] sm:min-h-[44px] flex items-center transform hover:scale-105 active:scale-95"

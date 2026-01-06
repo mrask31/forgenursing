@@ -258,11 +258,14 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Add cache control headers for login and signup pages to prevent caching issues
-    if (pathname === '/login' || pathname === '/signup') {
-      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    // Add aggressive cache control headers for login, signup, and landing pages to prevent 304 issues
+    if (pathname === '/login' || pathname === '/signup' || pathname === '/') {
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
       response.headers.set('Pragma', 'no-cache')
       response.headers.set('Expires', '0')
+      response.headers.set('X-Cache-Control', 'no-cache')
+      // Add a unique header to force fresh requests
+      response.headers.set('X-Timestamp', Date.now().toString())
     }
 
     return response
