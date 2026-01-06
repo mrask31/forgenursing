@@ -540,19 +540,21 @@ export default function TutorSession({
     setTimeout(tryScroll, 200)
   }, [scrollToMessageId, sessionId]) // Use sessionId as dependency to retry when session changes
 
-  // Auto-scroll to bottom when messages change (only if user hasn't manually scrolled up and no scrollToMessageId)
+  // Auto-scroll to bottom when session loads or messages change (only if user hasn't manually scrolled up and no scrollToMessageId)
   useEffect(() => {
     if (!scrollContainerRef.current || !shouldAutoScrollRef.current || scrollToMessageId) return
     
     const container = scrollContainerRef.current
     // Small delay to ensure DOM is updated
     setTimeout(() => {
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: 'smooth'
-      })
-    }, 100)
-  }, [messages, scrollToMessageId])
+      if (container && shouldAutoScrollRef.current) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'auto' // Instant scroll on load, smooth for new messages
+        })
+      }
+    }, 150)
+  }, [messages.length, scrollToMessageId, sessionId]) // Added sessionId to trigger on initial load
 
   // Listen for scroll events to show/hide scroll-to-bottom button
   useEffect(() => {
