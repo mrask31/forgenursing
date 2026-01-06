@@ -146,7 +146,7 @@ export async function POST(req: Request) {
           subscriptionId,
           status: subscription.status,
           trialEnd: subscription.trial_end,
-          currentPeriodEnd: subscription.current_period_end
+          currentPeriodEnd: (subscription as any).current_period_end
         })
 
         // Update user's profile with subscription info
