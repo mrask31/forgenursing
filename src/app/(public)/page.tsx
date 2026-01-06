@@ -124,10 +124,13 @@ export default function HomePage() {
               Most Popular
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2">Semester Access</h3>
-            <div className="mb-4">
-              <span className="text-3xl sm:text-4xl font-bold text-slate-900">$79</span>
+            <div className="mb-2">
+              <span className="text-3xl sm:text-4xl font-bold text-slate-900">$89</span>
               <span className="text-slate-600 text-sm sm:text-base ml-1">/semester</span>
             </div>
+            <p className="text-xs sm:text-sm text-indigo-600 font-semibold mb-4">
+              ~$15/month • Save 48% vs monthly
+            </p>
             <p className="text-xs sm:text-sm text-slate-600 mb-6">Best value for a full term</p>
             <button
               onClick={() => startStripeCheckout('semester')}
@@ -141,10 +144,13 @@ export default function HomePage() {
           {/* Annual Plan - Enhanced */}
           <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl p-6 sm:p-8 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-indigo-200/30 transition-all duration-300 transform hover:scale-[1.02]">
             <h3 className="text-xl font-bold text-slate-900 mb-2">Annual Access</h3>
-            <div className="mb-4">
+            <div className="mb-2">
               <span className="text-3xl sm:text-4xl font-bold text-slate-900">$199</span>
               <span className="text-slate-600 text-sm sm:text-base ml-1">/year</span>
             </div>
+            <p className="text-xs sm:text-sm text-indigo-600 font-semibold mb-4">
+              ~$17/month • Save 41% vs monthly
+            </p>
             <p className="text-xs sm:text-sm text-slate-600 mb-6">Maximum savings for long-term commitment</p>
             <button
               onClick={() => startStripeCheckout('annual')}
