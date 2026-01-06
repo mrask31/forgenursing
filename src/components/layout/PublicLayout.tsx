@@ -61,9 +61,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   }, [])
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col overflow-visible">
-      {/* Top Navigation - Enhanced */}
-      <nav className="border-b-2 border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-sm flex-shrink-0">
+    <div className="min-h-screen-dynamic bg-slate-50 flex flex-col">
+      {/* Top Navigation - Sticky header */}
+      <nav className="sticky top-0 z-40 border-b-2 border-slate-200/60 bg-white/90 backdrop-blur-sm shadow-sm flex-shrink-0 safe-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-18">
             <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group">
@@ -93,14 +93,14 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         </div>
       </nav>
 
-      {/* Content */}
-      <main className="flex-1 w-full overflow-visible">
+      {/* Content - Scrollable with safe area padding */}
+      <main className="flex-1 w-full overflow-visible pb-safe-b">
         {children}
       </main>
 
       {/* Footer - Enhanced */}
-      <footer className="border-t-2 border-slate-200/60 bg-white/80 backdrop-blur-sm mt-auto flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <footer className="border-t-2 border-slate-200/60 bg-white/80 backdrop-blur-sm mt-auto flex-shrink-0 pb-safe-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 text-xs sm:text-sm text-slate-600">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-center sm:items-start">
               <Link href="/terms" className="hover:text-slate-900 transition-colors">

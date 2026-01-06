@@ -184,7 +184,7 @@ export default function ForgeMapPanel({ isOpen, onClose, messageContent, chatId,
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto h-[calc(100vh-4rem)] p-4">
+        <div className="overflow-y-auto h-[calc(100dvh-4rem)] p-4">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="animate-spin text-clinical-primary w-8 h-8 mb-4" />

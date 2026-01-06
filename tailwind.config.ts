@@ -82,6 +82,22 @@ const config: Config = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		padding: {
+  			'safe-b': 'calc(env(safe-area-inset-bottom, 0px) + 1rem)',
+  			'safe-t': 'env(safe-area-inset-top, 0px)',
+  			'safe-l': 'env(safe-area-inset-left, 0px)',
+  			'safe-r': 'env(safe-area-inset-right, 0px)',
+  		},
+  		margin: {
+  			'safe-b': 'env(safe-area-inset-bottom, 0px)',
+  			'safe-t': 'env(safe-area-inset-top, 0px)',
+  		},
+  		height: {
+  			'screen-dynamic': '100dvh',
+  		},
+  		minHeight: {
+  			'screen-dynamic': '100dvh',
   		}
   	}
   },

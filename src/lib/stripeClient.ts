@@ -11,6 +11,29 @@ const PRICE_IDS: Record<Plan, string> = {
 export async function startStripeCheckout(plan: Plan) {
   const priceId = PRICE_IDS[plan]
 
+  // Log price IDs for debugging (first 10 chars only for security)
+  console.log('[Stripe Checkout] Plan mapping:', {
+    plan,
+    priceId: priceId ? `${priceId.substring(0, 10)}...` : 'MISSING',
+    allPriceIds: {
+      monthly: PRICE_IDS.monthly ? `${PRICE_IDS.monthly.substring(0, 10)}...` : 'MISSING',
+      semester: PRICE_IDS.semester ? `${PRICE_IDS.semester.substring(0, 10)}...` : 'MISSING',
+      annual: PRICE_IDS.annual ? `${PRICE_IDS.annual.substring(0, 10)}...` : 'MISSING',
+    }
+  })
+
+  // Validate that price IDs are unique
+  const uniquePriceIds = new Set(Object.values(PRICE_IDS).filter(Boolean))
+  if (uniquePriceIds.size < Object.keys(PRICE_IDS).length) {
+    console.error('[Stripe Checkout] WARNING: Duplicate price IDs detected!', {
+      monthly: PRICE_IDS.monthly,
+      semester: PRICE_IDS.semester,
+      annual: PRICE_IDS.annual,
+    })
+    alert(`Pricing configuration error: Duplicate price IDs detected. Please check your environment variables. All three plans (monthly, semester, annual) must have unique Stripe price IDs.`)
+    return
+  }
+
   if (!priceId) {
     console.error('Missing Stripe price ID for plan:', plan)
     console.error('Available price IDs:', PRICE_IDS)

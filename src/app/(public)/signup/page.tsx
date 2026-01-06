@@ -353,8 +353,8 @@ export default function SignupPage() {
 
   if (showSuccess) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+      <div className="min-h-[calc(100dvh-4rem)] bg-slate-50">
+        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100dvh-4rem)]">
           {/* Left Column */}
           <div className="hidden lg:flex bg-gradient-to-br from-indigo-50 to-purple-50 border-r border-slate-200 flex flex-col justify-center items-center h-full px-8 text-center">
             <div className="max-w-md space-y-6">
@@ -490,8 +490,8 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen flex-col-reverse lg:flex-row">
+    <div className="min-h-[calc(100dvh-4rem)] bg-slate-50">
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100dvh-4rem)] flex-col-reverse lg:flex-row">
         {/* Left Column - Desktop Only, shown below on mobile */}
         <div className="hidden lg:flex bg-gradient-to-br from-indigo-50 to-purple-50 border-r border-slate-200 flex flex-col justify-center items-center h-full px-8 text-center">
           <div className="max-w-md space-y-8">

@@ -39,14 +39,14 @@ export default function NotebookPage() {
 
   if (!userId) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="min-h-[calc(100dvh-4rem)] flex items-center justify-center">
         <div className="text-[var(--tutor-text-muted)]">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex overflow-hidden bg-[var(--tutor-bg)]">
+    <div className="min-h-[calc(100dvh-4rem)] flex overflow-hidden bg-[var(--tutor-bg)]">
       {/* Sidebar */}
       <div className="w-80 shrink-0">
         <NotebookSidebar
