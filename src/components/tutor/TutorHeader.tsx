@@ -140,18 +140,18 @@ export default function TutorHeader({
           </div>
         </div>
 
-        {/* Right: Class / Topic strip + History */}
-        <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
+        {/* Right: Class / Topic strip + New Chat */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Class select - hidden in Reflections mode (reflections are personal, not class-based) */}
           {currentMode === 'tutor' && (
-            <div className="flex items-center gap-1 flex-shrink-0 min-w-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <span className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap hidden sm:inline">
                 Class
               </span>
               <select
                 value={selectedClassId ?? ""}
                 onChange={(e) => onSelectClass?.(e.target.value || undefined)}
-                className="rounded-lg border-2 border-slate-200 bg-white/80 backdrop-blur-sm px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 max-w-[140px] sm:max-w-[200px] truncate transition-all duration-200"
+                className="rounded-lg border-2 border-slate-200 bg-white/80 backdrop-blur-sm px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 w-[120px] sm:w-[160px] transition-all duration-200"
               >
                 <option value="">General Tutor</option>
                 {classes.map((cls) => (
@@ -201,14 +201,13 @@ export default function TutorHeader({
                   router.push(`/tutor?${params.toString()}`)
                 }
               }}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-0 shadow-md shadow-indigo-500/30 hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 font-semibold px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap"
+              className="flex-shrink-0 flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-0 shadow-md shadow-indigo-500/30 hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 font-semibold px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New Chat</span>
+              <Plus className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="hidden sm:inline">New Chat</span>
+              <span className="sm:hidden">New</span>
             </Button>
           )}
-
-          {/* History button removed - now in sidebar */}
         </div>
       </header>
       {/* Exam Mode Dialog - outside header for portal rendering */}
