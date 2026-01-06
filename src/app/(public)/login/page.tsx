@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, MessageSquare, BookOpen, GraduationCap, Shield } from 'lucide-react'
@@ -38,29 +38,40 @@ export default function LoginPage() {
     }
   }, [])
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  // Memoize Supabase client to prevent recreation on every render
+  const supabase = useMemo(() => {
+    return createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
+    
     setLoading(true)
     setMessage(null)
 
     try {
+      console.log('[Login] Attempting to sign in...', { email })
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       })
       
       if (error) {
+        console.error('[Login] Sign in error:', error)
         throw error
       }
       
-      if (!data.user) {
+      if (!data || !data.user) {
+        console.error('[Login] No user data returned')
         throw new Error('Login failed: No user data returned')
       }
+
+      console.log('[Login] Sign in successful, checking subscription...', { userId: data.user.id })
 
       // Check subscription status before redirecting
       try {
@@ -71,34 +82,42 @@ export default function LoginPage() {
           .single()
 
         if (profileError) {
-          console.error('Error checking subscription status:', profileError)
+          console.error('[Login] Error checking subscription status:', profileError)
           // On error, default to checkout to be safe
+          console.log('[Login] Redirecting to checkout (profile error)')
           window.location.href = '/checkout'
           return
         }
 
         const subscriptionStatus = profile?.subscription_status || 'pending_payment'
+        console.log('[Login] Subscription status:', subscriptionStatus)
         
         // If user needs payment, redirect to checkout (without plan so user can choose)
         if (subscriptionStatus === 'pending_payment' || 
             subscriptionStatus === 'canceled' || 
             subscriptionStatus === 'past_due' || 
             subscriptionStatus === 'unpaid') {
-          // Use window.location.href for a hard redirect to avoid caching issues
-          window.location.href = '/checkout'
+          console.log('[Login] Redirecting to checkout (payment needed)')
+          // Use window.location.replace for a hard redirect that can't be cached
+          window.location.replace('/checkout')
         } else {
+          console.log('[Login] Redirecting to:', redirect)
           // User is already subscribed, go to tutor
-          // Use window.location.href for a hard redirect to avoid caching issues
-          window.location.href = redirect
+          // Use window.location.replace for a hard redirect that can't be cached
+          window.location.replace(redirect)
         }
       } catch (error) {
-        console.error('Error checking subscription status:', error)
+        console.error('[Login] Error checking subscription status:', error)
         // On error, default to checkout to be safe
-        window.location.href = '/checkout'
+        console.log('[Login] Redirecting to checkout (catch error)')
+        window.location.replace('/checkout')
       }
     } catch (error: any) {
-      console.error('Login error:', error)
-      setMessage({ text: error.message || 'Failed to sign in. Please try again.', type: 'error' })
+      console.error('[Login] Login error:', error)
+      setMessage({ 
+        text: error.message || 'Failed to sign in. Please check your credentials and try again.', 
+        type: 'error' 
+      })
       setLoading(false)
     }
     // Note: We don't set loading to false on success because we're redirecting
