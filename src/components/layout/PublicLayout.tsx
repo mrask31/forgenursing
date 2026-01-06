@@ -73,32 +73,33 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <span className="font-bold text-lg sm:text-xl text-slate-900 bg-gradient-to-r from-slate-900 to-indigo-900 bg-clip-text text-transparent">ForgeNursing</span>
             </Link>
             <div className="flex items-center gap-3 sm:gap-4">
-              {user && hasActiveSubscription && pathname !== '/checkout' ? (
+              {/* Show "Go to Tutor" for logged-in users with active subscription */}
+              {user && hasActiveSubscription && pathname !== '/checkout' && (
                 <Link
                   href="/tutor"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 min-h-[40px] sm:min-h-[44px] flex items-center transform hover:scale-105 active:scale-95"
                 >
                   Go to Tutor
                 </Link>
-              ) : !user ? (
-                <>
-                  <Link
-                    href="/login"
-                    className="px-4 sm:px-5 py-2 sm:py-2.5 text-slate-700 hover:text-indigo-700 text-xs sm:text-sm font-semibold transition-colors min-h-[40px] sm:min-h-[44px] flex items-center border-2 border-transparent hover:border-indigo-200 rounded-xl"
-                  >
-                    Log In
-                  </Link>
-                  {/* Only show "Get Started" on landing page, not on login/signup pages */}
-                  {pathname === '/' && (
-                    <Link
-                      href="/signup?plan=monthly"
-                      className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 min-h-[40px] sm:min-h-[44px] flex items-center transform hover:scale-105 active:scale-95"
-                    >
-                      Get Started
-                    </Link>
-                  )}
-                </>
-              ) : null}
+              )}
+              {/* Always show "Log In" when user is not logged in */}
+              {!user && (
+                <Link
+                  href="/login"
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 text-slate-700 hover:text-indigo-700 text-xs sm:text-sm font-semibold transition-colors min-h-[40px] sm:min-h-[44px] flex items-center border-2 border-transparent hover:border-indigo-200 rounded-xl"
+                >
+                  Log In
+                </Link>
+              )}
+              {/* Only show "Get Started" on landing page when user is not logged in */}
+              {!user && pathname === '/' && (
+                <Link
+                  href="/signup?plan=monthly"
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 min-h-[40px] sm:min-h-[44px] flex items-center transform hover:scale-105 active:scale-95"
+                >
+                  Get Started
+                </Link>
+              )}
             </div>
           </div>
         </div>

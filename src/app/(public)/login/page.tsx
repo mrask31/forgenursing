@@ -120,53 +120,63 @@ export default function LoginPage() {
         return // Exit early, redirecting so don't set loading to false
       }
 
-      const subscriptionStatus = profile?.subscription_status
+      // Get subscription status - handle null/undefined cases
+      const subscriptionStatus = profile?.subscription_status || null
       const hasStripeSubscription = !!profile?.stripe_subscription_id
       
       console.log('[Login] Subscription check:', {
-        subscriptionStatus,
+        subscriptionStatus: subscriptionStatus || 'null/undefined',
         hasStripeSubscription,
         profileExists: !!profile,
-        rawProfile: profile
+        rawProfile: profile,
+        userId: data.user.id
       })
       
-      // Explicitly check for active subscription statuses (trialing or active)
-      const hasActiveSubscription = subscriptionStatus === 'trialing' || subscriptionStatus === 'active'
+      // Normalize subscription status to string for comparison
+      const status = String(subscriptionStatus || '').toLowerCase().trim()
       
       // PRIORITY 1: If user has trialing or active status, go to tutor
-      if (hasActiveSubscription) {
-        console.log('[Login] User has active subscription (trialing or active), redirecting to:', redirect)
+      // Check both the normalized status and original to catch any case variations
+      if (status === 'trialing' || status === 'active' || 
+          subscriptionStatus === 'trialing' || subscriptionStatus === 'active') {
+        console.log('[Login] ✅ User has active subscription (trialing or active), redirecting to:', redirect)
         window.location.replace(redirect)
         return
       }
       
-      // PRIORITY 2: If user has a Stripe subscription ID but status is pending_payment,
+      // PRIORITY 2: If user has a Stripe subscription ID but status is pending_payment or null,
       // the webhook might not have fired yet. In this case, allow access (they completed checkout)
-      if (hasStripeSubscription && subscriptionStatus === 'pending_payment') {
-        console.log('[Login] User has Stripe subscription ID but status is pending - likely in trial, allowing access')
+      if (hasStripeSubscription && (status === 'pending_payment' || !subscriptionStatus)) {
+        console.log('[Login] User has Stripe subscription ID but status is pending/null - likely in trial, allowing access')
         // Update status to trialing as a best guess (webhook should update it properly)
-        await supabase
+        const { error: updateError } = await supabase
           .from('profiles')
           .update({ subscription_status: 'trialing' })
           .eq('id', data.user.id)
-        console.log('[Login] Updated status to trialing, redirecting to tutor')
+        
+        if (updateError) {
+          console.error('[Login] Error updating status to trialing:', updateError)
+        } else {
+          console.log('[Login] Updated status to trialing')
+        }
+        console.log('[Login] Redirecting to tutor')
         window.location.replace(redirect)
         return
       }
       
       // PRIORITY 3: If user needs payment, redirect to checkout
       if (!subscriptionStatus || 
-          subscriptionStatus === 'pending_payment' || 
-          subscriptionStatus === 'canceled' || 
-          subscriptionStatus === 'past_due' || 
-          subscriptionStatus === 'unpaid') {
-        console.log('[Login] Redirecting to checkout (payment needed)')
+          status === 'pending_payment' || 
+          status === 'canceled' || 
+          status === 'past_due' || 
+          status === 'unpaid') {
+        console.log('[Login] ❌ Redirecting to checkout (payment needed). Status:', subscriptionStatus || 'null')
         window.location.replace('/checkout')
         return
       }
       
       // PRIORITY 4: Unknown status - log and redirect to checkout to be safe
-      console.warn('[Login] Unknown subscription status:', subscriptionStatus, '- redirecting to checkout')
+      console.warn('[Login] ⚠️ Unknown subscription status:', subscriptionStatus, '- redirecting to checkout')
       window.location.replace('/checkout')
       // Note: We don't set loading to false on success because we're redirecting
     } catch (err) {
