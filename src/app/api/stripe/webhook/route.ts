@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import { headers } from 'next/headers'
 
 // Lazy initialization function for Stripe client
@@ -68,19 +68,66 @@ export async function POST(req: Request) {
 
     console.log('[Stripe Webhook] Received event:', event.type)
 
-    const supabase = createClient()
+    // Use service role key to bypass RLS - webhooks don't have user sessions
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.error('[Stripe Webhook] Missing Supabase URL or Service Role Key')
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      )
+    }
+
+    // Create admin client with service role key to bypass RLS
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
 
     // Handle different event types
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         
+        console.log('[Stripe Webhook] checkout.session.completed event:', {
+          sessionId: session.id,
+          customerId: session.customer,
+          customerEmail: session.customer_email,
+          clientReferenceId: session.client_reference_id,
+          subscriptionId: session.subscription,
+          mode: session.mode
+        })
+        
         // Get user ID from client_reference_id (we set this in checkout route)
-        const userId = session.client_reference_id
+        let userId = session.client_reference_id
         const customerId = session.customer as string
+        const customerEmail = session.customer_email
+
+        // Fallback: If no client_reference_id, try to find user by Stripe customer ID
+        // (in case webhook fires before client_reference_id is set)
+        if (!userId && customerId) {
+          console.log('[Stripe Webhook] No client_reference_id, looking up user by Stripe customer ID:', customerId)
+          const { data: existingProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('stripe_customer_id', customerId)
+            .single()
+          
+          if (existingProfile?.id) {
+            userId = existingProfile.id
+            console.log('[Stripe Webhook] Found user by Stripe customer ID:', userId)
+          } else {
+            console.warn('[Stripe Webhook] Could not find user by Stripe customer ID:', customerId)
+          }
+        }
 
         if (!userId) {
-          console.error('[Stripe Webhook] No client_reference_id in checkout session')
+          console.error('[Stripe Webhook] No user ID found - cannot update profile')
+          console.error('[Stripe Webhook] Session data:', JSON.stringify(session, null, 2))
           break
         }
 
@@ -94,9 +141,16 @@ export async function POST(req: Request) {
         // Get subscription details to determine status
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
         const status = subscription.status === 'trialing' ? 'trialing' : 'active'
+        
+        console.log('[Stripe Webhook] Subscription details:', {
+          subscriptionId,
+          status: subscription.status,
+          trialEnd: subscription.trial_end,
+          currentPeriodEnd: subscription.current_period_end
+        })
 
         // Update user's profile with subscription info
-        const { error } = await supabase
+        const { data: updatedProfile, error } = await supabase
           .from('profiles')
           .update({
             subscription_status: status,
@@ -104,20 +158,28 @@ export async function POST(req: Request) {
             stripe_subscription_id: subscriptionId,
           })
           .eq('id', userId)
+          .select()
 
         if (error) {
-          console.error('[Stripe Webhook] Error updating profile:', error)
+          console.error('[Stripe Webhook] ❌ Error updating profile:', error)
+          console.error('[Stripe Webhook] Error details:', {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint
+          })
           return NextResponse.json(
-            { error: 'Failed to update profile' },
+            { error: 'Failed to update profile', details: error.message },
             { status: 500 }
           )
         }
 
-        console.log('[Stripe Webhook] Updated profile:', {
+        console.log('[Stripe Webhook] ✅ Successfully updated profile:', {
           userId,
           status,
           customerId,
           subscriptionId,
+          updatedProfile: updatedProfile?.[0]
         })
         break
       }
