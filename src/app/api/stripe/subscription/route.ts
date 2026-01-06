@@ -75,7 +75,7 @@ export async function GET(req: Request) {
     }
 
     // Fetch subscription details from Stripe
-    const subscription: Stripe.Subscription = await stripe.subscriptions.retrieve(
+    const subscription = await stripe.subscriptions.retrieve(
       profile.stripe_subscription_id
     )
 
@@ -87,15 +87,19 @@ export async function GET(req: Request) {
       trialDaysRemaining = Math.max(0, daysRemaining)
     }
 
+    // Extract subscription properties safely
+    // Note: current_period_end may not be in TypeScript types but exists on the object
+    const subscriptionData = {
+      id: subscription.id,
+      status: subscription.status,
+      trialEnd: subscription.trial_end ?? null,
+      trialDaysRemaining,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
+      currentPeriodEnd: (subscription as any).current_period_end ?? null,
+    }
+
     return NextResponse.json({
-      subscription: {
-        id: subscription.id,
-        status: subscription.status,
-        trialEnd: subscription.trial_end ?? null,
-        trialDaysRemaining,
-        cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
-        currentPeriodEnd: subscription.current_period_end ?? null,
-      },
+      subscription: subscriptionData,
       status: profile.subscription_status,
     })
 
