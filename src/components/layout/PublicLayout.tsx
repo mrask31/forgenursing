@@ -75,10 +75,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <div className="flex items-center gap-3 sm:gap-4">
               {user && hasActiveSubscription && pathname !== '/checkout' ? (
                 <Link
-                  href="/clinical-desk"
+                  href="/tutor"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 min-h-[40px] sm:min-h-[44px] flex items-center transform hover:scale-105 active:scale-95"
                 >
-                  Dashboard
+                  Go to Tutor
                 </Link>
               ) : !user ? (
                 <>
@@ -88,12 +88,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   >
                     Log In
                   </Link>
-                  <Link
-                    href="/signup?plan=monthly"
-                    className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 min-h-[40px] sm:min-h-[44px] flex items-center transform hover:scale-105 active:scale-95"
-                  >
-                    Get Started
-                  </Link>
+                  {/* Only show "Get Started" on landing page, not on login/signup pages */}
+                  {pathname === '/' && (
+                    <Link
+                      href="/signup?plan=monthly"
+                      className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 min-h-[40px] sm:min-h-[44px] flex items-center transform hover:scale-105 active:scale-95"
+                    >
+                      Get Started
+                    </Link>
+                  )}
                 </>
               ) : null}
             </div>

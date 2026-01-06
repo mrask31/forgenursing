@@ -71,24 +71,6 @@ export default function LoginPage() {
     try {
       console.log('[Login] Attempting to sign in...', { email: email.trim() })
       
-      // Add cache-busting: Force a fresh auth request
-      // This prevents 304 cached responses from blocking login
-      const cacheBuster = Date.now()
-      console.log('[Login] Cache buster timestamp:', cacheBuster)
-      
-      // Clear any existing session to force a fresh login attempt
-      // This helps prevent cached auth state from interfering
-      try {
-        await supabase.auth.signOut()
-        console.log('[Login] Cleared existing session for fresh login')
-      } catch (signOutError) {
-        // Ignore sign out errors - user might not be logged in
-        console.log('[Login] No existing session to clear')
-      }
-      
-      // Small delay to ensure cache is cleared
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
       // Wrap the sign-in call in try/catch with defensive error handling
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -138,7 +120,7 @@ export default function LoginPage() {
         return // Exit early, redirecting so don't set loading to false
       }
 
-      const subscriptionStatus = profile?.subscription_status || 'pending_payment'
+      const subscriptionStatus = profile?.subscription_status
       const hasStripeSubscription = !!profile?.stripe_subscription_id
       
       console.log('[Login] Subscription check:', {
@@ -151,7 +133,14 @@ export default function LoginPage() {
       // Explicitly check for active subscription statuses (trialing or active)
       const hasActiveSubscription = subscriptionStatus === 'trialing' || subscriptionStatus === 'active'
       
-      // If user has a Stripe subscription ID but status is still pending_payment,
+      // PRIORITY 1: If user has trialing or active status, go to tutor
+      if (hasActiveSubscription) {
+        console.log('[Login] User has active subscription (trialing or active), redirecting to:', redirect)
+        window.location.replace(redirect)
+        return
+      }
+      
+      // PRIORITY 2: If user has a Stripe subscription ID but status is pending_payment,
       // the webhook might not have fired yet. In this case, allow access (they completed checkout)
       if (hasStripeSubscription && subscriptionStatus === 'pending_payment') {
         console.log('[Login] User has Stripe subscription ID but status is pending - likely in trial, allowing access')
@@ -165,22 +154,20 @@ export default function LoginPage() {
         return
       }
       
-      // If user needs payment, redirect to checkout (without plan so user can choose)
-      if (subscriptionStatus === 'pending_payment' || 
+      // PRIORITY 3: If user needs payment, redirect to checkout
+      if (!subscriptionStatus || 
+          subscriptionStatus === 'pending_payment' || 
           subscriptionStatus === 'canceled' || 
           subscriptionStatus === 'past_due' || 
           subscriptionStatus === 'unpaid') {
         console.log('[Login] Redirecting to checkout (payment needed)')
         window.location.replace('/checkout')
-      } else if (hasActiveSubscription) {
-        console.log('[Login] User has active subscription (trialing or active), redirecting to:', redirect)
-        // User is already subscribed (trialing or active), go to tutor
-        window.location.replace(redirect)
-      } else {
-        // Unknown status - log and redirect to checkout to be safe
-        console.warn('[Login] Unknown subscription status:', subscriptionStatus, '- redirecting to checkout')
-        window.location.replace('/checkout')
+        return
       }
+      
+      // PRIORITY 4: Unknown status - log and redirect to checkout to be safe
+      console.warn('[Login] Unknown subscription status:', subscriptionStatus, '- redirecting to checkout')
+      window.location.replace('/checkout')
       // Note: We don't set loading to false on success because we're redirecting
     } catch (err) {
       // In catch: console.error for debugging, show user-friendly error
