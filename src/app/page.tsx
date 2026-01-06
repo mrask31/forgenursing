@@ -15,14 +15,28 @@ export default function HomePage() {
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    // Safely create Supabase client - don't break landing page if env vars are missing
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-    })
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('[Landing Page] Supabase environment variables are missing - user detection disabled')
+      return
+    }
+    
+    try {
+      const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
+      
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        setUser(user)
+      }).catch((error) => {
+        console.error('[Landing Page] Error getting user:', error)
+        // Don't break the page if auth check fails
+      })
+    } catch (error) {
+      console.error('[Landing Page] Error creating Supabase client:', error)
+      // Don't break the page if Supabase client creation fails
+    }
   }, [])
 
   return (
