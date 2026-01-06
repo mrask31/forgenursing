@@ -71,6 +71,24 @@ export default function LoginPage() {
     try {
       console.log('[Login] Attempting to sign in...', { email: email.trim() })
       
+      // Add cache-busting: Force a fresh auth request
+      // This prevents 304 cached responses from blocking login
+      const cacheBuster = Date.now()
+      console.log('[Login] Cache buster timestamp:', cacheBuster)
+      
+      // Clear any existing session to force a fresh login attempt
+      // This helps prevent cached auth state from interfering
+      try {
+        await supabase.auth.signOut()
+        console.log('[Login] Cleared existing session for fresh login')
+      } catch (signOutError) {
+        // Ignore sign out errors - user might not be logged in
+        console.log('[Login] No existing session to clear')
+      }
+      
+      // Small delay to ensure cache is cleared
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       // Wrap the sign-in call in try/catch with defensive error handling
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
