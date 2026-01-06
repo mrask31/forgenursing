@@ -10,11 +10,9 @@ export default function HowItClicks() {
           Here's how ForgeNursing works
         </div>
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-3 sm:mb-4">
-          Get Everything You Need to Pass the First Time
+          <span className="hidden sm:inline">Your Personal Nursing Tutor — In Three Simple Steps</span>
+          <span className="sm:hidden">3 Simple Steps</span>
         </h2>
-        <p className="text-base sm:text-lg text-slate-700 max-w-2xl mx-auto px-4 leading-relaxed">
-          Unlike generic question banks, ForgeNursing learns your curriculum and teaches you how to think
-        </p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 md:gap-12">
@@ -38,10 +36,11 @@ export default function HowItClicks() {
             1
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-3">
-            Upload Your Materials
+            <span className="hidden sm:inline">1️⃣ Upload your class materials</span>
+            <span className="sm:hidden">Upload</span>
           </h3>
-          <p className="text-sm text-slate-700 leading-relaxed">
-            Upload lecture notes, slides, and textbooks. The AI learns <strong className="text-indigo-700">your curriculum</strong> — not a generic one.
+          <p className="text-sm text-slate-700 leading-relaxed hidden sm:block">
+            Lecture notes, PDFs, and textbook chapters.
           </p>
         </div>
 
@@ -65,10 +64,11 @@ export default function HowItClicks() {
             2
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-4">
-            Get Step-by-Step Reasoning
+            <span className="hidden sm:inline">2️⃣ Chat with your AI tutor</span>
+            <span className="sm:hidden">Chat</span>
           </h3>
-          <p className="text-slate-700 leading-relaxed font-medium">
-            Ask anything. The tutor guides you through priorities, risks, and next steps — <strong className="text-indigo-700">exactly how NCLEX expects you to think</strong>.
+          <p className="text-slate-700 leading-relaxed font-medium hidden sm:block">
+            Ask questions and practice clinical reasoning.
           </p>
         </div>
 
@@ -92,10 +92,11 @@ export default function HowItClicks() {
             3
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-4">
-            Build Your Knowledge Library
+            <span className="hidden sm:inline">3️⃣ Save key insights</span>
+            <span className="sm:hidden">Save</span>
           </h3>
-          <p className="text-slate-700 leading-relaxed font-medium">
-            Save key explanations into your personal study library. Review before exams — <strong className="text-indigo-700">your learning stays organized</strong>.
+          <p className="text-slate-700 leading-relaxed font-medium hidden sm:block">
+            Build your own library of breakthroughs.
           </p>
         </div>
       </div>

@@ -53,11 +53,13 @@ export default function Hero({ user }: HeroProps) {
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent tracking-tight mb-4 sm:mb-6 leading-tight">
-              Pass NCLEX the First Time with Clinical Reasoning — Not Memorization
+              <span className="hidden sm:inline">Stop Memorizing. Start Thinking Like a Nurse.</span>
+              <span className="sm:hidden">Think Like a Nurse — Not a Memorizer</span>
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl text-slate-700 mb-6 sm:mb-8 leading-relaxed font-medium">
-              The only AI tutor that uses <strong className="text-indigo-700">your actual lecture notes and textbooks</strong> to teach you how to think like a nurse.
+              <span className="hidden sm:inline">ForgeNursing is an AI tutor that teaches clinical reasoning using your own textbooks and lecture notes — so NCLEX questions finally make sense.</span>
+              <span className="sm:hidden">AI tutoring based on your own class materials.</span>
             </p>
             
             <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">

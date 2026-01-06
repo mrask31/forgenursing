@@ -57,8 +57,15 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-white via-indigo-50/30 to-white">
         <div className="text-center mb-10 sm:mb-12">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-4">
-            Choose the plan that fits your journey
+            <span className="hidden sm:inline">Simple, Student-Friendly Pricing</span>
+            <span className="sm:hidden">Simple Pricing</span>
           </h2>
+          <p className="text-base sm:text-lg text-slate-700 mb-4 hidden sm:block">
+            Start with a 7-day free trial, then choose the plan that fits your semester.
+          </p>
+          <p className="text-base sm:text-lg text-slate-700 mb-4 sm:hidden">
+            7-day free trial, then pick your plan.
+          </p>
           
           {/* All Plans Include */}
           <div className="mt-6 mb-8 max-w-3xl mx-auto">
@@ -170,6 +177,16 @@ export default function HomePage() {
 
       {/* Closing CTA */}
       <ClosingCTA />
+
+      {/* Disclaimer Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 bg-slate-50">
+        <div className="text-center">
+          <p className="text-xs sm:text-sm text-slate-600 max-w-3xl mx-auto">
+            <span className="hidden sm:inline">ForgeNursing supports clinical reasoning and supplements your nursing education. It does not replace instruction, clinical training, or NCLEX prep resources.</span>
+            <span className="sm:hidden">Supplemental study tool — not a replacement for instruction.</span>
+          </p>
+        </div>
+      </section>
     </div>
   )
 }

@@ -6,10 +6,14 @@ export default function BeliefValidation() {
     <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
       <div className="text-center mb-8 sm:mb-12">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-3 sm:mb-4">
-          If You've Ever Felt Like This...
+          <span className="hidden sm:inline">Designed to Complement — Not Replace — Your Other Study Tools</span>
+          <span className="sm:hidden">Works With Your Other Tools</span>
         </h2>
-        <p className="text-base sm:text-lg text-slate-700 mb-6 sm:mb-8">
-          ForgeNursing was built for students who feel stuck
+        <p className="text-base sm:text-lg text-slate-700 mb-6 sm:mb-8 hidden sm:block">
+          UWorld tests you. SimpleNursing helps you remember. ForgeNursing helps it finally click by strengthening the clinical-thinking skills NCLEX expects.
+        </p>
+        <p className="text-base sm:text-lg text-slate-700 mb-6 sm:mb-8 sm:hidden">
+          We help you understand what they teach.
         </p>
       </div>
       
@@ -18,7 +22,7 @@ export default function BeliefValidation() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-4 h-4 text-red-700" />
           </div>
-          <p className="text-sm text-slate-700 font-medium flex-1 leading-relaxed">
+          <p className="text-sm text-slate-700 font-medium flex-1 leading-relaxed hidden sm:block">
             I know the content but freeze on NCLEX-style questions
           </p>
         </div>
@@ -26,7 +30,7 @@ export default function BeliefValidation() {
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
-          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed hidden sm:block">
             I don't know how to prioritize what to do first
           </p>
         </div>
@@ -34,7 +38,7 @@ export default function BeliefValidation() {
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
-          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed hidden sm:block">
             Everything blurs together when I study
           </p>
         </div>
@@ -42,18 +46,24 @@ export default function BeliefValidation() {
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
-          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed hidden sm:block">
             I keep forgetting and re-asking the same questions
           </p>
         </div>
       </div>
       
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-xl p-6 sm:p-8 md:p-10 text-center text-white shadow-xl shadow-indigo-500/30">
-        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-white drop-shadow-md">
-          ForgeNursing Teaches You the "Why" Behind Every Answer
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-white drop-shadow-md hidden sm:block">
+          Built With Nursing Students and Educators in Mind
         </h3>
-        <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-white/95 leading-relaxed">
-          Build real clinical reasoning — not just memorization. Pass NCLEX the first time with confidence.
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-white drop-shadow-md sm:hidden">
+          Student-Centered & Ethical
+        </h3>
+        <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-white/95 leading-relaxed hidden sm:block">
+          ForgeNursing is currently being pilot-tested with real students to ensure it truly supports clinical reasoning — ethically, calmly, and effectively. No gimmicks. No pressure. Just meaningful learning.
+        </p>
+        <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-white/95 leading-relaxed sm:hidden">
+          Currently in pilot testing with real nursing students.
         </p>
         <Link
           href="/signup?plan=monthly"
