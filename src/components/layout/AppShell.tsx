@@ -2,7 +2,6 @@
 
 import { ReactNode, useState } from 'react'
 import { DensityProvider } from '@/contexts/DensityContext'
-import ComplianceDisclaimer from '@/components/layout/ComplianceDisclaimer'
 import Sidebar from '@/components/layout/Sidebar'
 import MobileNav from '@/components/layout/MobileNav'
 import { Menu } from 'lucide-react'
@@ -29,8 +28,6 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
   return (
     <DensityProvider>
       <div className="min-h-screen-dynamic bg-slate-50 flex flex-col lg:flex-row">
-        <ComplianceDisclaimer />
-        
         {/* Mobile Menu Button - Fixed position, only on mobile */}
         <button
           onClick={() => setMobileNavOpen(true)}

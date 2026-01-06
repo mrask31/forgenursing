@@ -12,7 +12,7 @@ interface SubscriptionData {
     id: string
     status: string
     trialEnd: number | null
-    trialDaysRemaining: number | null
+    trialEndDate: string | null
     cancelAtPeriodEnd: boolean
     currentPeriodEnd: number
   } | null
@@ -271,13 +271,12 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Trial Days Remaining */}
-            {subscriptionData?.subscription?.trialDaysRemaining !== null && 
-             subscriptionData?.subscription?.trialDaysRemaining !== undefined && (
+            {/* Trial End Date */}
+            {subscriptionData?.subscription?.trialEndDate && (
               <div>
-                <p className={`${tokens.smallText} text-clinical-text-secondary mb-1`}>Trial Days Remaining</p>
+                <p className={`${tokens.smallText} text-clinical-text-secondary mb-1`}>Trial Ends</p>
                 <p className={`${tokens.smallText} font-semibold text-indigo-600`}>
-                  {subscriptionData.subscription.trialDaysRemaining} {subscriptionData.subscription.trialDaysRemaining === 1 ? 'day' : 'days'}
+                  {subscriptionData.subscription.trialEndDate}
                 </p>
               </div>
             )}

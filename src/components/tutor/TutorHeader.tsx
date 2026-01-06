@@ -165,7 +165,7 @@ export default function TutorHeader({
 
           {/* Start New Chat button - only show when there's an active session */}
           {currentSessionId && (
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 relative z-10">
               <Button
                 variant="outline"
                 size="sm"

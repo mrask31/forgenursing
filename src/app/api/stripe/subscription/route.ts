@@ -79,12 +79,15 @@ export async function GET(req: Request) {
       profile.stripe_subscription_id
     )
 
-    // Calculate trial days remaining
-    let trialDaysRemaining: number | null = null
+    // Calculate trial end date (not days remaining)
+    let trialEndDate: string | null = null
     if (subscription.status === 'trialing' && subscription.trial_end) {
-      const now = Math.floor(Date.now() / 1000)
-      const daysRemaining = Math.ceil((subscription.trial_end - now) / (24 * 60 * 60))
-      trialDaysRemaining = Math.max(0, daysRemaining)
+      const trialEnd = new Date(subscription.trial_end * 1000)
+      trialEndDate = trialEnd.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      })
     }
 
     // Extract subscription properties safely
@@ -93,7 +96,7 @@ export async function GET(req: Request) {
       id: subscription.id,
       status: subscription.status,
       trialEnd: subscription.trial_end ?? null,
-      trialDaysRemaining,
+      trialEndDate,
       cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
       currentPeriodEnd: (subscription as any).current_period_end ?? null,
     }
