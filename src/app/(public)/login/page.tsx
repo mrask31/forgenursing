@@ -121,45 +121,52 @@ export default function LoginPage() {
       }
 
       // Get subscription status - handle null/undefined cases
-      const subscriptionStatus = profile?.subscription_status || null
+      const subscriptionStatus = profile?.subscription_status
       const hasStripeSubscription = !!profile?.stripe_subscription_id
       
-      console.log('[Login] Subscription check:', {
+      // Log everything for debugging
+      console.log('[Login] 🔍 Subscription check:', {
         subscriptionStatus: subscriptionStatus || 'null/undefined',
+        subscriptionStatusType: typeof subscriptionStatus,
         hasStripeSubscription,
+        stripeSubscriptionId: profile?.stripe_subscription_id || 'none',
         profileExists: !!profile,
-        rawProfile: profile,
+        rawProfile: JSON.stringify(profile, null, 2),
         userId: data.user.id
       })
       
-      // Normalize subscription status to string for comparison
-      const status = String(subscriptionStatus || '').toLowerCase().trim()
-      
-      // PRIORITY 1: If user has trialing or active status, go to tutor
-      // Check both the normalized status and original to catch any case variations
-      if (status === 'trialing' || status === 'active' || 
-          subscriptionStatus === 'trialing' || subscriptionStatus === 'active') {
-        console.log('[Login] ✅ User has active subscription (trialing or active), redirecting to:', redirect)
+      // PRIORITY 1: If user has ANY Stripe subscription ID, they've completed checkout
+      // Allow them in regardless of status (webhook might be delayed)
+      if (hasStripeSubscription) {
+        console.log('[Login] ✅ User has Stripe subscription ID - allowing access (webhook may be delayed)')
+        
+        // If status is not trialing or active, update it
+        if (subscriptionStatus !== 'trialing' && subscriptionStatus !== 'active') {
+          console.log('[Login] Updating status to trialing (user has Stripe subscription)')
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ subscription_status: 'trialing' })
+            .eq('id', data.user.id)
+          
+          if (updateError) {
+            console.error('[Login] Error updating status to trialing:', updateError)
+            // Still allow access even if update fails
+          } else {
+            console.log('[Login] ✅ Updated status to trialing')
+          }
+        }
+        
+        console.log('[Login] Redirecting to tutor')
         window.location.replace(redirect)
         return
       }
       
-      // PRIORITY 2: If user has a Stripe subscription ID but status is pending_payment or null,
-      // the webhook might not have fired yet. In this case, allow access (they completed checkout)
-      if (hasStripeSubscription && (status === 'pending_payment' || !subscriptionStatus)) {
-        console.log('[Login] User has Stripe subscription ID but status is pending/null - likely in trial, allowing access')
-        // Update status to trialing as a best guess (webhook should update it properly)
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ subscription_status: 'trialing' })
-          .eq('id', data.user.id)
-        
-        if (updateError) {
-          console.error('[Login] Error updating status to trialing:', updateError)
-        } else {
-          console.log('[Login] Updated status to trialing')
-        }
-        console.log('[Login] Redirecting to tutor')
+      // PRIORITY 2: If user has trialing or active status, go to tutor
+      // Normalize subscription status to string for comparison
+      const status = String(subscriptionStatus || '').toLowerCase().trim()
+      if (status === 'trialing' || status === 'active' || 
+          subscriptionStatus === 'trialing' || subscriptionStatus === 'active') {
+        console.log('[Login] ✅ User has active subscription (trialing or active), redirecting to:', redirect)
         window.location.replace(redirect)
         return
       }
