@@ -272,7 +272,8 @@ export default function SettingsPage() {
             </div>
 
             {/* Trial Days Remaining */}
-            {subscriptionData?.subscription?.trialDaysRemaining !== null && subscriptionData.subscription.trialDaysRemaining !== undefined && (
+            {subscriptionData?.subscription?.trialDaysRemaining !== null && 
+             subscriptionData?.subscription?.trialDaysRemaining !== undefined && (
               <div>
                 <p className={`${tokens.smallText} text-clinical-text-secondary mb-1`}>Trial Days Remaining</p>
                 <p className={`${tokens.smallText} font-semibold text-indigo-600`}>
