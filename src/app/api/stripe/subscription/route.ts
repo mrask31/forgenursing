@@ -75,7 +75,7 @@ export async function GET(req: Request) {
     }
 
     // Fetch subscription details from Stripe
-    const subscription = await stripe.subscriptions.retrieve(
+    const subscription: Stripe.Subscription = await stripe.subscriptions.retrieve(
       profile.stripe_subscription_id
     )
 
@@ -91,10 +91,10 @@ export async function GET(req: Request) {
       subscription: {
         id: subscription.id,
         status: subscription.status,
-        trialEnd: subscription.trial_end,
+        trialEnd: subscription.trial_end ?? null,
         trialDaysRemaining,
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
-        currentPeriodEnd: subscription.current_period_end,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
+        currentPeriodEnd: subscription.current_period_end ?? null,
       },
       status: profile.subscription_status,
     })
