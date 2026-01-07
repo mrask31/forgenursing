@@ -28,14 +28,23 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
   return (
     <DensityProvider>
       <div className="h-screen-dynamic bg-slate-50 flex flex-col lg:flex-row overflow-hidden">
-        {/* Mobile Menu Button - Fixed position, only on mobile */}
-        <button
-          onClick={() => setMobileNavOpen(true)}
-          className="lg:hidden fixed top-4 left-4 z-50 p-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
-          aria-label="Open navigation menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+        {/* Mobile Header Bar - Sticky, only on mobile */}
+        <header className="lg:hidden sticky top-0 z-50 bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 border-b border-indigo-900/50 flex-shrink-0 safe-t">
+          <div className="flex items-center justify-between px-4 py-3">
+            <button
+              onClick={() => setMobileNavOpen(true)}
+              className="p-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-2.5">
+              <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+              <span className="text-lg font-bold text-white tracking-tight">ForgeNursing</span>
+            </div>
+            <div className="w-10"></div>
+          </div>
+        </header>
 
         {/* Desktop Sidebar - Hidden on mobile, visible on lg+ - Fixed */}
         <aside className="hidden lg:flex lg:w-64 xl:w-72 flex-shrink-0 bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 border-r border-indigo-900/50 h-screen-dynamic overflow-y-auto">
