@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUp, Paperclip } from 'lucide-react'
+import { ArrowUp, Paperclip, Calculator } from 'lucide-react'
 import SuggestedPrompts from '@/components/tutor/SuggestedPrompts'
 import { useTutorContext } from './TutorContext'
+import MedicalMathCalculator from './MedicalMathCalculator'
 
 type Mode = 'tutor' | 'reflections'
 
@@ -31,6 +32,7 @@ export default function ChatInterface({
   onDetach
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState('')
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const hasAttachedFiles = attachedFiles.length > 0
   const tutorContext = useTutorContext()
@@ -110,7 +112,13 @@ export default function ChatInterface({
   }
 
   return (
-    <div className="flex-shrink-0 pt-3 bg-slate-50">
+    <div className="flex-shrink-0 pt-3 bg-slate-50 relative">
+      {/* Medical Math Calculator Panel */}
+      <MedicalMathCalculator 
+        isOpen={isCalculatorOpen} 
+        onClose={() => setIsCalculatorOpen(false)} 
+      />
+
       {/* Context Pills (Above the dock) */}
       {attachedFiles.length > 0 && (
         <div className="flex gap-2 overflow-x-auto px-2 mb-2">
@@ -133,6 +141,25 @@ export default function ChatInterface({
           ))}
         </div>
       )}
+
+      {/* Medical Math Button - Above input on desktop */}
+      <div className="px-2 mb-2 flex justify-center md:justify-start">
+        <button
+          type="button"
+          onClick={() => setIsCalculatorOpen(!isCalculatorOpen)}
+          className={`
+            flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200
+            ${isCalculatorOpen
+              ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+              : 'bg-white/80 text-slate-600 hover:bg-white hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 shadow-sm'
+            }
+          `}
+          aria-label="Toggle Medical Math Calculator"
+        >
+          <Calculator className="w-3.5 h-3.5" />
+          <span>Medical Math</span>
+        </button>
+      </div>
 
       {/* Chat Input Dock */}
       <form 
