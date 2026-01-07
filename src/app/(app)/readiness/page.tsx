@@ -360,12 +360,12 @@ export default function ClinicalDashboard() {
 
   return (
     <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
-      <div className={`${tokens.containerMaxWidth || 'max-w-7xl'} mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 pb-safe-b`}>
+      <div className={`${tokens.containerMaxWidth || 'max-w-7xl'} mx-auto px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 pt-safe-t pb-safe-b`}>
         {/* Graduation Date Reminder - Small at top */}
         {graduationDate && daysUntilGrad !== null && (
-          <div className="mb-4 flex items-center justify-end">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50/60 border border-indigo-200/60 rounded-lg text-xs text-slate-600">
-              <GraduationCap className="w-3 h-3 text-indigo-600" />
+          <div className="mb-3 sm:mb-4 flex items-center justify-end">
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-indigo-50/60 border border-indigo-200/60 rounded-lg text-xs text-slate-600">
+              <GraduationCap className="w-3 h-3 text-indigo-600 flex-shrink-0" />
               <span className="font-medium">
                 {daysUntilGrad > 0 ? (
                   <>
@@ -380,72 +380,74 @@ export default function ClinicalDashboard() {
         )}
 
         {/* Medical Dashboard Header - Enhanced */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-start justify-between mb-3 sm:mb-4 flex-wrap gap-3 sm:gap-4">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20">
-                  <Target className="w-6 h-6 md:w-7 md:h-7 text-white" />
+              <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-3">
+                <div className="p-2 sm:p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20 flex-shrink-0">
+                  <Target className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
-                  Clinical Dashboard
-                </h1>
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
+                    Clinical Dashboard
+                  </h1>
+                  <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg sm:rounded-xl shadow-sm">
+                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-sm shadow-emerald-500/50"></div>
+                    <span className="text-xs sm:text-sm font-semibold text-emerald-700">Active</span>
+                  </div>
+                </div>
               </div>
-              <p className="text-base text-slate-600 ml-14 max-w-2xl leading-relaxed">
+              <p className="text-sm sm:text-base text-slate-600 ml-11 sm:ml-14 max-w-2xl leading-relaxed">
                 Track your study progress and focus areas. Patient ID: {new Date().toLocaleDateString()} • Last updated: {new Date().toLocaleTimeString()}
               </p>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl shadow-sm">
-              <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-sm shadow-emerald-500/50"></div>
-              <span className="text-sm font-semibold text-emerald-700">Active</span>
             </div>
           </div>
         </div>
 
         {/* Vital Signs Row - Medical Style Metrics - Enhanced */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
-          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-orange-500 rounded-xl p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-orange-200/30 transition-all duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-gradient-to-br from-orange-100 to-orange-50 rounded-lg">
-                <Flame className="w-5 h-5 text-orange-600" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-orange-500 rounded-xl p-3 sm:p-4 md:p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-orange-200/30 transition-all duration-300">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-orange-100 to-orange-50 rounded-lg">
+                <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
               </div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Streak</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">Streak</span>
             </div>
-            <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{studyStreak}</div>
-            <div className="text-sm text-slate-600">day{studyStreak === 1 ? '' : 's'} consecutive</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-1">{studyStreak}</div>
+            <div className="text-xs sm:text-sm text-slate-600">day{studyStreak === 1 ? '' : 's'} consecutive</div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-blue-500 rounded-xl p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-blue-200/30 transition-all duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg">
-                <Calendar className="w-5 h-5 text-blue-600" />
+          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-blue-500 rounded-xl p-3 sm:p-4 md:p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-blue-200/30 transition-all duration-300">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
               </div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">This Week</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">This Week</span>
             </div>
-            <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{activeDays}</div>
-            <div className="text-sm text-slate-600">active day{activeDays === 1 ? '' : 's'}</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-1">{activeDays}</div>
+            <div className="text-xs sm:text-sm text-slate-600">active day{activeDays === 1 ? '' : 's'}</div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-teal-500 rounded-xl p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-teal-200/30 transition-all duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-gradient-to-br from-teal-100 to-teal-50 rounded-lg">
-                <Brain className="w-5 h-5 text-teal-600" />
+          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-teal-500 rounded-xl p-3 sm:p-4 md:p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-teal-200/30 transition-all duration-300">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-teal-100 to-teal-50 rounded-lg">
+                <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
               </div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Concepts</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">Concepts</span>
             </div>
-            <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{topicsStudied}</div>
-            <div className="text-sm text-slate-600">topics explored</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-1">{topicsStudied}</div>
+            <div className="text-xs sm:text-sm text-slate-600">topics explored</div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-purple-500 rounded-xl p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-purple-200/30 transition-all duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-gradient-to-br from-purple-100 to-purple-50 rounded-lg">
-                <Bookmark className="w-5 h-5 text-purple-600" />
+          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-purple-500 rounded-xl p-3 sm:p-4 md:p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-purple-200/30 transition-all duration-300">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-purple-100 to-purple-50 rounded-lg">
+                <Bookmark className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
               </div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Saved</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">Saved</span>
             </div>
-            <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{clipsCount}</div>
-            <div className="text-sm text-slate-600">learning moments</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-1">{clipsCount}</div>
+            <div className="text-xs sm:text-sm text-slate-600">learning moments</div>
           </div>
         </div>
 
@@ -485,9 +487,9 @@ export default function ClinicalDashboard() {
         )}
 
         {/* Main Content Grid - Medical Chart Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-4 sm:mb-6">
           {/* Left Column: Flagged for Review & Graduation */}
-          <div className="space-y-4 md:space-y-6">
+          <div className="space-y-4 sm:space-y-5 md:space-y-6">
             {/* Focus Areas - Medical Alert Panel - Enhanced */}
             <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 overflow-hidden">
               <div className="bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-b border-amber-200/60 px-6 py-4">

@@ -96,39 +96,39 @@ export default function SettingsPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
-      <div className={`${tokens.containerMaxWidth || 'max-w-4xl'} mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-10`}>
+      <div className={`${tokens.containerMaxWidth || 'max-w-4xl'} mx-auto px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pt-safe-t`}>
         {/* Header - Enhanced */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20">
-              <Layout className="w-6 h-6 md:w-7 md:h-7 text-white" />
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-3">
+            <div className="p-2 sm:p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20 flex-shrink-0">
+              <Layout className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
               Settings
             </h1>
           </div>
-          <p className="text-base text-slate-600 ml-14 max-w-2xl leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-600 ml-11 sm:ml-14 max-w-2xl leading-relaxed">
             Manage your account and preferences.
           </p>
         </div>
 
         {/* Display Density Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'} mb-6`}>
-          <div className="flex items-center gap-3 mb-4">
-            <Layout className="w-5 h-5 text-clinical-text-secondary" />
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-4 sm:mb-6`}>
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
+            <Layout className="w-4 h-4 sm:w-5 sm:h-5 text-clinical-text-secondary flex-shrink-0" />
             <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>
               Display Density
             </h2>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
-              <p className={`${tokens.smallText} text-clinical-text-secondary mb-3`}>
+              <p className={`${tokens.smallText} text-clinical-text-secondary mb-2 sm:mb-3`}>
                 Choose how much space and text size you prefer. Comfort is larger and easier to read; Compact fits more on screen.
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <button
                   onClick={() => setDensity('comfort')}
-                  className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
+                  className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                     density === 'comfort'
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-transparent shadow-md shadow-indigo-500/30'
                       : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
@@ -138,7 +138,7 @@ export default function SettingsPage() {
                 </button>
                 <button
                   onClick={() => setDensity('compact')}
-                  className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
+                  className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                     density === 'compact'
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-transparent shadow-md shadow-indigo-500/30'
                       : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
@@ -152,7 +152,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Academic Goals Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'} mb-6`}>
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-4 sm:mb-6`}>
           <div className="flex items-center gap-3 mb-4">
             <GraduationCap className="w-5 h-5 text-clinical-text-secondary" />
             <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>
@@ -211,7 +211,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Account Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'} mb-6`}>
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-4 sm:mb-6 mt-6 sm:mt-8`}>
           <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary mb-4`}>
             Account
           </h2>
@@ -236,7 +236,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Subscription Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'} mb-6`}>
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-4 sm:mb-6`}>
           <div className="flex items-center gap-3 mb-4">
             <CreditCard className="w-5 h-5 text-clinical-text-secondary" />
             <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>

@@ -202,28 +202,28 @@ export default function TutorLanding({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6 py-12 text-center">
+    <div className="flex flex-col items-center justify-center gap-4 sm:gap-6 py-8 sm:py-12 text-center px-4">
       {/* Primary Text */}
-      <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 max-w-2xl">
         {getMainHeading()}
       </h1>
 
       {/* Secondary Text */}
-      <p className="text-slate-600 max-w-xl">
+      <p className="text-sm sm:text-base text-slate-600 max-w-xl">
         {getSubtext()}
       </p>
 
       {/* Class-specific Welcome Message */}
       {!isGeneralTutor && selectedClassId && (
-        <div className="mt-6 w-full max-w-2xl">
+        <div className="mt-4 sm:mt-6 w-full max-w-2xl">
           {isLoadingWelcome ? (
-            <div className="p-6 bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-200 rounded-xl">
-              <p className="text-slate-600 text-sm">Loading your study context...</p>
+            <div className="p-4 sm:p-6 bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-200 rounded-xl">
+              <p className="text-slate-600 text-xs sm:text-sm">Loading your study context...</p>
             </div>
           ) : welcomeMessage ? (
-            <div className="p-6 bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-200 rounded-xl text-left welcome-message-card">
+            <div className="p-4 sm:p-6 bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-200 rounded-xl text-left welcome-message-card">
               <div className="prose prose-sm max-w-none">
-                <div className="whitespace-pre-wrap text-sm text-slate-700 leading-relaxed">
+                <div className="whitespace-pre-wrap text-xs sm:text-sm text-slate-700 leading-relaxed max-w-full">
                   {welcomeMessage.split('**').map((part, i) => {
                     // Simple markdown bold rendering
                     if (i % 2 === 1) {
@@ -239,7 +239,9 @@ export default function TutorLanding({
       )}
 
       {/* Helper Text for General Tutor */}
-      {getHelperText()}
+      <div className="w-full max-w-2xl">
+        {getHelperText()}
+      </div>
 
       {/* Suggestion Chips - Mode-aware */}
       <div className="w-full">
