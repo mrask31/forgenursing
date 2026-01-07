@@ -549,11 +549,19 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                    <div 
+                      className="flex items-center gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
+                    >
                       <Switch
                         checked={file.isActive}
-                        onCheckedChange={() => handleToggleActive(file.filename, file.isActive)}
+                        onCheckedChange={(checked) => {
+                          handleToggleActive(file.filename, file.isActive)
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                         className="data-[state=checked]:bg-emerald-500"
                       />
                       <span className="text-xs text-slate-600 w-12 text-right">
@@ -563,8 +571,12 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(file.filename)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(file.filename)
+                      }}
+                      onTouchStart={(e) => e.stopPropagation()}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0 shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
