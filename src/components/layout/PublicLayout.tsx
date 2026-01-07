@@ -68,7 +68,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div className="flex justify-between items-center h-16 sm:h-18">
             <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group">
               <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/30 group-hover:shadow-lg group-hover:shadow-indigo-500/40 transition-all duration-200">
-                <span className="font-bold text-white text-lg sm:text-xl">F</span>
+                <span className="font-bold text-white text-sm sm:text-base leading-none">FN</span>
               </div>
               <span className="font-bold text-lg sm:text-xl text-slate-900 bg-gradient-to-r from-slate-900 to-indigo-900 bg-clip-text text-transparent">ForgeNursing</span>
             </Link>
