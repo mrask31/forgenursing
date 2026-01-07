@@ -22,7 +22,7 @@ export default function BeliefValidation() {
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
-          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed hidden sm:block">
+          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
             I know the content but freeze on NCLEX-style questions
           </p>
         </div>
@@ -30,7 +30,7 @@ export default function BeliefValidation() {
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
-          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed hidden sm:block">
+          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
             I don't know how to prioritize what to do first
           </p>
         </div>
@@ -38,7 +38,7 @@ export default function BeliefValidation() {
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
-          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed hidden sm:block">
+          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
             Everything blurs together when I study
           </p>
         </div>
@@ -46,7 +46,7 @@ export default function BeliefValidation() {
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
-          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed hidden sm:block">
+          <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
             I keep forgetting and re-asking the same questions
           </p>
         </div>
