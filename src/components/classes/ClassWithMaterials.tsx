@@ -249,8 +249,22 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
   const handleToggleActive = async (filename: string, newState: boolean) => {
     try {
       console.log('[ClassWithMaterials] Toggling document:', { filename, newState })
-      const result = await toggleDocumentContext(filename, newState)
-      console.log('[ClassWithMaterials] Toggle result:', result)
+      
+      // Use API route instead of server action for better error handling
+      const response = await fetch('/api/binder/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename, isActive: newState })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to toggle document')
+      }
+
+      console.log('[ClassWithMaterials] Toggle result:', data)
+      
       // Reload materials after successful toggle
       await loadMaterials()
       onRefresh()
