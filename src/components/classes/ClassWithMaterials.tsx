@@ -249,15 +249,14 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
   const handleToggleActive = async (filename: string, newState: boolean) => {
     try {
       console.log('[ClassWithMaterials] Toggling document:', { filename, newState })
-      await toggleDocumentContext(filename, newState)
-      // Small delay to ensure backend has processed
-      setTimeout(() => {
-        loadMaterials()
-        onRefresh()
-      }, 300)
+      const result = await toggleDocumentContext(filename, newState)
+      console.log('[ClassWithMaterials] Toggle result:', result)
+      // Reload materials after successful toggle
+      await loadMaterials()
+      onRefresh()
     } catch (error) {
       console.error('Failed to toggle document:', error)
-      alert('Failed to toggle document. Please try again.')
+      alert(`Failed to toggle document: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -558,52 +557,32 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-                    <div 
-                      className="flex items-center gap-2"
-                      onClick={(e) => {
-                        e.preventDefault()
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <Button
+                      type="button"
+                      variant={file.isActive ? "default" : "outline"}
+                      size="sm"
+                      onClick={async (e) => {
                         e.stopPropagation()
+                        await handleToggleActive(file.filename, !file.isActive)
                       }}
-                      onTouchStart={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                      }}
+                      className={`h-7 px-3 text-xs font-medium transition-all ${
+                        file.isActive
+                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500'
+                          : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-300'
+                      }`}
                     >
-                      <Switch
-                        checked={file.isActive}
-                        onCheckedChange={(checked) => {
-                          // Use the checked parameter (new state), not file.isActive (old state)
-                          handleToggleActive(file.filename, checked)
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                        }}
-                        onTouchStart={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                        }}
-                        className="data-[state=checked]:bg-emerald-500"
-                      />
-                      <span className="text-xs text-slate-600 w-12 text-right">
-                        {file.isActive ? 'Active' : 'Off'}
-                      </span>
-                    </div>
+                      {file.isActive ? 'Active' : 'Inactive'}
+                    </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={(e) => {
-                        e.preventDefault()
                         e.stopPropagation()
                         handleDelete(file.filename)
                       }}
-                      onTouchStart={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                      }}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0 shrink-0"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0 shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
