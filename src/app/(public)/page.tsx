@@ -128,6 +128,7 @@ export default function HomePage() {
               <span className="text-3xl sm:text-4xl font-bold text-slate-900">$89</span>
               <span className="text-slate-600 text-sm sm:text-base ml-1">/semester</span>
             </div>
+            <p className="text-[10px] sm:text-xs text-slate-400 mb-1">4 months</p>
             <p className="text-xs sm:text-sm text-indigo-600 font-semibold mb-4">
               ~$22/month • Save 24% vs monthly
             </p>
@@ -148,6 +149,7 @@ export default function HomePage() {
               <span className="text-3xl sm:text-4xl font-bold text-slate-900">$199</span>
               <span className="text-slate-600 text-sm sm:text-base ml-1">/year</span>
             </div>
+            <p className="text-[10px] sm:text-xs text-slate-400 mb-1">12 months</p>
             <p className="text-xs sm:text-sm text-indigo-600 font-semibold mb-4">
               ~$17/month • Save 41% vs monthly
             </p>
