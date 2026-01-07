@@ -26,7 +26,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { toggleDocumentContext, deleteDocuments } from '@/app/actions/binder'
+import { deleteDocuments } from '@/app/actions/binder'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
 
