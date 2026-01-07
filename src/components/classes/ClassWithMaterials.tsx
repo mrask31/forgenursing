@@ -246,13 +246,18 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
     }
   }
 
-  const handleToggleActive = async (filename: string, currentState: boolean) => {
+  const handleToggleActive = async (filename: string, newState: boolean) => {
     try {
-      await toggleDocumentContext(filename, !currentState)
-      loadMaterials()
-      onRefresh()
+      console.log('[ClassWithMaterials] Toggling document:', { filename, newState })
+      await toggleDocumentContext(filename, newState)
+      // Small delay to ensure backend has processed
+      setTimeout(() => {
+        loadMaterials()
+        onRefresh()
+      }, 300)
     } catch (error) {
       console.error('Failed to toggle document:', error)
+      alert('Failed to toggle document. Please try again.')
     }
   }
 
@@ -528,6 +533,10 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                 <div
                   key={file.canonicalId}
                   className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-white rounded-lg border border-slate-200 hover:border-indigo-300 hover:shadow-sm transition-all duration-200"
+                  onClick={(e) => {
+                    // Prevent any click events from bubbling up
+                    e.stopPropagation()
+                  }}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <FileText className="w-4 h-4 text-slate-400 shrink-0" />
@@ -552,16 +561,29 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                   <div className="flex items-center gap-3 sm:gap-4 shrink-0">
                     <div 
                       className="flex items-center gap-2"
-                      onClick={(e) => e.stopPropagation()}
-                      onTouchStart={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
+                      onTouchStart={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
                     >
                       <Switch
                         checked={file.isActive}
                         onCheckedChange={(checked) => {
-                          handleToggleActive(file.filename, file.isActive)
+                          // Use the checked parameter (new state), not file.isActive (old state)
+                          handleToggleActive(file.filename, checked)
                         }}
-                        onClick={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
+                        onTouchStart={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
                         className="data-[state=checked]:bg-emerald-500"
                       />
                       <span className="text-xs text-slate-600 w-12 text-right">
@@ -569,13 +591,18 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                       </span>
                     </div>
                     <Button
+                      type="button"
                       variant="ghost"
                       size="sm"
                       onClick={(e) => {
+                        e.preventDefault()
                         e.stopPropagation()
                         handleDelete(file.filename)
                       }}
-                      onTouchStart={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0 shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
