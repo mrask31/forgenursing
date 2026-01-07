@@ -129,7 +129,7 @@ export default function HomePage() {
               <span className="text-slate-600 text-sm sm:text-base ml-1">/semester</span>
             </div>
             <p className="text-xs sm:text-sm text-indigo-600 font-semibold mb-4">
-              ~$15/month • Save 48% vs monthly
+              ~$22/month • Save 24% vs monthly
             </p>
             <p className="text-xs sm:text-sm text-slate-600 mb-6">Best value for a full term</p>
             <button
