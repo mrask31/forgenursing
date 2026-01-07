@@ -1,8 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { MessageSquare, FileText, Settings, Activity, GraduationCap, BookOpen } from 'lucide-react'
+import { createBrowserClient } from '@supabase/ssr'
 import HistoryButton from './HistoryButton'
 
 const NAV_ITEMS = [
@@ -19,6 +21,38 @@ interface SidebarProps {
 
 export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   const pathname = usePathname()
+  const [preferredName, setPreferredName] = useState<string | null>(null)
+  const [programTrack, setProgramTrack] = useState<string | null>(null)
+  const [graduationDate, setGraduationDate] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('preferred_name, program_track, graduation_date')
+          .eq('id', user.id)
+          .single()
+
+        if (profile) {
+          setPreferredName(profile.preferred_name || null)
+          setProgramTrack(profile.program_track || null)
+          setGraduationDate(profile.graduation_date || null)
+        }
+      } catch (error) {
+        console.error('[Sidebar] Error loading profile:', error)
+      }
+    }
+
+    loadProfile()
+  }, [])
 
   return (
     <aside className="flex w-full h-full flex-col bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 text-indigo-100">
@@ -70,9 +104,28 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 border border-indigo-500/50 flex items-center justify-center shadow-sm">
               <UserIcon className="w-5 h-5 text-white" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-white">Student Account</span>
-              <span className="text-xs text-indigo-300">RN Track</span>
+            <div className="flex flex-col min-w-0">
+              {preferredName ? (
+                <>
+                  <span className="text-sm font-bold text-white truncate">{preferredName}</span>
+                  {programTrack && graduationDate ? (
+                    <span className="text-xs text-indigo-300 truncate">
+                      {programTrack} • Class of {new Date(graduationDate).getFullYear()}
+                    </span>
+                  ) : programTrack ? (
+                    <span className="text-xs text-indigo-300 truncate">{programTrack}</span>
+                  ) : graduationDate ? (
+                    <span className="text-xs text-indigo-300 truncate">
+                      Class of {new Date(graduationDate).getFullYear()}
+                    </span>
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  <span className="text-sm font-medium text-white">Student Account</span>
+                  <span className="text-xs text-indigo-300">{programTrack || 'RN Track'}</span>
+                </>
+              )}
             </div>
           </div>
         </div>

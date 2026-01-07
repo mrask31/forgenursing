@@ -60,6 +60,8 @@ export default function ClinicalDashboard() {
   const [filteredClips, setFilteredClips] = useState<Clip[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [graduationDate, setGraduationDate] = useState<string | null>(null)
+  const [preferredName, setPreferredName] = useState<string | null>(null)
+  const [programTrack, setProgramTrack] = useState<string | null>(null)
   const [studyStreak, setStudyStreak] = useState<number>(0)
   const [activeDays, setActiveDays] = useState<number>(0)
   const [topicsStudied, setTopicsStudied] = useState<number>(0)
@@ -81,15 +83,23 @@ export default function ClinicalDashboard() {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        // Load graduation date from profile
+        // Load profile data
         const { data: profile } = await supabase
           .from('profiles')
-          .select('graduation_date')
+          .select('graduation_date, preferred_name, program_track')
           .eq('id', user.id)
           .single()
         
-        if (profile?.graduation_date) {
-          setGraduationDate(profile.graduation_date)
+        if (profile) {
+          if (profile.graduation_date) {
+            setGraduationDate(profile.graduation_date)
+          }
+          if (profile.preferred_name) {
+            setPreferredName(profile.preferred_name)
+          }
+          if (profile.program_track) {
+            setProgramTrack(profile.program_track)
+          }
         }
 
         // Load classes
@@ -361,24 +371,6 @@ export default function ClinicalDashboard() {
   return (
     <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
       <div className={`${tokens.containerMaxWidth || 'max-w-7xl'} mx-auto px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 pt-safe-t pb-safe-b`}>
-        {/* Graduation Date Reminder - Small at top */}
-        {graduationDate && daysUntilGrad !== null && (
-          <div className="mb-3 sm:mb-4 flex items-center justify-end">
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-indigo-50/60 border border-indigo-200/60 rounded-lg text-xs text-slate-600">
-              <GraduationCap className="w-3 h-3 text-indigo-600 flex-shrink-0" />
-              <span className="font-medium">
-                {daysUntilGrad > 0 ? (
-                  <>
-                    {daysUntilGrad} day{daysUntilGrad === 1 ? '' : 's'} until {new Date(graduationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </>
-                ) : (
-                  <>Graduation reached</>
-                )}
-              </span>
-            </div>
-          </div>
-        )}
-
         {/* Medical Dashboard Header - Enhanced */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-start justify-between mb-3 sm:mb-4 flex-wrap gap-3 sm:gap-4">
@@ -397,11 +389,37 @@ export default function ClinicalDashboard() {
                   </div>
                 </div>
               </div>
-              <p className="text-sm sm:text-base text-slate-600 ml-11 sm:ml-14 max-w-2xl leading-relaxed">
-                Track your study progress and focus areas. Patient ID: {new Date().toLocaleDateString()} • Last updated: {new Date().toLocaleTimeString()}
-              </p>
+              {/* Student Chart Header */}
+              <div className="ml-11 sm:ml-14 max-w-2xl space-y-1 sm:space-y-1.5">
+                <p className="text-sm sm:text-base font-medium text-slate-900">
+                  Chart: {preferredName || 'Student'} • {programTrack || 'RN Track'}
+                </p>
+                {graduationDate && daysUntilGrad !== null && (
+                  <p className="text-xs sm:text-sm text-slate-600">
+                    {daysUntilGrad > 0 ? (
+                      <>
+                        Class of {new Date(graduationDate).getFullYear()} • {daysUntilGrad} day{daysUntilGrad === 1 ? '' : 's'} until {new Date(graduationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </>
+                    ) : (
+                      <>
+                        Class of {new Date(graduationDate).getFullYear()} • Graduation reached
+                      </>
+                    )}
+                  </p>
+                )}
+                <p className="text-xs text-slate-500">
+                  Last updated: {new Date().toLocaleTimeString()}
+                </p>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Study Vitals Label */}
+        <div className="mb-3 sm:mb-4">
+          <h2 className="text-xs sm:text-sm font-semibold text-slate-500 uppercase tracking-wider">
+            Study Vitals
+          </h2>
         </div>
 
         {/* Vital Signs Row - Medical Style Metrics - Enhanced */}
@@ -493,7 +511,7 @@ export default function ClinicalDashboard() {
             {/* Focus Areas - Medical Alert Panel - Enhanced */}
             <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 overflow-hidden">
               <div className="bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-b border-amber-200/60 px-6 py-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-1">
                   <h3 className="text-base font-bold text-amber-900 flex items-center gap-2.5">
                     <div className="p-1.5 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg">
                       <Target className="w-4 h-4 text-white" />
@@ -506,6 +524,7 @@ export default function ClinicalDashboard() {
                     </span>
                   )}
                 </div>
+                <p className="text-xs text-amber-700/80 ml-8">Review Queue</p>
               </div>
               <div className="p-6">
                 {focusAreas.length > 0 ? (

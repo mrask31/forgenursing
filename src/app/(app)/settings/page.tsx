@@ -24,6 +24,9 @@ export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [graduationDate, setGraduationDate] = useState<string>('')
+  const [preferredName, setPreferredName] = useState<string>('')
+  const [programTrack, setProgramTrack] = useState<string>('')
+  const [schoolName, setSchoolName] = useState<string>('')
   const [isSaving, setIsSaving] = useState(false)
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
   const [isCanceling, setIsCanceling] = useState(false)
@@ -41,10 +44,10 @@ export default function SettingsPage() {
       setUser(user)
       
       if (user) {
-        // Load graduation date from profile
+        // Load profile data
         const { data: profile } = await supabase
           .from('profiles')
-          .select('graduation_date')
+          .select('graduation_date, preferred_name, program_track, school_name')
           .eq('id', user.id)
           .single()
         
@@ -53,6 +56,18 @@ export default function SettingsPage() {
           const date = new Date(profile.graduation_date)
           const formatted = date.toISOString().split('T')[0]
           setGraduationDate(formatted)
+        }
+        
+        if (profile?.preferred_name) {
+          setPreferredName(profile.preferred_name)
+        }
+        
+        if (profile?.program_track) {
+          setProgramTrack(profile.program_track)
+        }
+        
+        if (profile?.school_name) {
+          setSchoolName(profile.school_name)
         }
 
         // Load subscription data
@@ -110,6 +125,92 @@ export default function SettingsPage() {
           <p className="text-sm sm:text-base text-slate-600 ml-11 sm:ml-14 max-w-2xl leading-relaxed">
             Manage your account and preferences.
           </p>
+        </div>
+
+        {/* Identity Section - New */}
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-4 sm:mb-6`}>
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
+            <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-clinical-text-secondary flex-shrink-0" />
+            <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>
+              Identity
+            </h2>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className={`block ${tokens.smallText} text-clinical-text-secondary mb-2`}>
+                Preferred Name
+              </label>
+              <input
+                type="text"
+                value={preferredName}
+                onChange={(e) => setPreferredName(e.target.value)}
+                placeholder="e.g., Michael R."
+                className={`w-full px-4 py-2 border border-clinical-border rounded-lg ${tokens.bodyText} text-clinical-text-primary focus:outline-none focus:ring-2 focus:ring-clinical-primary`}
+              />
+            </div>
+            <div>
+              <label className={`block ${tokens.smallText} text-clinical-text-secondary mb-2`}>
+                Program / Track
+              </label>
+              <select
+                value={programTrack}
+                onChange={(e) => setProgramTrack(e.target.value)}
+                className={`w-full px-4 py-2 border border-clinical-border rounded-lg ${tokens.bodyText} text-clinical-text-primary focus:outline-none focus:ring-2 focus:ring-clinical-primary bg-white`}
+              >
+                <option value="">Select program...</option>
+                <option value="RN Track">RN Track</option>
+                <option value="ADN">ADN</option>
+                <option value="BSN">BSN</option>
+                <option value="LPN">LPN</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className={`block ${tokens.smallText} text-clinical-text-secondary mb-2`}>
+                School Name <span className="text-slate-400">(Optional)</span>
+              </label>
+              <input
+                type="text"
+                value={schoolName}
+                onChange={(e) => setSchoolName(e.target.value)}
+                placeholder="e.g., State University"
+                className={`w-full px-4 py-2 border border-clinical-border rounded-lg ${tokens.bodyText} text-clinical-text-primary focus:outline-none focus:ring-2 focus:ring-clinical-primary`}
+              />
+            </div>
+            <button
+              onClick={async () => {
+                if (!user) return
+                setIsSaving(true)
+                try {
+                  const supabase = createBrowserClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                  )
+                  
+                  const { error } = await supabase
+                    .from('profiles')
+                    .upsert({
+                      id: user.id,
+                      preferred_name: preferredName || null,
+                      program_track: programTrack || null,
+                      school_name: schoolName || null,
+                    })
+                  
+                  if (error) throw error
+                  alert('Identity information saved!')
+                } catch (error) {
+                  console.error('Error saving identity:', error)
+                  alert('Failed to save identity information. Please try again.')
+                } finally {
+                  setIsSaving(false)
+                }
+              }}
+              disabled={isSaving}
+              className={`w-full px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl ${tokens.smallText || 'text-sm'} font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40`}
+            >
+              {isSaving ? 'Saving...' : 'Save Identity'}
+            </button>
+          </div>
         </div>
 
         {/* Display Density Section - Enhanced */}
@@ -186,6 +287,9 @@ export default function SettingsPage() {
                         .upsert({
                           id: user.id,
                           graduation_date: graduationDate || null,
+                          preferred_name: preferredName || null,
+                          program_track: programTrack || null,
+                          school_name: schoolName || null,
                         })
                       
                       if (error) throw error
