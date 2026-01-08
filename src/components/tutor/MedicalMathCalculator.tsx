@@ -14,6 +14,7 @@ interface MedicalMathCalculatorProps {
 
 export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCalculatorProps) {
   const [activeTool, setActiveTool] = useState<CalculatorTool>('iv-flow')
+  const [weightUnit, setWeightUnit] = useState<'kg' | 'lbs'>('lbs') // Default to lbs for US students
   
   // IV Flow Rate (mL/hr)
   const [totalVolume, setTotalVolume] = useState('')
@@ -37,6 +38,14 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
   const [maxDose, setMaxDose] = useState('')
   const [safeDoseWeight, setSafeDoseWeight] = useState('')
   const [safeDoseResult, setSafeDoseResult] = useState<{ isSafe: boolean; reason: string } | null>(null)
+
+  // Convert lbs to kg (1 kg = 2.20462 lbs)
+  const convertToKg = (weight: number, unit: 'kg' | 'lbs'): number => {
+    if (unit === 'lbs') {
+      return weight / 2.20462
+    }
+    return weight
+  }
 
   // Calculate IV Flow Rate
   useEffect(() => {
@@ -68,12 +77,14 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
     const dose = parseFloat(medDose)
     const weight = parseFloat(patientWeight)
     if (dose > 0 && weight > 0) {
-      const result = (dose / weight)
+      // Convert weight to kg for calculation (med dosing is always mg/kg)
+      const weightInKg = convertToKg(weight, weightUnit)
+      const result = (dose / weightInKg)
       setWeightResult(Math.round(result * 100) / 100)
     } else {
       setWeightResult(null)
     }
-  }, [medDose, patientWeight])
+  }, [medDose, patientWeight, weightUnit])
 
   // Check Safe Dose Range
   useEffect(() => {
@@ -83,8 +94,10 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
     const weight = parseFloat(safeDoseWeight)
     
     if (ordered > 0 && min > 0 && max > 0 && weight > 0) {
-      const minTotal = min * weight
-      const maxTotal = max * weight
+      // Convert weight to kg for calculation (med dosing is always mg/kg)
+      const weightInKg = convertToKg(weight, weightUnit)
+      const minTotal = min * weightInKg
+      const maxTotal = max * weightInKg
       const isSafe = ordered >= minTotal && ordered <= maxTotal
       
       if (isSafe) {
@@ -108,7 +121,7 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
     } else {
       setSafeDoseResult(null)
     }
-  }, [orderedDose, minDose, maxDose, safeDoseWeight])
+  }, [orderedDose, minDose, maxDose, safeDoseWeight, weightUnit])
 
   const tools: { id: CalculatorTool; label: string }[] = [
     { id: 'iv-flow', label: 'IV Flow Rate' },
@@ -152,23 +165,53 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
           </button>
         </div>
 
-        {/* Tool Tabs */}
-        <div className="flex gap-1 px-2 pt-3 border-b border-slate-200 overflow-x-auto">
-          {tools.map((tool) => (
-            <button
-              key={tool.id}
-              onClick={() => setActiveTool(tool.id)}
-              className={`
-                px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap transition-colors
-                ${activeTool === tool.id
-                  ? 'bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600'
-                  : 'text-slate-600 hover:bg-slate-50'
-                }
-              `}
-            >
-              {tool.label}
-            </button>
-          ))}
+        {/* Tool Tabs and Weight Unit Selector */}
+        <div className="px-2 pt-3 space-y-2 border-b border-slate-200">
+          <div className="flex gap-1 overflow-x-auto">
+            {tools.map((tool) => (
+              <button
+                key={tool.id}
+                onClick={() => setActiveTool(tool.id)}
+                className={`
+                  px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap transition-colors
+                  ${activeTool === tool.id
+                    ? 'bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600'
+                    : 'text-slate-600 hover:bg-slate-50'
+                  }
+                `}
+              >
+                {tool.label}
+              </button>
+            ))}
+          </div>
+          {/* Weight Unit Selector - Show for weight-based tools */}
+          {(activeTool === 'weight-based' || activeTool === 'safe-dose') && (
+            <div className="flex items-center gap-2 pb-2">
+              <span className="text-xs text-slate-600 font-medium">Weight Unit:</span>
+              <div className="flex gap-1 bg-slate-100 rounded-lg p-0.5">
+                <button
+                  onClick={() => setWeightUnit('lbs')}
+                  className={`px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                    weightUnit === 'lbs'
+                      ? 'bg-white text-indigo-700 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  lbs
+                </button>
+                <button
+                  onClick={() => setWeightUnit('kg')}
+                  className={`px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                    weightUnit === 'kg'
+                      ? 'bg-white text-indigo-700 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  kg
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Calculator Content */}
@@ -291,13 +334,13 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                  Patient Weight (kg)
+                  Patient Weight ({weightUnit === 'lbs' ? 'lbs' : 'kg'})
                 </label>
                 <Input
                   type="number"
                   value={patientWeight}
                   onChange={(e) => setPatientWeight(e.target.value)}
-                  placeholder="e.g., 70"
+                  placeholder={weightUnit === 'lbs' ? "e.g., 154" : "e.g., 70"}
                   className="text-sm"
                 />
               </div>
@@ -309,9 +352,16 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
                   </div>
                   <div className="text-xs text-slate-600 space-y-1">
                     <p className="font-medium">Formula:</p>
-                    <p className="font-mono">Dose/kg = Total Dose ÷ Patient Weight</p>
+                    <p className="font-mono">Dose/kg = Total Dose ÷ Patient Weight (in kg)</p>
                     <p className="font-medium mt-2">Calculation:</p>
-                    <p className="font-mono">{medDose} ÷ {patientWeight} = {weightResult} mg/kg</p>
+                    {weightUnit === 'lbs' && patientWeight ? (
+                      <p className="font-mono">
+                        {patientWeight} lbs ÷ 2.20462 = {(parseFloat(patientWeight) / 2.20462).toFixed(2)} kg<br />
+                        {medDose} mg ÷ {(parseFloat(patientWeight) / 2.20462).toFixed(2)} kg = {weightResult} mg/kg
+                      </p>
+                    ) : (
+                      <p className="font-mono">{medDose} mg ÷ {patientWeight} kg = {weightResult} mg/kg</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -359,13 +409,13 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                  Patient Weight (kg)
+                  Patient Weight ({weightUnit === 'lbs' ? 'lbs' : 'kg'})
                 </label>
                 <Input
                   type="number"
                   value={safeDoseWeight}
                   onChange={(e) => setSafeDoseWeight(e.target.value)}
-                  placeholder="e.g., 70"
+                  placeholder={weightUnit === 'lbs' ? "e.g., 154" : "e.g., 70"}
                   className="text-sm"
                 />
               </div>
@@ -380,11 +430,20 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
                   </div>
                   <div className="text-xs text-slate-600 space-y-1 mt-2">
                     <p className="font-medium">Formula:</p>
-                    <p className="font-mono">Safe Range = (Min mg/kg × Weight) to (Max mg/kg × Weight)</p>
+                    <p className="font-mono">Safe Range = (Min mg/kg × Weight in kg) to (Max mg/kg × Weight in kg)</p>
                     <p className="font-medium mt-2">Calculation:</p>
-                    <p className="font-mono">
-                      Range: ({minDose} × {safeDoseWeight}) to ({maxDose} × {safeDoseWeight}) mg
-                    </p>
+                    {weightUnit === 'lbs' && safeDoseWeight ? (
+                      <p className="font-mono">
+                        {safeDoseWeight} lbs ÷ 2.20462 = {(parseFloat(safeDoseWeight) / 2.20462).toFixed(2)} kg<br />
+                        Min: {minDose} × {(parseFloat(safeDoseWeight) / 2.20462).toFixed(2)} = {(parseFloat(minDose) * (parseFloat(safeDoseWeight) / 2.20462)).toFixed(2)} mg<br />
+                        Max: {maxDose} × {(parseFloat(safeDoseWeight) / 2.20462).toFixed(2)} = {(parseFloat(maxDose) * (parseFloat(safeDoseWeight) / 2.20462)).toFixed(2)} mg
+                      </p>
+                    ) : (
+                      <p className="font-mono">
+                        Min: {minDose} × {safeDoseWeight} = {(parseFloat(minDose) * parseFloat(safeDoseWeight)).toFixed(2)} mg<br />
+                        Max: {maxDose} × {safeDoseWeight} = {(parseFloat(maxDose) * parseFloat(safeDoseWeight)).toFixed(2)} mg
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
