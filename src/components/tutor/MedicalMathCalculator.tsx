@@ -128,11 +128,12 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
       />
       
       {/* Calculator Panel */}
-      <div className={`
+      <div className="
         bg-white rounded-xl shadow-xl border border-slate-200
-        ${/* Desktop */ 'hidden md:block fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-md z-[60] max-h-[60vh] overflow-y-auto'}
-        ${/* Mobile */ 'md:hidden fixed bottom-0 left-0 right-0 z-[60] rounded-t-xl max-h-[70vh] overflow-y-auto'}
-      `}>
+        fixed z-[60] overflow-y-auto
+        bottom-0 left-0 right-0 max-h-[70vh] rounded-t-xl
+        md:bottom-20 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-full md:max-w-md md:max-h-[60vh] md:rounded-xl
+      ">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between rounded-t-xl">
           <div className="flex items-center gap-2">
