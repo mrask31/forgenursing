@@ -146,7 +146,11 @@ export default function ChatInterface({
       <div className="px-2 mb-2 flex justify-center md:justify-start">
         <button
           type="button"
-          onClick={() => setIsCalculatorOpen(!isCalculatorOpen)}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setIsCalculatorOpen(!isCalculatorOpen)
+          }}
           className={`
             flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200
             ${isCalculatorOpen

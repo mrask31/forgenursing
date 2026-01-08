@@ -110,8 +110,6 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
     }
   }, [orderedDose, minDose, maxDose, safeDoseWeight])
 
-  if (!isOpen) return null
-
   const tools: { id: CalculatorTool; label: string }[] = [
     { id: 'iv-flow', label: 'IV Flow Rate' },
     { id: 'drops-per-minute', label: 'Drops/min' },
@@ -119,19 +117,21 @@ export default function MedicalMathCalculator({ isOpen, onClose }: MedicalMathCa
     { id: 'safe-dose', label: 'Safe Dose Range' }
   ]
 
+  if (!isOpen) return null
+
   return (
     <>
-      {/* Mobile: Bottom Sheet Overlay */}
+      {/* Overlay - Both mobile and desktop */}
       <div 
-        className="md:hidden fixed inset-0 bg-black/20 z-50 transition-opacity"
+        className="fixed inset-0 bg-black/20 z-[60] transition-opacity md:bg-black/10"
         onClick={onClose}
       />
       
       {/* Calculator Panel */}
       <div className={`
         bg-white rounded-xl shadow-xl border border-slate-200
-        ${/* Desktop */ 'hidden md:block absolute bottom-full left-0 right-0 mb-2 max-w-md mx-auto'}
-        ${/* Mobile */ 'md:hidden fixed bottom-0 left-0 right-0 z-50 rounded-t-xl max-h-[70vh] overflow-y-auto'}
+        ${/* Desktop */ 'hidden md:block fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-md z-[60] max-h-[60vh] overflow-y-auto'}
+        ${/* Mobile */ 'md:hidden fixed bottom-0 left-0 right-0 z-[60] rounded-t-xl max-h-[70vh] overflow-y-auto'}
       `}>
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between rounded-t-xl">
