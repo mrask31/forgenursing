@@ -307,7 +307,6 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
 
   const classMaterials = materials.filter(f => f.document_type !== 'note')
   const hasMaterials = classMaterials.length > 0
-  const activeCount = classMaterials.filter(f => f.isActive).length
   const syllabi = classMaterials.filter(f => f.document_type === 'syllabus')
   const textbooks = classMaterials.filter(f => f.document_type === 'textbook')
 
@@ -369,12 +368,6 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           {textbooks.length > 0 && (
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">Textbooks: {textbooks.length}</Badge>
-            </div>
-          )}
-          {activeCount > 0 && (
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-emerald-500" />
-              <span className="text-slate-600">{activeCount} active</span>
             </div>
           )}
         </div>
@@ -547,22 +540,6 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                   <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <Button
                       type="button"
-                      variant={file.isActive ? "default" : "outline"}
-                      size="sm"
-                      onClick={async (e) => {
-                        e.stopPropagation()
-                        await handleToggleActive(file.filename, !file.isActive)
-                      }}
-                      className={`h-7 px-3 text-xs font-medium transition-all ${
-                        file.isActive
-                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500'
-                          : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-300'
-                      }`}
-                    >
-                      {file.isActive ? 'Active' : 'Inactive'}
-                    </Button>
-                    <Button
-                      type="button"
                       variant="ghost"
                       size="sm"
                       onClick={(e) => {
@@ -570,6 +547,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                         handleDelete(file.filename)
                       }}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0 shrink-0"
+                      aria-label={`Delete ${file.filename}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
