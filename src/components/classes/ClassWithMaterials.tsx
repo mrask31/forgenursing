@@ -246,56 +246,6 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
     }
   }
 
-  const handleToggleActive = async (filename: string, newState: boolean) => {
-    try {
-      console.log('[ClassWithMaterials] Toggling document:', { filename, newState })
-      
-      // Use API route instead of server action for better error handling
-      const response = await fetch('/api/binder/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Ensure cookies are sent
-        body: JSON.stringify({ filename, isActive: newState })
-      })
-
-      // Check content type before parsing
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text()
-        console.error('[ClassWithMaterials] Non-JSON response:', text.substring(0, 200))
-        throw new Error('Server returned an invalid response. Please try again.')
-      }
-
-      // Parse JSON response
-      let data
-      try {
-        data = await response.json()
-      } catch (parseError) {
-        console.error('[ClassWithMaterials] Failed to parse JSON response:', parseError)
-        throw new Error('Server returned invalid data. Please try again.')
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to toggle document')
-      }
-
-      console.log('[ClassWithMaterials] Toggle result:', data)
-      
-      // Reload materials after successful toggle
-      await loadMaterials()
-      onRefresh()
-    } catch (error) {
-      console.error('[ClassWithMaterials] Failed to toggle document:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      
-      // Clean up error message if it contains HTML
-      const cleanedMessage = errorMessage.includes('<!DOCTYPE') 
-        ? 'Server error occurred. Please try again or refresh the page.'
-        : errorMessage
-      
-      alert(`Failed to toggle document: ${cleanedMessage}`)
-    }
-  }
 
   const handleDelete = async (filename: string) => {
     if (!confirm(`Delete "${filename}"? This cannot be undone.`)) return
