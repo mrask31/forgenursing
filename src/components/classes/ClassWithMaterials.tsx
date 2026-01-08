@@ -266,7 +266,14 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
         throw new Error('Server returned an invalid response. Please try again.')
       }
 
-      const data = await response.json()
+      // Parse JSON response
+      let data
+      try {
+        data = await response.json()
+      } catch (parseError) {
+        console.error('[ClassWithMaterials] Failed to parse JSON response:', parseError)
+        throw new Error('Server returned invalid data. Please try again.')
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to toggle document')
