@@ -254,8 +254,17 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
       const response = await fetch('/api/binder/toggle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Ensure cookies are sent
         body: JSON.stringify({ filename, isActive: newState })
       })
+
+      // Check content type before parsing
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text()
+        console.error('[ClassWithMaterials] Non-JSON response:', text.substring(0, 200))
+        throw new Error('Server returned an invalid response. Please try again.')
+      }
 
       const data = await response.json()
 
@@ -269,8 +278,15 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
       await loadMaterials()
       onRefresh()
     } catch (error) {
-      console.error('Failed to toggle document:', error)
-      alert(`Failed to toggle document: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('[ClassWithMaterials] Failed to toggle document:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      
+      // Clean up error message if it contains HTML
+      const cleanedMessage = errorMessage.includes('<!DOCTYPE') 
+        ? 'Server error occurred. Please try again or refresh the page.'
+        : errorMessage
+      
+      alert(`Failed to toggle document: ${cleanedMessage}`)
     }
   }
 
