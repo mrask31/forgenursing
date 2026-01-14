@@ -53,8 +53,8 @@ export default function Hero({ user }: HeroProps) {
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent tracking-tight mb-4 sm:mb-6 leading-tight pb-1">
-              <span className="hidden sm:inline">When Studying Hard Isn't Working, Learn How NCLEX Wants You to Think.</span>
-              <span className="sm:hidden">When Studying Hard Isn't Working</span>
+              <span className="hidden sm:inline">Studying Hard but Still Stuck? Here's How NCLEX Questions Start to Make Sense.</span>
+              <span className="sm:hidden">Studying Hard but Still Stuck?</span>
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl text-slate-700 mb-4 sm:mb-6 leading-relaxed font-medium">
@@ -63,7 +63,7 @@ export default function Hero({ user }: HeroProps) {
             </p>
             
             <p className="text-sm sm:text-base text-slate-600 mb-6 sm:mb-8 italic">
-              <span className="hidden sm:inline">Best for students who feel stuck on NCLEX-style questions. If you're cruising with question banks, you may not need this.</span>
+              <span className="hidden sm:inline">Best for students who feel stuck on NCLEX-style questions. If you're already cruising with question banks, you may not need this.</span>
               <span className="sm:hidden">For students stuck on NCLEX questions.</span>
             </p>
             

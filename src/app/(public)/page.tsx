@@ -100,12 +100,13 @@ export default function HomePage() {
         </div>
 
         {/* Pricing Cards */}
+        {/* UI display-only; billing handled by Stripe Price IDs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
           {/* Monthly Plan - Enhanced */}
           <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl p-6 sm:p-8 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-indigo-200/30 transition-all duration-300 transform hover:scale-[1.02]">
             <h3 className="text-xl font-bold text-slate-900 mb-2">Monthly Access</h3>
             <div className="mb-4">
-              <span className="text-3xl sm:text-4xl font-bold text-slate-900">$29</span>
+              <span className="text-3xl sm:text-4xl font-bold text-slate-900">$24.99</span>
               <span className="text-slate-600 text-sm sm:text-base ml-1">/month</span>
             </div>
             <p className="text-xs sm:text-sm text-slate-600 mb-6">Perfect for focused study periods</p>
@@ -130,7 +131,7 @@ export default function HomePage() {
             </div>
             <p className="text-[10px] sm:text-xs text-slate-400 mb-1">4 months</p>
             <p className="text-xs sm:text-sm text-indigo-600 font-semibold mb-4">
-              ~$22/month • Save 24% vs monthly
+              ~$22.25/month • Save 11% vs monthly
             </p>
             <p className="text-xs sm:text-sm text-slate-600 mb-6">Best value for a full term</p>
             <button
@@ -151,7 +152,7 @@ export default function HomePage() {
             </div>
             <p className="text-[10px] sm:text-xs text-slate-400 mb-1">12 months</p>
             <p className="text-xs sm:text-sm text-indigo-600 font-semibold mb-4">
-              ~$17/month • Save 41% vs monthly
+              ~$16.58/month • Save 34% vs monthly
             </p>
             <p className="text-xs sm:text-sm text-slate-600 mb-6">Maximum savings for long-term commitment</p>
             <button
