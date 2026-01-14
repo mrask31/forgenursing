@@ -53,13 +53,18 @@ export default function Hero({ user }: HeroProps) {
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent tracking-tight mb-4 sm:mb-6 leading-tight pb-1">
-              <span className="hidden sm:inline">Stop Memorizing. Start Thinking Like a Nurse.</span>
-              <span className="sm:hidden">Think Like a Nurse — Not a Memorizer</span>
+              <span className="hidden sm:inline">When Studying Hard Isn't Working, Learn How NCLEX Wants You to Think.</span>
+              <span className="sm:hidden">When Studying Hard Isn't Working</span>
             </h1>
             
-            <p className="text-base sm:text-lg md:text-xl text-slate-700 mb-6 sm:mb-8 leading-relaxed font-medium">
-              <span className="hidden sm:inline">ForgeNursing is an AI tutor that teaches clinical reasoning using your own textbooks and lecture notes — so NCLEX questions finally make sense.</span>
-              <span className="sm:hidden">AI tutoring based on your own class materials.</span>
+            <p className="text-base sm:text-lg md:text-xl text-slate-700 mb-4 sm:mb-6 leading-relaxed font-medium">
+              <span className="hidden sm:inline">ForgeNursing turns your lecture notes and textbooks into step-by-step clinical reasoning — so prioritization finally clicks.</span>
+              <span className="sm:hidden">Step-by-step clinical reasoning from your materials.</span>
+            </p>
+            
+            <p className="text-sm sm:text-base text-slate-600 mb-6 sm:mb-8 italic">
+              <span className="hidden sm:inline">Best for students who feel stuck on NCLEX-style questions. If you're cruising with question banks, you may not need this.</span>
+              <span className="sm:hidden">For students stuck on NCLEX questions.</span>
             </p>
             
             <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
@@ -81,7 +86,7 @@ export default function Hero({ user }: HeroProps) {
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Link>
                   <p className="text-xs sm:text-sm text-slate-600 text-center sm:text-left">
-                    Takes ~30 seconds to get started
+                    Free preview takes ~30 seconds to set up
                   </p>
                 </>
               )}

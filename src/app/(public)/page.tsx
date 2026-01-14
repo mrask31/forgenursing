@@ -61,10 +61,10 @@ export default function HomePage() {
             <span className="sm:hidden">Simple Pricing</span>
           </h2>
           <p className="text-base sm:text-lg text-slate-700 mb-4 hidden sm:block">
-            Start with a 7-day free trial, then choose the plan that fits your semester.
+            Start with a free preview. If you feel stuck, give yourself one week with a tutor that uses your materials.
           </p>
           <p className="text-base sm:text-lg text-slate-700 mb-4 sm:hidden">
-            7-day free trial, then pick your plan.
+            Free preview. One week to see if it helps.
           </p>
           
           {/* All Plans Include */}
@@ -73,15 +73,15 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                <span>Step-by-step clinical reasoning</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
                 <span>Clinical Studio (NCLEX-style simulations)</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
                 <span>Strict testing mode</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                <span>Step-by-step clinical reasoning</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />

@@ -36,11 +36,11 @@ export default function HowItClicks() {
             1
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-4">
-            <span className="hidden sm:inline">1️⃣ Upload your class materials</span>
+            <span className="hidden sm:inline">1️⃣ Upload what your program is teaching</span>
             <span className="sm:hidden">Upload</span>
           </h3>
           <p className="text-slate-700 leading-relaxed font-medium hidden sm:block">
-            Lecture notes, PDFs, and textbook chapters.
+            Your notes, slides, and textbook chapters.
           </p>
         </div>
 
@@ -64,11 +64,11 @@ export default function HowItClicks() {
             2
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-4">
-            <span className="hidden sm:inline">2️⃣ Chat with your AI tutor</span>
-            <span className="sm:hidden">Chat</span>
+            <span className="hidden sm:inline">2️⃣ Practice prioritization with guidance</span>
+            <span className="sm:hidden">Practice</span>
           </h3>
           <p className="text-slate-700 leading-relaxed font-medium hidden sm:block">
-            Ask questions and practice clinical reasoning.
+            ABCs, safety, what to do first — step-by-step.
           </p>
         </div>
 
@@ -92,11 +92,11 @@ export default function HowItClicks() {
             3
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-4">
-            <span className="hidden sm:inline">3️⃣ Save key insights</span>
+            <span className="hidden sm:inline">3️⃣ Save the 'click' moments</span>
             <span className="sm:hidden">Save</span>
           </h3>
           <p className="text-slate-700 leading-relaxed font-medium hidden sm:block">
-            Build your own library of breakthroughs.
+            Build your library before exams.
           </p>
         </div>
       </div>

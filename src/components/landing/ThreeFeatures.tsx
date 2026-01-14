@@ -5,11 +5,11 @@ export default function ThreeFeatures() {
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-white via-indigo-50/30 to-white">
       <div className="text-center mb-8 sm:mb-12">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-3 sm:mb-4">
-          <span className="hidden sm:inline">Understand the Why, Not Just the Answer</span>
-          <span className="sm:hidden">Learn the "Why," Not Just the Answer</span>
+          <span className="hidden sm:inline">Learn the Why, Not Just the Answer</span>
+          <span className="sm:hidden">Learn the "Why"</span>
         </h2>
         <p className="text-base sm:text-lg text-slate-700 max-w-2xl mx-auto px-4 leading-relaxed hidden sm:block">
-          Most study tools help you memorize. ForgeNursing helps you think like a safe, confident nurse.
+          Turn "I knew this..." into "I can reason through it." Learn how to eliminate choices and prioritize safely.
         </p>
       </div>
       
@@ -24,7 +24,7 @@ export default function ThreeFeatures() {
             <span className="sm:hidden">Clinical reasoning</span>
           </h3>
           <p className="text-slate-600 leading-relaxed mb-4 hidden sm:block">
-            Get step-by-step reasoning instead of generic answers.
+            Step-by-step reasoning that shows you how to think, not just what to remember.
           </p>
           <ul className="space-y-2 text-sm text-slate-600 hidden sm:block">
             <li className="flex items-center gap-2">
@@ -72,7 +72,7 @@ export default function ThreeFeatures() {
             <span className="sm:hidden">Guided explanations</span>
           </h3>
           <p className="text-slate-600 leading-relaxed mb-4 hidden sm:block">
-            Your tutor guides your thinking, asking helpful questions along the way.
+            Your tutor guides your thinking with step-by-step reasoning, not just answers.
           </p>
           <ul className="space-y-2 text-sm text-slate-600 hidden sm:block">
             <li className="flex items-center gap-2">
@@ -96,7 +96,7 @@ export default function ThreeFeatures() {
             <span className="sm:hidden">Save insights</span>
           </h3>
           <p className="text-slate-600 leading-relaxed mb-4 hidden sm:block">
-            Bookmark key learning moments to review later — especially before exams.
+            Save the insights that help prioritization click — review your library before exams.
           </p>
           <ul className="space-y-2 text-sm text-slate-600 hidden sm:block">
             <li className="flex items-center gap-2">

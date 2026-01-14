@@ -10,10 +10,10 @@ export default function BeliefValidation() {
           <span className="sm:hidden">Works With Your Other Tools</span>
         </h2>
         <p className="text-base sm:text-lg text-slate-700 mb-6 sm:mb-8 hidden sm:block">
-          UWorld tests you. SimpleNursing helps you remember. ForgeNursing helps it finally click by strengthening the clinical-thinking skills NCLEX expects.
+          Question banks test what you know. Videos help you remember. ForgeNursing helps you think through NCLEX-style decisions when your brain freezes.
         </p>
         <p className="text-base sm:text-lg text-slate-700 mb-6 sm:mb-8 sm:hidden">
-          We help you understand what they teach.
+          Think through decisions when your brain freezes.
         </p>
       </div>
       
@@ -23,7 +23,7 @@ export default function BeliefValidation() {
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
           <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
-            I know the content but freeze on NCLEX-style questions
+            I know the content, but I freeze on "what do I do first?"
           </p>
         </div>
         <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/80 to-rose-50/80 backdrop-blur-sm border-2 border-red-200/60 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02]">
@@ -31,7 +31,7 @@ export default function BeliefValidation() {
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
           <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
-            I don't know how to prioritize what to do first
+            I can't tell what's most important in the question
           </p>
         </div>
         <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/80 to-rose-50/80 backdrop-blur-sm border-2 border-red-200/60 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02]">
@@ -39,7 +39,7 @@ export default function BeliefValidation() {
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
           <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
-            Everything blurs together when I study
+            I keep studying, but nothing sticks under pressure
           </p>
         </div>
         <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/80 to-rose-50/80 backdrop-blur-sm border-2 border-red-200/60 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02]">
@@ -47,7 +47,7 @@ export default function BeliefValidation() {
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
           <p className="text-base sm:text-lg text-slate-700 font-semibold flex-1 leading-relaxed">
-            I keep forgetting and re-asking the same questions
+            I'm tired of re-learning the same topic
           </p>
         </div>
       </div>
@@ -60,10 +60,10 @@ export default function BeliefValidation() {
           Student-Centered & Ethical
         </h3>
         <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-white/95 leading-relaxed hidden sm:block">
-          ForgeNursing is currently being pilot-tested with real students to ensure it truly supports clinical reasoning — ethically, calmly, and effectively. No gimmicks. No pressure. Just meaningful learning.
+          ForgeNursing is pilot-tested with real students to ensure it supports clinical reasoning — ethically, calmly, and effectively. No gimmicks. No pressure. Not a replacement for school. Just meaningful learning that helps prioritization click.
         </p>
         <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-white/95 leading-relaxed sm:hidden">
-          Currently in pilot testing with real nursing students.
+          Pilot-tested with real students. Ethical, calm, no gimmicks.
         </p>
         <Link
           href="/signup?plan=monthly"
