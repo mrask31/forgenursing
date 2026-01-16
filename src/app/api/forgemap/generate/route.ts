@@ -93,6 +93,19 @@ async function retrieveBinderContextForMap(
 }
 
 export async function POST(req: Request) {
+  // Validate OpenAI API key before processing request
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) {
+    console.error('[ForgeMap] OPENAI_API_KEY is missing from environment variables')
+    return NextResponse.json({ error: 'OpenAI API key is not configured. Please check your environment variables.' }, { status: 500 })
+  }
+
+  // Validate API key format (should start with 'sk-')
+  if (!apiKey.startsWith('sk-')) {
+    console.error('[ForgeMap] Invalid API key format. API key should start with "sk-"')
+    return NextResponse.json({ error: 'Invalid OpenAI API key format. Please check your environment variable value.' }, { status: 500 })
+  }
+
   try {
     const cookieStore = cookies()
     const supabase = createServerClient(
@@ -177,12 +190,32 @@ Rules:
     // The 'ai' package has its own nested @ai-sdk/provider dependency that TypeScript sees as
     // incompatible with the root @ai-sdk/provider used by @ai-sdk/openai, even though they're
     // functionally compatible at runtime. This is a known issue with nested dependencies.
-    const { text: mapMarkdown } = await generateText({
-      // @ts-expect-error - Version mismatch between root @ai-sdk/provider and ai's nested @ai-sdk/provider
-      model: openai('gpt-4o-mini'),
-      prompt: mapPrompt,
-      temperature: 0.3,
-    })
+    let mapMarkdown: string
+    try {
+      const result = await generateText({
+        // @ts-expect-error - Version mismatch between root @ai-sdk/provider and ai's nested @ai-sdk/provider
+        model: openai('gpt-4o-mini'),
+        prompt: mapPrompt,
+        temperature: 0.3,
+      })
+      mapMarkdown = result.text
+    } catch (error: any) {
+      console.error('[ForgeMap] OpenAI API error:', error)
+      
+      // Provide more helpful error messages
+      let errorMessage = 'Failed to generate concept map'
+      if (error?.message) {
+        if (error.message.includes('API key') || error.message.includes('401')) {
+          errorMessage = 'OpenAI API authentication failed. Please verify your API key is correct.'
+        } else if (error.message.includes('429') || error.message.includes('rate limit')) {
+          errorMessage = 'OpenAI API rate limit exceeded. Please try again in a moment.'
+        } else {
+          errorMessage = `AI service error: ${error.message}`
+        }
+      }
+      
+      return NextResponse.json({ error: errorMessage }, { status: 500 })
+    }
 
     // 7. Save map to database
     const { data: map, error: insertError } = await supabase
@@ -206,7 +239,14 @@ Rules:
     return NextResponse.json({ map })
   } catch (error: any) {
     console.error('[ForgeMap] Critical error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    
+    // Provide more helpful error messages
+    let errorMessage = 'Failed to generate concept map'
+    if (error?.message) {
+      errorMessage = error.message
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }
 
