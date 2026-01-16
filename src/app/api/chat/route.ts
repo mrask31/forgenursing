@@ -5,6 +5,11 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import OpenAI from 'openai';
 
+// Validate API key format at module load time (for embeddings client)
+if (process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.startsWith('sk-')) {
+  console.error('[CHAT] WARNING: OPENAI_API_KEY does not start with "sk-". This may cause authentication errors.');
+}
+
 const openaiEmbeddings = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -247,6 +252,28 @@ async function retrieveBinderContext(
 }
 
 export async function POST(req: Request) {
+  // Validate OpenAI API key before processing request
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.error('[CHAT] OPENAI_API_KEY is missing from environment variables');
+    return new Response(JSON.stringify({ error: 'OpenAI API key is not configured. Please check your environment variables.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate API key format (should start with 'sk-')
+  if (!apiKey.startsWith('sk-')) {
+    const maskedKey = apiKey.length > 10 
+      ? `${apiKey.substring(0, 3)}...${apiKey.substring(apiKey.length - 3)}`
+      : '***';
+    console.error('[CHAT] Invalid API key format. API key should start with "sk-". Received:', maskedKey);
+    return new Response(JSON.stringify({ error: 'Invalid OpenAI API key format. API key must start with "sk-". Please check your environment variable value (do not include the variable name in the value).' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const body = await req.json();
   const { messages, strictMode, filterMode = 'mixed', selectedDocIds = [], chatId, topicTitle, className, selectedClassName, attachedFileIds: rawAttachedFileIds } = body;
   
@@ -540,20 +567,44 @@ FORMATTING RULES:
 - If binder context was present, explicitly mention filenames and document types in your response. Example: "From Medical_Surgical_Unit_3_Heart_Failure.pdf (Textbook)…"
 `;
 
-  const result = await streamText({
-    model: openai('gpt-4o') as any,
-    messages: messagesWithBinder,
-    system: systemPrompt,
-  });
+  try {
+    // Use the validated API key explicitly
+    const result = await streamText({
+      model: openai('gpt-4o') as any,
+      messages: messagesWithBinder,
+      system: systemPrompt,
+    });
 
-  // Return response with file summaries in metadata for UI display
-  const response = result.toAIStreamResponse();
-  
-  // Add file summaries to response headers for UI to display "Using your files" pill
-  if (fileSummaries.length > 0 && binderContext && binderContext.trim().length > 0) {
-    const fileNames = fileSummaries.map(f => f.filename).join(', ');
-    response.headers.set('X-Binder-Files', fileNames);
+    // Return response with file summaries in metadata for UI display
+    const response = result.toAIStreamResponse();
+    
+    // Add file summaries to response headers for UI to display "Using your files" pill
+    if (fileSummaries.length > 0 && binderContext && binderContext.trim().length > 0) {
+      const fileNames = fileSummaries.map(f => f.filename).join(', ');
+      response.headers.set('X-Binder-Files', fileNames);
+    }
+
+    return response;
+  } catch (error: any) {
+    console.error('[CHAT] Error calling OpenAI:', error);
+    
+    // Provide more helpful error messages
+    let errorMessage = 'Failed to connect to AI';
+    if (error?.message) {
+      if (error.message.includes('API key')) {
+        errorMessage = 'Invalid or missing OpenAI API key. Please check your environment configuration.';
+      } else if (error.message.includes('401') || error.message.includes('unauthorized')) {
+        errorMessage = 'OpenAI API authentication failed. Please verify your API key is correct.';
+      } else if (error.message.includes('429') || error.message.includes('rate limit')) {
+        errorMessage = 'OpenAI API rate limit exceeded. Please try again in a moment.';
+      } else {
+        errorMessage = `AI service error: ${error.message}`;
+      }
+    }
+    
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
-
-  return response;
 }
