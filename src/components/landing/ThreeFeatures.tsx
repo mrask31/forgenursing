@@ -24,16 +24,16 @@ export default function ThreeFeatures() {
             <span className="sm:hidden">Clinical reasoning</span>
           </h3>
           <p className="text-slate-600 leading-relaxed mb-4 hidden sm:block">
-            Step-by-step reasoning that shows you how to think, not just what to remember.
+            Structured reasoning with visual maps first, then step-by-step explanations. See the big picture before diving into details.
           </p>
           <ul className="space-y-2 text-sm text-slate-600 hidden sm:block">
             <li className="flex items-center gap-2">
               <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-              <span>Step-by-step reasoning</span>
+              <span>Map-first structure (visual before explanation)</span>
             </li>
             <li className="flex items-center gap-2">
               <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-              <span>Not just answers</span>
+              <span>Step-by-step reasoning</span>
             </li>
           </ul>
         </div>

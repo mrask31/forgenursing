@@ -540,6 +540,39 @@ export default function TutorSession({
     setTimeout(tryScroll, 200)
   }, [scrollToMessageId, sessionId]) // Use sessionId as dependency to retry when session changes
 
+  // Track previous message count and last user message ID to detect new user messages
+  const prevMessageCountRef = useRef<number>(0)
+  const prevLastUserMessageIdRef = useRef<string | null>(null)
+
+  // Auto-scroll to bottom when a new user message is added
+  useEffect(() => {
+    if (!scrollContainerRef.current || !shouldAutoScrollRef.current || scrollToMessageId) return
+    
+    const currentMessageCount = messages.length
+    const lastUserMessage = messages.filter(m => m.role === 'user').slice(-1)[0]
+    const lastUserMessageId = lastUserMessage?.id || null
+    
+    // Check if a new user message was just added
+    const isNewUserMessage = lastUserMessageId && lastUserMessageId !== prevLastUserMessageIdRef.current
+    
+    if (isNewUserMessage || (currentMessageCount > prevMessageCountRef.current && messages[currentMessageCount - 1]?.role === 'user')) {
+      const container = scrollContainerRef.current
+      // Scroll immediately when user sends a message
+      setTimeout(() => {
+        if (container && shouldAutoScrollRef.current) {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'smooth'
+          })
+        }
+      }, 50) // Shorter delay for user messages
+    }
+    
+    // Update refs
+    prevMessageCountRef.current = currentMessageCount
+    prevLastUserMessageIdRef.current = lastUserMessageId
+  }, [messages, scrollToMessageId, sessionId])
+
   // Auto-scroll to bottom when session loads or messages change (only if user hasn't manually scrolled up and no scrollToMessageId)
   useEffect(() => {
     if (!scrollContainerRef.current || !shouldAutoScrollRef.current || scrollToMessageId) return
