@@ -540,37 +540,48 @@ export default function TutorSession({
     setTimeout(tryScroll, 200)
   }, [scrollToMessageId, sessionId]) // Use sessionId as dependency to retry when session changes
 
-  // Track previous message count and last user message ID to detect new user messages
+  // Track previous message count and last user message to detect new user messages
   const prevMessageCountRef = useRef<number>(0)
-  const prevLastUserMessageIdRef = useRef<string | null>(null)
+  const prevLastUserMessageRef = useRef<string | null>(null)
 
   // Auto-scroll to bottom when a new user message is added
   useEffect(() => {
     if (!scrollContainerRef.current || !shouldAutoScrollRef.current || scrollToMessageId) return
     
     const currentMessageCount = messages.length
-    const lastUserMessage = messages.filter(m => m.role === 'user').slice(-1)[0]
-    const lastUserMessageId = lastUserMessage?.id || null
+    const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null
+    const lastMessageKey = lastMessage ? `${lastMessage.role}-${lastMessage.content?.slice(0, 50)}` : null
     
     // Check if a new user message was just added
-    const isNewUserMessage = lastUserMessageId && lastUserMessageId !== prevLastUserMessageIdRef.current
+    const isNewUserMessage = lastMessage?.role === 'user' && 
+      lastMessageKey !== prevLastUserMessageRef.current &&
+      currentMessageCount > prevMessageCountRef.current
     
-    if (isNewUserMessage || (currentMessageCount > prevMessageCountRef.current && messages[currentMessageCount - 1]?.role === 'user')) {
+    if (isNewUserMessage) {
       const container = scrollContainerRef.current
-      // Scroll immediately when user sends a message
-      setTimeout(() => {
+      
+      // Use requestAnimationFrame for better timing with DOM updates
+      const scrollToBottom = () => {
         if (container && shouldAutoScrollRef.current) {
+          const scrollHeight = container.scrollHeight
           container.scrollTo({
-            top: container.scrollHeight,
+            top: scrollHeight,
             behavior: 'smooth'
           })
         }
-      }, 50) // Shorter delay for user messages
+      }
+      
+      // Try multiple times to ensure scroll happens after DOM updates
+      requestAnimationFrame(() => {
+        scrollToBottom()
+        setTimeout(scrollToBottom, 100)
+        setTimeout(scrollToBottom, 300)
+      })
     }
     
     // Update refs
     prevMessageCountRef.current = currentMessageCount
-    prevLastUserMessageIdRef.current = lastUserMessageId
+    prevLastUserMessageRef.current = lastMessageKey
   }, [messages, scrollToMessageId, sessionId])
 
   // Auto-scroll to bottom when session loads or messages change (only if user hasn't manually scrolled up and no scrollToMessageId)

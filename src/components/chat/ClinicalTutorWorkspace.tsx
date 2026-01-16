@@ -88,6 +88,7 @@ export default function ClinicalTutorWorkspace({
   const [savingToNotebook, setSavingToNotebook] = useState<string | null>(null) // messageId being saved
   const [flaggedMessages, setFlaggedMessages] = useState<Set<string>>(new Set())
   const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
+  const justSentMessageRef = useRef<boolean>(false) // Track when we just sent a message
   
   // If selection props are provided, we'll use ChatMessageList for rendering
   const useMessageList = !!selectedMessageId || !!onSelectMessage
@@ -238,6 +239,43 @@ export default function ClinicalTutorWorkspace({
     },
   });
 
+  // Track previous message count to detect new messages
+  const prevMessageCountRef = useRef<number>(0)
+
+  // Auto-scroll when a new user message is added to messages array
+  useEffect(() => {
+    if (!scrollContainerRef?.current) return
+    
+    const currentMessageCount = messages.length
+    const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null
+    
+    // Check if a new user message was added
+    const isNewUserMessage = lastMessage?.role === 'user' && 
+      currentMessageCount > prevMessageCountRef.current
+    
+    if (isNewUserMessage) {
+      const scrollToBottom = () => {
+        if (scrollContainerRef.current) {
+          const container = scrollContainerRef.current
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'smooth'
+          })
+        }
+      }
+      
+      // Use requestAnimationFrame and multiple retries to ensure DOM is updated
+      requestAnimationFrame(() => {
+        scrollToBottom()
+        setTimeout(scrollToBottom, 100)
+        setTimeout(scrollToBottom, 300)
+      })
+    }
+    
+    // Update ref
+    prevMessageCountRef.current = currentMessageCount
+  }, [messages, scrollContainerRef])
+
   useEffect(() => {
     if (initialMessages.length > 0 && !isLoadingHistory) {
       if (messages.length === 0 || 
@@ -387,12 +425,38 @@ export default function ClinicalTutorWorkspace({
       if (!append) {
         throw new Error("Chat initialization failed");
       }
+      
+      // Mark that we just sent a message to trigger scroll
+      justSentMessageRef.current = true
+      
       await append({ role: 'user', content: trimmedMessage });
+      
+      // Trigger scroll immediately and with retries to ensure it works
+      if (scrollContainerRef?.current) {
+        const scrollToBottom = () => {
+          if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({
+              top: scrollContainerRef.current.scrollHeight,
+              behavior: 'smooth'
+            })
+          }
+        }
+        
+        // Use requestAnimationFrame for better timing
+        requestAnimationFrame(() => {
+          scrollToBottom()
+          // Retry at different intervals to ensure DOM is updated
+          setTimeout(scrollToBottom, 50)
+          setTimeout(scrollToBottom, 150)
+          setTimeout(scrollToBottom, 300)
+        })
+      }
     } catch (e: any) {
       console.error("Send failed:", e);
       setCustomError(e.message || "Message failed to send.");
+      justSentMessageRef.current = false
     }
-  }, [chatId, append]);
+  }, [chatId, append, scrollContainerRef]);
 
   // Track processed messages to prevent duplicates (persist across re-renders)
   const processedMessagesRef = useRef<Set<string>>(new Set())
