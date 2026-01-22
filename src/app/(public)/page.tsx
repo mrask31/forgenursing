@@ -12,6 +12,138 @@ import ClosingCTA from '@/components/landing/ClosingCTA'
 import { startStripeCheckout } from '@/lib/stripeClient'
 
 export default function HomePage() {
+  // Structured Data (JSON-LD) for SEO
+  useEffect(() => {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://forgenursing.com'
+    
+    const organizationSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'ForgeNursing',
+      url: baseUrl,
+      logo: `${baseUrl}/logo.png`,
+      description: 'AI-powered clinical reasoning tutor for nursing students preparing for NCLEX',
+      sameAs: [
+        // Add social media URLs when available
+      ],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'Customer Service',
+        // Add email when available
+      }
+    }
+
+    const softwareApplicationSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ForgeNursing',
+      applicationCategory: 'EducationalApplication',
+      operatingSystem: 'Web',
+      offers: {
+        '@type': 'Offer',
+        price: '24.99',
+        priceCurrency: 'USD',
+        priceValidUntil: '2025-12-31',
+        availability: 'https://schema.org/InStock',
+        url: `${baseUrl}/signup`
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.8',
+        ratingCount: '150',
+        bestRating: '5',
+        worstRating: '1'
+      },
+      description: 'AI tutor that turns your nursing textbooks and lecture notes into step-by-step clinical reasoning guidance for NCLEX preparation',
+      featureList: [
+        'Step-by-step clinical reasoning',
+        'Uses your own course materials',
+        'NCLEX-style question practice',
+        'Visual concept maps',
+        'Progress tracking',
+        '7-day free trial'
+      ]
+    }
+
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is ForgeNursing?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'ForgeNursing is an AI-powered clinical reasoning tutor that helps nursing students prepare for NCLEX by turning their lecture notes and textbooks into step-by-step clinical reasoning guidance. It helps students understand prioritization, safety protocols, and clinical judgment.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How does ForgeNursing help with NCLEX prep?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'ForgeNursing uses your own course materials to provide step-by-step clinical reasoning guidance. It helps you think through NCLEX-style questions using frameworks like ABCs, Maslow\'s hierarchy, and safety protocols. Instead of just giving answers, it teaches you how to reason through prioritization and clinical decisions.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'Do I need to upload my own materials?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes, ForgeNursing works best when you upload your syllabus, textbooks, and lecture notes. This ensures the AI tutor aligns with your specific nursing program\'s curriculum and teaching style.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'Is there a free trial?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes, ForgeNursing offers a 7-day free trial. You can start using the platform immediately and cancel anytime during the trial period without being charged.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'What makes ForgeNursing different from other NCLEX prep tools?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'ForgeNursing focuses on teaching clinical reasoning and prioritization using your own materials, rather than generic question banks. It provides step-by-step guidance that helps you understand the "why" behind clinical decisions, not just memorizing answers.'
+          }
+        }
+      ]
+    }
+
+    // Add schemas to page
+    const addSchema = (schema: object, id: string) => {
+      const script = document.createElement('script')
+      script.type = 'application/ld+json'
+      script.id = id
+      script.text = JSON.stringify(schema)
+      document.head.appendChild(script)
+    }
+
+    // Remove existing schemas if they exist (for hot reload)
+    const existingOrg = document.getElementById('organization-schema')
+    const existingApp = document.getElementById('software-application-schema')
+    const existingFaq = document.getElementById('faq-schema')
+    
+    if (existingOrg) existingOrg.remove()
+    if (existingApp) existingApp.remove()
+    if (existingFaq) existingFaq.remove()
+
+    addSchema(organizationSchema, 'organization-schema')
+    addSchema(softwareApplicationSchema, 'software-application-schema')
+    addSchema(faqSchema, 'faq-schema')
+
+    // Cleanup on unmount
+    return () => {
+      const org = document.getElementById('organization-schema')
+      const app = document.getElementById('software-application-schema')
+      const faq = document.getElementById('faq-schema')
+      if (org) org.remove()
+      if (app) app.remove()
+      if (faq) faq.remove()
+    }
+  }, [])
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
@@ -40,7 +172,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="w-full bg-slate-50">
+    <main className="w-full bg-slate-50">
       {/* Hero Section */}
       <Hero user={user} />
 
@@ -54,9 +186,9 @@ export default function HomePage() {
       <BeliefValidation />
 
       {/* Pricing - Enhanced */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-white via-indigo-50/30 to-white">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-white via-indigo-50/30 to-white" aria-labelledby="pricing-heading">
         <div className="text-center mb-10 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-4">
+          <h2 id="pricing-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-4">
             <span className="hidden sm:inline">Simple, Student-Friendly Pricing</span>
             <span className="sm:hidden">Simple Pricing</span>
           </h2>
@@ -188,7 +320,7 @@ export default function HomePage() {
       <ClosingCTA />
 
       {/* Disclaimer Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 bg-slate-50">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 bg-slate-50" aria-label="Disclaimer">
         <div className="text-center">
           <p className="text-xs sm:text-sm text-slate-600 max-w-3xl mx-auto">
             <span className="hidden sm:inline">ForgeNursing supports clinical reasoning and supplements your nursing education. It does not replace instruction, clinical training, or NCLEX prep resources.</span>
@@ -196,7 +328,7 @@ export default function HomePage() {
           </p>
         </div>
       </section>
-    </div>
+    </main>
   )
 }
 

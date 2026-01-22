@@ -5,10 +5,10 @@ import { ArrowRight } from 'lucide-react'
 
 export default function ClosingCTA() {
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-50">
+    <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-50" aria-labelledby="cta-heading">
       <div className="text-center space-y-6 sm:space-y-8">
         <div className="space-y-3 sm:space-y-4">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
+          <h2 id="cta-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
             <span className="hidden sm:inline">Ready for NCLEX Questions to Finally Make Sense?</span>
             <span className="sm:hidden">Ready for NCLEX Questions to Make Sense?</span>
           </h2>

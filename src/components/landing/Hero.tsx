@@ -11,25 +11,25 @@ export default function Hero({ user }: HeroProps) {
   return (
     <>
       {/* Trust Bar - Statistics - Enhanced */}
-      <section className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white py-3 shadow-lg">
+      <section className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white py-3 shadow-lg" aria-label="Key Features">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             <div className="flex flex-col items-center gap-1.5">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md">
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md" aria-hidden="true">
                 <GraduationCap className="w-5 h-5" />
               </div>
               <div className="text-sm font-semibold">Your Materials</div>
               <div className="text-xs opacity-90">Not Generic Content</div>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md">
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md" aria-hidden="true">
                 <Award className="w-5 h-5" />
               </div>
               <div className="text-sm font-semibold">Step-by-Step</div>
               <div className="text-xs opacity-90">Clinical Reasoning</div>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md">
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md" aria-hidden="true">
                 <TrendingUp className="w-5 h-5" />
               </div>
               <div className="text-sm font-semibold">Free Preview</div>
@@ -40,7 +40,7 @@ export default function Hero({ user }: HeroProps) {
       </section>
 
       {/* Hero Section - Enhanced */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 sm:pt-12 sm:pb-16 md:pt-16 md:pb-20 bg-gradient-to-br from-white via-indigo-50/30 to-white">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 sm:pt-12 sm:pb-16 md:pt-16 md:pb-20 bg-gradient-to-br from-white via-indigo-50/30 to-white" aria-label="Hero Section">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
           {/* Left: Text Content - Order first on mobile */}
           <div className="order-2 lg:order-1">
