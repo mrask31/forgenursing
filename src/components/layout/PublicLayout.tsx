@@ -73,6 +73,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <span className="font-bold text-lg sm:text-xl text-slate-900 bg-gradient-to-r from-slate-900 to-indigo-900 bg-clip-text text-transparent">ForgeNursing</span>
             </Link>
             <div className="flex items-center gap-3 sm:gap-4">
+              {/* Help link - always visible */}
+              <Link
+                href="/help"
+                className="px-3 sm:px-4 py-2 text-slate-600 hover:text-indigo-700 text-xs sm:text-sm font-medium transition-colors min-h-[40px] sm:min-h-[44px] flex items-center"
+              >
+                Help
+              </Link>
               {/* Show "Go to Tutor" for logged-in users with active subscription */}
               {user && hasActiveSubscription && pathname !== '/checkout' && (
                 <Link
