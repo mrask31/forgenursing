@@ -108,7 +108,7 @@ export async function middleware(request: NextRequest) {
     const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/auth/')
 
     // Protected routes
-    const protectedRoutes = ['/clinical-desk', '/tutor', '/binder', '/readiness', '/settings', '/classes']
+    const protectedRoutes = ['/clinical-desk', '/tutor', '/binder', '/readiness', '/settings', '/classes', '/help']
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
 
     // Allow access to billing pages (success, cancel, payment-required) and checkout

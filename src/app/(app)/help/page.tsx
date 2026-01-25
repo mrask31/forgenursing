@@ -1,12 +1,11 @@
 'use client'
 
-import Link from 'next/link'
-import { Bookmark, AlertCircle, Map, MessageSquare, FileText, GraduationCap, Activity, Settings, BookOpen, Sparkles, CheckCircle2, XCircle } from 'lucide-react'
+import { Bookmark, AlertCircle, Map, MessageSquare, FileText, GraduationCap, Activity, Sparkles, CheckCircle2, XCircle } from 'lucide-react'
 
 export default function HelpPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+    <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-4">
