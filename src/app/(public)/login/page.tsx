@@ -35,8 +35,24 @@ export default function LoginPage() {
           type: 'success' 
         })
       }
+
+      // Check for existing session - if user is already logged in, sign them out first
+      // This prevents the "spinner hangs" issue when trying to log in again
+      const checkExistingSession = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session) {
+            console.log('[Login] Existing session detected, signing out first to allow new login')
+            await supabase.auth.signOut()
+          }
+        } catch (error) {
+          console.error('[Login] Error checking existing session:', error)
+          // Don't block login if this check fails
+        }
+      }
+      checkExistingSession()
     }
-  }, [])
+  }, [supabase])
 
   // Memoize Supabase client to prevent recreation on every render
   // Ensure Supabase client configuration for production
@@ -68,7 +84,27 @@ export default function LoginPage() {
     setLoading(true)
     setMessage(null)
 
+    // Safety timeout: if login takes more than 30 seconds, stop the spinner
+    const timeoutId = setTimeout(() => {
+      console.warn('[Login] Login attempt timed out after 30 seconds')
+      setLoading(false)
+      setMessage({ 
+        text: 'Login is taking longer than expected. Please try again.', 
+        type: 'error' 
+      })
+    }, 30000)
+
     try {
+      // First, check if there's an existing session and sign out if needed
+      // This prevents issues when trying to log in again after already being logged in
+      const { data: { session: existingSession } } = await supabase.auth.getSession()
+      if (existingSession) {
+        console.log('[Login] Existing session found, signing out first...')
+        await supabase.auth.signOut()
+        // Small delay to ensure sign out completes
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+
       console.log('[Login] Attempting to sign in...', { email: email.trim() })
       
       // Wrap the sign-in call in try/catch with defensive error handling
@@ -77,8 +113,12 @@ export default function LoginPage() {
         password,
       })
 
+      // Clear timeout on success
+      clearTimeout(timeoutId)
+
       // On error: Set isLoading back to false, store error state, show human-readable message
       if (error) {
+        clearTimeout(timeoutId)
         console.error('[Login] Supabase sign-in error:', error)
         setMessage({ 
           text: error.message || 'Login failed. Please check your email and password.', 
@@ -88,6 +128,7 @@ export default function LoginPage() {
       }
 
       if (!data || !data.user) {
+        clearTimeout(timeoutId)
         console.error('[Login] No user data returned from sign-in')
         setMessage({ 
           text: 'Login failed: No user data returned. Please try again.', 
@@ -187,6 +228,9 @@ export default function LoginPage() {
       window.location.replace('/checkout')
       // Note: We don't set loading to false on success because we're redirecting
     } catch (err) {
+      // Clear timeout on error
+      clearTimeout(timeoutId)
+      
       // In catch: console.error for debugging, show user-friendly error
       console.error('[Login] Unexpected login error:', err)
       const errorMessage = err instanceof Error 
@@ -197,6 +241,9 @@ export default function LoginPage() {
         type: 'error' 
       })
     } finally {
+      // Clear timeout in finally as well
+      clearTimeout(timeoutId)
+      
       // Make sure finally always runs so the spinner stops, even on failure
       // Check if we're still on the login page before setting loading to false
       // (If we redirected, the page will unmount anyway)
