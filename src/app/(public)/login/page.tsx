@@ -5,6 +5,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, MessageSquare, BookOpen, GraduationCap, Shield } from 'lucide-react'
 import Link from 'next/link'
+import { clearSupabaseStorage, isSessionError, debugAuthLog, resetSession } from '@/lib/auth-utils'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -36,6 +37,13 @@ export default function LoginPage() {
     }
 
     return createBrowserClient(supabaseUrl, supabaseAnonKey)
+  }, [])
+
+  useEffect(() => {
+    // Make resetSession available globally for debugging (escape hatch)
+    if (typeof window !== 'undefined') {
+      ;(window as any).resetSession = resetSession
+    }
   }, [])
 
   useEffect(() => {
@@ -76,7 +84,7 @@ export default function LoginPage() {
     }
   }, [supabase])
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent, retryCount = 0) => {
     e.preventDefault()
     e.stopPropagation()
     
@@ -84,42 +92,54 @@ export default function LoginPage() {
     setLoading(true)
     setMessage(null)
 
-    // Safety timeout: if login takes more than 30 seconds, stop the spinner
-    const timeoutId = setTimeout(() => {
-      console.warn('[Login] Login attempt timed out after 30 seconds')
-      setLoading(false)
-      setMessage({ 
-        text: 'Login is taking longer than expected. Please try again.', 
-        type: 'error' 
-      })
-    }, 30000)
+    debugAuthLog('Sign-in started', { email: email.trim(), retryCount })
+
+    // Create timeout promise for 12-second timeout
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error('TIMEOUT'))
+      }, 12000)
+    })
 
     try {
       // First, check if there's an existing session and sign out if needed
       // This prevents issues when trying to log in again after already being logged in
       const { data: { session: existingSession } } = await supabase.auth.getSession()
       if (existingSession) {
-        console.log('[Login] Existing session found, signing out first...')
+        debugAuthLog('Existing session found, signing out first')
         await supabase.auth.signOut()
         // Small delay to ensure sign out completes
         await new Promise(resolve => setTimeout(resolve, 100))
       }
 
-      console.log('[Login] Attempting to sign in...', { email: email.trim() })
-      
-      // Wrap the sign-in call in try/catch with defensive error handling
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Create sign-in promise
+      const signInPromise = supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       })
 
-      // Clear timeout on success
-      clearTimeout(timeoutId)
+      // Race between sign-in and timeout
+      const { data, error } = await Promise.race([
+        signInPromise,
+        timeoutPromise,
+      ])
 
-      // On error: Set isLoading back to false, store error state, show human-readable message
+      debugAuthLog('Sign-in response received', { hasData: !!data, hasError: !!error, userId: data?.user?.id })
+
+      // On error: Check if it's a session error and retry with storage clearing
       if (error) {
-        clearTimeout(timeoutId)
-        console.error('[Login] Supabase sign-in error:', error)
+        debugAuthLog('Sign-in error', { error: error.message, code: error.code })
+        
+        // If it's a session error and we haven't retried yet, clear storage and retry
+        if (isSessionError(error) && retryCount === 0) {
+          debugAuthLog('Session error detected, clearing storage and retrying')
+          clearSupabaseStorage()
+          // Small delay before retry
+          await new Promise(resolve => setTimeout(resolve, 200))
+          // Retry once
+          return handleLogin(e, 1)
+        }
+
         setMessage({ 
           text: error.message || 'Login failed. Please check your email and password.', 
           type: 'error' 
@@ -128,8 +148,7 @@ export default function LoginPage() {
       }
 
       if (!data || !data.user) {
-        clearTimeout(timeoutId)
-        console.error('[Login] No user data returned from sign-in')
+        debugAuthLog('No user data returned from sign-in')
         setMessage({ 
           text: 'Login failed: No user data returned. Please try again.', 
           type: 'error' 
@@ -137,7 +156,7 @@ export default function LoginPage() {
         return // Exit early, finally block will set loading to false
       }
 
-      console.log('[Login] Sign in successful, checking subscription...', { userId: data.user.id })
+      debugAuthLog('Sign-in successful, checking subscription', { userId: data.user.id })
 
       // Check subscription status before redirecting
       // Also check for stripe_subscription_id to see if they've completed checkout
@@ -228,9 +247,28 @@ export default function LoginPage() {
       window.location.replace('/checkout')
       // Note: We don't set loading to false on success because we're redirecting
     } catch (err) {
-      // Clear timeout on error
-      clearTimeout(timeoutId)
+      debugAuthLog('Unexpected login error', { error: err })
       
+      // Handle timeout specifically
+      if (err instanceof Error && err.message === 'TIMEOUT') {
+        debugAuthLog('Sign-in timed out after 12 seconds')
+        setMessage({ 
+          text: 'Login is taking longer than expected. Please check your connection and try again.', 
+          type: 'error' 
+        })
+        return // Exit early, finally block will set loading to false
+      }
+
+      // Check if it's a session error and we haven't retried yet
+      if (isSessionError(err) && retryCount === 0) {
+        debugAuthLog('Session error in catch, clearing storage and retrying')
+        clearSupabaseStorage()
+        // Small delay before retry
+        await new Promise(resolve => setTimeout(resolve, 200))
+        // Retry once
+        return handleLogin(e, 1)
+      }
+
       // In catch: console.error for debugging, show user-friendly error
       console.error('[Login] Unexpected login error:', err)
       const errorMessage = err instanceof Error 
@@ -241,15 +279,13 @@ export default function LoginPage() {
         type: 'error' 
       })
     } finally {
-      // Clear timeout in finally as well
-      clearTimeout(timeoutId)
-      
       // Make sure finally always runs so the spinner stops, even on failure
       // Check if we're still on the login page before setting loading to false
       // (If we redirected, the page will unmount anyway)
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
       if (currentPath === '/login') {
         setLoading(false)
+        debugAuthLog('Sign-in handler finished, loading state reset')
       }
     }
   }

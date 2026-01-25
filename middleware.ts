@@ -88,6 +88,10 @@ export async function middleware(request: NextRequest) {
         data: { user: authUser },
       } = await supabase.auth.getUser()
       user = authUser
+      
+      // Note: getUser() automatically refreshes the session if needed
+      // The createServerClient with cookie handlers ensures refreshed tokens
+      // are written back to response cookies via the set() handler above
     } catch (error) {
       // If Supabase client creation or auth check fails, log error but don't crash
       console.error('[Middleware] Error initializing Supabase:', error)

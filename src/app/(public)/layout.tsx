@@ -2,6 +2,10 @@ import type { Metadata } from 'next'
 import PublicLayout from '@/components/layout/PublicLayout'
 import { AppShell } from '@/components/layout/AppShell'
 
+// Ensure auth pages are not cached
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export const metadata: Metadata = {
   title: {
     default: 'ForgeNursing | AI Tutor for NCLEX Prep & Clinical Reasoning',
