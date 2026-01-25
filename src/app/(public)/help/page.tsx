@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Bookmark, AlertCircle, Map, MessageSquare, FileText, GraduationCap, Activity, Settings, BookOpen, Sparkles, CheckCircle2, XCircle, Plus } from 'lucide-react'
+import { Bookmark, AlertCircle, Map, MessageSquare, FileText, GraduationCap, Activity, Settings, BookOpen, Sparkles, CheckCircle2, XCircle } from 'lucide-react'
 
 export default function HelpPage() {
   return (
@@ -393,22 +393,6 @@ export default function HelpPage() {
               </div>
             </div>
           </div>
-        </section>
-
-        {/* CTA */}
-        <section className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-2xl p-8 sm:p-12 text-center text-white shadow-xl">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4">Ready to Start Learning?</h2>
-          <p className="text-lg mb-6 text-white/95 max-w-2xl mx-auto">
-            Now that you know how everything works, start your first chat and see how ForgeNursing helps 
-            clinical reasoning click.
-          </p>
-          <Link
-            href="/signup?plan=monthly"
-            className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-indigo-700 rounded-lg text-base font-semibold hover:bg-indigo-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            Start Free Preview
-            <ArrowRight className="w-5 h-5" />
-          </Link>
         </section>
       </div>
     </div>
