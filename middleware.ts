@@ -127,86 +127,11 @@ export async function middleware(request: NextRequest) {
     const protectedRoutes = ['/clinical-desk', '/tutor', '/binder', '/readiness', '/settings', '/classes', '/help']
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
 
-    // Allow access to billing pages (success, cancel, payment-required) and checkout
-    const billingRoutes = ['/billing', '/checkout']
-    const isBillingRoute = billingRoutes.some(route => pathname.startsWith(route))
-
-    // Redirect unauthenticated users away from protected routes
-    if (isProtectedRoute && !user) {
-      const redirectUrl = new URL('/login', request.url)
-      redirectUrl.searchParams.set('redirect', pathname)
-      return NextResponse.redirect(redirectUrl)
-    }
-
-    // Check subscription status for authenticated users accessing protected routes
-    if (user && isProtectedRoute && !isBillingRoute && supabase) {
-      try {
-        // Use service role key to bypass RLS for subscription status check
-        // This is safe because we're only reading subscription_status, not sensitive data
-        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-        let subscriptionStatus: string | undefined
-        let profileError: any = null
-        
-        if (serviceRoleKey) {
-          // Use service role key to bypass RLS
-          const adminClient = createClient(
-            supabaseUrl,
-            serviceRoleKey
-          )
-          const { data: profile, error } = await adminClient
-            .from('profiles')
-            .select('subscription_status')
-            .eq('id', user.id)
-            .single()
-          
-          if (error) {
-            console.error('[Middleware] Error fetching profile with service role:', error)
-            profileError = error
-          } else {
-            subscriptionStatus = profile?.subscription_status
-          }
-        } else {
-          // Fallback to anon key (may be blocked by RLS)
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('subscription_status')
-            .eq('id', user.id)
-            .single()
-          
-          if (error) {
-            console.error('[Middleware] Error fetching profile with anon key:', error)
-            profileError = error
-          } else {
-            subscriptionStatus = profile?.subscription_status
-          }
-        }
-
-        // If we couldn't fetch the profile, default to blocking access (fail secure)
-        if (profileError || subscriptionStatus === undefined) {
-          console.warn('[Middleware] Could not determine subscription status, blocking access', {
-            userId: user.id,
-            error: profileError?.message,
-            hasServiceRoleKey: !!serviceRoleKey
-          })
-          return NextResponse.redirect(new URL('/billing/payment-required', request.url))
-        }
-
-        const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
-
-        if (!hasActiveSubscription) {
-          // User doesn't have active subscription, redirect to payment required page
-          return NextResponse.redirect(new URL('/billing/payment-required', request.url))
-        }
-      } catch (error) {
-        // If subscription check fails, log error but allow access to prevent site breakage
-        console.error('[Middleware] Error checking subscription status:', error)
-        // Fail secure: redirect to payment required
-        return NextResponse.redirect(new URL('/billing/payment-required', request.url))
-      }
-    }
-
-    // Redirect authenticated users away from auth pages
-    if (user && (pathname === '/login' || pathname === '/signup') && supabase) {
+    // CRITICAL: For login/signup pages, only redirect if we have a VALID authenticated user
+    // If getUser() failed or returned no user (stale token), let the page handle cleanup
+    if ((pathname === '/login' || pathname === '/signup') && user && supabase) {
+      // Only redirect if we have a valid user - this means the token is good
+      // If token is stale, getUser() will fail and user will be null, so we skip this
       try {
         // Check if they have active subscription before redirecting
         // Use service role key to bypass RLS for subscription status check
@@ -267,11 +192,15 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
         }
       } catch (error) {
-        // If subscription check fails, log error but allow access to prevent site breakage
+        // If subscription check fails, let them stay on login page to handle it
         console.error('[Middleware] Error checking subscription status for auth redirect:', error)
-        // Allow them to stay on login/signup page if check fails
         return response
       }
+    }
+
+    // If on login/signup and no valid user (or stale token), let the page handle it
+    if (pathname === '/login' || pathname === '/signup') {
+      return response
     }
 
     // Also add cache headers for landing page

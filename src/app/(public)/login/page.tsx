@@ -40,8 +40,13 @@ export default function LoginPage() {
   }, [])
 
   useEffect(() => {
-    // Make resetSession available globally for debugging (escape hatch)
+    // CRITICAL: Clear ALL Supabase cookies and storage IMMEDIATELY on page load
+    // This must happen BEFORE any Supabase client calls to prevent stale token issues
     if (typeof window !== 'undefined') {
+      // Clear storage first, before anything else
+      clearSupabaseStorage()
+      
+      // Make resetSession available globally for debugging (escape hatch)
       ;(window as any).resetSession = resetSession
       
       // Force fresh page load - prevent browser caching
@@ -83,26 +88,24 @@ export default function LoginPage() {
         })
       }
 
-      // Check for existing session - if user is already logged in, sign them out first
-      // This prevents the "spinner hangs" issue when trying to log in again
-      // Use getUser() instead of getSession() for fresh check
-      const checkExistingSession = async () => {
+      // After clearing storage, check for any remaining session and sign out
+      // This is a safety check - storage should already be cleared above
+      const checkAndCleanSession = async () => {
         try {
-          // Use getUser() for fresh session check (bypasses cache)
-          const { data: { user }, error } = await supabase.auth.getUser()
-          if (user) {
-            console.log('[Login] Existing user session detected, signing out first to allow new login')
-            await supabase.auth.signOut()
-            // Clear storage to ensure clean state
-            clearSupabaseStorage()
-          }
-        } catch (error) {
-          console.error('[Login] Error checking existing session:', error)
-          // If there's an error, clear storage as a safety measure
+          // Small delay to ensure cookies are cleared
+          await new Promise(resolve => setTimeout(resolve, 100))
+          
+          // Try to sign out any remaining session (will fail silently if no session)
+          await supabase.auth.signOut()
+          
+          // Clear storage again as a safety measure
           clearSupabaseStorage()
+        } catch (error) {
+          // Ignore errors - we're just cleaning up
+          debugAuthLog('Cleanup signOut error (expected if no session)', error)
         }
       }
-      checkExistingSession()
+      checkAndCleanSession()
     }
   }, [supabase])
 

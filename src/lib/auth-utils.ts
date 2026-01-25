@@ -4,6 +4,7 @@
 
 /**
  * Clears all Supabase-related storage from localStorage and sessionStorage
+ * Also aggressively clears all Supabase cookies including domain variations
  */
 export function clearSupabaseStorage(): void {
   if (typeof window === 'undefined') return
@@ -12,7 +13,7 @@ export function clearSupabaseStorage(): void {
     // Clear localStorage
     const localStorageKeys = Object.keys(localStorage)
     localStorageKeys.forEach((key) => {
-      if (key.toLowerCase().includes('supabase')) {
+      if (key.toLowerCase().includes('supabase') || key.toLowerCase().startsWith('sb-')) {
         localStorage.removeItem(key)
       }
     })
@@ -20,18 +21,47 @@ export function clearSupabaseStorage(): void {
     // Clear sessionStorage
     const sessionStorageKeys = Object.keys(sessionStorage)
     sessionStorageKeys.forEach((key) => {
-      if (key.toLowerCase().includes('supabase')) {
+      if (key.toLowerCase().includes('supabase') || key.toLowerCase().startsWith('sb-')) {
         sessionStorage.removeItem(key)
       }
     })
 
-    // Also clear common Supabase cookie patterns
+    // Aggressively clear ALL Supabase cookies with multiple domain/path combinations
+    const domain = window.location.hostname
+    const domainParts = domain.split('.')
+    const baseDomain = domainParts.length > 1 ? `.${domainParts.slice(-2).join('.')}` : domain
+    
+    // Common Supabase cookie patterns
+    const cookiePatterns = [
+      'sb-',
+      'supabase',
+      'supabase-auth-token',
+      'supabase.auth.token',
+    ]
+
+    // Get all cookies and clear matching ones
     document.cookie.split(';').forEach((cookie) => {
       const eqPos = cookie.indexOf('=')
       const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim()
-      if (name.toLowerCase().includes('supabase') || name.toLowerCase().includes('sb-')) {
-        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
-        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`
+      
+      // Check if this cookie matches any Supabase pattern
+      const isSupabaseCookie = cookiePatterns.some(pattern => 
+        name.toLowerCase().includes(pattern.toLowerCase())
+      )
+
+      if (isSupabaseCookie) {
+        // Clear with multiple domain/path combinations to ensure it's gone
+        const paths = ['/', '/login', '/signup']
+        const domains = [domain, baseDomain, `.${domain}`, '']
+        
+        paths.forEach(path => {
+          domains.forEach(dom => {
+            // Clear with expires in past
+            const domainPart = dom ? `;domain=${dom}` : ''
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}${domainPart};SameSite=None;Secure`
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}${domainPart}`
+          })
+        })
       }
     })
   } catch (error) {
