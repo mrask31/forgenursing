@@ -43,6 +43,23 @@ export default function LoginPage() {
     // Make resetSession available globally for debugging (escape hatch)
     if (typeof window !== 'undefined') {
       ;(window as any).resetSession = resetSession
+      
+      // Force fresh page load - prevent browser caching
+      // Add cache-busting headers via meta tags
+      const metaCacheControl = document.createElement('meta')
+      metaCacheControl.httpEquiv = 'Cache-Control'
+      metaCacheControl.content = 'no-store, no-cache, must-revalidate, proxy-revalidate'
+      document.head.appendChild(metaCacheControl)
+      
+      const metaPragma = document.createElement('meta')
+      metaPragma.httpEquiv = 'Pragma'
+      metaPragma.content = 'no-cache'
+      document.head.appendChild(metaPragma)
+      
+      const metaExpires = document.createElement('meta')
+      metaExpires.httpEquiv = 'Expires'
+      metaExpires.content = '0'
+      document.head.appendChild(metaExpires)
     }
   }, [])
 
@@ -68,16 +85,21 @@ export default function LoginPage() {
 
       // Check for existing session - if user is already logged in, sign them out first
       // This prevents the "spinner hangs" issue when trying to log in again
+      // Use getUser() instead of getSession() for fresh check
       const checkExistingSession = async () => {
         try {
-          const { data: { session } } = await supabase.auth.getSession()
-          if (session) {
-            console.log('[Login] Existing session detected, signing out first to allow new login')
+          // Use getUser() for fresh session check (bypasses cache)
+          const { data: { user }, error } = await supabase.auth.getUser()
+          if (user) {
+            console.log('[Login] Existing user session detected, signing out first to allow new login')
             await supabase.auth.signOut()
+            // Clear storage to ensure clean state
+            clearSupabaseStorage()
           }
         } catch (error) {
           console.error('[Login] Error checking existing session:', error)
-          // Don't block login if this check fails
+          // If there's an error, clear storage as a safety measure
+          clearSupabaseStorage()
         }
       }
       checkExistingSession()
@@ -104,12 +126,14 @@ export default function LoginPage() {
     try {
       // First, check if there's an existing session and sign out if needed
       // This prevents issues when trying to log in again after already being logged in
-      const { data: { session: existingSession } } = await supabase.auth.getSession()
-      if (existingSession) {
-        debugAuthLog('Existing session found, signing out first')
+      // Use getUser() for fresh check (bypasses cache)
+      const { data: { user: existingUser } } = await supabase.auth.getUser()
+      if (existingUser) {
+        debugAuthLog('Existing user found, signing out first')
         await supabase.auth.signOut()
+        clearSupabaseStorage()
         // Small delay to ensure sign out completes
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise(resolve => setTimeout(resolve, 200))
       }
 
       // Create sign-in promise

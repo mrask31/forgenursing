@@ -13,6 +13,18 @@ export async function middleware(request: NextRequest) {
 
     const { pathname } = request.nextUrl
 
+    // Add aggressive cache control headers for login/signup pages FIRST
+    // This must happen before any other processing to prevent caching
+    if (pathname === '/login' || pathname === '/signup') {
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0')
+      response.headers.set('Pragma', 'no-cache')
+      response.headers.set('Expires', '0')
+      response.headers.set('X-Cache-Control', 'no-cache')
+      response.headers.set('Vary', '*')
+      response.headers.set('X-Timestamp', Date.now().toString())
+      response.headers.set('X-Request-ID', `${Date.now()}-${Math.random().toString(36).substring(7)}`)
+    }
+
     // Early return for public routes if Supabase is not configured
     // This prevents the entire site from breaking if env vars are missing
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -262,14 +274,11 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Add aggressive cache control headers for login, signup, and landing pages to prevent 304 issues
-    if (pathname === '/login' || pathname === '/signup' || pathname === '/') {
-      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
+    // Also add cache headers for landing page
+    if (pathname === '/') {
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0')
       response.headers.set('Pragma', 'no-cache')
       response.headers.set('Expires', '0')
-      response.headers.set('X-Cache-Control', 'no-cache')
-      // Add a unique header to force fresh requests
-      response.headers.set('X-Timestamp', Date.now().toString())
     }
 
     return response
