@@ -238,13 +238,16 @@ export default function SignupPage() {
         // Fire GA4 sign_up conversion event (only once per signup)
         // This fires when Supabase successfully creates/identifies a user account
         // Even for repeated signups, this is a valid signup event for analytics
-        if (!signUpEventFiredRef.current && typeof window !== 'undefined' && window.dataLayer) {
-          window.dataLayer.push({
-            event: 'sign_up',
-            method: 'email'
-          })
-          signUpEventFiredRef.current = true
-          console.log('[GA4] sign_up event fired (repeated signup)')
+        if (!signUpEventFiredRef.current && typeof window !== 'undefined') {
+          const dataLayer = (window as any).dataLayer
+          if (dataLayer && Array.isArray(dataLayer)) {
+            dataLayer.push({
+              event: 'sign_up',
+              method: 'email'
+            })
+            signUpEventFiredRef.current = true
+            console.log('[GA4] sign_up event fired (repeated signup)')
+          }
         }
         
         // Supabase WILL send a verification email for repeated signups
@@ -263,13 +266,16 @@ export default function SignupPage() {
       // Fire GA4 sign_up conversion event (only once per signup)
       // This fires immediately after Supabase successfully creates a new user account
       // The event is sent to GTM which will forward it to GA4 for conversion tracking
-      if (!signUpEventFiredRef.current && typeof window !== 'undefined' && window.dataLayer) {
-        window.dataLayer.push({
-          event: 'sign_up',
-          method: 'email'
-        })
-        signUpEventFiredRef.current = true
-        console.log('[GA4] sign_up event fired (new user)')
+      if (!signUpEventFiredRef.current && typeof window !== 'undefined') {
+        const dataLayer = (window as any).dataLayer
+        if (dataLayer && Array.isArray(dataLayer)) {
+          dataLayer.push({
+            event: 'sign_up',
+            method: 'email'
+          })
+          signUpEventFiredRef.current = true
+          console.log('[GA4] sign_up event fired (new user)')
+        }
       }
       
       setShowSuccess(true)
