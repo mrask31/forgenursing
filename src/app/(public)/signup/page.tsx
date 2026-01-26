@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, MessageSquare, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
@@ -17,6 +17,10 @@ export default function SignupPage() {
   const [canResend, setCanResend] = useState(false)
   const [resending, setResending] = useState(false)
   const router = useRouter()
+  
+  // Track if GA4 sign_up event has been fired to prevent duplicate events
+  // This ensures the event only fires once per successful signup, even on rerenders
+  const signUpEventFiredRef = useRef(false)
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -231,6 +235,18 @@ export default function SignupPage() {
           emailConfirmed: data.user.email_confirmed_at
         })
         
+        // Fire GA4 sign_up conversion event (only once per signup)
+        // This fires when Supabase successfully creates/identifies a user account
+        // Even for repeated signups, this is a valid signup event for analytics
+        if (!signUpEventFiredRef.current && typeof window !== 'undefined' && window.dataLayer) {
+          window.dataLayer.push({
+            event: 'sign_up',
+            method: 'email'
+          })
+          signUpEventFiredRef.current = true
+          console.log('[GA4] sign_up event fired (repeated signup)')
+        }
+        
         // Supabase WILL send a verification email for repeated signups
         // Show success state and wait for verification
         setShowSuccess(true)
@@ -244,6 +260,18 @@ export default function SignupPage() {
       }
       
       // New user created successfully
+      // Fire GA4 sign_up conversion event (only once per signup)
+      // This fires immediately after Supabase successfully creates a new user account
+      // The event is sent to GTM which will forward it to GA4 for conversion tracking
+      if (!signUpEventFiredRef.current && typeof window !== 'undefined' && window.dataLayer) {
+        window.dataLayer.push({
+          event: 'sign_up',
+          method: 'email'
+        })
+        signUpEventFiredRef.current = true
+        console.log('[GA4] sign_up event fired (new user)')
+      }
+      
       setShowSuccess(true)
       setIsVerifying(true)
       setMessage({ 
