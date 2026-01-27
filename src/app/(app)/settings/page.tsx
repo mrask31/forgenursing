@@ -69,7 +69,7 @@ export default function SettingsPage() {
           setSchoolName(profile.school_name)
         }
 
-        // Load subscription from /api/subscription/status (Supabase-first, trial-aware)
+        // Load subscription from /api/subscription/status only (no Stripe/invoice calls)
         try {
           const subRes = await fetch('/api/subscription/status', { credentials: 'include' })
           if (subRes.ok) {
@@ -81,7 +81,7 @@ export default function SettingsPage() {
                 ? {
                     id: data.stripe_subscription_id ?? '',
                     status,
-                    trialEndDate: data.trial_end_date ?? null,
+                    trialEndDate: data.trial_end_display ?? data.trial_end_date ?? null,
                     cancelAtPeriodEnd: data.cancel_at_period_end ?? false,
                   }
                 : null,
@@ -368,11 +368,14 @@ export default function SettingsPage() {
                     ) : (
                       <XCircle className="w-4 h-4 text-red-600" />
                     )}
-                    <p className={`${tokens.smallText} font-medium text-clinical-text-primary capitalize`}>
-                      {subscriptionData.subscription.status === 'trialing' ? '7-day trial' : 
-                       subscriptionData.subscription.status === 'active' ? 'Active' :
-                       subscriptionData.subscription.status === 'canceled' ? 'Canceled' :
-                       String(subscriptionData.subscription.status || 'Unknown')}
+                    <p className={`${tokens.smallText} font-medium text-clinical-text-primary`}>
+                      {subscriptionData.subscription.status === 'trialing'
+                        ? `Trial active — ends ${subscriptionData.subscription.trialEndDate ?? '—'}`
+                        : subscriptionData.subscription.status === 'active'
+                          ? 'Active subscription'
+                          : subscriptionData.subscription.status === 'canceled'
+                            ? 'Canceled'
+                            : String(subscriptionData.subscription.status || 'Unknown')}
                     </p>
                   </>
                 ) : subscriptionData !== null ? (
@@ -453,7 +456,7 @@ export default function SettingsPage() {
                       const status = data.status ?? null
                       setSubscriptionData({
                         status,
-                        subscription: status ? { id: data.stripe_subscription_id ?? '', status, trialEndDate: data.trial_end_date ?? null, cancelAtPeriodEnd: data.cancel_at_period_end ?? false } : null,
+                        subscription: status ? { id: data.stripe_subscription_id ?? '', status, trialEndDate: data.trial_end_display ?? data.trial_end_date ?? null, cancelAtPeriodEnd: data.cancel_at_period_end ?? false } : null,
                       })
                     }
                     const successMsg = isTrialing

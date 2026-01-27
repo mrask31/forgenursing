@@ -59,6 +59,7 @@ export async function GET(req: Request) {
       ? createClient(supabaseUrl, serviceRoleKey)
       : null
 
+    // Prefer service-role so RLS never blocks; anon can fail on profiles in some setups.
     const client = admin ?? supabase
     const { data: profile, error: profileError } = await client
       .from('profiles')
@@ -67,15 +68,17 @@ export async function GET(req: Request) {
       .single()
 
     if (profileError) {
-      console.error('[Subscription Status] Non-200: profile fetch failed', {
+      console.error('[Subscription Status] profile fetch failed, returning nulls', {
         error: profileError.message,
         code: profileError.code,
         userId: user.id,
       })
-      return NextResponse.json(
-        { error: 'Failed to load subscription', details: profileError.message },
-        { status: 500 }
-      )
+      return NextResponse.json({
+        status: null,
+        trial_end: null,
+        current_period_end: null,
+        hasAccess: false,
+      })
     }
 
     let subscriptionStatus: string | null = profile?.subscription_status ?? null
@@ -145,16 +148,18 @@ export async function GET(req: Request) {
     }
 
     const hasAccess = subscriptionStatus != null && HAS_ACCESS_STATUSES.includes(subscriptionStatus)
+    const trial_end_display =
+      subscriptionStatus === 'trialing' && trial_end
+        ? new Date(trial_end * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : null
     return NextResponse.json({
       status: subscriptionStatus,
       trial_end,
       current_period_end,
+      hasAccess,
+      trial_end_display,
       cancel_at_period_end,
       stripe_subscription_id,
-      hasAccess,
-      ...(subscriptionStatus === 'trialing' && trial_end
-        ? { trial_end_date: new Date(trial_end * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }
-        : {}),
     })
   } catch (err) {
     console.error('[Subscription Status] Non-200: unexpected error', {
