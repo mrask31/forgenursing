@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, MessageSquare, BookOpen, GraduationCap, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { clearSupabaseStorage, isSessionError, debugAuthLog, resetSession } from '@/lib/auth-utils'
+import { hasSubscriptionAccess } from '@/lib/subscription-access'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -183,10 +184,22 @@ export default function LoginPage() {
         return // Exit early, finally block will set loading to false
       }
 
-      debugAuthLog('Sign-in successful, checking subscription', { userId: data.user.id })
+      debugAuthLog('Sign-in successful, syncing subscription then checking access', { userId: data.user.id })
 
-      // Check subscription status before redirecting
-      // Also check for stripe_subscription_id to see if they've completed checkout
+      // Sync subscription from Stripe on login — fixes missed webhooks, delayed events, edge cases
+      try {
+        const syncRes = await Promise.race([
+          fetch('/api/stripe/sync-subscription', { method: 'POST', credentials: 'include' }),
+          new Promise<Response>((_, reject) => setTimeout(() => reject(new Error('sync_timeout')), 5000)),
+        ])
+        if (syncRes.ok) {
+          debugAuthLog('Subscription synced from Stripe', { ok: true })
+        }
+      } catch (_) {
+        // Sync is best-effort; continue with profile check
+      }
+
+      // Check subscription status — access = trialing | active (no payment/invoice required)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('subscription_status, stripe_subscription_id')
@@ -248,29 +261,15 @@ export default function LoginPage() {
         return
       }
       
-      // PRIORITY 2: If user has trialing or active status, go to tutor
-      // Normalize subscription status to string for comparison
-      const status = String(subscriptionStatus || '').toLowerCase().trim()
-      if (status === 'trialing' || status === 'active' || 
-          subscriptionStatus === 'trialing' || subscriptionStatus === 'active') {
-        console.log('[Login] ✅ User has active subscription (trialing or active), redirecting to:', redirect)
+      // PRIORITY 2: Access = trialing | active (no payment/invoice required)
+      if (hasSubscriptionAccess(subscriptionStatus)) {
+        console.log('[Login] ✅ User has access (trialing or active), redirecting to:', redirect)
         window.location.replace(redirect)
         return
       }
       
-      // PRIORITY 3: If user needs payment, redirect to checkout
-      if (!subscriptionStatus || 
-          status === 'pending_payment' || 
-          status === 'canceled' || 
-          status === 'past_due' || 
-          status === 'unpaid') {
-        console.log('[Login] ❌ Redirecting to checkout (payment needed). Status:', subscriptionStatus || 'null')
-        window.location.replace('/checkout')
-        return
-      }
-      
-      // PRIORITY 4: Unknown status - log and redirect to checkout to be safe
-      console.warn('[Login] ⚠️ Unknown subscription status:', subscriptionStatus, '- redirecting to checkout')
+      // PRIORITY 3: No access — redirect to checkout
+      console.log('[Login] ❌ Redirecting to checkout. Status:', subscriptionStatus || 'null')
       window.location.replace('/checkout')
       // Note: We don't set loading to false on success because we're redirecting
     } catch (err) {

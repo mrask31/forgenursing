@@ -5,6 +5,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, MessageSquare, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import { hasSubscriptionAccess } from '@/lib/subscription-access'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -85,21 +86,17 @@ export default function SignupPage() {
             .single()
 
           const subscriptionStatus = profile?.subscription_status || 'pending_payment'
+          const hasAccess = hasSubscriptionAccess(subscriptionStatus)
           
           // Get plan from localStorage
           const plan = localStorage.getItem('forgenursing-pending-plan')
           
           // Small delay to show the success message
           setTimeout(() => {
-            // If user needs payment, always redirect to checkout (without plan so user can choose)
-            if (subscriptionStatus === 'pending_payment' || 
-                subscriptionStatus === 'canceled' || 
-                subscriptionStatus === 'past_due' || 
-                subscriptionStatus === 'unpaid') {
-              router.push('/checkout')
-            } else {
-              // User is already subscribed, go to tutor
+            if (hasAccess) {
               router.push('/tutor')
+            } else {
+              router.push('/checkout')
             }
           }, 1000)
         } catch (error) {

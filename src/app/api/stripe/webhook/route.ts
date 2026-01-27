@@ -184,6 +184,7 @@ export async function POST(req: Request) {
         break
       }
 
+      case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
@@ -201,7 +202,7 @@ export async function POST(req: Request) {
           break
         }
 
-        // Map Stripe subscription status to our status
+        // Map Stripe subscription status to our status — trialing and active grant access
         let status: string
         if (subscription.status === 'trialing') {
           status = 'trialing'

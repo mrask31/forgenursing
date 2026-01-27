@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { hasSubscriptionAccess } from '@/lib/subscription-access'
 import { usePathname } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { useEffect, useState } from 'react'
@@ -29,8 +30,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           .single()
         
         const subscriptionStatus = profile?.subscription_status
-        const isActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
-        setHasActiveSubscription(isActive)
+        setHasActiveSubscription(hasSubscriptionAccess(subscriptionStatus))
       } else {
         setHasActiveSubscription(false)
       }
@@ -41,17 +41,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null)
       
-      // Re-check subscription status when auth state changes
       if (session?.user) {
         const { data: profile } = await supabase
           .from('profiles')
           .select('subscription_status')
           .eq('id', session.user.id)
           .single()
-        
-        const subscriptionStatus = profile?.subscription_status
-        const isActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
-        setHasActiveSubscription(isActive)
+        setHasActiveSubscription(hasSubscriptionAccess(profile?.subscription_status))
       } else {
         setHasActiveSubscription(false)
       }

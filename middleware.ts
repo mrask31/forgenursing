@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
+import { hasSubscriptionAccess } from '@/lib/subscription-access'
 
 export async function middleware(request: NextRequest) {
   // Wrap entire middleware in try/catch to prevent ANY crash
@@ -183,7 +184,7 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
         }
 
-        const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
+        const hasActiveSubscription = hasSubscriptionAccess(subscriptionStatus)
 
         if (hasActiveSubscription) {
           return NextResponse.redirect(new URL('/tutor', request.url))

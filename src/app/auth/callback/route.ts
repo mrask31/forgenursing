@@ -2,6 +2,13 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import Stripe from 'stripe'
+import { hasSubscriptionAccess } from '@/lib/subscription-access'
+
+function getStripeClient(): Stripe | null {
+  if (!process.env.STRIPE_SECRET_KEY) return null
+  return new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-12-15.clover' })
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -68,7 +75,7 @@ export async function GET(request: Request) {
         // Check if profile exists, create/update if needed
         const { data: profile, error: profileError } = await profileClient
           .from('profiles')
-          .select('id, subscription_status')
+          .select('id, subscription_status, stripe_customer_id')
           .eq('id', user.id)
           .single()
 
@@ -86,18 +93,40 @@ export async function GET(request: Request) {
             // Continue with default pending_payment status
           }
         } else {
-          // Store the current subscription status
           subscriptionStatus = profile.subscription_status || 'pending_payment'
           
-          // Update existing profile to set status if missing
           if (!profile.subscription_status) {
             const { error: updateError } = await profileClient
               .from('profiles')
               .update({ subscription_status: 'pending_payment' })
               .eq('id', user.id)
-            
-            if (updateError) {
-              console.error('[Auth Callback] Error updating profile:', updateError)
+            if (updateError) console.error('[Auth Callback] Error updating profile:', updateError)
+          }
+
+          // Sync subscription from Stripe on login — fixes missed webhooks, delayed events
+          const stripe = getStripeClient()
+          const customerId = profile.stripe_customer_id
+          if (stripe && customerId && serviceRoleKey) {
+            try {
+              const { data: subs } = await stripe.subscriptions.list({
+                customer: customerId,
+                status: 'all',
+                limit: 10,
+              })
+              const sub = subs.find((s) => s.status === 'trialing' || s.status === 'active') ?? subs[0]
+              if (sub) {
+                const status =
+                  sub.status === 'trialing' ? 'trialing' :
+                  sub.status === 'active' ? 'active' :
+                  sub.status === 'past_due' || sub.status === 'unpaid' ? 'past_due' : 'canceled'
+                await profileClient
+                  .from('profiles')
+                  .update({ subscription_status: status, stripe_subscription_id: sub.id })
+                  .eq('id', user.id)
+                subscriptionStatus = status
+              }
+            } catch (e) {
+              // Best-effort; keep existing subscriptionStatus
             }
           }
         }
@@ -109,17 +138,10 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${appUrl}/checkout?plan=${plan}`)
       }
       
-      // If user needs to pay (pending_payment, canceled, past_due, unpaid), redirect to checkout
-      // This handles cases where they verified via an old email link without a plan parameter
-      if (subscriptionStatus === 'pending_payment' || 
-          subscriptionStatus === 'canceled' || 
-          subscriptionStatus === 'past_due' || 
-          subscriptionStatus === 'unpaid') {
-        // Redirect to checkout without plan so user can choose
+      // Access = trialing | active (no payment/invoice required). Otherwise redirect to checkout.
+      if (!hasSubscriptionAccess(subscriptionStatus)) {
         return NextResponse.redirect(`${appUrl}/checkout`)
       }
-      
-      // Redirect to a valid route (e.g. /tutor), not a non-existent path
       return NextResponse.redirect(`${appUrl}${next}`)
     }
   }
