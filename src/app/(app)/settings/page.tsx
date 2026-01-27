@@ -361,30 +361,27 @@ export default function SettingsPage() {
                       <XCircle className="w-4 h-4 text-red-600" />
                     )}
                     <p className={`${tokens.smallText} font-medium text-clinical-text-primary capitalize`}>
-                      {subscriptionData.subscription.status === 'trialing' ? '7-Day Free Trial' : 
+                      {subscriptionData.subscription.status === 'trialing' ? '7-day trial' : 
                        subscriptionData.subscription.status === 'active' ? 'Active' :
                        subscriptionData.subscription.status === 'canceled' ? 'Canceled' :
-                       subscriptionData.status || 'Free Preview'}
+                       String(subscriptionData.subscription.status || 'Unknown')}
                     </p>
                   </>
                 ) : (
                   <div>
-                    <p className={`${tokens.smallText} font-medium text-clinical-text-primary`}>
-                      Free Preview
-                    </p>
-                    <p className={`${tokens.smallText} text-clinical-text-secondary mt-1`}>
-                      Subscribe to get 7 days free. You're not charged until the trial ends. Cancel anytime during the trial to avoid being charged.
+                    <p className={`${tokens.smallText} text-clinical-text-secondary`}>
+                      Subscription details could not be loaded. Refresh the page or contact support if this persists.
                     </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* 7-day free trial & when trial ends — shown when user is subscribed and in trial */}
+            {/* 7-day trial — every in-app user is subscribed; trialing = first 7 days, then charged */}
             {subscriptionData?.subscription?.status === 'trialing' && (
               <div className="p-3 sm:p-4 bg-indigo-50/80 border border-indigo-200/60 rounded-xl">
                 <p className={`${tokens.smallText} font-medium text-indigo-900 mb-1`}>
-                  You're subscribed and in your 7-day free trial.
+                  You're in your 7-day trial. You're not charged until it ends.
                 </p>
                 {subscriptionData.subscription.trialEndDate ? (
                   <p className={`${tokens.smallText} text-indigo-700`}>
@@ -399,6 +396,13 @@ export default function SettingsPage() {
                   Cancel anytime during your trial to avoid being charged.
                 </p>
               </div>
+            )}
+
+            {/* Active (past trial) — paid subscription */}
+            {subscriptionData?.subscription?.status === 'active' && !subscriptionData?.subscription?.cancelAtPeriodEnd && (
+              <p className={`${tokens.smallText} text-clinical-text-secondary`}>
+                Your 7-day trial has ended and you're on a paid subscription. Cancel anytime to stop at the end of your billing period.
+              </p>
             )}
 
             {/* Cancel at Period End Notice */}
