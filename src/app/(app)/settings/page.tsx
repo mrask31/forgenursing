@@ -380,21 +380,24 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* 7-day free trial & when trial ends — shown when user is on trial */}
+            {/* 7-day free trial & when trial ends — shown when user is subscribed and in trial */}
             {subscriptionData?.subscription?.status === 'trialing' && (
               <div className="p-3 sm:p-4 bg-indigo-50/80 border border-indigo-200/60 rounded-xl">
                 <p className={`${tokens.smallText} font-medium text-indigo-900 mb-1`}>
-                  You're on the 7-day free trial.
+                  You're subscribed and in your 7-day free trial.
                 </p>
                 {subscriptionData.subscription.trialEndDate ? (
                   <p className={`${tokens.smallText} text-indigo-700`}>
-                    Your trial ends on <span className="font-semibold">{subscriptionData.subscription.trialEndDate}</span>.
+                    Your trial ends on <span className="font-semibold">{subscriptionData.subscription.trialEndDate}</span>. Billing begins after that unless you cancel.
                   </p>
                 ) : (
                   <p className={`${tokens.smallText} text-indigo-600`}>
                     Your trial end date will appear here once confirmed.
                   </p>
                 )}
+                <p className={`${tokens.smallText} text-indigo-600 mt-2`}>
+                  Cancel anytime during your trial to avoid being charged.
+                </p>
               </div>
             )}
 
@@ -407,38 +410,38 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* Cancel Subscription Button */}
+            {/* Cancel Subscription Button — shown when subscribed (including during trial) */}
             {subscriptionData?.subscription && 
              subscriptionData.subscription.status !== 'canceled' && 
              !subscriptionData.subscription.cancelAtPeriodEnd && (
               <button
                 onClick={async () => {
-                  if (!confirm('Are you sure you want to cancel your subscription? You will continue to have access until the end of your current billing period.')) {
-                    return
-                  }
-                  
+                  const isTrialing = subscriptionData.subscription?.status === 'trialing'
+                  const trialEnd = subscriptionData.subscription?.trialEndDate
+                  const confirmMsg = isTrialing
+                    ? `Cancel before your trial ends? You won't be charged. You'll keep access until ${trialEnd || 'the end of your trial'}.`
+                    : 'Are you sure you want to cancel your subscription? You will continue to have access until the end of your current billing period.'
+                  if (!confirm(confirmMsg)) return
+
                   setIsCanceling(true)
                   try {
                     const res = await fetch('/api/stripe/cancel-subscription', {
                       method: 'POST',
                       credentials: 'include',
                     })
-                    
                     if (!res.ok) {
                       const error = await res.json()
                       throw new Error(error.error || 'Failed to cancel subscription')
                     }
-                    
-                    // Reload subscription data
-                    const subRes = await fetch('/api/stripe/subscription', {
-                      credentials: 'include',
-                    })
+                    const subRes = await fetch('/api/stripe/subscription', { credentials: 'include' })
                     if (subRes.ok) {
                       const subData = await subRes.json()
                       setSubscriptionData(subData)
                     }
-                    
-                    alert('Your subscription will be canceled at the end of the current billing period.')
+                    const successMsg = isTrialing
+                      ? "You won't be charged. Access continues until the end of your trial."
+                      : 'Your subscription will be canceled at the end of the current billing period.'
+                    alert(successMsg)
                   } catch (error: any) {
                     console.error('Error canceling subscription:', error)
                     alert(error.message || 'Failed to cancel subscription. Please try again or contact support.')
