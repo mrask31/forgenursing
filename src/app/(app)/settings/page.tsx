@@ -7,16 +7,15 @@ import { Mail, LogOut, CreditCard, Layout, GraduationCap, Calendar, XCircle, Che
 import { useDensity } from '@/contexts/DensityContext'
 import { getDensityTokens } from '@/lib/density-tokens'
 
+/** Shape from /api/subscription/status (Supabase-first, trial-aware) */
 interface SubscriptionData {
   subscription: {
     id: string
     status: string
-    trialEnd: number | null
     trialEndDate: string | null
     cancelAtPeriodEnd: boolean
-    currentPeriodEnd: number
   } | null
-  status: string
+  status: string | null
 }
 
 export default function SettingsPage() {
@@ -70,14 +69,23 @@ export default function SettingsPage() {
           setSchoolName(profile.school_name)
         }
 
-        // Load subscription data
+        // Load subscription from /api/subscription/status (Supabase-first, trial-aware)
         try {
-          const subRes = await fetch('/api/stripe/subscription', {
-            credentials: 'include',
-          })
+          const subRes = await fetch('/api/subscription/status', { credentials: 'include' })
           if (subRes.ok) {
-            const subData = await subRes.json()
-            setSubscriptionData(subData)
+            const data = await subRes.json()
+            const status = data.status ?? null
+            setSubscriptionData({
+              status,
+              subscription: status
+                ? {
+                    id: data.stripe_subscription_id ?? '',
+                    status,
+                    trialEndDate: data.trial_end_date ?? null,
+                    cancelAtPeriodEnd: data.cancel_at_period_end ?? false,
+                  }
+                : null,
+            })
           }
         } catch (error) {
           console.error('Error loading subscription:', error)
@@ -367,12 +375,14 @@ export default function SettingsPage() {
                        String(subscriptionData.subscription.status || 'Unknown')}
                     </p>
                   </>
+                ) : subscriptionData !== null ? (
+                  <p className={`${tokens.smallText} text-clinical-text-secondary`}>
+                    No active subscription.
+                  </p>
                 ) : (
-                  <div>
-                    <p className={`${tokens.smallText} text-clinical-text-secondary`}>
-                      Subscription details could not be loaded. Refresh the page or contact support if this persists.
-                    </p>
-                  </div>
+                  <p className={`${tokens.smallText} text-clinical-text-secondary`}>
+                    Subscription details could not be loaded. Refresh the page or contact support if this persists.
+                  </p>
                 )}
               </div>
             </div>
@@ -437,10 +447,14 @@ export default function SettingsPage() {
                       const error = await res.json()
                       throw new Error(error.error || 'Failed to cancel subscription')
                     }
-                    const subRes = await fetch('/api/stripe/subscription', { credentials: 'include' })
+                    const subRes = await fetch('/api/subscription/status', { credentials: 'include' })
                     if (subRes.ok) {
-                      const subData = await subRes.json()
-                      setSubscriptionData(subData)
+                      const data = await subRes.json()
+                      const status = data.status ?? null
+                      setSubscriptionData({
+                        status,
+                        subscription: status ? { id: data.stripe_subscription_id ?? '', status, trialEndDate: data.trial_end_date ?? null, cancelAtPeriodEnd: data.cancel_at_period_end ?? false } : null,
+                      })
                     }
                     const successMsg = isTrialing
                       ? "You won't be charged. Access continues until the end of your trial."
