@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
 const HAS_ACCESS_STATUSES = ['trialing', 'active']
@@ -23,28 +23,10 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(req: Request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            cookieStore.set({ name, value, ...options })
-          },
-          remove(name: string, options: CookieOptions) {
-            cookieStore.delete({ name, ...options })
-          },
-        },
-      }
-    )
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      console.error('[Subscription Status] Non-200: unauthenticated', { error: authError?.message })
+    const supabase = createRouteHandlerClient({ cookies })
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error || !user) {
+      console.error('[Subscription Status] Non-200: unauthenticated', { error: error?.message })
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -59,9 +41,8 @@ export async function GET(req: Request) {
       ? createClient(supabaseUrl, serviceRoleKey)
       : null
 
-    // Prefer service-role so RLS never blocks; anon can fail on profiles in some setups.
-    const client = admin ?? supabase
-    const { data: profile, error: profileError } = await client
+    // Use same route-handler client for profile read (session cookie is set)
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('subscription_status, stripe_subscription_id')
       .eq('id', user.id)
