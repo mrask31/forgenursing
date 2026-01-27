@@ -368,20 +368,33 @@ export default function SettingsPage() {
                     </p>
                   </>
                 ) : (
-                  <p className={`${tokens.smallText} font-medium text-clinical-text-primary`}>
-                    Free Preview
-                  </p>
+                  <div>
+                    <p className={`${tokens.smallText} font-medium text-clinical-text-primary`}>
+                      Free Preview
+                    </p>
+                    <p className={`${tokens.smallText} text-clinical-text-secondary mt-1`}>
+                      Subscribe to start your 7-day free trial.
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Trial End Date */}
-            {subscriptionData?.subscription?.trialEndDate && (
-              <div>
-                <p className={`${tokens.smallText} text-clinical-text-secondary mb-1`}>Trial Ends</p>
-                <p className={`${tokens.smallText} font-semibold text-indigo-600`}>
-                  {subscriptionData.subscription.trialEndDate}
+            {/* 7-day free trial & when trial ends — shown when user is on trial */}
+            {subscriptionData?.subscription?.status === 'trialing' && (
+              <div className="p-3 sm:p-4 bg-indigo-50/80 border border-indigo-200/60 rounded-xl">
+                <p className={`${tokens.smallText} font-medium text-indigo-900 mb-1`}>
+                  You're on the 7-day free trial.
                 </p>
+                {subscriptionData.subscription.trialEndDate ? (
+                  <p className={`${tokens.smallText} text-indigo-700`}>
+                    Your trial ends on <span className="font-semibold">{subscriptionData.subscription.trialEndDate}</span>.
+                  </p>
+                ) : (
+                  <p className={`${tokens.smallText} text-indigo-600`}>
+                    Your trial end date will appear here once confirmed.
+                  </p>
+                )}
               </div>
             )}
 
