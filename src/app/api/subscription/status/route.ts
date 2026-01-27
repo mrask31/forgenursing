@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient as createSupabaseServerClient } from '@/lib/supabase/server'
 
 const HAS_ACCESS_STATUSES = ['trialing', 'active']
 
@@ -23,7 +22,7 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(req: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createSupabaseServerClient()
     const { data: { user }, error } = await supabase.auth.getUser()
     if (error || !user) {
       console.error('[Subscription Status] Non-200: unauthenticated', { error: error?.message })
