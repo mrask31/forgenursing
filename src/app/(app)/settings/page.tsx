@@ -373,7 +373,7 @@ export default function SettingsPage() {
                       Free Preview
                     </p>
                     <p className={`${tokens.smallText} text-clinical-text-secondary mt-1`}>
-                      Subscribe to start your 7-day free trial.
+                      Subscribe to get 7 days free. You're not charged until the trial ends. Cancel anytime during the trial to avoid being charged.
                     </p>
                   </div>
                 )}
