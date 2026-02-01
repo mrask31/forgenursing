@@ -305,48 +305,55 @@ export default function SignupPage() {
         </div>
 
         {/* Right Column - Auth Form */}
-        <div className="flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 bg-white order-1 lg:order-2">
+        <div className="flex items-start justify-center px-4 sm:px-6 py-6 bg-white order-1 lg:order-2 overflow-y-auto">
           <div className="w-full max-w-md">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-lg">
-              {/* Header */}
-              <div className="text-center mb-4">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-xl mb-3 shadow-lg">
-                  <Sparkles className="w-6 h-6 text-white" />
+            {/* What Happens Next - At Top, Always Visible */}
+            <div className="mb-4 p-3 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200/60">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                  What happens next?
+                </h3>
+              </div>
+              <div className="space-y-1.5 text-xs text-slate-600">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    1
+                  </div>
+                  <p><strong className="text-slate-900">Choose plan</strong> — Monthly, semester, or annual</p>
                 </div>
-                <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 mb-1">
-                  Start your free preview
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    2
+                  </div>
+                  <p><strong className="text-slate-900">Quick tutorial</strong> — Upload & ask (2 min)</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    3
+                  </div>
+                  <p><strong className="text-slate-900">Start studying</strong> — AI tutor ready</p>
+                </div>
+              </div>
+              <p className="text-xs text-indigo-700 font-medium mt-2 pt-2 border-t border-indigo-200/60 flex items-center gap-1">
+                <Shield className="w-3 h-3" />
+                7-day free trial • Cancel anytime
+              </p>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-lg">
+              {/* Header - Compact */}
+              <div className="text-center mb-4">
+                <h1 className="text-lg font-semibold text-slate-900 mb-1">
+                  Create your account
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-600">
-                  Join nursing students building real clinical reasoning skills
+                <p className="text-xs text-slate-600">
+                  Join nursing students building clinical reasoning skills
                 </p>
               </div>
 
-              {/* 3-Step Progress Indicator - Compact */}
-              <div className="mb-5 flex items-center justify-center gap-2">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
-                    1
-                  </div>
-                  <span className="text-xs font-medium text-slate-700 hidden sm:inline">Create Account</span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-300" />
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold">
-                    2
-                  </div>
-                  <span className="text-xs font-medium text-slate-500 hidden sm:inline">Choose Plan</span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-300" />
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold">
-                    3
-                  </div>
-                  <span className="text-xs font-medium text-slate-500 hidden sm:inline">Start Learning</span>
-                </div>
-              </div>
-
-              {/* Form */}
-              <form onSubmit={handleSignup} className="space-y-4 sm:space-y-5">
+              {/* Form - Compact */}
+              <form onSubmit={handleSignup} className="space-y-3">
                 {/* Honeypot field - hidden from real users, visible to bots */}
                 <div style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
                   <input
@@ -359,13 +366,13 @@ export default function SignupPage() {
                   />
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-2.5">
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       type="email"
-                      placeholder="Enter your email"
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
+                      placeholder="Email address"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value)
@@ -376,11 +383,11 @@ export default function SignupPage() {
                     />
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       type="password"
-                      placeholder="Create a password"
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
+                      placeholder="Password (8+ characters)"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value)
@@ -392,11 +399,11 @@ export default function SignupPage() {
                     />
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       type="password"
-                      placeholder="Confirm your password"
-                      className={`w-full pl-12 pr-4 py-3 bg-slate-50 border rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+                      placeholder="Confirm password"
+                      className={`w-full pl-10 pr-3 py-2.5 bg-slate-50 border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
                         confirmPassword && password !== confirmPassword
                           ? 'border-red-300 focus:ring-red-600'
                           : 'border-slate-200 focus:ring-indigo-600'
@@ -410,131 +417,82 @@ export default function SignupPage() {
                       required
                       minLength={8}
                     />
-                    {confirmPassword && password !== confirmPassword && (
-                      <p className="text-xs text-red-600 mt-1">
-                        Passwords do not match
-                      </p>
-                    )}
-                    {confirmPassword && password === confirmPassword && (
-                      <p className="text-xs text-green-600 mt-1">
-                        Passwords match ✓
-                      </p>
-                    )}
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Use at least 8 characters for your password.
-                  </p>
                 </div>
 
                 {message && (
-                  <div className={`p-4 text-sm rounded-xl ${
+                  <div className={`p-3 text-xs rounded-lg ${
                     message.type === 'error' 
                       ? 'bg-red-50 text-red-700 border border-red-200' 
                       : message.type === 'info'
                       ? 'bg-blue-50 text-blue-700 border border-blue-200'
                       : 'bg-green-50 text-green-700 border border-green-200'
                   }`}>
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1">
                       <span>{message.text}</span>
                       {message.type === 'error' && message.text.includes('already registered') && (
                         <Link
                           href="/login"
-                          className="inline-flex items-center gap-1 text-sm font-medium text-red-700 hover:text-red-800 underline mt-1"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-red-700 hover:text-red-800 underline"
                         >
                           Go to Sign In
-                          <ArrowRight className="h-4 w-4" />
+                          <ArrowRight className="h-3 w-3" />
                         </Link>
                       )}
                     </div>
                   </div>
                 )}
 
+                <label className="flex items-start gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-2 focus:ring-indigo-600 cursor-pointer flex-shrink-0"
+                    required
+                  />
+                  <span className="text-xs text-slate-600 leading-snug">
+                    I agree to the{' '}
+                    <Link href="/terms" target="_blank" className="text-indigo-600 hover:text-indigo-700 underline font-medium">
+                      Terms
+                    </Link>
+                    {' '}and{' '}
+                    <Link href="/privacy" target="_blank" className="text-indigo-600 hover:text-indigo-700 underline font-medium">
+                      Privacy Policy
+                    </Link>
+                  </span>
+                </label>
+
                 <button
                   type="submit"
                   disabled={loading || !email || !password || !confirmPassword || password !== confirmPassword || !acceptedTerms}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 sm:py-3.5 bg-indigo-600 text-white rounded-xl text-base font-medium hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl min-h-[44px]"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       Creating account...
                     </>
                   ) : (
                     <>
                       Create Account
-                      <ArrowRight className="h-5 w-5" />
+                      <ArrowRight className="h-4 w-4" />
                     </>
                   )}
                 </button>
-                
-                <div className="space-y-3 pt-2">
-                  <label className="flex items-start gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={acceptedTerms}
-                      onChange={(e) => setAcceptedTerms(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-2 focus:ring-indigo-600 cursor-pointer"
-                      required
-                    />
-                    <span className="text-xs text-slate-600 leading-relaxed">
-                      I agree to the{' '}
-                      <Link href="/terms" target="_blank" className="text-indigo-600 hover:text-indigo-700 underline font-medium">
-                        Terms of Service
-                      </Link>
-                      {' '}and{' '}
-                      <Link href="/privacy" target="_blank" className="text-indigo-600 hover:text-indigo-700 underline font-medium">
-                        Privacy Policy
-                      </Link>
-                    </span>
-                  </label>
-                  <p className="text-xs text-slate-500 text-center">
-                    Cancel anytime during your free preview • 7-day free trial included
-                  </p>
-                </div>
               </form>
 
               {/* Toggle */}
-              <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-200 text-center">
-                <span className="text-sm text-slate-600">
+              <div className="mt-4 pt-4 border-t border-slate-200 text-center">
+                <span className="text-xs text-slate-600">
                   Already have an account?{' '}
                 </span>
                 <Link
                   href="/login"
-                  className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
                 >
                   Sign in
                 </Link>
-              </div>
-
-              {/* What Happens Next - Detailed */}
-              <div className="mt-6 p-4 bg-gradient-to-br from-slate-50 to-indigo-50/30 rounded-xl border border-slate-200">
-                <h3 className="text-xs font-semibold text-slate-700 mb-3 uppercase tracking-wide">
-                  What happens next?
-                </h3>
-                <div className="space-y-2.5 text-xs text-slate-600">
-                  <div className="flex items-start gap-2">
-                    <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                      1
-                    </div>
-                    <p><strong className="text-slate-900">Choose your plan</strong> — Monthly, semester, or annual (all include 7-day free trial)</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                      2
-                    </div>
-                    <p><strong className="text-slate-900">Quick tutorial</strong> — Upload your first material and ask a question (2 minutes)</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                      3
-                    </div>
-                    <p><strong className="text-slate-900">Start studying</strong> — Your AI tutor is ready to help with clinical reasoning</p>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-200 flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-indigo-600" />
-                  No charge for 7 days • Cancel anytime during trial
-                </p>
               </div>
             </div>
           </div>
