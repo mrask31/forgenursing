@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ToggleLeft, ToggleRight, HelpCircle, Plus } from 'lucide-react'
+import { ToggleLeft, ToggleRight, HelpCircle, Plus, Brain } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { useTutorContext } from './TutorContext'
