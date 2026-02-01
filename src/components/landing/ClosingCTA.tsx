@@ -22,7 +22,7 @@ export default function ClosingCTA() {
             href="/signup?plan=monthly"
             className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-base sm:text-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 min-h-[44px] transform hover:scale-105 active:scale-95"
           >
-            Start Free Preview
+            Start Your 7-Day Free Trial
             <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
           </Link>
           <p className="text-sm text-slate-600 mt-3 sm:mt-4">

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { Check, ArrowRight, Sparkles, Shield, Heart } from 'lucide-react'
 import Hero from '@/components/landing/Hero'
@@ -157,7 +157,7 @@ export default function HomePage() {
     }
     
     try {
-      const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
+      const supabase = getBrowserClient()
       
       supabase.auth.getUser().then(({ data: { user } }) => {
         setUser(user)
@@ -259,7 +259,7 @@ export default function HomePage() {
                 onClick={() => startStripeCheckout('monthly')}
                 className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm sm:text-base font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
               >
-                Start Free Preview
+                Start Your 7-Day Free Trial
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 inline-block ml-2" />
               </button>
             </div>
@@ -283,7 +283,7 @@ export default function HomePage() {
                 onClick={() => startStripeCheckout('semester')}
                 className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm sm:text-base font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
               >
-                Start Free Preview
+                Start Your 7-Day Free Trial
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 inline-block ml-2" />
               </button>
             </div>
@@ -304,7 +304,7 @@ export default function HomePage() {
                 onClick={() => startStripeCheckout('annual')}
                 className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm sm:text-base font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
               >
-                Start Free Preview
+                Start Your 7-Day Free Trial
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 inline-block ml-2" />
               </button>
             </div>

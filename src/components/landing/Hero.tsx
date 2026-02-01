@@ -53,18 +53,23 @@ export default function Hero({ user }: HeroProps) {
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent tracking-tight mb-4 sm:mb-6 leading-tight pb-1">
-              <span className="hidden sm:inline">You Know the Content. Why Do NCLEX Questions Still Freeze You?</span>
-              <span className="sm:hidden">You Know the Content. Why Do NCLEX Questions Still Freeze You?</span>
+              <span className="hidden sm:inline">Stop Freezing on "What to Do First" Questions</span>
+              <span className="sm:hidden">Master NCLEX Prioritization</span>
             </h1>
             
-            <p className="text-base sm:text-lg md:text-xl text-slate-700 mb-4 sm:mb-6 leading-relaxed font-medium">
-              <span className="hidden sm:inline">ForgeNursing turns your notes and textbooks into step-by-step clinical reasoning — so prioritization finally clicks.</span>
-              <span className="sm:hidden">ForgeNursing turns your notes and textbooks into step-by-step clinical reasoning — so prioritization finally clicks.</span>
+            <p className="text-base sm:text-lg text-slate-600 mb-3">
+              <span className="hidden sm:inline">For nursing students who know the content but struggle with NCLEX-style prioritization</span>
+              <span className="sm:hidden">For students who struggle with NCLEX prioritization</span>
             </p>
             
-            <p className="text-sm sm:text-base text-slate-600 mb-6 sm:mb-8 italic">
-              <span className="hidden sm:inline">Best for students who feel stuck on NCLEX-style questions. If you're already cruising with question banks, you may not need this.</span>
-              <span className="sm:hidden">For students stuck on NCLEX questions.</span>
+            <p className="text-base sm:text-lg md:text-xl text-slate-700 mb-4 sm:mb-6 leading-relaxed font-medium">
+              <span className="hidden sm:inline">AI tutor that uses YOUR textbooks to teach NCLEX prioritization step-by-step. Like having a clinical instructor available 24/7.</span>
+              <span className="sm:hidden">AI tutor using YOUR textbooks. Step-by-step NCLEX prep.</span>
+            </p>
+            
+            <p className="text-sm text-slate-600 mb-6 sm:mb-8">
+              <span className="hidden sm:inline">Starting at $24.99/month • 7-day free trial • No credit card charged for 7 days • Cancel anytime</span>
+              <span className="sm:hidden">$24.99/mo • 7-day free trial • Cancel anytime</span>
             </p>
             
             <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
@@ -82,12 +87,21 @@ export default function Hero({ user }: HeroProps) {
                     href="/signup?plan=monthly"
                     className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm sm:text-base font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
                   >
-                    Start Free Preview
+                    Start Your 7-Day Free Trial
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Link>
-                  <p className="text-xs sm:text-sm text-slate-600 text-center sm:text-left">
-                    No studying required. No credit card charged for 7 days.
-                  </p>
+                  <div className="flex items-center justify-center sm:justify-start gap-4 text-xs sm:text-sm text-slate-600">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex -space-x-2">
+                        <div className="w-6 h-6 rounded-full bg-indigo-200 border-2 border-white"></div>
+                        <div className="w-6 h-6 rounded-full bg-purple-200 border-2 border-white"></div>
+                        <div className="w-6 h-6 rounded-full bg-pink-200 border-2 border-white"></div>
+                      </div>
+                      <span className="font-medium">500+ students joined</span>
+                    </div>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="hidden sm:inline">★★★★★ 4.8/5 rating</span>
+                  </div>
                 </>
               )}
             </div>

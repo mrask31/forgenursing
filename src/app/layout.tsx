@@ -10,8 +10,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ForgeNursing | Clinical Reasoning Tutor",
-  description: "NCLEX preparation and clinical reasoning engine.",
+  title: "ForgeNursing: AI NCLEX Tutor for Nursing Students | Master Prioritization & Clinical Reasoning",
+  description: "AI tutor that helps nursing students master NCLEX prioritization using their own textbooks. Step-by-step clinical reasoning guidance. 7-day free trial. Join 500+ students who finally understand 'what to do first.'",
+  keywords: "NCLEX prep, NCLEX study, nursing students, clinical reasoning, NCLEX questions, nursing exam, NCLEX tutor, nursing school, NCLEX prioritization, clinical judgment",
+  openGraph: {
+    title: "ForgeNursing: AI NCLEX Tutor for Nursing Students",
+    description: "Master NCLEX prioritization using your own textbooks. Step-by-step clinical reasoning. 7-day free trial.",
+    type: 'website',
+    siteName: 'ForgeNursing',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "ForgeNursing: AI NCLEX Tutor for Nursing Students",
+    description: "Master NCLEX prioritization using your own textbooks. 7-day free trial.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
