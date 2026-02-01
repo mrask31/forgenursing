@@ -146,10 +146,18 @@ export default function SignupPage() {
       }
 
       console.log('[Signup] Calling signUp')
-      const { data, error } = await supabase.auth.signUp({
+      
+      // Add a manual timeout promise (30 seconds)
+      const signupPromise = supabase.auth.signUp({
         email,
         password,
       })
+      
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Signup is taking too long. Please try again or contact support.')), 30000)
+      })
+      
+      const { data, error } = await Promise.race([signupPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.signUp>>
 
       console.log('[Signup] SignUp response received', { 
         hasUser: !!data?.user, 
