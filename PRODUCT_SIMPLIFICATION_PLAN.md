@@ -6,7 +6,7 @@ Transforming ForgeNursing from a feature-rich V1 to a focused, conversion-optimi
 **Progress:**
 - ✅ Phase 1: Remove Reflections Mode - COMPLETE
 - ✅ Phase 2: Remove ForgeMap - COMPLETE
-- ⏭️ Phase 3: Simplify Notebook - Deferred
+- ✅ Phase 3: Simplify Notebook - COMPLETE (Simplified approach)
 - ✅ Phase 4: Build Killer Onboarding - COMPLETE
 - ✅ Phase 5: "Study with This" Quick Actions - COMPLETE (All 3 sub-phases done)
 - ✅ Phase 6: Conversion Optimization - COMPLETE (6.2 & 6.3 done, 6.1 deferred)
@@ -61,35 +61,42 @@ Transforming ForgeNursing from a feature-rich V1 to a focused, conversion-optimi
 
 ---
 
-## Phase 2: Simplify Notebook 📝
+## Phase 2: Simplify Notebook 📝 ✅ COMPLETE (Simplified Approach)
 
-### 2.1 Remove Manual Topic Creation
-**Why**: Too much friction. Students won't manually organize topics.
+**Status**: ✅ COMPLETE - See `PHASE3_NOTEBOOK_SIMPLIFICATION_COMPLETE.md` for details.
 
-**Approach**: Auto-generate topics from chat history using AI
+### 2.1 Remove Manual Topic Creation ✅ COMPLETE
 
-**Files to Modify**:
-- Remove topic creation UI from classes page
-- Keep topic display (read-only, auto-generated)
-- Add background job to analyze chat history and create topics
+**What Was Implemented**:
+- Removed "Add Topic" button from NotebookSidebar
+- Removed topic creation form (title, description, NCLEX category fields)
+- Made notebook read-only
+- Updated header to say "Topics are automatically organized from your study sessions"
+- Updated empty state to say "Topics will appear here as you study with the tutor"
+- Removed 73 lines of code (form logic, state management, handlers)
 
-**New Files to Create**:
+**Files Modified**:
+- ✅ `src/components/notebook/NotebookSidebar.tsx` - Removed manual creation UI
+
+**Why Simplified Approach**:
+- Notebook is not core to value proposition (tutor is the main value)
+- Low usage (tucked away in `/classes/[classId]` route)
+- Quick win (removing UI is instant vs. building AI system)
+- Reduces friction (manual organization is work for students)
+- Future-proof (messaging sets expectation for auto-organization)
+
+**Impact**: Reduces friction and complexity, simplifies codebase by 73 lines
+
+**Original Plan (Deferred)**:
+The original plan called for building an AI-powered auto-generation system to analyze chat history and create topics automatically. This is deferred to a future iteration if needed.
+
+**Files to Create (If Building Auto-Generation in Future)**:
 - `src/app/api/notebook/auto-generate/route.ts` - API to trigger topic generation
 - `src/lib/ai/topic-extraction.ts` - AI logic to extract topics from chats
 
-**Database Changes**:
-- Keep existing `notebook_topics` table
-- Add `auto_generated` boolean field
-- Add `last_analyzed_at` timestamp
-
-**Implementation**:
-1. Analyze chat titles and content
-2. Group related chats by topic
-3. Generate topic title and summary
-4. Link chats to topics automatically
-5. Run nightly or on-demand
-
-**Impact**: Zero friction for students, better organization
+**Database Changes (If Building Auto-Generation in Future)**:
+- Add `auto_generated` boolean field to `notebook_topics`
+- Add `last_analyzed_at` timestamp to `notebook_topics`
 
 ---
 
