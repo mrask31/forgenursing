@@ -132,12 +132,9 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!acceptedTerms) {
-      setMessage({ text: 'You must accept the Terms of Service and Privacy Policy to create an account.', type: 'error' })
-      return
-    }
-    
+
+    let signUpReached = false
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
     setLoading(true)
     setMessage(null)
 
@@ -162,13 +159,22 @@ export default function SignupPage() {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const timeoutMs = 15000
+      const timeoutError = new Error('SIGNUP_TIMEOUT')
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(timeoutError), timeoutMs)
+      })
+
+      signUpReached = true
+      const signUpPromise = supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: callbackUrl,
         },
       })
+
+      const { data, error } = await Promise.race([signUpPromise, timeoutPromise]) as Awaited<typeof signUpPromise>
       
       if (error) {
         // Log the error for debugging (remove in production if needed)
@@ -195,7 +201,6 @@ export default function SignupPage() {
             text: `This email address is already registered. Please sign in instead.`, 
             type: 'error' 
           })
-          setLoading(false)
           return
         }
         
@@ -218,7 +223,6 @@ export default function SignupPage() {
           text: `This email address is already registered. Please sign in instead.`, 
           type: 'error' 
         })
-        setLoading(false)
         return
       }
       
@@ -226,37 +230,11 @@ export default function SignupPage() {
       // This happens when user signed up before but never verified
       // Supabase logs this as "user_repeated_signup" and WILL send a new email
       if (data.user && !data.session) {
-        console.log('User exists but unverified (repeated signup detected)', {
+        console.error('Signup returned no session for user:', {
           userId: data.user.id,
           email: data.user.email,
           emailConfirmed: data.user.email_confirmed_at
         })
-        
-        // Fire GA4 sign_up conversion event (only once per signup)
-        // This fires when Supabase successfully creates/identifies a user account
-        // Even for repeated signups, this is a valid signup event for analytics
-        if (!signUpEventFiredRef.current && typeof window !== 'undefined') {
-          const dataLayer = (window as any).dataLayer
-          if (dataLayer && Array.isArray(dataLayer)) {
-            dataLayer.push({
-              event: 'sign_up',
-              method: 'email'
-            })
-            signUpEventFiredRef.current = true
-            console.log('[GA4] sign_up event fired (repeated signup)')
-          }
-        }
-        
-        // Supabase WILL send a verification email for repeated signups
-        // Show success state and wait for verification
-        setShowSuccess(true)
-        setIsVerifying(true)
-        setMessage({ 
-          text: "A verification email has been sent. Please check your inbox (including spam) and click the verification link. We'll automatically redirect you once you verify.", 
-          type: 'success' 
-        })
-        setLoading(false)
-        return
       }
       
       // New user created successfully
@@ -275,17 +253,24 @@ export default function SignupPage() {
         }
       }
       
-      setShowSuccess(true)
-      setIsVerifying(true)
-      setMessage({ 
-        text: "Check your email for the confirmation link! We'll automatically redirect you once you verify.", 
-        type: 'success' 
-      })
+      setLoading(false)
+      router.push('/checkout')
     } catch (error: any) {
       // Handle other errors
-      const errorMessage = error.message || 'An error occurred. Please try again.'
+      if (error?.message === 'SIGNUP_TIMEOUT') {
+        setMessage({ text: 'Signup timed out. Please try again.', type: 'error' })
+        return
+      }
+
+      const errorMessage = error?.message || 'An error occurred. Please try again.'
       setMessage({ text: errorMessage, type: 'error' })
     } finally {
+      if (!signUpReached) {
+        console.error('Signup call not reached')
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
       setLoading(false)
     }
   }
