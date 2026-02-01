@@ -124,8 +124,8 @@ export async function middleware(request: NextRequest) {
     const publicRoutes = ['/', '/login', '/signup', '/auth/callback', '/privacy', '/terms', '/billing/payment-required', '/checkout']
     const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/auth/')
 
-    // Protected routes
-    const protectedRoutes = ['/clinical-desk', '/tutor', '/binder', '/readiness', '/settings', '/classes', '/help']
+    // Protected routes that require authentication AND active subscription
+    const protectedRoutes = ['/clinical-desk', '/tutor', '/binder', '/readiness', '/settings', '/classes', '/help', '/onboarding']
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
 
     // CRITICAL: For login/signup pages, only redirect if we have a VALID authenticated user
@@ -209,6 +209,88 @@ export async function middleware(request: NextRequest) {
       response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0')
       response.headers.set('Pragma', 'no-cache')
       response.headers.set('Expires', '0')
+    }
+
+    // CRITICAL: Check subscription status for protected routes
+    if (isProtectedRoute && user) {
+      try {
+        // Use service role key to bypass RLS for subscription status check
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+        let subscriptionStatus: string | undefined
+        let profileError: any = null
+        
+        if (serviceRoleKey) {
+          // Use service role key to bypass RLS
+          const adminClient = createClient(
+            supabaseUrl,
+            serviceRoleKey
+          )
+          const { data: profile, error } = await adminClient
+            .from('profiles')
+            .select('subscription_status')
+            .eq('id', user.id)
+            .single()
+          
+          if (error) {
+            console.error('[Middleware] Error fetching profile for protected route:', error)
+            profileError = error
+          } else {
+            subscriptionStatus = profile?.subscription_status
+          }
+        } else {
+          // Fallback to anon key (may be blocked by RLS)
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('subscription_status')
+            .eq('id', user.id)
+            .single()
+          
+          if (error) {
+            console.error('[Middleware] Error fetching profile for protected route:', error)
+            profileError = error
+          } else {
+            subscriptionStatus = profile?.subscription_status
+          }
+        }
+
+        // If we couldn't fetch the profile, default to blocking access (fail secure)
+        if (profileError || subscriptionStatus === undefined) {
+          console.warn('[Middleware] Could not determine subscription status for protected route, blocking access', {
+            userId: user.id,
+            pathname,
+            error: profileError?.message
+          })
+          return NextResponse.redirect(new URL('/billing/payment-required', request.url))
+        }
+
+        const hasActiveSubscription = hasSubscriptionAccess(subscriptionStatus)
+
+        // Allow onboarding page even without subscription (they need to complete it first)
+        if (pathname.startsWith('/onboarding')) {
+          return response
+        }
+
+        // For all other protected routes, require active subscription
+        if (!hasActiveSubscription) {
+          console.log('[Middleware] User accessing protected route without subscription', {
+            userId: user.id,
+            pathname,
+            subscriptionStatus
+          })
+          return NextResponse.redirect(new URL('/checkout', request.url))
+        }
+      } catch (error) {
+        console.error('[Middleware] Error checking subscription for protected route:', error)
+        // Fail secure - redirect to payment required
+        return NextResponse.redirect(new URL('/billing/payment-required', request.url))
+      }
+    }
+
+    // If accessing protected route without authentication, redirect to login
+    if (isProtectedRoute && !user) {
+      const redirectUrl = new URL('/login', request.url)
+      redirectUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(redirectUrl)
     }
 
     return response
