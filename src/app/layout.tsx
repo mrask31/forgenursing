@@ -12,21 +12,58 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "ForgeNursing: AI NCLEX Tutor for Nursing Students | Master Prioritization & Clinical Reasoning",
   description: "AI tutor that helps nursing students master NCLEX prioritization using their own textbooks. Step-by-step clinical reasoning guidance. 7-day free trial. Join 500+ students who finally understand 'what to do first.'",
-  keywords: "NCLEX prep, NCLEX study, nursing students, clinical reasoning, NCLEX questions, nursing exam, NCLEX tutor, nursing school, NCLEX prioritization, clinical judgment",
+  keywords: "NCLEX prep, NCLEX study, nursing students, clinical reasoning, NCLEX questions, nursing exam, NCLEX tutor, nursing school, NCLEX prioritization, clinical judgment, NCLEX RN, nursing test prep, NCLEX practice questions, nursing education",
+  authors: [{ name: "ForgeNursing" }],
+  creator: "ForgeNursing",
+  publisher: "ForgeNursing",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://forgenursing.com'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: "ForgeNursing: AI NCLEX Tutor for Nursing Students",
     description: "Master NCLEX prioritization using your own textbooks. Step-by-step clinical reasoning. 7-day free trial.",
-    type: 'website',
+    url: '/',
     siteName: 'ForgeNursing',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: '/hero-chat-preview.png',
+        width: 1200,
+        height: 630,
+        alt: 'ForgeNursing AI Tutor Interface',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: "ForgeNursing: AI NCLEX Tutor for Nursing Students",
     description: "Master NCLEX prioritization using your own textbooks. 7-day free trial.",
+    images: ['/hero-chat-preview.png'],
+    creator: '@forgenursing',
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    // Add your verification codes when you have them
+    // google: 'your-google-verification-code',
+    // yandex: 'your-yandex-verification-code',
+    // bing: 'your-bing-verification-code',
   },
 };
 
