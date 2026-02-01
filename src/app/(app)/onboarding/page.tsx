@@ -88,7 +88,25 @@ export default function OnboardingPage() {
       body: JSON.stringify({ completed: true }),
     })
     
-    // Redirect to tutor
+    // Check subscription status before redirecting
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
+      
+      const subscriptionStatus = profile?.subscription_status
+      
+      // If no active subscription, redirect to checkout
+      if (subscriptionStatus !== 'active' && subscriptionStatus !== 'trialing') {
+        router.push('/checkout')
+        return
+      }
+    }
+    
+    // Has subscription, redirect to tutor
     router.push('/tutor')
   }
 
@@ -100,7 +118,25 @@ export default function OnboardingPage() {
       body: JSON.stringify({ skipped: true }),
     })
     
-    // Redirect to tutor
+    // Check subscription status before redirecting
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
+      
+      const subscriptionStatus = profile?.subscription_status
+      
+      // If no active subscription, redirect to checkout
+      if (subscriptionStatus !== 'active' && subscriptionStatus !== 'trialing') {
+        router.push('/checkout')
+        return
+      }
+    }
+    
+    // Has subscription, redirect to tutor
     router.push('/tutor')
   }
 
