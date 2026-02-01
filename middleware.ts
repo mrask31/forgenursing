@@ -265,6 +265,14 @@ export async function middleware(request: NextRequest) {
 
         const hasActiveSubscription = hasSubscriptionAccess(subscriptionStatus)
 
+        console.log('[Middleware] Protected route access check', {
+          userId: user.id,
+          pathname,
+          subscriptionStatus,
+          hasActiveSubscription,
+          isOnboarding: pathname.startsWith('/onboarding')
+        })
+
         // Allow onboarding page even without subscription (they need to complete it first)
         if (pathname.startsWith('/onboarding')) {
           return response
@@ -272,12 +280,19 @@ export async function middleware(request: NextRequest) {
 
         // For all other protected routes, require active subscription
         if (!hasActiveSubscription) {
-          console.log('[Middleware] User accessing protected route without subscription', {
+          console.log('[Middleware] BLOCKING: User accessing protected route without subscription - redirecting to checkout', {
             userId: user.id,
             pathname,
             subscriptionStatus
           })
           return NextResponse.redirect(new URL('/checkout', request.url))
+        }
+
+        console.log('[Middleware] ALLOWING: User has active subscription', {
+          userId: user.id,
+          pathname,
+          subscriptionStatus
+        })
         }
       } catch (error) {
         console.error('[Middleware] Error checking subscription for protected route:', error)
