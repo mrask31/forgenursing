@@ -215,40 +215,10 @@ export default function SignupPage() {
       }
       
       // Check for session (with email verification disabled, should have immediate session)
-      console.log('[Signup] Checking for session')
-      const sessionResult = await withTimeout(supabase.auth.getSession()) as Awaited<ReturnType<typeof supabase.auth.getSession>>
-      const { data: sessionData } = sessionResult
-      console.log('[Signup] Session check complete', { hasSession: !!sessionData?.session })
-
-      if (sessionData?.session) {
-        console.log('[Signup] Session found, redirecting to onboarding')
-        // User has immediate session, redirect to onboarding
-        setLoading(false)
-        router.push('/onboarding')
-        return
-      }
-
-      // Fallback: If no session, try signing in with the credentials
-      console.log('[Signup] No session found, attempting sign in')
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-      
-      if (signInError) {
-        console.error('[Signup] Sign in after signup failed:', signInError)
-        setMessage({ 
-          text: 'Account created but unable to sign in automatically. Please sign in manually.', 
-          type: 'info' 
-        })
-        setLoading(false)
-        // Redirect to login after 2 seconds
-        setTimeout(() => {
-          router.push(`/login?email=${encodeURIComponent(email)}`)
-        }, 2000)
-        return
-      }
-
-      console.log('[Signup] Sign in successful, redirecting to onboarding')
+      console.log('[Signup] Signup successful, redirecting to onboarding')
       setLoading(false)
       router.push('/onboarding')
+      return
 
     } catch (error: any) {
       console.error('[Signup] Unexpected error:', error)
