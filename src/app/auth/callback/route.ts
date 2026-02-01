@@ -138,9 +138,10 @@ export async function GET(request: Request) {
       }
 
       // If user hasn't completed onboarding, redirect to onboarding
-      if (!onboardingCompleted) {
-        return NextResponse.redirect(`${appUrl}/onboarding`)
-      }
+      // DISABLED: Skip onboarding, go straight to checkout for payment
+      // if (!onboardingCompleted) {
+      //   return NextResponse.redirect(`${appUrl}/onboarding`)
+      // }
 
       // If there's a plan parameter, redirect to checkout initiation page
       // This will trigger the Stripe checkout flow

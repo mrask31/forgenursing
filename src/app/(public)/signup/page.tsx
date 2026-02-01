@@ -215,9 +215,9 @@ export default function SignupPage() {
       }
       
       // Check for session (with email verification disabled, should have immediate session)
-      console.log('[Signup] Signup successful, redirecting to onboarding')
+      console.log('[Signup] Signup successful, redirecting to checkout')
       setLoading(false)
-      router.push('/onboarding')
+      router.push('/checkout')
       return
 
     } catch (error: any) {
