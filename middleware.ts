@@ -293,7 +293,6 @@ export async function middleware(request: NextRequest) {
           pathname,
           subscriptionStatus
         })
-        }
       } catch (error) {
         console.error('[Middleware] Error checking subscription for protected route:', error)
         // Fail secure - redirect to payment required
