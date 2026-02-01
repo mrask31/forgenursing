@@ -1,14 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
 import { NotebookTopic } from '@/lib/types'
-import { listNotebookTopics, createNotebookTopic } from '@/lib/api/notebook'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { listNotebookTopics } from '@/lib/api/notebook'
 import { Badge } from '@/components/ui/badge'
-import { Plus, BookOpen, X } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
 
 interface NotebookSidebarProps {
   userId: string
@@ -25,12 +21,6 @@ export default function NotebookSidebar({
 }: NotebookSidebarProps) {
   const [topics, setTopics] = useState<NotebookTopic[]>([])
   const [loading, setLoading] = useState(true)
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    nclexCategory: '',
-  })
 
   useEffect(() => {
     loadTopics()
@@ -41,24 +31,6 @@ export default function NotebookSidebar({
     const topicList = await listNotebookTopics(userId, classId)
     setTopics(topicList)
     setLoading(false)
-  }
-
-  const handleAddTopic = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData.title.trim()) return
-
-    const newTopic = await createNotebookTopic(userId, {
-      classId,
-      title: formData.title,
-      description: formData.description || undefined,
-      nclexCategory: formData.nclexCategory || undefined,
-    })
-
-    if (newTopic) {
-      setFormData({ title: '', description: '', nclexCategory: '' })
-      setShowAddForm(false)
-      loadTopics()
-    }
   }
 
   if (loading) {
@@ -72,59 +44,14 @@ export default function NotebookSidebar({
   return (
     <div className="h-full flex flex-col bg-white border-r border-[var(--tutor-border-subtle)]">
       <div className="p-4 border-b border-[var(--tutor-border-subtle)]">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-semibold text-[var(--tutor-text-main)]">
             Topics
           </h2>
-          {!showAddForm && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAddForm(true)}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Add
-            </Button>
-          )}
         </div>
-
-        {showAddForm && (
-          <form onSubmit={handleAddTopic} className="space-y-3 mb-4">
-            <Input
-              placeholder="Topic title"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              required
-            />
-            <Textarea
-              placeholder="Description (optional)"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={2}
-            />
-            <Input
-              placeholder="NCLEX category (optional)"
-              value={formData.nclexCategory}
-              onChange={(e) => setFormData({ ...formData, nclexCategory: e.target.value })}
-            />
-            <div className="flex gap-2">
-              <Button type="submit" size="sm" className="flex-1">
-                Add
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setShowAddForm(false)
-                  setFormData({ title: '', description: '', nclexCategory: '' })
-                }}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </form>
-        )}
+        <p className="text-xs text-[var(--tutor-text-muted)]">
+          Topics are automatically organized from your study sessions
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2">
@@ -133,7 +60,7 @@ export default function NotebookSidebar({
             <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No topics yet.</p>
             <p className="text-xs mt-1">
-              Add something like "Heart Failure" or "Insulin Safety"
+              Topics will appear here as you study with the tutor
             </p>
           </div>
         ) : (
