@@ -9,6 +9,7 @@ import Link from 'next/link'
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null)
@@ -16,6 +17,11 @@ export default function SignupPage() {
   
   // Track if GA4 sign_up event has been fired to prevent duplicate events
   const signUpEventFiredRef = useRef(false)
+  
+  // Anti-bot measures
+  const [honeypot, setHoneypot] = useState('') // Honeypot field (hidden from users)
+  const [startTime] = useState(Date.now()) // Track how long user takes to fill form
+  const formInteractedRef = useRef(false) // Track if user actually interacted with form
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -53,6 +59,53 @@ export default function SignupPage() {
 
     setLoading(true)
     setMessage(null)
+
+    // Anti-bot checks
+    // 1. Honeypot check - if filled, it's a bot
+    if (honeypot) {
+      console.log('[Signup] Honeypot triggered - likely bot')
+      setLoading(false)
+      // Don't show error to bot, just silently fail
+      setTimeout(() => {
+        setMessage({ text: 'An error occurred. Please try again.', type: 'error' })
+      }, 2000)
+      return
+    }
+
+    // 2. Time check - if submitted too fast (< 3 seconds), likely bot
+    const timeSpent = Date.now() - startTime
+    if (timeSpent < 3000) {
+      console.log('[Signup] Form submitted too fast - likely bot')
+      setLoading(false)
+      setTimeout(() => {
+        setMessage({ text: 'Please take your time filling out the form.', type: 'error' })
+      }, 2000)
+      return
+    }
+
+    // 3. Interaction check - if no interaction detected, likely bot
+    if (!formInteractedRef.current) {
+      console.log('[Signup] No form interaction detected - likely bot')
+      setLoading(false)
+      setTimeout(() => {
+        setMessage({ text: 'Please fill out the form manually.', type: 'error' })
+      }, 2000)
+      return
+    }
+
+    // 4. Password match check
+    if (password !== confirmPassword) {
+      setMessage({ text: 'Passwords do not match. Please try again.', type: 'error' })
+      setLoading(false)
+      return
+    }
+
+    // 5. Password strength check
+    if (password.length < 8) {
+      setMessage({ text: 'Password must be at least 8 characters long.', type: 'error' })
+      setLoading(false)
+      return
+    }
 
     // Get plan from localStorage or URL
     const params = new URLSearchParams(window.location.search)
@@ -293,6 +346,18 @@ export default function SignupPage() {
 
               {/* Form */}
               <form onSubmit={handleSignup} className="space-y-4 sm:space-y-5">
+                {/* Honeypot field - hidden from real users, visible to bots */}
+                <div style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
+                  <input
+                    type="text"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                  />
+                </div>
+
                 <div className="space-y-4">
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -301,7 +366,11 @@ export default function SignupPage() {
                       placeholder="Enter your email"
                       className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value)
+                        formInteractedRef.current = true
+                      }}
+                      onFocus={() => formInteractedRef.current = true}
                       required
                     />
                   </div>
@@ -312,14 +381,48 @@ export default function SignupPage() {
                       placeholder="Create a password"
                       className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value)
+                        formInteractedRef.current = true
+                      }}
+                      onFocus={() => formInteractedRef.current = true}
                       required
                       minLength={8}
                     />
-                    <p className="text-xs text-slate-500 mt-1">
-                      Use at least 8 characters for your password.
-                    </p>
                   </div>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <input
+                      type="password"
+                      placeholder="Confirm your password"
+                      className={`w-full pl-12 pr-4 py-3 bg-slate-50 border rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+                        confirmPassword && password !== confirmPassword
+                          ? 'border-red-300 focus:ring-red-600'
+                          : 'border-slate-200 focus:ring-indigo-600'
+                      }`}
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value)
+                        formInteractedRef.current = true
+                      }}
+                      onFocus={() => formInteractedRef.current = true}
+                      required
+                      minLength={8}
+                    />
+                    {confirmPassword && password !== confirmPassword && (
+                      <p className="text-xs text-red-600 mt-1">
+                        Passwords do not match
+                      </p>
+                    )}
+                    {confirmPassword && password === confirmPassword && (
+                      <p className="text-xs text-green-600 mt-1">
+                        Passwords match ✓
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Use at least 8 characters for your password.
+                  </p>
                 </div>
 
                 {message && (
@@ -347,7 +450,7 @@ export default function SignupPage() {
 
                 <button
                   type="submit"
-                  disabled={loading || !email || !password || !acceptedTerms}
+                  disabled={loading || !email || !password || !confirmPassword || password !== confirmPassword || !acceptedTerms}
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 sm:py-3.5 bg-indigo-600 text-white rounded-xl text-base font-medium hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl min-h-[44px]"
                 >
                   {loading ? (
