@@ -30,6 +30,8 @@ export default function TutorLanding({
   const [isLoadingWelcome, setIsLoadingWelcome] = useState(false)
   const [randomTopic, setRandomTopic] = useState<string | null>(null)
   const [lastChatMessage, setLastChatMessage] = useState<string | null>(null)
+  const [hasAnyMaterials, setHasAnyMaterials] = useState<boolean | null>(null)
+  const [hasAnyChats, setHasAnyChats] = useState<boolean | null>(null)
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -47,6 +49,31 @@ export default function TutorLanding({
 
   // Fetch last chat and generate welcome message for class-specific landing
   useEffect(() => {
+    // Check if user has any materials and chats (for contextual CTAs)
+    const checkUserContent = async () => {
+      try {
+        // Check for materials
+        const binderRes = await fetch('/api/binder', { credentials: 'include' })
+        if (binderRes.ok) {
+          const binderData = await binderRes.json()
+          const materials = binderData.files || []
+          setHasAnyMaterials(materials.length > 0)
+        }
+
+        // Check for chats
+        const chatsRes = await fetch('/api/chats/list', { credentials: 'include' })
+        if (chatsRes.ok) {
+          const chatsData = await chatsRes.json()
+          const chats = chatsData.chats || []
+          setHasAnyChats(chats.length > 0)
+        }
+      } catch (error) {
+        console.error('[TutorLanding] Error checking user content:', error)
+      }
+    }
+
+    checkUserContent()
+
     if (isGeneralTutor || !selectedClassId) {
       setWelcomeMessage(null)
       return
@@ -236,6 +263,68 @@ export default function TutorLanding({
       <div className="w-full max-w-2xl">
         {getHelperText()}
       </div>
+
+      {/* Contextual CTAs based on user state */}
+      {isGeneralTutor && hasAnyMaterials === false && (
+        <div className="w-full max-w-2xl mt-4">
+          <div className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span className="text-2xl">📚</span>
+              Get Started: Upload Your First Material
+            </h3>
+            <p className="text-sm text-slate-700 mb-4">
+              ForgeNursing works best when you upload your textbooks, lecture notes, or syllabus. This helps me provide answers specific to your nursing program.
+            </p>
+            <button
+              onClick={() => router.push('/classes')}
+              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg text-sm font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
+            >
+              Upload Materials →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isGeneralTutor && hasAnyMaterials === true && hasAnyChats === false && (
+        <div className="w-full max-w-2xl mt-4">
+          <div className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span className="text-2xl">✨</span>
+              Ready to Start Studying!
+            </h3>
+            <p className="text-sm text-slate-700 mb-4">
+              Great! You've uploaded your materials. Now ask me any question about your nursing content, or try one of the suggested prompts below.
+            </p>
+            <p className="text-xs text-slate-600 italic">
+              💡 Tip: Select a specific class from the dropdown above to study with those materials.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isGeneralTutor && hasAnyChats === true && (
+        <div className="w-full max-w-2xl mt-4">
+          <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span className="text-2xl">📖</span>
+              Welcome Back!
+            </h3>
+            <p className="text-sm text-slate-700 mb-3">
+              Check your <strong>History</strong> tab to continue where you left off, or start a new conversation below.
+            </p>
+            <button
+              onClick={() => {
+                // Trigger history sheet open (you may need to pass a callback prop for this)
+                const historyButton = document.querySelector('[data-history-button]') as HTMLButtonElement
+                if (historyButton) historyButton.click()
+              }}
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-semibold underline"
+            >
+              View Recent Chats →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Suggestion Chips - Mode-aware */}
       <div className="w-full">
