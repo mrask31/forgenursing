@@ -8,7 +8,7 @@ Transforming ForgeNursing from a feature-rich V1 to a focused, conversion-optimi
 - ✅ Phase 2: Remove ForgeMap - COMPLETE
 - ⏭️ Phase 3: Simplify Notebook - Deferred (doing Phase 4 first)
 - ✅ Phase 4: Build Killer Onboarding - COMPLETE
-- ⏭️ Phase 5: "Study with This" Quick Actions - Not Started
+- 🚧 Phase 5: "Study with This" Quick Actions - IN PROGRESS (5.1 Complete)
 
 ---
 
@@ -159,24 +159,37 @@ Transforming ForgeNursing from a feature-rich V1 to a focused, conversion-optimi
 
 ## Phase 4: "Study with This" Quick Actions ⚡
 
-### 4.1 File Upload Success Screen
-**Current**: File uploads, user sees success message, has to navigate to tutor
-**New**: File uploads → "Start Studying with [filename]" button → Pre-filled tutor
+### 4.1 File Upload Success Screen ✅ COMPLETE
+**Status**: ✅ COMPLETE - See `PHASE5_QUICK_ACTIONS_COMPLETE.md` for details.
 
-**Files to Modify**:
-- `src/components/classes/ClassWithMaterials.tsx` - Add quick action after upload
-- Pre-fill tutor with: "I just uploaded [filename]. Help me understand [detected topic]."
+**What Was Implemented**:
+- Added "Study This Now" button after successful file upload
+- Button navigates directly to tutor with class context
+- Upload section stays open to show success state
+- User can immediately start studying the uploaded material
 
-### 4.2 Classes Page Quick Actions
-**Current**: User sees list of classes and files
-**New**: Each file has "Study This Now" button
+**Files Modified**:
+- ✅ `src/components/classes/ClassWithMaterials.tsx` - Added success state button
 
-**Files to Modify**:
-- `src/components/classes/ClassWithMaterials.tsx` - Add button to each file
-- On click → navigate to `/tutor?classId=X&fileId=Y&action=study`
-- Tutor auto-attaches file and pre-fills question
+**Impact**: Reduces friction from upload → study from 3-4 clicks to 1 click
+
+### 4.2 Classes Page Quick Actions ✅ COMPLETE
+**Status**: ✅ COMPLETE - See `PHASE5_QUICK_ACTIONS_COMPLETE.md` for details.
+
+**What Was Implemented**:
+- Each file in materials list has "Study" button
+- Button uses Sparkles icon for visual appeal
+- Clicking navigates to tutor with class context
+- Positioned before delete button for better UX
+
+**Files Modified**:
+- ✅ `src/components/classes/ClassWithMaterials.tsx` - Added "Study" button to each file
+
+**Impact**: Makes it easy to start studying any uploaded material with 1 click
 
 ### 4.3 Dashboard Quick Actions
+**Status**: ⏭️ NOT STARTED
+
 **Current**: Dashboard shows stats and flagged Q&As
 **New**: Add "Quick Study" section with recent files
 
