@@ -309,42 +309,40 @@ export default function SignupPage() {
           <div className="w-full max-w-md">
             <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-lg">
               {/* Header */}
-              <div className="text-center mb-6 sm:mb-8">
-                {/* Progress Indicator */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-semibold shadow-md">
-                        1
-                      </div>
-                      <span className="text-xs font-semibold text-indigo-600">Create Account</span>
-                    </div>
-                    <div className="w-8 h-0.5 bg-slate-200"></div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-sm font-semibold">
-                        2
-                      </div>
-                      <span className="text-xs font-medium text-slate-400">Choose Plan</span>
-                    </div>
-                    <div className="w-8 h-0.5 bg-slate-200"></div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-sm font-semibold">
-                        3
-                      </div>
-                      <span className="text-xs font-medium text-slate-400">Start Learning</span>
-                    </div>
-                  </div>
+              <div className="text-center mb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-xl mb-3 shadow-lg">
+                  <Sparkles className="w-6 h-6 text-white" />
                 </div>
-
-                <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-xl mb-4 shadow-lg">
-                  <Sparkles className="w-7 h-7 text-white" />
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
+                <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 mb-1">
                   Start your free preview
                 </h1>
-                <p className="text-sm text-slate-600">
+                <p className="text-xs sm:text-sm text-slate-600">
                   Join nursing students building real clinical reasoning skills
                 </p>
+              </div>
+
+              {/* 3-Step Progress Indicator - Compact */}
+              <div className="mb-5 flex items-center justify-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
+                    1
+                  </div>
+                  <span className="text-xs font-medium text-slate-700 hidden sm:inline">Create Account</span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-300" />
+                <div className="flex items-center gap-1.5">
+                  <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold">
+                    2
+                  </div>
+                  <span className="text-xs font-medium text-slate-500 hidden sm:inline">Choose Plan</span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-300" />
+                <div className="flex items-center gap-1.5">
+                  <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold">
+                    3
+                  </div>
+                  <span className="text-xs font-medium text-slate-500 hidden sm:inline">Start Learning</span>
+                </div>
               </div>
 
               {/* Form */}
@@ -508,34 +506,34 @@ export default function SignupPage() {
                 </Link>
               </div>
 
-              {/* What Happens Next Section */}
-              <div className="mt-6 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200/60">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-indigo-600" />
+              {/* What Happens Next - Detailed */}
+              <div className="mt-6 p-4 bg-gradient-to-br from-slate-50 to-indigo-50/30 rounded-xl border border-slate-200">
+                <h3 className="text-xs font-semibold text-slate-700 mb-3 uppercase tracking-wide">
                   What happens next?
                 </h3>
-                <div className="space-y-2 text-xs text-slate-600">
+                <div className="space-y-2.5 text-xs text-slate-600">
                   <div className="flex items-start gap-2">
-                    <div className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">
+                    <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                       1
                     </div>
                     <p><strong className="text-slate-900">Choose your plan</strong> — Monthly, semester, or annual (all include 7-day free trial)</p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">
+                    <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                       2
                     </div>
                     <p><strong className="text-slate-900">Quick tutorial</strong> — Upload your first material and ask a question (2 minutes)</p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5">
+                    <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                       3
                     </div>
                     <p><strong className="text-slate-900">Start studying</strong> — Your AI tutor is ready to help with clinical reasoning</p>
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-indigo-200/60">
-                  💳 No charge for 7 days • Cancel anytime during trial
+                <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-200 flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-indigo-600" />
+                  No charge for 7 days • Cancel anytime during trial
                 </p>
               </div>
             </div>
