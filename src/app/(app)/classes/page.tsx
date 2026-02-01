@@ -74,8 +74,8 @@ export default function ClassesPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header - Enhanced with consistent design */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex items-start justify-between mb-3 sm:mb-4 flex-wrap gap-3 sm:gap-4">
-            <div className="flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="flex-1 min-w-0 w-full sm:w-auto">
               <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-3">
                 <div className="p-2 sm:p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20 flex-shrink-0">
                   <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
@@ -91,7 +91,7 @@ export default function ClassesPage() {
             {!showForm && (
               <Button 
                 onClick={handleAddClass} 
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 transform hover:scale-105 active:scale-95 mt-2 sm:mt-0 flex-shrink-0"
+                className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 transform hover:scale-105 active:scale-95 flex-shrink-0"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Class

@@ -130,10 +130,12 @@ export default function SettingsPage() {
         </div>
 
         {/* Identity Section - New */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-4 sm:mb-6`}>
-          <div className="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
-            <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-clinical-text-secondary flex-shrink-0" />
-            <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
+            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
+              <GraduationCap className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            </div>
+            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
               Identity
             </h2>
           </div>
@@ -213,10 +215,12 @@ export default function SettingsPage() {
         </div>
 
         {/* Display Density Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-4 sm:mb-6`}>
-          <div className="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
-            <Layout className="w-4 h-4 sm:w-5 sm:h-5 text-clinical-text-secondary flex-shrink-0" />
-            <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
+            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
+              <Layout className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            </div>
+            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
               Display Density
             </h2>
           </div>
@@ -252,10 +256,12 @@ export default function SettingsPage() {
         </div>
 
         {/* Academic Goals Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-4 sm:mb-6`}>
-          <div className="flex items-center gap-3 mb-4">
-            <GraduationCap className="w-5 h-5 text-clinical-text-secondary" />
-            <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
+            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
+              <Calendar className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            </div>
+            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
               Academic Goals
             </h2>
           </div>
@@ -311,16 +317,21 @@ export default function SettingsPage() {
         </div>
 
         {/* Account Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-4 sm:mb-6 mt-6 sm:mt-8`}>
-          <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary mb-4`}>
-            Account
-          </h2>
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
+            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
+              <Mail className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            </div>
+            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
+              Account
+            </h2>
+          </div>
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-clinical-text-secondary" />
+            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <Mail className="w-5 h-5 text-slate-500 flex-shrink-0" />
               <div>
-                <p className={`${tokens.smallText} text-clinical-text-secondary`}>Email</p>
-                <p className={`${tokens.smallText} font-medium text-clinical-text-primary`}>
+                <p className={`${tokens.smallText} text-slate-500 mb-0.5`}>Email</p>
+                <p className={`${tokens.smallText} font-medium text-slate-900`}>
                   {user?.email || 'Not available'}
                 </p>
               </div>
@@ -336,10 +347,12 @@ export default function SettingsPage() {
         </div>
 
         {/* Subscription Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-4 sm:mb-6`}>
-          <div className="flex items-center gap-3 mb-4">
-            <CreditCard className="w-5 h-5 text-clinical-text-secondary" />
-            <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary`}>
+        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
+            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
+              <CreditCard className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            </div>
+            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
               Subscription
             </h2>
           </div>
@@ -470,9 +483,14 @@ export default function SettingsPage() {
 
         {/* Support Section - Enhanced */}
         <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'}`}>
-          <h2 className={`${tokens.subheading} font-semibold text-clinical-text-primary mb-4`}>
-            Support
-          </h2>
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
+            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
+              <Mail className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            </div>
+            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
+              Support
+            </h2>
+          </div>
           <p className={`${tokens.smallText} text-clinical-text-secondary`}>
             Need help? Email{' '}
             <a
