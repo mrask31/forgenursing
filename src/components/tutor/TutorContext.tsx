@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { StudentClass, NotebookTopic } from '@/lib/types'
 import { listClasses } from '@/lib/api/classes'
 import { listNotebookTopics } from '@/lib/api/notebook'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 
 interface TutorContextState {
   selectedClassId?: string
@@ -15,7 +15,7 @@ interface TutorContextState {
   selectedTopic?: NotebookTopic | null
   selectedTopicTitle?: string
   selectedTopicFileIds?: string[]
-  mode: 'tutor' | 'reflections'
+  mode: 'tutor'
   classes: StudentClass[]
   loading: boolean
   setSelectedClassId: (id: string | undefined) => void
@@ -45,14 +45,11 @@ export function TutorProvider({ children }: { children: ReactNode }) {
   const [selectedTopicFileIds, setSelectedTopicFileIds] = useState<string[] | undefined>(undefined)
   const [classes, setClasses] = useState<StudentClass[]>([])
   const [loading, setLoading] = useState(true)
-  const mode = (searchParams.get('mode') || 'tutor') as 'tutor' | 'reflections'
+  const mode = 'tutor' // Always tutor mode now
 
   // Get user ID
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+  const supabase = getBrowserClient()
 
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {

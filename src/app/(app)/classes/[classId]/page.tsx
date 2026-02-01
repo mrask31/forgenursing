@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import NotebookSidebar from '@/components/notebook/NotebookSidebar'
 import NotebookTopicView from '@/components/notebook/NotebookTopicView'
 import { NotebookTopic, StudentClass } from '@/lib/types'
@@ -16,10 +16,7 @@ export default function NotebookPage() {
   const [classData, setClassData] = useState<StudentClass | null>(null)
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+  const supabase = getBrowserClient()
 
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {

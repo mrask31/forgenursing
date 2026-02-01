@@ -10,9 +10,9 @@ import ChatMessageList, { type ChatMessage } from '@/components/tutor/ChatMessag
 import { useTutorContext } from '@/components/tutor/TutorContext'
 import { listNotebookTopics } from '@/lib/api/notebook'
 import { NotebookTopic } from '@/lib/types'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 
-type Mode = 'tutor' | 'reflections'
+type Mode = 'tutor'
 
 interface TutorSessionProps {
   sessionId?: string // Optional - will be created on first message if missing
@@ -146,10 +146,7 @@ export default function TutorSession({
       lastLoadedClassIdRef.current = tutorContext.selectedClassId
 
       try {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
+  const supabase = getBrowserClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           const topics = await listNotebookTopics(user.id, tutorContext.selectedClassId)
@@ -328,7 +325,7 @@ export default function TutorSession({
       }
 
       // Step B: Create a new session
-      const intent = mode === 'reflections' ? 'new_reflection' : 'new_question'
+      const intent = 'new_question' // Always new_question now
       
       const payload: any = { intent }
       
@@ -395,8 +392,8 @@ export default function TutorSession({
     // Create session if it doesn't exist
     if (!effectiveSessionId) {
       try {
-        // Determine intent based on mode
-        const intent = mode === 'reflections' ? 'new_reflection' : 'new_question'
+        // Determine intent
+        const intent = 'new_question' // Always new_question now
         
         // Build payload with context
         const payload: any = { intent }
@@ -644,7 +641,7 @@ export default function TutorSession({
             strictMode={strictMode} 
             chatId={sessionId} 
             filterMode="mixed"
-            mode={mode === 'reflections' ? 'tutor' : mode}
+            mode="tutor"
             attachedFiles={attachedFiles}
             selectedMessageId={selectedMessageId}
             onSelectMessage={setSelectedMessageId}

@@ -5,7 +5,7 @@ import { DensityProvider } from '@/contexts/DensityContext'
 import Sidebar from '@/components/layout/Sidebar'
 import MobileNav from '@/components/layout/MobileNav'
 import { Menu } from 'lucide-react'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 
 interface AppShellProps {
   children: ReactNode
@@ -22,10 +22,7 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
     
     const loadProfile = async () => {
       try {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
+  const supabase = getBrowserClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 

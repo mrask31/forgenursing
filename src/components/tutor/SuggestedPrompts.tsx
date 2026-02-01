@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
-import { GENERAL_TUTOR_PROMPTS, CLASS_TUTOR_PROMPTS, TUTOR_PROMPTS, REFLECTION_PROMPTS, NOTES_PROMPTS } from '@/lib/constants'
+import { GENERAL_TUTOR_PROMPTS, CLASS_TUTOR_PROMPTS, TUTOR_PROMPTS, NOTES_PROMPTS } from '@/lib/constants'
 
-type Mode = 'tutor' | 'reflections' | 'notes'
+type Mode = 'tutor'
 
 const SYLLABUS_PROMPTS = [
   "What's due this week based on this syllabus?",
@@ -156,12 +156,8 @@ export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCo
     }
   } else {
     // No files attached and no existing conversation
-    if (mode === 'reflections') {
-      prompts = REFLECTION_PROMPTS
-    } else {
-      // Use General Tutor prompts if no class selected, Class prompts if class is selected
-      prompts = selectedClassId ? CLASS_TUTOR_PROMPTS : GENERAL_TUTOR_PROMPTS
-    }
+    // Use General Tutor prompts if no class selected, Class prompts if class is selected
+    prompts = selectedClassId ? CLASS_TUTOR_PROMPTS : GENERAL_TUTOR_PROMPTS
   }
   
   // Log which prompt set is being used
@@ -170,12 +166,10 @@ export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCo
     const isTextbook = hasAttachedFiles && attachedContext === 'textbook'
     const isMixed = hasAttachedFiles && attachedContext === 'mixed'
     const isDefaultFile = hasAttachedFiles && !isSyllabus && !isTextbook
-    const isReflection = !hasAttachedFiles && mode === 'reflections'
     
     const promptType = isSyllabus ? 'SYLLABUS'
       : isTextbook ? 'TEXTBOOK'
       : isMixed || isDefaultFile ? 'DEFAULT_FILE'
-      : isReflection ? 'REFLECTION'
       : 'TUTOR'
     
     console.log('[SuggestedPrompts] Selected prompt set:', {

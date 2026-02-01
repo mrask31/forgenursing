@@ -6,7 +6,7 @@ import SuggestedPrompts from '@/components/tutor/SuggestedPrompts'
 import { useTutorContext } from './TutorContext'
 import MedicalMathCalculator from './MedicalMathCalculator'
 
-type Mode = 'tutor' | 'reflections'
+type Mode = 'tutor'
 
 interface ChatInterfaceProps {
   mode: Mode
@@ -50,9 +50,6 @@ export default function ChatInterface({
 
   // Get placeholder based on context
   const getPlaceholder = () => {
-    if (mode === 'reflections') {
-      return "What would you like to reflect on today?"
-    }
     return "Ask a clinical question or reference your binder materials…"
   }
 
@@ -106,9 +103,7 @@ export default function ChatInterface({
     if (attachedFiles.length > 0) {
       return "Ask a question about your files..."
     }
-    return mode === 'reflections' 
-      ? "What would you like to reflect on today?"
-      : "Ask a clinical question..."
+    return "Ask a clinical question..."
   }
 
   return (

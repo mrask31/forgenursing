@@ -26,7 +26,6 @@ function TutorPageContent() {
   // State hooks
   const [strictMode, setStrictMode] = useState(false)
   const [resolvedChatId, setResolvedChatId] = useState<string | null>(null)
-  const [currentMode, setCurrentMode] = useState<'tutor' | 'reflections'>('tutor')
   const [sessionType, setSessionType] = useState<string | null>(null)
   const [isResolving, setIsResolving] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -45,10 +44,9 @@ function TutorPageContent() {
   // URL params
   const intentParam = searchParams.get('intent')
   const sessionIdParam = searchParams.get('sessionId') || searchParams.get('chatId') || searchParams.get('id')
-  const modeParam = searchParams.get('mode') || 'tutor'
   const classIdParam = searchParams.get('classId') // Get classId from URL
   const messageIdParam = searchParams.get('messageId') // Get messageId from URL for scrolling
-  const currentModeFromUrl = modeParam === 'reflections' ? 'reflections' : 'tutor'
+  const currentMode = 'tutor' // Always tutor mode now
   
   // Note: classId sync is handled by TutorContext itself (see TutorContext.tsx useEffect)
   // No need to sync here - it would create infinite loops
@@ -73,8 +71,7 @@ function TutorPageContent() {
   }, [])
   
   const handleNewSession = useCallback(async () => {
-    // Determine intent based on mode
-    const intent = currentModeFromUrl === 'reflections' ? 'new_reflection' : 'new_question'
+    const intent = 'new_question' // Always new_question now
 
     try {
       const resolveResponse = await fetch('/api/chats/resolve', {
@@ -98,18 +95,17 @@ function TutorPageContent() {
       }
 
       // Navigate to the new session
-      router.push(`/tutor?mode=${currentModeFromUrl}&sessionId=${chatId}`)
+      router.push(`/tutor?sessionId=${chatId}`)
     } catch (error) {
       console.error('[TutorPage] Failed to create new session:', error)
       setError('Failed to create session. Please try again.')
     }
-  }, [currentModeFromUrl, router])
+  }, [router])
   
   const handleInstantStart = useCallback(async (message: string) => {
     if (!message.trim()) return
 
-    // Determine intent based on mode
-    const intent = currentModeFromUrl === 'reflections' ? 'new_reflection' : 'new_question'
+    const intent = 'new_question' // Always new_question now
 
     try {
       // Step 1: Create the session
@@ -119,8 +115,8 @@ function TutorPageContent() {
         credentials: 'include',
         body: JSON.stringify({ 
           intent,
-          // Include attachedFileIds if any are selected (for Tutor mode)
-          ...(currentModeFromUrl === 'tutor' && attachedFiles.length > 0 && { attachedFileIds: attachedFiles.map(f => f.id) }),
+          // Include attachedFileIds if any are selected
+          ...(attachedFiles.length > 0 && { attachedFileIds: attachedFiles.map(f => f.id) }),
           // Include classId and topicId if present (for Notebook context)
           ...(tutorContext.selectedClassId && { classId: tutorContext.selectedClassId }),
           ...(tutorContext.selectedTopicId && { topicId: tutorContext.selectedTopicId }),
@@ -154,14 +150,14 @@ function TutorPageContent() {
       }
       
       const newUrl = tutorContext.selectedClassId
-        ? `/tutor?mode=${currentModeFromUrl}&sessionId=${chatId}&classId=${tutorContext.selectedClassId}`
-        : `/tutor?mode=${currentModeFromUrl}&sessionId=${chatId}`
+        ? `/tutor?sessionId=${chatId}&classId=${tutorContext.selectedClassId}`
+        : `/tutor?sessionId=${chatId}`
       router.push(newUrl)
     } catch (error) {
       console.error('[TutorPage] Failed to start session:', error)
       setError('Failed to start session. Please try again.')
     }
-  }, [currentModeFromUrl, attachedFiles, tutorContext.selectedClassId, tutorContext.selectedTopicId, router])
+  }, [attachedFiles, tutorContext.selectedClassId, tutorContext.selectedTopicId, router])
 
   // Unified send handler for both landing and session states
   const handleSendMessage = useCallback(async (message: string) => {
@@ -206,9 +202,6 @@ function TutorPageContent() {
   
   // Helper functions
   const getSubtitle = () => {
-    if (currentModeFromUrl === 'reflections') {
-      return "Process your clinical experiences, stress, and growth in a private reflection space."
-    }
     return "Study NCLEX and class topics with step-by-step explanations and practice questions."
   }
 
@@ -387,7 +380,6 @@ function TutorPageContent() {
         
         console.log('[Tutor] Using explicit sessionId:', sessionIdParam)
         setResolvedChatId(sessionIdParam)
-        setCurrentMode(currentModeFromUrl)
         
         // Load attached files from chat metadata (non-blocking)
         // Only load if we're not currently in the middle of a user-initiated attachment
@@ -548,7 +540,7 @@ function TutorPageContent() {
           // Redirect to sessionId-based URL for clean state (preserve mode)
           console.log('[Tutor] Resolved to chatId:', chatId, 'Redirecting...')
           isResolvingRef.current = false // Reset before redirect
-          router.replace(`/tutor?mode=${currentModeFromUrl}&sessionId=${chatId}`)
+          router.replace(`/tutor?sessionId=${chatId}`)
           // The redirect will trigger this effect again with sessionId, but the guard will prevent re-resolution
           return
         } catch (error) {
@@ -574,7 +566,7 @@ function TutorPageContent() {
       }
       
       try {
-        console.log('[Tutor] No session specified, attempting auto-resume for mode:', currentModeFromUrl, 'classId:', tutorContext.selectedClassId || 'General Tutor')
+        console.log('[Tutor] No session specified, attempting auto-resume for classId:', tutorContext.selectedClassId || 'General Tutor')
         
         // Build API URL - for General Tutor, explicitly request null classId
         // For class-specific, filter by classId
@@ -591,19 +583,13 @@ function TutorPageContent() {
           const data = await response.json()
           const chats = data.chats || []
           
-          // Filter chats by current mode
-          let filteredChats = chats
-          if (currentModeFromUrl === 'reflections') {
-            filteredChats = chats.filter((chat: any) => chat.session_type === 'reflection')
-          } else {
-            // Tutor mode: general, question, snapshot (or null/undefined)
-            filteredChats = chats.filter((chat: any) => 
-              !chat.session_type || 
-              chat.session_type === 'general' || 
-              chat.session_type === 'question' || 
-              chat.session_type === 'snapshot'
-            )
-          }
+          // Filter chats - only tutor mode chats (not reflections)
+          const filteredChats = chats.filter((chat: any) => 
+            !chat.session_type || 
+            chat.session_type === 'general' || 
+            chat.session_type === 'question' || 
+            chat.session_type === 'snapshot'
+          )
           
           // Filter chats by class context
           if (tutorContext.selectedClassId) {
@@ -634,8 +620,8 @@ function TutorPageContent() {
             lastResolvedParamsRef.current = `${intentParam || ''}-${mostRecent.id}-${modeParam || ''}-${tutorContext.selectedClassId || ''}`
             isResolvingRef.current = false // Reset before redirect
             const newUrl = tutorContext.selectedClassId
-              ? `/tutor?mode=${currentModeFromUrl}&sessionId=${mostRecent.id}&classId=${tutorContext.selectedClassId}`
-              : `/tutor?mode=${currentModeFromUrl}&sessionId=${mostRecent.id}`
+              ? `/tutor?sessionId=${mostRecent.id}&classId=${tutorContext.selectedClassId}`
+              : `/tutor?sessionId=${mostRecent.id}`
             router.replace(newUrl)
             return // Will trigger effect again with sessionId, but the guard will prevent re-resolution
           } else {
@@ -648,8 +634,8 @@ function TutorPageContent() {
           }
         }
         
-        // No active sessions found for this mode, show empty state
-        console.log('[Tutor] No active sessions found for mode:', currentModeFromUrl, 'showing empty state')
+        // No active sessions found, show empty state
+        console.log('[Tutor] No active sessions found, showing empty state')
         setResolvedChatId(null)
         setSessionType(null)
         setError(null)
@@ -749,7 +735,7 @@ function TutorPageContent() {
         {/* Header - Fixed */}
         <div className="flex-shrink-0 bg-slate-50 pt-safe-t pb-2 z-40">
           <TutorHeader
-            mode={currentModeFromUrl}
+            mode="tutor"
             strictMode={strictMode}
             onStrictModeChange={setStrictMode}
             selectedClass={tutorContext.selectedClass}
@@ -769,7 +755,7 @@ function TutorPageContent() {
               params.delete('chatId')
               params.delete('id')
               // Add intent to signal we want a NEW chat, not auto-resume
-              params.set('intent', currentModeFromUrl === 'reflections' ? 'new_reflection' : 'new_question')
+              params.set('intent', 'new_question')
               router.replace(`/tutor?${params.toString()}`)
             }}
           />
@@ -781,7 +767,7 @@ function TutorPageContent() {
             <>
               <div className="flex-1 overflow-y-auto">
                 <TutorLanding
-                  mode={currentModeFromUrl}
+                  mode="tutor"
                   onStartSession={handleInstantStart}
                   attachedFiles={attachedFiles}
                   attachedContext={attachedContext}
@@ -792,7 +778,7 @@ function TutorPageContent() {
               {/* Chat input docked at bottom for landing page */}
               <div className="flex-shrink-0 pt-4 sm:pt-6 bg-slate-50">
                 <ChatInterface
-                  mode={currentModeFromUrl}
+                  mode="tutor"
                   sessionId={undefined}
                   onSend={handleInstantStart}
                   attachedFiles={attachedFiles}
@@ -809,7 +795,7 @@ function TutorPageContent() {
           ) : showSession ? (
             <TutorSession
               sessionId={resolvedChatId || undefined}
-              mode={currentModeFromUrl}
+              mode="tutor"
               strictMode={strictMode}
               onStrictModeChange={setStrictMode}
               onSessionCreated={handleSessionCreated}

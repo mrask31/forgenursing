@@ -221,16 +221,10 @@ export default function SignupPage() {
       console.log('[Signup] Session check complete', { hasSession: !!sessionData?.session })
 
       if (sessionData?.session) {
-        console.log('[Signup] Session found, redirecting to checkout')
-        // User has immediate session, redirect to checkout
+        console.log('[Signup] Session found, redirecting to onboarding')
+        // User has immediate session, redirect to onboarding
         setLoading(false)
-        
-        // Add plan to URL if available
-        if (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) {
-          router.push(`/checkout?plan=${plan}`)
-        } else {
-          router.push('/checkout')
-        }
+        router.push('/onboarding')
         return
       }
 
@@ -252,15 +246,9 @@ export default function SignupPage() {
         return
       }
 
-      console.log('[Signup] Sign in successful, redirecting to checkout')
+      console.log('[Signup] Sign in successful, redirecting to onboarding')
       setLoading(false)
-      
-      // Add plan to URL if available
-      if (plan && (plan === 'monthly' || plan === 'semester' || plan === 'annual')) {
-        router.push(`/checkout?plan=${plan}`)
-      } else {
-        router.push('/checkout')
-      }
+      router.push('/onboarding')
 
     } catch (error: any) {
       console.error('[Signup] Unexpected error:', error)

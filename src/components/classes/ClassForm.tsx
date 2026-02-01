@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import { StudentClass, ClassType } from '@/lib/types'
 import { createClass, updateClass } from '@/lib/api/classes'
 import { Button } from '@/components/ui/button'
@@ -39,10 +39,7 @@ export default function ClassForm({ classItem, onSuccess, onCancel }: ClassFormP
   })
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+  const supabase = getBrowserClient()
 
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {

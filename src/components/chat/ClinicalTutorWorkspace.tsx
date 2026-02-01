@@ -1,20 +1,19 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { Send, Stethoscope, User, Brain, FileText, Pill, Paperclip, FileIcon, ClipboardCheck, Bookmark, Map, Star, AlertCircle } from 'lucide-react'
+import { Send, Stethoscope, User, Brain, FileText, Pill, Paperclip, FileIcon, ClipboardCheck, Bookmark, Star, AlertCircle } from 'lucide-react'
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import MessageWithMedicalTerms from '../tutor/MessageWithMedicalTerms'
 import { useDensity } from '@/contexts/DensityContext'
 import { getDensityTokens } from '@/lib/density-tokens'
 import SaveClipModal from '@/components/clips/SaveClipModal'
-import ForgeMapPanel from '@/components/forgemap/ForgeMapPanel'
 import ArchivedChatBanner from '@/components/chat/ArchivedChatBanner'
 import SuggestedPrompts from '@/components/tutor/SuggestedPrompts'
 import ChatMessageList, { type ChatMessage } from '@/components/tutor/ChatMessageList'
 import { useTutorContext } from '@/components/tutor/TutorContext'
 import { setTopicSummaryAndStudiedAt } from '@/lib/api/notebook'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import FollowUpPrompts from '@/components/tutor/FollowUpPrompts'
 
 // Helper to validate UUID format
@@ -59,7 +58,7 @@ interface ClinicalTutorWorkspaceProps {
   chatId?: string
   filterMode?: 'notes' | 'reference' | 'mixed'
   selectedDocIds?: string[]
-  mode?: 'tutor' | 'notes' | 'reflections'
+  mode?: 'tutor' | 'notes'
   onSendMessage?: (message: string) => Promise<void>
   attachedFiles?: { id: string, name: string, document_type: string | null }[]
   selectedMessageId?: string | null
@@ -115,7 +114,6 @@ export default function ClinicalTutorWorkspace({
   const [chatStatus, setChatStatus] = useState<'active' | 'archived'>('active')
   const [chatSummary, setChatSummary] = useState<string | null>(null)
   const [saveClipModal, setSaveClipModal] = useState<{ isOpen: boolean; messageId: string; content: string }>({ isOpen: false, messageId: '', content: '' })
-  const [forgeMapPanel, setForgeMapPanel] = useState<{ isOpen: boolean; messageContent: string }>({ isOpen: false, messageContent: '' })
   const { density } = useDensity()
   const tokens = getDensityTokens(density)
 
@@ -718,9 +716,6 @@ export default function ClinicalTutorWorkspace({
             onSaveClip={(messageId, content) => {
               setSaveClipModal({ isOpen: true, messageId, content })
             }}
-            onShowMap={(messageId, content) => {
-              setForgeMapPanel({ isOpen: true, messageContent: content })
-            }}
             onSendMessage={async (message) => {
               await handleSendMessage(message, chatId || undefined)
             }}
@@ -788,14 +783,6 @@ export default function ClinicalTutorWorkspace({
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => setForgeMapPanel({ isOpen: true, messageContent: m.content })}
-                        className="flex items-center gap-1 px-2 py-1 text-xs text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200"
-                        title="Show Concept Map"
-                      >
-                        <Map className="w-3 h-3" />
-                        <span>Map</span>
-                      </button>
-                      <button
                         onClick={async () => {
                           // Generate deterministic message_id using Web Crypto API
                           const encoder = new TextEncoder()
@@ -834,10 +821,7 @@ export default function ClinicalTutorWorkspace({
                             setSavingToNotebook(m.id)
                             try {
                               // Get user ID
-                              const supabase = createBrowserClient(
-                                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-                              )
+  const supabase = getBrowserClient()
                               const { data: { user } } = await supabase.auth.getUser()
                               if (!user) {
                                 console.error('[ClinicalTutorWorkspace] User not authenticated')
@@ -986,21 +970,6 @@ export default function ClinicalTutorWorkspace({
           setSaveClipModal({ isOpen: false, messageId: '', content: '' })
         }}
         defaultTitle={saveClipModal.content.substring(0, 50) + (saveClipModal.content.length > 50 ? '...' : '')}
-      />
-
-      {/* ForgeMap Panel */}
-      <ForgeMapPanel
-        isOpen={forgeMapPanel.isOpen}
-        onClose={() => setForgeMapPanel({ isOpen: false, messageContent: '' })}
-        messageContent={forgeMapPanel.messageContent}
-        chatId={chatId}
-        mode={filterMode}
-        selectedDocIds={
-          // In tutor mode, use attachedFiles IDs; otherwise use selectedDocIds prop
-          mode === 'tutor' && attachedFiles.length > 0
-            ? attachedFiles.map(f => f.id).filter(id => id)
-            : selectedDocIds
-        }
       />
 
       {/* NO INPUT HERE - ChatInterface in TutorSession handles input */}

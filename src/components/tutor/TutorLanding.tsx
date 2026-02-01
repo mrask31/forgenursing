@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import SuggestedPrompts from '@/components/tutor/SuggestedPrompts'
 
-type Mode = 'tutor' | 'reflections'
+type Mode = 'tutor'
 
 interface TutorLandingProps {
   mode: Mode
@@ -39,9 +39,6 @@ export default function TutorLanding({
   }
 
   const getMainHeading = () => {
-    if (mode === 'reflections') {
-      return `${getGreeting()} What would you like to reflect on today?`
-    }
     if (isGeneralTutor) {
       return `${getGreeting()} I'm your General Tutor — ready to help you learn!`
     }
@@ -50,7 +47,7 @@ export default function TutorLanding({
 
   // Fetch last chat and generate welcome message for class-specific landing
   useEffect(() => {
-    if (mode === 'reflections' || isGeneralTutor || !selectedClassId) {
+    if (isGeneralTutor || !selectedClassId) {
       setWelcomeMessage(null)
       return
     }
@@ -153,9 +150,6 @@ export default function TutorLanding({
   }, [selectedClassId, mode, isGeneralTutor, selectedClass])
 
   const getSubtext = () => {
-    if (mode === 'reflections') {
-      return "You can talk about your feelings, stressful days, or meaningful patient experiences."
-    }
     if (isGeneralTutor) {
       return "I can help you with nursing concepts, NCLEX-style questions, clinical scenarios, and study strategies. Ask me anything!"
     }
@@ -163,7 +157,7 @@ export default function TutorLanding({
   }
 
   const getHelperText = () => {
-    if (mode === 'reflections' || !isGeneralTutor) {
+    if (!isGeneralTutor) {
       return null
     }
     return (

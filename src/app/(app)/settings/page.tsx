@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Mail, LogOut, CreditCard, Layout, GraduationCap, Calendar, XCircle, CheckCircle } from 'lucide-react'
 import { useDensity } from '@/contexts/DensityContext'
@@ -33,10 +33,7 @@ export default function SettingsPage() {
   const tokens = getDensityTokens(density)
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+  const supabase = getBrowserClient()
     
     const loadProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser()

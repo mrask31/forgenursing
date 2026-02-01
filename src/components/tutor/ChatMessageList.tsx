@@ -1,9 +1,9 @@
 'use client'
 
 import ReactMarkdown from 'react-markdown'
-import { FileIcon, ClipboardCheck, Map, Bookmark, Star, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { FileIcon, ClipboardCheck, Bookmark, Star, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useTutorContext } from './TutorContext'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import { setTopicSummaryAndStudiedAt } from '@/lib/api/notebook'
 import clsx from 'clsx'
 import type { TutorEvidenceItem } from './TutorEvidencePanel'
@@ -28,7 +28,6 @@ interface ChatMessageListProps {
   onSaveToNotebook?: (messageId: string) => void
   savingToNotebook?: string | null
   onSaveClip?: (messageId: string, content: string) => void // New prop for saving clips
-  onShowMap?: (messageId: string, content: string) => void // New prop for showing concept map
   onSendMessage?: (message: string) => void // Callback to send a follow-up prompt
 }
 
@@ -56,13 +55,11 @@ export default function ChatMessageList({
   onSaveToNotebook,
   savingToNotebook,
   onSaveClip,
-  onShowMap,
   onSendMessage,
 }: ChatMessageListProps) {
   const tutorContext = useTutorContext()
   const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
   const [savedClipId, setSavedClipId] = useState<string | null>(null)
-  const [showMapId, setShowMapId] = useState<string | null>(null)
 
   // Track which messages are flagged (per message, not per chat)
   const [flaggedMessages, setFlaggedMessages] = useState<Set<string>>(new Set())
@@ -133,10 +130,7 @@ export default function ChatMessageList({
     }
     
     try {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+  const supabase = getBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         console.error('[ChatMessageList] User not authenticated')
@@ -224,28 +218,6 @@ export default function ChatMessageList({
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        if (onShowMap) {
-                          onShowMap(m.id, m.content)
-                          setShowMapId(m.id)
-                          setTimeout(() => setShowMapId(null), 2000)
-                        }
-                      }}
-                      className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all duration-200 ${
-                        showMapId === m.id
-                          ? 'text-indigo-600 bg-indigo-100'
-                          : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'
-                      }`}
-                      title="Visualize key concepts as a concept map"
-                    >
-                      {showMapId === m.id ? (
-                        <CheckCircle2 className="w-3 h-3" />
-                      ) : (
-                        <Map className="w-3 h-3" />
-                      )}
-                      <span>{showMapId === m.id ? 'Opened' : 'Map'}</span>
-                    </button>
                     <button
                       onClick={() => {
                         if (onSaveClip) {

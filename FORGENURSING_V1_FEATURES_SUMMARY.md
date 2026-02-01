@@ -1,168 +1,371 @@
-# ForgeNursing V1 Premium Features - Implementation Summary
+# ForgeNursing V1 - Complete Feature Summary
 
 ## Overview
-Three interconnected premium features have been implemented to complete ForgeNursing as a Clinical Learning System:
-1. **ForgeClips™** - Saved Learning Moments
-2. **ForgeMap™** - Clinical Concept Maps (V1 text-based)
-3. **Smart Chat Lifecycle** - Graceful Decay with Auto-Archiving
+ForgeNursing is an AI-powered NCLEX prep platform for nursing students. It uses students' own textbooks, syllabi, and notes to teach clinical reasoning and prioritization through an interactive tutor interface.
+
+**Stack**: Next.js 14 (App Router), Supabase (Auth + PostgreSQL), Stripe (subscriptions), OpenAI (AI tutor), Vercel (hosting)
 
 ---
 
-## Feature 1: ForgeClips™ (Saved Learning Moments)
+## Core Features
 
-### Database
-- **Table**: `clips`
-- **Columns**: `id`, `user_id`, `chat_id`, `message_id`, `title`, `content`, `folder`, `tags`, `source_document_ids`, `source_citations`, `created_at`, `updated_at`
-- **RLS**: Full RLS policies for SELECT, INSERT, UPDATE, DELETE (user-scoped)
+### 1. AI Clinical Tutor (Primary Feature)
+**Location**: `/tutor`
 
-### API Routes
-- **POST `/api/clips/save`**: Save a clip from a message
-- **GET `/api/clips/list`**: List user's clips (with folder/tag filtering)
+**What it does**:
+- Interactive AI tutor that teaches NCLEX-style clinical reasoning
+- Uses student's uploaded materials (textbooks, syllabi, notes) as context
+- Teaches step-by-step problem-solving using nursing frameworks (ABCs, Maslow, Safety)
+- Provides visual "maps" (flowcharts, decision trees, priority ladders) for each concept
+- Supports both general tutoring and class-specific study sessions
 
-### UI Components
-- **`SaveClipModal`**: Modal for saving clips with title, folder, and tags
-- **Library Page** (`/library`): Filterable grid of saved clips with search, folder, and tag filters
-- **Integration**: "Save" button on each assistant message in Tutor
+**Key capabilities**:
+- **Context-aware**: References student's uploaded files in responses
+- **Framework-driven**: Explicitly uses ABCs, Maslow, Safety/Risk frameworks
+- **Visual learning**: Every response includes "THE MAP" - a visual structure (flow, decision tree, priority ladder)
+- **Socratic method**: Asks check-for-understanding questions after explanations
+- **Strict Mode**: Exam simulation mode that requires students to commit to answers before revealing reasoning
+- **Flagging system**: Students can flag Q&A pairs for later review
+- **Auto-resume**: Automatically resumes most recent session when returning
 
-### Features
-- Save any assistant message as a learning moment
-- Organize by folders (General, Cardiovascular, Respiratory, etc.)
-- Tag system for flexible categorization
-- "Review" button links to Tutor with clip content pre-filled
+**Two modes**:
+1. **Tutor Mode** (default): Study NCLEX topics, work through cases, review concepts
+2. **Reflections Mode**: Private space for processing clinical experiences and stress
 
----
-
-## Feature 2: ForgeMap™ (Clinical Concept Maps V1)
-
-### Database
-- **Table**: `maps`
-- **Columns**: `id`, `user_id`, `chat_id`, `message_id`, `map_markdown`, `mode`, `selected_doc_ids`, `created_at`, `updated_at`
-- **RLS**: Full RLS policies for SELECT, INSERT, UPDATE, DELETE (user-scoped)
-- **Unique Constraint**: One map per message per user (`user_id`, `message_id`)
-
-### API Routes
-- **POST `/api/forgemap/generate`**: Generate concept map from message content
-  - Respects Notes Mode: filters by `selectedDocIds` when `mode=notes`
-  - Caches maps (one per message)
-  - Uses AI to generate structured markdown with clinical headers
-
-### UI Components
-- **`ForgeMapPanel`**: Side panel (desktop) / bottom sheet (mobile) for displaying concept maps
-- **Integration**: "Map" button on each assistant message in Tutor
-
-### Map Format (V1 - Text-Based)
-Uses Markdown headers:
-- `### 🔗 Cause → Effect`
-- `### ⚠️ Risks / Complications`
-- `### 🧭 Priorities (ABCs)`
-- `### 🩺 Interventions`
-- `### 📈 Monitoring`
-- `### ✅ Why This Matters`
-
-Styled with Clinical Slate accents (subtle tints, slate borders).
+**Session types**:
+- General tutor sessions (no specific context)
+- Class-specific sessions (tied to a specific class)
+- Topic-specific sessions (tied to a notebook topic)
+- Exam mode sessions (practice questions)
 
 ---
 
-## Feature 3: Smart Chat Lifecycle (Graceful Decay)
+### 2. My Classes & Materials (Binder)
+**Location**: `/classes` (formerly `/binder`)
 
-### Database Changes
-- **Added to `chats` table**:
-  - `status` (TEXT): 'active' | 'archived' (default: 'active')
-  - `last_active_at` (TIMESTAMPTZ): Auto-updated on message insert/update
-  - `archived_at` (TIMESTAMPTZ): Set when archived
-  - `summary` (TEXT): AI-generated summary (nullable)
+**What it does**:
+- Organize classes and upload study materials
+- Each class can have multiple files (textbooks, syllabi, case studies, notes)
+- Materials are used as context by the AI tutor
 
-### Triggers & Functions
-- **`update_chat_last_active()`**: Function to update `last_active_at` on message changes
-- **Trigger**: Auto-updates `last_active_at` when messages are inserted/updated
+**File types supported**:
+- Textbooks (primary reference materials)
+- Syllabi (course outlines, schedules)
+- Reference materials (supplementary content)
+- Case studies
+- Notes
 
-### API Routes
-- **POST `/api/chats/auto-archive`**: Auto-archive chats older than 21 days (latency-safe, no LLM)
-- **POST `/api/chats/archive`**: Archive a specific chat and generate summary if missing
+**Features**:
+- Create/edit/delete classes
+- Upload files to each class (PDF, DOCX, TXT)
+- View all materials organized by class
+- Quick access to start studying with specific materials
+- Material counts and organization
 
-### UI Components
-- **`ArchivedChatBanner`**: Banner shown when viewing archived chats
-- **Integration**: Auto-archive check runs on Clinical Desk page load
-
-### Behavior
-1. **Auto-Archive**: Chats inactive for 21+ days are automatically archived (fast DB update)
-2. **Summary Generation**: When user opens an archived chat, if summary is NULL, AI generates a 5-bullet summary
-3. **Archived View**: Archived chats show banner and summary; read-only (no new messages saved)
-
----
-
-## Notes Mode Integration
-
-All three features respect Notes Mode:
-- **ForgeClips**: Stores `source_document_ids` from selected notes
-- **ForgeMap**: Filters RAG retrieval to only selected notes when `mode=notes`
-- **Chat Lifecycle**: Works independently of mode (archives based on activity, not content type)
+**Technical details**:
+- Files stored in Supabase Storage
+- Vector embeddings created for semantic search
+- RLS policies ensure users only see their own files
 
 ---
 
-## Files Created/Modified
+### 3. Clinical Dashboard (Readiness)
+**Location**: `/readiness`
 
-### Database
-- `supabase_forgenursing_v1_features.sql` - Complete migration with RLS policies
+**What it does**:
+- Central hub showing study progress and saved content
+- Displays "study vitals" (metrics like streak, active days, concepts studied)
+- Shows flagged Q&A pairs that need review
+- Library of saved "learning moments" (clips)
+- Study activity breakdown by class
 
-### API Routes
-- `src/app/api/clips/save/route.ts` - Save clip
-- `src/app/api/clips/list/route.ts` - List clips
-- `src/app/api/forgemap/generate/route.ts` - Generate concept map
-- `src/app/api/chats/archive/route.ts` - Archive chat + generate summary
-- `src/app/api/chats/auto-archive/route.ts` - Auto-archive old chats
-- `src/app/api/history/route.ts` - Updated to return chat status and summary
+**Study Vitals**:
+- **Streak**: Consecutive days with study activity
+- **This Week**: Active days in last 7 days
+- **Concepts**: Unique topics explored
+- **Saved**: Total learning moments saved
 
-### UI Components
-- `src/components/clips/SaveClipModal.tsx` - Clip save modal
-- `src/components/forgemap/ForgeMapPanel.tsx` - Concept map panel/sheet
-- `src/components/chat/ArchivedChatBanner.tsx` - Archived chat banner
-- `src/app/(app)/library/page.tsx` - Library page for clips
+**Flagged for Review**:
+- Shows all Q&A pairs flagged during tutor sessions
+- Click to jump directly to that conversation
+- Helps students focus on weak areas
 
-### Integration Points
-- `src/components/chat/ClinicalTutorWorkspace.tsx` - Added Save/Map buttons, archived banner
-- `src/components/layout/Sidebar.tsx` - Added Library navigation
-- `src/app/(app)/clinical-desk/page.tsx` - Auto-archive check on load
+**Learning Library**:
+- All saved clips (learning moments)
+- Search and filter by folder, tag, or keyword
+- Click to review in context or start new session
+- Delete clips when no longer needed
 
----
-
-## Success Criteria Met
-
-✅ **ForgeClips™**
-- Save any assistant message as a learning moment
-- Organize by folders and tags
-- Library page with filtering
-- Review clips in Tutor
-
-✅ **ForgeMap™**
-- Generate concept maps from messages
-- Respect Notes Mode scoping
-- Cache maps (one per message)
-- Responsive UI (side panel / bottom sheet)
-
-✅ **Smart Chat Lifecycle**
-- Auto-archive inactive chats (21 days)
-- Generate summaries on-demand
-- Archived banner with summary
-- Latency-safe (no blocking LLM calls)
-
-✅ **Notes Mode Integration**
-- All features respect selected document scoping
-- ForgeMap filters RAG to selected notes only
-
-✅ **Security & Performance**
-- Full RLS on all new tables
-- User-scoped queries
-- Efficient caching
-- Graceful degradation
+**Study Activity by Class**:
+- Shows session count per class
+- Helps identify which classes need more attention
 
 ---
 
-## Next Steps (Future Enhancements)
+### 4. Medical Dictionary
+**Location**: `/dictionary`
 
-- **ForgeMap V2**: Visual graph rendering (Mermaid/diagrams)
-- **Clip Sharing**: Share clips with other students
-- **Advanced Archiving**: Custom archive rules, manual archive
-- **Clip Analytics**: Track which clips are reviewed most
-- **Map Templates**: Pre-defined map structures for common scenarios
+**What it does**:
+- Searchable database of medical terms and definitions
+- Save terms to personal "word bank" for quick reference
+- Filter by category (anatomy, pharmacology, pathophysiology, etc.)
+- Filter by saved/not saved status
 
+**Features**:
+- Search by term or definition
+- Category filters (Anatomy, Pharmacology, Pathophysiology, etc.)
+- Save/unsave terms with one click
+- Saved terms persist across sessions
+- Visual indicators for saved terms
+
+---
+
+### 5. Notebook (Topic Management)
+**Location**: Integrated into tutor (via context panel)
+
+**What it does**:
+- Create topics within classes for organized study
+- Each topic can have:
+  - Title and description
+  - Study notes
+  - Associated tutor sessions
+  - Last studied timestamp
+- Topics provide context to the AI tutor
+
+**Features**:
+- Create topics from tutor interface
+- Save assistant responses as topic summaries
+- Track when topics were last studied
+- Navigate between topics during study sessions
+
+---
+
+### 6. Learning Moments (Clips)
+**Location**: Accessible from tutor sessions and dashboard
+
+**What it does**:
+- Save important Q&A exchanges from tutor sessions
+- Organize clips into folders
+- Tag clips for easy retrieval
+- Review clips in context or start new sessions
+
+**Features**:
+- Save any assistant response as a clip
+- Add title, folder, and tags
+- Search and filter clips
+- Jump back to original conversation
+- Delete clips when no longer needed
+
+---
+
+### 7. ForgeMap (Concept Mapping)
+**Location**: Available in tutor sessions
+
+**What it does**:
+- Generate visual concept maps from tutor responses
+- Shows relationships between concepts
+- Helps visualize complex topics
+
+**Features**:
+- Click "Show Map" on any assistant response
+- AI generates structured concept map
+- Visual representation of key concepts and connections
+
+---
+
+### 8. Exam Mode
+**Location**: Accessible from tutor interface
+
+**What it does**:
+- Practice NCLEX-style questions
+- Timed or untimed practice
+- Immediate feedback and explanations
+- Track performance over time
+
+**Features**:
+- Select exam type (NCLEX-RN, NCLEX-PN, custom)
+- Choose number of questions
+- Review answers with detailed rationales
+- Performance analytics
+
+---
+
+## User Lifecycle
+
+### 1. Signup & Onboarding
+- Email/password signup (no email verification required)
+- Automatic profile creation via database trigger
+- Redirect to checkout for subscription
+
+### 2. Subscription (Stripe)
+- $24.99/month with 7-day free trial
+- Stripe Checkout integration
+- Webhook-based subscription sync
+- Automatic retry for failed webhooks
+- Subscription status tracked in database
+
+### 3. Setup
+- Add classes and upload materials
+- Materials are processed and vectorized
+- Ready to start studying
+
+### 4. Study Flow
+- Start tutor session (general or class-specific)
+- Ask questions or work through cases
+- AI references uploaded materials
+- Save important moments as clips
+- Flag difficult Q&A pairs for review
+
+### 5. Progress Tracking
+- Dashboard shows study vitals
+- Review flagged content
+- Browse saved clips
+- Track activity by class
+
+---
+
+## Technical Architecture
+
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS
+- **UI Components**: Custom components + shadcn/ui
+- **State Management**: React Context (TutorContext, DensityContext)
+- **AI Integration**: Vercel AI SDK (@ai-sdk/react)
+
+### Backend
+- **Database**: Supabase (PostgreSQL)
+- **Auth**: Supabase Auth (email/password)
+- **Storage**: Supabase Storage (file uploads)
+- **Vector Search**: pgvector extension
+- **AI**: OpenAI API (GPT-4)
+- **Payments**: Stripe (subscriptions)
+
+### Key Database Tables
+- `profiles`: User profiles (name, graduation date, program track)
+- `student_classes`: Classes created by students
+- `documents`: Uploaded files with vector embeddings
+- `chats`: Tutor sessions
+- `messages`: Chat messages
+- `saved_clips`: Saved learning moments
+- `notebook_topics`: Study topics within classes
+- `word_bank`: Saved medical terms
+- `webhook_events`: Stripe webhook tracking
+
+### Security
+- Row Level Security (RLS) on all tables
+- Users can only access their own data
+- Service role used for admin operations
+- Secure file storage with signed URLs
+
+---
+
+## AI System Prompt (Key Behaviors)
+
+### Core Identity
+- Educational tutor ONLY (not a clinician)
+- Never gives real-world medical advice
+- Keeps everything framed as exam prep
+
+### Scope
+- **In scope**: All nursing/medical topics, NCLEX prep, nursing calculations
+- **Out of scope**: Non-medical topics, general life advice, non-nursing homework
+
+### Response Structure (Required Order)
+1. **Quick Orientation** (1-2 lines)
+2. **THE MAP** (visual structure: flow, decision tree, priority ladder)
+3. **Step-by-Step Reasoning** (explain inside the map)
+4. **Common Trap** (1 sentence)
+5. **Link Back to Materials** (if binder context exists)
+6. **1-Line Chart Memory** (optional mnemonic)
+7. **Mini Check-for-Understanding** (1 question)
+8. **Confidence Anchor** (sparingly)
+
+### Key Frameworks
+- ABCs (Airway, Breathing, Circulation)
+- Maslow's Hierarchy
+- Safety and Risk Reduction
+- Stable vs Unstable
+- Acute vs Chronic
+- Least Invasive First
+
+### Tone
+- Calm, encouraging, non-judgmental
+- Normalizes confusion
+- Praises process, not just answers
+- No hype language ("crush", "ace", "smash")
+
+---
+
+## Reliability Fixes (Completed)
+
+### 1. Email Verification UI Removal
+- Removed obsolete verification polling
+- Simplified signup flow (signup → session → checkout)
+- Reduced code by 54%
+
+### 2. Webhook Retry Mechanism
+- Database tracking for all webhook events
+- Automatic retry for failed webhooks
+- Vercel cron job (every 5 minutes)
+- Prevents subscription sync failures
+
+### 3. Database Trigger Monitoring
+- Health check endpoint for trigger status
+- Detects orphaned users (users without profiles)
+- One-click repair operation
+- Prevents auth state breakage
+
+### 4. Password Confirmation
+- Users must enter password twice
+- Real-time validation with visual feedback
+- Prevents typos during signup
+
+### 5. Anti-Bot Measures
+- Honeypot field (invisible to users)
+- Time-based detection (< 3 seconds = bot)
+- Interaction detection (no clicks = bot)
+- All invisible to legitimate users
+
+### 6. Landing Page Optimization
+- Enhanced SEO metadata
+- Stronger hook and value proposition
+- Price transparency ($24.99/mo, 7-day trial)
+- Consistent CTAs ("Start Your 7-Day Free Trial")
+- Removed fake social proof (ethical marketing)
+
+---
+
+## Current Status
+
+**Production**: Live at forgenursing.com (assumed)
+**Customers**: 1 paying customer
+**Stage**: Early access / pilot testing
+
+---
+
+## Key Differentiators
+
+1. **Uses student's own materials**: Not generic NCLEX content
+2. **Visual learning**: Every response includes a map/structure
+3. **Framework-driven**: Explicitly teaches NCLEX reasoning frameworks
+4. **Socratic method**: Checks understanding after each explanation
+5. **Context-aware**: References specific files and pages
+6. **Organized by classes**: Mirrors student's actual coursework
+7. **Progress tracking**: Study vitals and flagged content
+8. **Learning library**: Save and organize important moments
+
+---
+
+## Future Considerations
+
+Based on the codebase, potential areas for expansion:
+- Exam mode enhancements (more question types, performance analytics)
+- Collaborative study features (study groups, shared clips)
+- Mobile app (React Native)
+- Instructor dashboard (for nursing programs)
+- Integration with LMS platforms (Canvas, Blackboard)
+- More AI models (Claude, Gemini) for comparison
+- Voice input/output for hands-free study
+- Spaced repetition system for saved clips
+- Progress reports for instructors/advisors

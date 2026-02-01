@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ToggleLeft, ToggleRight, HelpCircle, Plus } from 'lucide-react'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { useTutorContext } from './TutorContext'
 import ExamModeDialog from './ExamModeDialog'
 import { ExamPlan, StudentClass, NotebookTopic } from '@/lib/types'
 import { listExams } from '@/lib/api/exams'
 
-type Mode = 'tutor' | 'reflections'
+type Mode = 'tutor'
 
 interface TutorHeaderProps {
   mode: Mode
@@ -52,10 +52,7 @@ export default function TutorHeader({
     const loadActiveExam = async () => {
       if (tutorContext.activeExamId && tutorContext.selectedClassId) {
         try {
-          const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-          )
+  const supabase = getBrowserClient()
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
             const exams = await listExams(user.id, tutorContext.selectedClassId)
@@ -114,37 +111,18 @@ export default function TutorHeader({
           </div>
         </div>
 
-        {/* Center: Tutor / Reflections - Enhanced */}
+        {/* Center: Mode indicator (Tutor only now) */}
         <div className="flex items-center justify-center flex-shrink-0">
-          <div className="flex items-center gap-1 bg-gradient-to-r from-slate-100 to-slate-200 rounded-full p-1 border border-slate-200/60 shadow-sm">
-            <button
-              onClick={() => handleModeChange('tutor')}
-              className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
-                currentMode === 'tutor'
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
-                  : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              Tutor
-            </button>
-            <button
-              onClick={() => handleModeChange('reflections')}
-              className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
-                currentMode === 'reflections'
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
-                  : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              Reflections
-            </button>
+          <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-full border border-indigo-200/60 shadow-sm">
+            <Brain className="w-4 h-4 text-indigo-600" />
+            <span className="text-sm font-semibold text-indigo-900">Clinical Tutor</span>
           </div>
         </div>
 
         {/* Right: Class / Topic strip + New Chat */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Class select - hidden in Reflections mode (reflections are personal, not class-based) */}
-          {currentMode === 'tutor' && (
-            <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Class select - always visible now */}
+          <div className="flex items-center gap-1 flex-shrink-0">
               <span className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap hidden sm:inline">
                 Class
               </span>
@@ -161,7 +139,6 @@ export default function TutorHeader({
                 ))}
               </select>
             </div>
-          )}
 
           {/* Start New Chat button - only show when there's an active session */}
           {currentSessionId && (

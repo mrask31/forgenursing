@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import ClassWithMaterials from '@/components/classes/ClassWithMaterials'
 import ClassForm from '@/components/classes/ClassForm'
 import { StudentClass } from '@/lib/types'
@@ -18,10 +18,7 @@ export default function ClassesPage() {
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+  const supabase = getBrowserClient()
 
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {

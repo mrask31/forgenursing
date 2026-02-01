@@ -19,7 +19,7 @@ interface Chat {
   }
 }
 
-type Mode = 'tutor' | 'reflections'
+type Mode = 'tutor'
 
 // Icon mapping for session types
 const getSessionIcon = (sessionType: string | null) => {
@@ -98,22 +98,17 @@ export default function HistorySheet({ mode, trigger }: HistorySheetProps) {
     }
   }, [isHistoryOpen])
 
-  // Filter chats by mode
+  // Filter chats - only show tutor mode chats
   const filteredChats = useMemo(() => {
     return chats.filter(chat => {
-      if (currentMode === 'tutor') {
-        return !chat.session_type || chat.session_type === 'general' || chat.session_type === 'question' || chat.session_type === 'snapshot'
-      } else if (currentMode === 'reflections') {
-        return chat.session_type === 'reflection'
-      }
-      return true
+      return !chat.session_type || chat.session_type === 'general' || chat.session_type === 'question' || chat.session_type === 'snapshot'
     })
-  }, [chats, currentMode])
+  }, [chats])
 
   const handleChatClick = (chatId: string, classId?: string | null) => {
     const url = classId
-      ? `/tutor?mode=${currentMode}&sessionId=${chatId}&classId=${classId}`
-      : `/tutor?mode=${currentMode}&sessionId=${chatId}`
+      ? `/tutor?sessionId=${chatId}&classId=${classId}`
+      : `/tutor?sessionId=${chatId}`
     router.push(url)
     setIsHistoryOpen(false)
   }

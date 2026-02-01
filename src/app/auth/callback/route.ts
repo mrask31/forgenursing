@@ -57,6 +57,7 @@ export async function GET(request: Request) {
       // Ensure profile exists with correct subscription status
       const { data: { user } } = await supabase.auth.getUser()
       let subscriptionStatus = 'pending_payment'
+      let onboardingCompleted = false
       
       if (user) {
         // Use service role key to bypass RLS for profile operations
@@ -75,7 +76,7 @@ export async function GET(request: Request) {
         // Check if profile exists, create/update if needed
         const { data: profile, error: profileError } = await profileClient
           .from('profiles')
-          .select('id, subscription_status, stripe_customer_id')
+          .select('id, subscription_status, stripe_customer_id, onboarding_completed')
           .eq('id', user.id)
           .single()
 
@@ -86,14 +87,18 @@ export async function GET(request: Request) {
             .insert({
               id: user.id,
               subscription_status: 'pending_payment',
+              onboarding_completed: false,
+              onboarding_step: 0,
             })
           
           if (insertError) {
             console.error('[Auth Callback] Error creating profile:', insertError)
             // Continue with default pending_payment status
           }
+          onboardingCompleted = false
         } else {
           subscriptionStatus = profile.subscription_status || 'pending_payment'
+          onboardingCompleted = profile.onboarding_completed || false
           
           if (!profile.subscription_status) {
             const { error: updateError } = await profileClient
@@ -130,6 +135,11 @@ export async function GET(request: Request) {
             }
           }
         }
+      }
+
+      // If user hasn't completed onboarding, redirect to onboarding
+      if (!onboardingCompleted) {
+        return NextResponse.redirect(`${appUrl}/onboarding`)
       }
 
       // If there's a plan parameter, redirect to checkout initiation page

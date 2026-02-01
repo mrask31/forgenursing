@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { hasSubscriptionAccess } from '@/lib/subscription-access'
 import { usePathname } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -12,10 +12,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    const supabase = getBrowserClient()
     
     const checkUserAndSubscription = async () => {
       const { data: { user } } = await supabase.auth.getUser()

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, MessageSquare, BookOpen, GraduationCap, Shield } from 'lucide-react'
 import Link from 'next/link'
@@ -37,7 +37,7 @@ export default function LoginPage() {
       throw new Error('Supabase configuration is missing. Please check your environment variables.')
     }
 
-    return createBrowserClient(supabaseUrl, supabaseAnonKey)
+    return getBrowserClient()
   }, [])
 
   useEffect(() => {

@@ -11,7 +11,7 @@ import {
 import { useDensity } from '@/contexts/DensityContext'
 import { getDensityTokens } from '@/lib/density-tokens'
 import { Button } from '@/components/ui/button'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 import { listClasses } from '@/lib/api/classes'
 import type { StudentClass } from '@/lib/types'
 import ReactMarkdown from 'react-markdown'
@@ -76,10 +76,7 @@ export default function ClinicalDashboard() {
     const loadData = async () => {
       setIsLoading(true)
       try {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
+  const supabase = getBrowserClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 

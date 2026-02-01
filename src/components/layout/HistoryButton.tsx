@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { MessageSquare, FileText, Stethoscope, Brain } from 'lucide-react'
 import { listClasses } from '@/lib/api/classes'
 import { StudentClass } from '@/lib/types'
-import { createBrowserClient } from '@supabase/ssr'
+import { getBrowserClient } from '@/lib/supabase/client'
 
 interface Chat {
   id: string
@@ -104,10 +104,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
         }
 
         // Fetch classes to map IDs to names
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
+    const supabase = getBrowserClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           const userClasses = await listClasses(user.id)
@@ -216,9 +213,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
   }, [chats, classes])
 
   const handleChatClick = (chatId: string, mode: string = 'tutor') => {
-    const url = mode === 'reflections'
-      ? `/tutor?mode=reflections&sessionId=${chatId}`
-      : `/tutor?mode=${mode}&sessionId=${chatId}`
+    const url = `/tutor?sessionId=${chatId}`
     router.push(url)
     setIsHistoryOpen(false)
     onNavigate?.()
@@ -337,7 +332,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                                 const Icon = getSessionIcon(chat.session_type)
                                 const badge = getSessionBadge(chat.session_type)
                                 const isSelected = selectedChatIds.has(chat.id)
-                                const mode = chat.session_type === 'reflection' ? 'reflections' : 'tutor'
+                                const mode = 'tutor' // Always tutor mode now
 
                                 return (
                                   <div
