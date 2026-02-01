@@ -41,7 +41,7 @@ export default function ClassForm({ classItem, onSuccess, onCancel }: ClassFormP
   useEffect(() => {
   const supabase = getBrowserClient()
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
       if (user) {
         setUserId(user.id)
       }
