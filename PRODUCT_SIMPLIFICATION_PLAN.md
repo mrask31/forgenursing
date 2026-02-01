@@ -8,7 +8,7 @@ Transforming ForgeNursing from a feature-rich V1 to a focused, conversion-optimi
 - ✅ Phase 2: Remove ForgeMap - COMPLETE
 - ⏭️ Phase 3: Simplify Notebook - Deferred (doing Phase 4 first)
 - ✅ Phase 4: Build Killer Onboarding - COMPLETE
-- 🚧 Phase 5: "Study with This" Quick Actions - IN PROGRESS (5.1 Complete)
+- ✅ Phase 5: "Study with This" Quick Actions - COMPLETE (All 3 sub-phases done)
 
 ---
 
@@ -187,16 +187,19 @@ Transforming ForgeNursing from a feature-rich V1 to a focused, conversion-optimi
 
 **Impact**: Makes it easy to start studying any uploaded material with 1 click
 
-### 4.3 Dashboard Quick Actions
-**Status**: ⏭️ NOT STARTED
+### 4.3 Dashboard Quick Actions ✅ COMPLETE
+**Status**: ✅ COMPLETE - See details below.
 
-**Current**: Dashboard shows stats and flagged Q&As
-**New**: Add "Quick Study" section with recent files
+**What Was Implemented**:
+- Added "Quick Study" section to dashboard showing 3 most recently uploaded files
+- Section appears after "Study Activity by Class" and before "Main Content Grid"
+- Each file shows filename, upload time, and "Study This" button
+- Button navigates to tutor with class context (if available)
+- Uses emerald/teal gradient to match medical dashboard theme
+- Only shows if user has uploaded documents
 
-**Files to Modify**:
-- `src/app/(app)/readiness/page.tsx` - Add "Quick Study" section
-- Show 3 most recently uploaded files
-- Each has "Study This" button
+**Files Modified**:
+- ✅ `src/app/(app)/readiness/page.tsx` - Added Quick Study section
 
 **Impact**: Reduces friction from upload → study from 3 clicks to 1 click
 

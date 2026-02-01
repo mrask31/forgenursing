@@ -50,6 +50,18 @@ interface FocusArea {
   messageId?: string // For flagged message pairs
 }
 
+interface RecentDocument {
+  id: string
+  filename: string
+  created_at: string
+  document_type: string | null
+  metadata?: {
+    class_id?: string
+    classId?: string
+    [key: string]: any
+  }
+}
+
 export default function ClinicalDashboard() {
   const { density } = useDensity()
   const tokens = getDensityTokens(density)
@@ -71,6 +83,7 @@ export default function ClinicalDashboard() {
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
   const [showAllClips, setShowAllClips] = useState(false)
   const [chatCountsByClass, setChatCountsByClass] = useState<Array<{ classId: string; className: string; classCode: string; count: number }>>([])
+  const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([])
 
   useEffect(() => {
     const loadData = async () => {
@@ -228,6 +241,20 @@ export default function ClinicalDashboard() {
           setClipsCount(clips.length)
           filterClips(clips, searchQuery, selectedFolder, selectedTag)
         }
+
+        // Load recent documents for Quick Study section
+        const docsRes = await fetch('/api/binder', {
+          credentials: 'include'
+        })
+        if (docsRes.ok) {
+          const docsData = await docsRes.json()
+          const docs = (docsData.files || []) as RecentDocument[]
+          // Sort by created_at descending and take top 3
+          const sortedDocs = docs.sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          ).slice(0, 3)
+          setRecentDocuments(sortedDocs)
+        }
       } catch (error) {
         console.error('[Dashboard] Error loading data:', error)
       } finally {
@@ -320,6 +347,15 @@ export default function ClinicalDashboard() {
       console.error('Failed to delete clip:', error)
       alert('Failed to delete clip. Please try again.')
     }
+  }
+
+  const handleStudyDocument = (doc: RecentDocument) => {
+    const classId = doc.metadata?.class_id || doc.metadata?.classId
+    const params = new URLSearchParams()
+    if (classId) {
+      params.set('classId', classId)
+    }
+    router.push(`/tutor?${params.toString()}`)
   }
 
   const formatTimeAgo = (dateString: string) => {
@@ -494,6 +530,49 @@ export default function ClinicalDashboard() {
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 truncate">{item.className}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Study - Recent Materials */}
+        {recentDocuments.length > 0 && (
+          <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 mb-8 overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-50/80 to-teal-50/80 border-b border-emerald-200/60 px-6 py-4">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2.5 mb-1">
+                <div className="p-1.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                Quick Study
+              </h3>
+              <p className="text-sm text-slate-600 ml-8">Jump right into your recently uploaded materials</p>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {recentDocuments.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="p-4 bg-gradient-to-br from-slate-50/80 to-white border border-slate-200/60 rounded-xl hover:border-emerald-300 hover:shadow-md hover:shadow-emerald-200/30 transition-all duration-200"
+                  >
+                    <div className="flex flex-col gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-bold text-slate-900 truncate mb-1">
+                          {doc.filename}
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          Uploaded {formatTimeAgo(doc.created_at)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleStudyDocument(doc)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm font-semibold rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        Study This
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
