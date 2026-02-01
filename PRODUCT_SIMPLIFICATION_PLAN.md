@@ -6,9 +6,10 @@ Transforming ForgeNursing from a feature-rich V1 to a focused, conversion-optimi
 **Progress:**
 - ✅ Phase 1: Remove Reflections Mode - COMPLETE
 - ✅ Phase 2: Remove ForgeMap - COMPLETE
-- ⏭️ Phase 3: Simplify Notebook - Deferred (doing Phase 4 first)
+- ⏭️ Phase 3: Simplify Notebook - Deferred
 - ✅ Phase 4: Build Killer Onboarding - COMPLETE
 - ✅ Phase 5: "Study with This" Quick Actions - COMPLETE (All 3 sub-phases done)
+- ✅ Phase 6: Conversion Optimization - COMPLETE (6.2 & 6.3 done, 6.1 deferred)
 
 ---
 
@@ -205,9 +206,9 @@ Transforming ForgeNursing from a feature-rich V1 to a focused, conversion-optimi
 
 ---
 
-## Phase 5: Conversion Optimization 📈
+## Phase 5: Conversion Optimization 📈 ✅ COMPLETE (6.2 & 6.3)
 
-### 5.1 Landing Page Improvements
+### 5.1 Landing Page Improvements ⏭️ DEFERRED
 
 **Add Demo Video/Screenshots**:
 - Record 60-second demo showing:
@@ -232,33 +233,45 @@ Transforming ForgeNursing from a feature-rich V1 to a focused, conversion-optimi
 - `src/components/landing/Hero.tsx` - Add demo video
 - Create new component: `src/components/landing/HowItWorks.tsx`
 
----
-
-### 5.2 Signup Flow Clarity
-
-**Current**: Signup → Checkout → App
-**Improve**:
-- Add progress indicator: "Step 1: Create Account → Step 2: Choose Plan → Step 3: Start Learning"
-- Show what happens after signup
-- "After signup, you'll upload your first material and start studying"
-
-**Files to Modify**:
-- `src/app/(public)/signup/page.tsx` - Add progress indicator
-- Add "What happens next" section
+**Status**: Deferred pending video production resources
 
 ---
 
-### 5.3 First-Time User Experience
+### 5.2 Signup Flow Clarity ✅ COMPLETE
 
-**Current**: User lands in app, sees empty tutor
-**Improve**:
-- If no files uploaded → Show upload prompt
-- If files uploaded but no chats → Show suggested questions
-- If chats exist → Show recent activity
+**Status**: ✅ COMPLETE - See `PHASE6_CONVERSION_OPTIMIZATION_COMPLETE.md` for details.
 
-**Files to Modify**:
-- `src/components/tutor/TutorLanding.tsx` - Improve empty states
-- Add contextual CTAs based on user state
+**What Was Implemented**:
+- Added 3-step progress indicator at top of signup form
+- Shows: "1. Create Account → 2. Choose Plan → 3. Start Learning"
+- Current step highlighted, future steps grayed out
+- Added "What happens next?" section below form
+- Explains complete journey: Choose plan → Tutorial → Start studying
+- Includes reminder: "No charge for 7 days • Cancel anytime during trial"
+
+**Files Modified**:
+- ✅ `src/app/(public)/signup/page.tsx` - Added progress indicator and "What happens next?" section
+
+**Impact**: Reduces confusion about signup flow, sets clear expectations, reduces anxiety about payment
+
+---
+
+### 5.3 First-Time User Experience ✅ COMPLETE
+
+**Status**: ✅ COMPLETE - See `PHASE6_CONVERSION_OPTIMIZATION_COMPLETE.md` for details.
+
+**What Was Implemented**:
+- Added contextual CTAs based on user state in tutor landing page
+- **No materials uploaded**: Shows "Upload Your First Material" card with button to `/classes`
+- **Materials uploaded, no chats**: Shows "Ready to Start Studying!" encouragement card
+- **Has existing chats**: Shows "Welcome Back!" card with link to history
+- Checks user content (materials and chats) on page load
+- Only shows for General Tutor (not class-specific views)
+
+**Files Modified**:
+- ✅ `src/components/tutor/TutorLanding.tsx` - Added state checks and contextual CTA cards
+
+**Impact**: Reduces confusion for new users, provides clear next steps, increases engagement
 
 ---
 
