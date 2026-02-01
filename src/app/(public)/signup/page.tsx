@@ -217,7 +217,21 @@ export default function SignupPage() {
       // Check for session (with email verification disabled, should have immediate session)
       console.log('[Signup] Signup successful, redirecting to checkout')
       setLoading(false)
-      router.push('/checkout')
+      
+      // Try router.push first, fallback to window.location if it fails
+      try {
+        router.push('/checkout')
+        // If router.push doesn't redirect within 1 second, use window.location
+        setTimeout(() => {
+          if (window.location.pathname === '/signup') {
+            console.log('[Signup] Router.push failed, using window.location')
+            window.location.href = '/checkout'
+          }
+        }, 1000)
+      } catch (error) {
+        console.error('[Signup] Router.push error:', error)
+        window.location.href = '/checkout'
+      }
       return
 
     } catch (error: any) {
