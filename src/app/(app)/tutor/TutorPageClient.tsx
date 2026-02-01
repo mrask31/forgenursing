@@ -584,7 +584,7 @@ function TutorPageContent() {
           const chats = data.chats || []
           
           // Filter chats - only tutor mode chats (not reflections)
-          const filteredChats = chats.filter((chat: any) => 
+          let filteredChats = chats.filter((chat: any) => 
             !chat.session_type || 
             chat.session_type === 'general' || 
             chat.session_type === 'question' || 
