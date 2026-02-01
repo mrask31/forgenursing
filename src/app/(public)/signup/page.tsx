@@ -118,7 +118,7 @@ export default function SignupPage() {
     }
 
     try {
-      const timeoutMs = 8000
+      const timeoutMs = 15000 // Increased from 8000 to 15000 (15 seconds)
       const withTimeout = <T,>(promise: Promise<T>) =>
         Promise.race([
           promise,
