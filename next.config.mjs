@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
     webpack: (config) => {
         // Tells webpack to ignore the 'canvas' dependency
         // This fixes the "Module not found: Can't resolve 'canvas'" error

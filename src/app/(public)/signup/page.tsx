@@ -267,17 +267,19 @@ export default function SignupPage() {
       if (error?.message === 'SIGNUP_TIMEOUT') {
         console.error('Signup timed out after 15s', { email })
         setMessage({ text: 'Signup timed out. Please try again.', type: 'error' })
-        signUpPromise
-          .then((lateResult) => {
-            if (lateResult?.data?.user) {
-              setMessage(null)
-              setLoading(false)
-              router.push('/checkout')
-            }
-          })
-          .catch((lateError) => {
-            console.error('Late signup error after timeout:', lateError)
-          })
+        if (signUpPromise) {
+          signUpPromise
+            .then((lateResult) => {
+              if (lateResult?.data?.user) {
+                setMessage(null)
+                setLoading(false)
+                router.push('/checkout')
+              }
+            })
+            .catch((lateError) => {
+              console.error('Late signup error after timeout:', lateError)
+            })
+        }
         return
       }
 
