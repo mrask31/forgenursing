@@ -133,10 +133,13 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    console.log('signup:start')
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    console.log('signup:env', { supabaseUrl: !!supabaseUrl, supabaseAnonKey: !!supabaseAnonKey })
+
     let signUpReached = false
-    let timeoutId: ReturnType<typeof setTimeout> | null = null
-    let didTimeout = false
-    let signUpPromise: ReturnType<typeof supabase.auth.signUp> | null = null
+    let abortTimeoutId: ReturnType<typeof setTimeout> | null = null
     setLoading(true)
     setMessage(null)
 
@@ -144,6 +147,12 @@ export default function SignupPage() {
     const params = new URLSearchParams(window.location.search)
     const plan = params.get('plan') || localStorage.getItem('forgenursing-pending-plan')
     
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setMessage({ text: 'Signup is temporarily unavailable. Please try again shortly.', type: 'error' })
+      setLoading(false)
+      return
+    }
+
     // Build callback URL with plan parameter if present
     // Use NEXT_PUBLIC_APP_URL if available (production), otherwise use current origin
     let baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
@@ -161,17 +170,42 @@ export default function SignupPage() {
     }
 
     try {
-      const timeoutMs = 15000
-      const timeoutError = new Error('SIGNUP_TIMEOUT')
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => {
-          didTimeout = true
-          reject(timeoutError)
-        }, timeoutMs)
+      try {
+        await supabase.auth.getSession()
+        console.log('signup:sessionCheck ok')
+      } catch (sessionError) {
+        console.error('signup:sessionCheck failed', sessionError)
+        setMessage({ text: 'Unable to reach the auth service. Please try again.', type: 'error' })
+        return
+      }
+
+      try {
+        const healthRes = await fetch(`${supabaseUrl}/auth/v1/health`, {
+          headers: { apikey: supabaseAnonKey },
+        })
+        if (!healthRes.ok) {
+          throw new Error(`Health check failed (${healthRes.status})`)
+        }
+      } catch (healthError) {
+        console.error('signup:healthCheck failed', healthError)
+        setMessage({
+          text: 'Auth service unreachable. Please disable tracking prevention for this site or try another browser.',
+          type: 'error',
+        })
+        return
+      }
+
+      const abortController = new AbortController()
+      abortTimeoutId = setTimeout(() => abortController.abort(), 10000)
+      const supabaseWithAbort = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+        global: {
+          fetch: (input, init = {}) => fetch(input, { ...init, signal: abortController.signal }),
+        },
       })
 
       signUpReached = true
-      signUpPromise = supabase.auth.signUp({
+      console.log('signup:beforeSignUp')
+      const { data, error } = await supabaseWithAbort.auth.signUp({
         email,
         password,
         options: {
@@ -179,10 +213,7 @@ export default function SignupPage() {
         },
       })
 
-      const { data, error } = await Promise.race([signUpPromise, timeoutPromise]) as Awaited<
-        ReturnType<typeof supabase.auth.signUp>
-      >
-      
+      console.log('signup:afterSignUp')
       if (error) {
         // Log the error for debugging (remove in production if needed)
         console.log('Signup error:', { 
@@ -263,34 +294,25 @@ export default function SignupPage() {
       setLoading(false)
       router.push('/checkout')
     } catch (error: any) {
+      console.error('signup:catch', error)
       // Handle other errors
-      if (error?.message === 'SIGNUP_TIMEOUT') {
-        console.error('Signup timed out after 15s', { email })
-        setMessage({ text: 'Signup timed out. Please try again.', type: 'error' })
-        if (signUpPromise) {
-          signUpPromise
-            .then((lateResult) => {
-              if (lateResult?.data?.user) {
-                setMessage(null)
-                setLoading(false)
-                router.push('/checkout')
-              }
-            })
-            .catch((lateError) => {
-              console.error('Late signup error after timeout:', lateError)
-            })
-        }
+      if (error?.name === 'AbortError') {
+        setMessage({
+          text: 'Network blocked or request stalled. Please disable tracking prevention for this site or try another browser.',
+          type: 'error',
+        })
         return
       }
 
       const errorMessage = error?.message || 'An error occurred. Please try again.'
       setMessage({ text: errorMessage, type: 'error' })
     } finally {
+      console.log('signup:finally')
       if (!signUpReached) {
         console.error('Signup call not reached')
       }
-      if (timeoutId) {
-        clearTimeout(timeoutId)
+      if (abortTimeoutId) {
+        clearTimeout(abortTimeoutId)
       }
       setLoading(false)
     }
