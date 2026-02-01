@@ -257,7 +257,7 @@ function TutorPageContent() {
   useEffect(() => {
     const resolveSession = async () => {
       // Create a unique key for this resolution attempt (include classId to detect class changes)
-      const paramsKey = `${intentParam || ''}-${sessionIdParam || ''}-${modeParam || ''}-${tutorContext.selectedClassId || ''}`
+      const paramsKey = `${intentParam || ''}-${sessionIdParam || ''}-${tutorContext.selectedClassId || ''}`
       
       // Prevent infinite loops: if we're already resolving the same params, skip
       if (isResolvingRef.current && lastResolvedParamsRef.current === paramsKey) {
@@ -279,7 +279,6 @@ function TutorPageContent() {
       console.log('[Tutor] Resolve Session - Params:', {
         intent: intentParam,
         sessionId: sessionIdParam,
-        mode: modeParam,
         topicId: tutorContext.selectedTopicId,
         examId: tutorContext.activeExamId,
         classId: tutorContext.selectedClassId,
@@ -296,7 +295,7 @@ function TutorPageContent() {
         const params = new URLSearchParams(searchParams.toString())
         params.delete('intent')
         // Update paramsKey to mark this as resolved so auto-resume doesn't trigger
-        lastResolvedParamsRef.current = `${''}-${''}-${modeParam || ''}-${tutorContext.selectedClassId || ''}`
+        lastResolvedParamsRef.current = `${''}-${''}-${tutorContext.selectedClassId || ''}`
         router.replace(`/tutor?${params.toString()}`)
         return
       }
@@ -360,7 +359,7 @@ function TutorPageContent() {
               }
               
               // Update paramsKey to prevent re-resolution
-              lastResolvedParamsRef.current = `${intentParam || ''}-${sessionIdParam || ''}-${modeParam || ''}-${normalizedChatClassId || ''}`
+              lastResolvedParamsRef.current = `${intentParam || ''}-${sessionIdParam || ''}-${normalizedChatClassId || ''}`
               router.replace(`/tutor?${newParams.toString()}`)
               setIsResolving(false)
               isResolvingRef.current = false
@@ -611,7 +610,7 @@ function TutorPageContent() {
               classId: tutorContext.selectedClassId || 'General Tutor'
             })
             // Update paramsKey to prevent re-resolution
-            lastResolvedParamsRef.current = `${intentParam || ''}-${mostRecent.id}-${modeParam || ''}-${tutorContext.selectedClassId || ''}`
+            lastResolvedParamsRef.current = `${intentParam || ''}-${mostRecent.id}-${tutorContext.selectedClassId || ''}`
             isResolvingRef.current = false // Reset before redirect
             const newUrl = tutorContext.selectedClassId
               ? `/tutor?sessionId=${mostRecent.id}&classId=${tutorContext.selectedClassId}`
@@ -648,12 +647,12 @@ function TutorPageContent() {
 
     // Only resolve if params actually changed
     // Include classIdParam in the check to prevent loops when URL classId changes
-    const currentParams = `${intentParam || ''}-${sessionIdParam || ''}-${modeParam || ''}-${classIdParam || ''}`
+    const currentParams = `${intentParam || ''}-${sessionIdParam || ''}-${classIdParam || ''}`
     if (lastResolvedParamsRef.current !== currentParams || !resolvedChatId) {
       resolveSession()
     }
             // eslint-disable-next-line react-hooks/exhaustive-deps
-          }, [intentParam, sessionIdParam, modeParam, classIdParam]) // Use classIdParam from URL instead of context to prevent loops
+          }, [intentParam, sessionIdParam, classIdParam]) // Use classIdParam from URL instead of context to prevent loops
 
   useEffect(() => {
     if (resolvedChatId && !isResolving) {

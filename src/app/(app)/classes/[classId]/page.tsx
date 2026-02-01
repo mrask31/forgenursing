@@ -7,6 +7,7 @@ import NotebookSidebar from '@/components/notebook/NotebookSidebar'
 import NotebookTopicView from '@/components/notebook/NotebookTopicView'
 import { NotebookTopic, StudentClass } from '@/lib/types'
 import { listClasses } from '@/lib/api/classes'
+import { User } from '@supabase/supabase-js'
 
 export default function NotebookPage() {
   const params = useParams()
@@ -18,7 +19,7 @@ export default function NotebookPage() {
   useEffect(() => {
   const supabase = getBrowserClient()
 
-    supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
+    supabase.auth.getUser().then(({ data: { user } }: { data: { user: User | null } }) => {
       if (user) {
         setUserId(user.id)
         loadClassData(user.id)
