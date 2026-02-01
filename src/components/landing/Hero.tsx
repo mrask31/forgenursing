@@ -90,18 +90,9 @@ export default function Hero({ user }: HeroProps) {
                     Start Your 7-Day Free Trial
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Link>
-                  <div className="flex items-center justify-center sm:justify-start gap-4 text-xs sm:text-sm text-slate-600">
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex -space-x-2">
-                        <div className="w-6 h-6 rounded-full bg-indigo-200 border-2 border-white"></div>
-                        <div className="w-6 h-6 rounded-full bg-purple-200 border-2 border-white"></div>
-                        <div className="w-6 h-6 rounded-full bg-pink-200 border-2 border-white"></div>
-                      </div>
-                      <span className="font-medium">500+ students joined</span>
-                    </div>
-                    <span className="hidden sm:inline">•</span>
-                    <span className="hidden sm:inline">★★★★★ 4.8/5 rating</span>
-                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 text-center sm:text-left">
+                    No credit card charged for 7 days • Cancel anytime
+                  </p>
                 </>
               )}
             </div>
