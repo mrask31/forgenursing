@@ -65,12 +65,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true }) // nothing to sync
     }
 
+    const stripe = getStripeClient()
+    const stripeSubscriptionId = profile.stripe_subscription_id
+
+    if (stripeSubscriptionId) {
+      const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId)
+      const status =
+        sub.status === 'trialing' ? 'trialing' :
+        sub.status === 'active' ? 'active' :
+        sub.status === 'past_due' || sub.status === 'unpaid' ? 'canceled' :
+        'canceled'
+
+      const { error: updateError } = await admin
+        .from('profiles')
+        .update({
+          subscription_status: status,
+          stripe_subscription_id: sub.id,
+        })
+        .eq('id', user.id)
+
+      if (updateError) {
+        console.error('[Sync Subscription] Update failed:', updateError)
+        return NextResponse.json({ ok: false, error: updateError.message }, { status: 500 })
+      }
+
+      return NextResponse.json({ ok: true, status })
+    }
+
     const customerId = profile.stripe_customer_id
     if (!customerId) {
       return NextResponse.json({ ok: true })
     }
 
-    const stripe = getStripeClient()
     const { data: subscriptions } = await stripe.subscriptions.list({
       customer: customerId,
       status: 'all',
@@ -86,7 +112,7 @@ export async function POST(req: Request) {
     const status =
       sub.status === 'trialing' ? 'trialing' :
       sub.status === 'active' ? 'active' :
-      sub.status === 'past_due' || sub.status === 'unpaid' ? 'past_due' :
+      sub.status === 'past_due' || sub.status === 'unpaid' ? 'canceled' :
       'canceled'
 
     const { error: updateError } = await admin

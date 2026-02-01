@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import OpenAI from 'openai';
+import { getEntitlementForUser } from '@/lib/entitlement';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -61,6 +62,12 @@ export async function POST(req: Request) {
     if (!user.id) {
       console.error("[API] User ID is missing");
       return NextResponse.json({ error: "Invalid user session" }, { status: 401 });
+    }
+
+    const entitlement = await getEntitlementForUser(user.id)
+    if (!entitlement.hasAccess) {
+      console.log('[Entitlement] Blocked', { route: '/api/process', userId: user.id, status: entitlement.status })
+      return NextResponse.json({ error: "Payment required", status: entitlement.status }, { status: 402 })
     }
 
     console.log(`[API] Processing ${text.length} chars for User: ${user.id}`);

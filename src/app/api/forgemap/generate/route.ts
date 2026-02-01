@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr'
 import { openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 import OpenAI from 'openai'
+import { getEntitlementForUser } from '@/lib/entitlement'
 
 export const dynamic = 'force-dynamic'
 
@@ -130,6 +131,12 @@ export async function POST(req: Request) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const entitlement = await getEntitlementForUser(user.id)
+    if (!entitlement.hasAccess) {
+      console.log('[Entitlement] Blocked', { route: '/api/forgemap/generate', userId: user.id, status: entitlement.status })
+      return NextResponse.json({ error: 'Payment required', status: entitlement.status }, { status: 402 })
     }
 
     // 2. Parse request body

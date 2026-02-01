@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getEntitlementForUser } from '@/lib/entitlement'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,6 +38,12 @@ export async function POST(req: Request) {
         { error: 'Unauthorized' },
         { status: 401 }
       )
+    }
+
+    const entitlement = await getEntitlementForUser(user.id)
+    if (!entitlement.hasAccess) {
+      console.log('[Entitlement] Blocked', { route: '/api/binder/toggle', userId: user.id, status: entitlement.status })
+      return NextResponse.json({ error: 'Payment required', status: entitlement.status }, { status: 402 })
     }
 
     // 2. Get existing documents

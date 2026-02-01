@@ -209,7 +209,7 @@ export async function POST(req: Request) {
         } else if (subscription.status === 'active') {
           status = 'active'
         } else if (subscription.status === 'past_due' || subscription.status === 'unpaid') {
-          status = 'past_due'
+          status = 'canceled'
         } else if (subscription.status === 'canceled' || subscription.status === 'incomplete_expired') {
           status = 'canceled'
         } else {
@@ -220,6 +220,7 @@ export async function POST(req: Request) {
           .from('profiles')
           .update({
             subscription_status: status,
+            stripe_customer_id: customerId,
             stripe_subscription_id: subscription.id,
           })
           .eq('id', profile.id)

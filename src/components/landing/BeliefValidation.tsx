@@ -17,8 +17,12 @@ export default function BeliefValidation() {
         </p>
       </div>
       
+      <p className="text-base sm:text-lg text-slate-700 mb-4 sm:mb-6 text-center">
+        If any of these sound familiar, you're exactly who ForgeNursing was built for:
+      </p>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 sm:mb-8">
-        <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/80 to-rose-50/80 backdrop-blur-sm border-2 border-red-200/60 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02]">
+        <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/90 to-rose-50/90 backdrop-blur-sm border-2 border-red-300/70 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
@@ -26,7 +30,7 @@ export default function BeliefValidation() {
             I know the content, but I freeze on "what do I do first?"
           </p>
         </div>
-        <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/80 to-rose-50/80 backdrop-blur-sm border-2 border-red-200/60 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02]">
+        <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/90 to-rose-50/90 backdrop-blur-sm border-2 border-red-300/70 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
@@ -34,7 +38,7 @@ export default function BeliefValidation() {
             I can't tell what's most important in the question
           </p>
         </div>
-        <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/80 to-rose-50/80 backdrop-blur-sm border-2 border-red-200/60 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02]">
+        <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/90 to-rose-50/90 backdrop-blur-sm border-2 border-red-300/70 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>
@@ -42,7 +46,7 @@ export default function BeliefValidation() {
             I keep studying, but nothing sticks under pressure
           </p>
         </div>
-        <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/80 to-rose-50/80 backdrop-blur-sm border-2 border-red-200/60 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02]">
+        <div className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl bg-gradient-to-br from-red-50/90 to-rose-50/90 backdrop-blur-sm border-2 border-red-300/70 hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-red-200 to-rose-200 flex items-center justify-center flex-shrink-0 shadow-sm">
             <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-700" />
           </div>

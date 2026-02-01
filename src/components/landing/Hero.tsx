@@ -53,13 +53,13 @@ export default function Hero({ user }: HeroProps) {
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent tracking-tight mb-4 sm:mb-6 leading-tight pb-1">
-              <span className="hidden sm:inline">Studying Hard but Still Stuck? Here's How NCLEX Questions Start to Make Sense.</span>
-              <span className="sm:hidden">Studying Hard but Still Stuck?</span>
+              <span className="hidden sm:inline">You Know the Content. Why Do NCLEX Questions Still Freeze You?</span>
+              <span className="sm:hidden">You Know the Content. Why Do NCLEX Questions Still Freeze You?</span>
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl text-slate-700 mb-4 sm:mb-6 leading-relaxed font-medium">
-              <span className="hidden sm:inline">ForgeNursing turns your lecture notes and textbooks into step-by-step clinical reasoning — so prioritization finally clicks.</span>
-              <span className="sm:hidden">Step-by-step clinical reasoning from your materials.</span>
+              <span className="hidden sm:inline">ForgeNursing turns your notes and textbooks into step-by-step clinical reasoning — so prioritization finally clicks.</span>
+              <span className="sm:hidden">ForgeNursing turns your notes and textbooks into step-by-step clinical reasoning — so prioritization finally clicks.</span>
             </p>
             
             <p className="text-sm sm:text-base text-slate-600 mb-6 sm:mb-8 italic">
@@ -86,7 +86,7 @@ export default function Hero({ user }: HeroProps) {
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Link>
                   <p className="text-xs sm:text-sm text-slate-600 text-center sm:text-left">
-                    Free preview takes ~30 seconds to set up
+                    No studying required. No credit card charged for 7 days.
                   </p>
                 </>
               )}

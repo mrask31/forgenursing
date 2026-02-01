@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getEntitlementForUser } from '@/lib/entitlement'
 
 /**
  * Batch delete documents by their IDs
@@ -14,6 +15,12 @@ export async function deleteDocuments(filenames: string[]) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
     throw new Error('Unauthorized')
+  }
+
+  const entitlement = await getEntitlementForUser(user.id)
+  if (!entitlement.hasAccess) {
+    console.log('[Entitlement] Blocked', { route: 'action:deleteDocuments', userId: user.id, status: entitlement.status })
+    throw new Error('Payment required')
   }
 
   if (!filenames || filenames.length === 0) {
@@ -61,6 +68,12 @@ export async function toggleDocumentContext(filename: string, isActive: boolean)
     if (authError || !user) {
       console.error('[toggleDocumentContext] Auth error:', authError)
       throw new Error('Unauthorized')
+    }
+
+    const entitlement = await getEntitlementForUser(user.id)
+    if (!entitlement.hasAccess) {
+      console.log('[Entitlement] Blocked', { route: 'action:toggleDocumentContext', userId: user.id, status: entitlement.status })
+      throw new Error('Payment required')
     }
 
     // 2. Update all chunks for this filename

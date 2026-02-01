@@ -1,6 +1,7 @@
 import { openai } from '@ai-sdk/openai';
 import { streamText, convertToCoreMessages } from 'ai';
 import { getSystemPrompt } from '@/lib/ai/prompts';
+import { getEntitlementForUser } from '@/lib/entitlement';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import OpenAI from 'openai';
@@ -323,6 +324,15 @@ export async function POST(req: Request) {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+
+  const entitlement = await getEntitlementForUser(user.id)
+  if (!entitlement.hasAccess) {
+    console.log('[Entitlement] Blocked', { route: '/api/chat', userId: user.id, status: entitlement.status })
+    return new Response(JSON.stringify({ error: 'Payment required', status: entitlement.status }), {
+      status: 402,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
   // Extract latest user message FIRST (before any usage)

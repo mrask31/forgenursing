@@ -11,12 +11,41 @@ function BillingSuccessContent() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Give Stripe a moment to process the session
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 2000)
+    let isMounted = true
+    const start = Date.now()
+    const delays = [1000, 2000, 4000, 6000, 7000]
 
-    return () => clearTimeout(timer)
+    const checkStatus = async (attempt = 0) => {
+      try {
+        const res = await fetch('/api/subscription/status', { cache: 'no-store' })
+        if (!res.ok) {
+          if (isMounted) setLoading(false)
+          return
+        }
+        const data = await res.json()
+        const status = data?.status ?? null
+        const shouldPoll = status === 'pending_payment' && Date.now() - start < 20000
+
+        if (!shouldPoll) {
+          if (isMounted) setLoading(false)
+          return
+        }
+
+        const delay = delays[Math.min(attempt, delays.length - 1)]
+        setTimeout(() => checkStatus(attempt + 1), delay)
+      } catch {
+        if (isMounted) setLoading(false)
+      }
+    }
+
+    const initialTimer = setTimeout(() => {
+      checkStatus()
+    }, 500)
+
+    return () => {
+      isMounted = false
+      clearTimeout(initialTimer)
+    }
   }, [])
 
   if (loading) {
