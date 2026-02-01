@@ -139,7 +139,6 @@ export default function SignupPage() {
     console.log('signup:env', { supabaseUrl: !!supabaseUrl, supabaseAnonKey: !!supabaseAnonKey })
 
     let signUpReached = false
-    let abortTimeoutId: ReturnType<typeof setTimeout> | null = null
     setLoading(true)
     setMessage(null)
 
@@ -170,15 +169,21 @@ export default function SignupPage() {
     }
 
     try {
-      try {
-        await supabase.auth.getSession()
-        console.log('signup:sessionCheck ok')
-      } catch (sessionError) {
-        console.error('signup:sessionCheck failed', sessionError)
-        setMessage({ text: 'Unable to reach the auth service. Please try again.', type: 'error' })
-        return
-      }
+      const timeoutMs = 8000
+      const stallMessage =
+        'Signup is stalled in this browser (Edge Tracking Prevention/storage). Try Chrome/Safari or disable Tracking Prevention for forgenursing.com.'
+      const withTimeout = <T,>(promise: Promise<T>) =>
+        Promise.race([
+          promise,
+          new Promise<T>((_, reject) => setTimeout(() => reject(new Error('SIGNUP_TIMEOUT')), timeoutMs)),
+        ])
 
+      console.log('signup:beforeClient')
+      console.log('signup:beforeGetSession')
+      await withTimeout(supabase.auth.getSession())
+      console.log('signup:afterGetSession')
+
+      console.log('signup:healthProbe:start')
       try {
         const healthRes = await fetch(`${supabaseUrl}/auth/v1/health`, {
           headers: { apikey: supabaseAnonKey },
@@ -186,8 +191,9 @@ export default function SignupPage() {
         if (!healthRes.ok) {
           throw new Error(`Health check failed (${healthRes.status})`)
         }
+        console.log('signup:healthProbe ok')
       } catch (healthError) {
-        console.error('signup:healthCheck failed', healthError)
+        console.error('signup:healthProbe failed', healthError)
         setMessage({
           text: 'Auth service unreachable. Please disable tracking prevention for this site or try another browser.',
           type: 'error',
@@ -195,23 +201,17 @@ export default function SignupPage() {
         return
       }
 
-      const abortController = new AbortController()
-      abortTimeoutId = setTimeout(() => abortController.abort(), 10000)
-      const supabaseWithAbort = createBrowserClient(supabaseUrl, supabaseAnonKey, {
-        global: {
-          fetch: (input, init = {}) => fetch(input, { ...init, signal: abortController.signal }),
-        },
-      })
-
       signUpReached = true
       console.log('signup:beforeSignUp')
-      const { data, error } = await supabaseWithAbort.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: callbackUrl,
-        },
-      })
+      const { data, error } = await withTimeout(
+        supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: callbackUrl,
+          },
+        })
+      )
 
       console.log('signup:afterSignUp')
       if (error) {
@@ -296,11 +296,8 @@ export default function SignupPage() {
     } catch (error: any) {
       console.error('signup:catch', error)
       // Handle other errors
-      if (error?.name === 'AbortError') {
-        setMessage({
-          text: 'Network blocked or request stalled. Please disable tracking prevention for this site or try another browser.',
-          type: 'error',
-        })
+      if (error?.message === 'SIGNUP_TIMEOUT') {
+        setMessage({ text: 'Signup is stalled in this browser (Edge Tracking Prevention/storage). Try Chrome/Safari or disable Tracking Prevention for forgenursing.com.', type: 'error' })
         return
       }
 
@@ -310,9 +307,6 @@ export default function SignupPage() {
       console.log('signup:finally')
       if (!signUpReached) {
         console.error('Signup call not reached')
-      }
-      if (abortTimeoutId) {
-        clearTimeout(abortTimeoutId)
       }
       setLoading(false)
     }
