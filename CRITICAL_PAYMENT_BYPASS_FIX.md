@@ -12,7 +12,23 @@
 
 ## Root Cause
 
-The onboarding page (`src/app/(app)/onboarding/page.tsx`) was redirecting to `/tutor` after completion without checking subscription status:
+**PRIMARY ISSUE**: The middleware was NOT checking subscription status for protected routes. It only checked subscription on login/signup redirect, but once a user was authenticated, they could access ANY protected route (including `/tutor`) without a subscription.
+
+**SECONDARY ISSUE**: The onboarding page was redirecting to `/tutor` without checking subscription status.
+
+### Middleware Issue (PRIMARY)
+The middleware had this code:
+
+```typescript
+// BEFORE (BROKEN)
+const protectedRoutes = ['/clinical-desk', '/tutor', '/binder', '/readiness', '/settings', '/classes', '/help']
+const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+
+// But then it never checked subscription status for these routes!
+// It only checked on login/signup redirect
+```
+
+### Onboarding Issue (SECONDARY)
 
 ```typescript
 // BEFORE (BROKEN)
@@ -27,6 +43,43 @@ const handleStep3Complete = async () => {
 ```
 
 ## Fix Applied
+
+### Fix 1: Middleware Subscription Check (PRIMARY FIX)
+
+Modified `middleware.ts` to check subscription status for ALL protected routes:
+
+```typescript
+// AFTER (FIXED)
+// CRITICAL: Check subscription status for protected routes
+if (isProtectedRoute && user) {
+  try {
+    // Fetch subscription status using service role key
+    const { data: profile } = await adminClient
+      .from('profiles')
+      .select('subscription_status')
+      .eq('id', user.id)
+      .single()
+    
+    const subscriptionStatus = profile?.subscription_status
+    const hasActiveSubscription = hasSubscriptionAccess(subscriptionStatus)
+
+    // Allow onboarding page even without subscription
+    if (pathname.startsWith('/onboarding')) {
+      return response
+    }
+
+    // For all other protected routes, require active subscription
+    if (!hasActiveSubscription) {
+      return NextResponse.redirect(new URL('/checkout', request.url))
+    }
+  } catch (error) {
+    // Fail secure - redirect to payment required
+    return NextResponse.redirect(new URL('/billing/payment-required', request.url))
+  }
+}
+```
+
+### Fix 2: Onboarding Subscription Check (SECONDARY FIX)
 
 Modified `src/app/(app)/onboarding/page.tsx` to check subscription status before redirecting:
 
@@ -80,7 +133,8 @@ Same fix applied to `handleSkip()` function.
 
 ## Files Modified
 
-- `src/app/(app)/onboarding/page.tsx` - Added subscription check before redirect
+- `middleware.ts` - **PRIMARY FIX**: Added subscription check for ALL protected routes
+- `src/app/(app)/onboarding/page.tsx` - **SECONDARY FIX**: Added subscription check before redirect
 
 ## Testing Required
 
