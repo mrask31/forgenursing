@@ -179,9 +179,6 @@ export default function SignupPage() {
         ])
 
       console.log('signup:beforeClient')
-      console.log('signup:beforeGetSession')
-      await withTimeout(supabase.auth.getSession())
-      console.log('signup:afterGetSession')
 
       console.log('signup:healthProbe:start')
       try {
@@ -201,10 +198,12 @@ export default function SignupPage() {
         return
       }
 
-      signUpReached = true
       console.log('signup:beforeSignUp')
+      const supabaseNoPersist = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      })
       const { data, error } = await withTimeout(
-        supabase.auth.signUp({
+        supabaseNoPersist.auth.signUp({
           email,
           password,
           options: {
@@ -305,9 +304,6 @@ export default function SignupPage() {
       setMessage({ text: errorMessage, type: 'error' })
     } finally {
       console.log('signup:finally')
-      if (!signUpReached) {
-        console.error('Signup call not reached')
-      }
       setLoading(false)
     }
   }
