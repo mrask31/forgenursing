@@ -9,6 +9,7 @@ function BillingSuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [loading, setLoading] = useState(true)
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -27,6 +28,19 @@ function BillingSuccessContent() {
         const shouldPoll = status === 'pending_payment' && Date.now() - start < 20000
 
         if (!shouldPoll) {
+          // Also check onboarding status
+          try {
+            const onboardingRes = await fetch('/api/onboarding/status')
+            if (onboardingRes.ok) {
+              const onboardingData = await onboardingRes.json()
+              if (isMounted) {
+                setOnboardingCompleted(onboardingData.completed || onboardingData.skipped || false)
+              }
+            }
+          } catch (e) {
+            // Ignore onboarding check errors
+          }
+          
           if (isMounted) setLoading(false)
           return
         }
@@ -83,10 +97,10 @@ function BillingSuccessContent() {
 
           <div className="space-y-3">
             <Link
-              href="/tutor"
+              href={onboardingCompleted ? "/tutor" : "/onboarding"}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-base font-medium hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl"
             >
-              Start Learning
+              {onboardingCompleted ? "Start Learning" : "Get Started"}
               <ArrowRight className="w-5 h-5" />
             </Link>
             
