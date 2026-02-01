@@ -216,12 +216,6 @@ function TutorPageContent() {
     })
   }, [attachedFiles, attachedContext, attachedTypes, hasAttachedFiles])
 
-  useEffect(() => {
-    if (modeParam === 'notes') {
-      router.replace('/tutor?mode=tutor')
-    }
-  }, [modeParam, router])
-
   const prevClassIdRef = useRef<string | undefined>(undefined)
 
   useEffect(() => {
