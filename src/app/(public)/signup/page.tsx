@@ -136,6 +136,7 @@ export default function SignupPage() {
     let signUpReached = false
     let timeoutId: ReturnType<typeof setTimeout> | null = null
     let didTimeout = false
+    let signUpPromise: ReturnType<typeof supabase.auth.signUp> | null = null
     setLoading(true)
     setMessage(null)
 
@@ -170,7 +171,7 @@ export default function SignupPage() {
       })
 
       signUpReached = true
-      const signUpPromise = supabase.auth.signUp({
+      signUpPromise = supabase.auth.signUp({
         email,
         password,
         options: {
@@ -178,7 +179,9 @@ export default function SignupPage() {
         },
       })
 
-      const { data, error } = await Promise.race([signUpPromise, timeoutPromise]) as Awaited<typeof signUpPromise>
+      const { data, error } = await Promise.race([signUpPromise, timeoutPromise]) as Awaited<
+        ReturnType<typeof supabase.auth.signUp>
+      >
       
       if (error) {
         // Log the error for debugging (remove in production if needed)
