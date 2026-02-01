@@ -5,6 +5,7 @@ import { hasSubscriptionAccess } from '@/lib/subscription-access'
 import { usePathname } from 'next/navigation'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
+import { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -35,7 +36,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
     checkUserAndSubscription()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null)
       
       if (session?.user) {
