@@ -16,7 +16,7 @@ RETURNS TABLE (
   last_user_created_at TIMESTAMPTZ,
   last_profile_created_at TIMESTAMPTZ,
   health_status TEXT
-) AS $
+) AS $$
 DECLARE
   v_trigger_enabled BOOLEAN;
   v_function_exists BOOLEAN;
@@ -77,7 +77,7 @@ BEGIN
     v_last_profile_created,
     v_health_status;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 2. Create function to get orphaned users details
 CREATE OR REPLACE FUNCTION get_orphaned_users()
@@ -86,7 +86,7 @@ RETURNS TABLE (
   email TEXT,
   created_at TIMESTAMPTZ,
   age_minutes NUMERIC
-) AS $
+) AS $$
 BEGIN
   RETURN QUERY
   SELECT 
@@ -99,7 +99,7 @@ BEGIN
   WHERE p.id IS NULL
   ORDER BY u.created_at DESC;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. Create function to repair orphaned users
 CREATE OR REPLACE FUNCTION repair_orphaned_users()
@@ -107,7 +107,7 @@ RETURNS TABLE (
   user_id UUID,
   email TEXT,
   repair_status TEXT
-) AS $
+) AS $$
 DECLARE
   v_user RECORD;
   v_repair_status TEXT;
@@ -135,7 +135,7 @@ BEGIN
     RETURN QUERY SELECT v_user.id, v_user.email, v_repair_status;
   END LOOP;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 4. Create view for easy monitoring
 CREATE OR REPLACE VIEW trigger_health_dashboard AS
