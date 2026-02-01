@@ -159,9 +159,9 @@ export default function HomePage() {
     try {
       const supabase = getBrowserClient()
       
-      supabase.auth.getUser().then(({ data: { user } }) => {
+      supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
         setUser(user)
-      }).catch((error) => {
+      }).catch((error: any) => {
         console.error('[Landing Page] Error getting user:', error)
         // Don't break the page if auth check fails
       })
