@@ -146,13 +146,10 @@ export default function SignupPage() {
       }
 
       console.log('[Signup] Calling signUp')
-      const signUpResult = await withTimeout(
-        supabase.auth.signUp({
-          email,
-          password,
-        })
-      ) as Awaited<ReturnType<typeof supabase.auth.signUp>>
-      const { data, error } = signUpResult
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      })
 
       console.log('[Signup] SignUp response received', { 
         hasUser: !!data?.user, 
