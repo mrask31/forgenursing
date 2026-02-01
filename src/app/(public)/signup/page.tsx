@@ -135,6 +135,7 @@ export default function SignupPage() {
 
     let signUpReached = false
     let timeoutId: ReturnType<typeof setTimeout> | null = null
+    let didTimeout = false
     setLoading(true)
     setMessage(null)
 
@@ -162,7 +163,10 @@ export default function SignupPage() {
       const timeoutMs = 15000
       const timeoutError = new Error('SIGNUP_TIMEOUT')
       const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => reject(timeoutError), timeoutMs)
+        timeoutId = setTimeout(() => {
+          didTimeout = true
+          reject(timeoutError)
+        }, timeoutMs)
       })
 
       signUpReached = true
@@ -258,7 +262,19 @@ export default function SignupPage() {
     } catch (error: any) {
       // Handle other errors
       if (error?.message === 'SIGNUP_TIMEOUT') {
+        console.error('Signup timed out after 15s', { email })
         setMessage({ text: 'Signup timed out. Please try again.', type: 'error' })
+        signUpPromise
+          .then((lateResult) => {
+            if (lateResult?.data?.user) {
+              setMessage(null)
+              setLoading(false)
+              router.push('/checkout')
+            }
+          })
+          .catch((lateError) => {
+            console.error('Late signup error after timeout:', lateError)
+          })
         return
       }
 
