@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, MessageSquare, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
@@ -23,10 +23,26 @@ export default function SignupPage() {
   // This ensures the event only fires once per successful signup, even on rerenders
   const signUpEventFiredRef = useRef(false)
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const supabase = createClient(supabaseUrl, supabaseAnonKey)
+  const signupStorage = new Map<string, string>()
+  const supabaseSignup = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      storage: {
+        getItem: (key) => signupStorage.get(key) ?? null,
+        setItem: (key, value) => {
+          signupStorage.set(key, value)
+        },
+        removeItem: (key) => {
+          signupStorage.delete(key)
+        },
+      },
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false,
+    },
+  })
 
   // Check if user is already verified and signed in when page loads (but not if we're showing success screen)
   useEffect(() => {
@@ -134,11 +150,8 @@ export default function SignupPage() {
     e.preventDefault()
 
     console.log('signup:start')
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     console.log('signup:env', { supabaseUrl: !!supabaseUrl, supabaseAnonKey: !!supabaseAnonKey })
 
-    let signUpReached = false
     setLoading(true)
     setMessage(null)
 
@@ -199,11 +212,8 @@ export default function SignupPage() {
       }
 
       console.log('signup:beforeSignUp')
-      const supabaseNoPersist = createBrowserClient(supabaseUrl, supabaseAnonKey, {
-        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-      })
       const { data, error } = await withTimeout(
-        supabaseNoPersist.auth.signUp({
+        supabaseSignup.auth.signUp({
           email,
           password,
           options: {
@@ -697,6 +707,9 @@ export default function SignupPage() {
                   </label>
                   <p className="text-xs text-slate-500 text-center">
                     Cancel anytime during your free preview • 7-day free trial included
+                  </p>
+                  <p className="text-xs text-slate-500 text-center">
+                    You can verify your email later.
                   </p>
                 </div>
               </form>
