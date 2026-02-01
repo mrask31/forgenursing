@@ -228,9 +228,8 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
       setUploadStatus('success')
       setTimeout(async () => {
         await loadMaterials()
-        setShowUpload(false)
+        // Don't auto-close upload section on success - let user click "Study This Now"
         setUploadDocumentType(null)
-        setUploadStatus('idle')
         if (fileInputRef.current) {
           fileInputRef.current.value = ''
         }
@@ -467,11 +466,24 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                   }}
                 />
                 {uploadStatus === 'success' ? (
-                  <>
-                    <CheckCircle className="w-8 h-8 mx-auto mb-2 text-emerald-600" />
-                    <p className="text-sm font-medium text-emerald-700">Upload successful!</p>
-                    <p className="text-xs text-emerald-600 mt-1">Your file is being processed...</p>
-                  </>
+                  <div className="space-y-3">
+                    <div>
+                      <CheckCircle className="w-8 h-8 mx-auto mb-2 text-emerald-600" />
+                      <p className="text-sm font-medium text-emerald-700">Upload successful!</p>
+                      <p className="text-xs text-emerald-600 mt-1">Your file is being processed...</p>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setShowUpload(false)
+                        setUploadStatus('idle')
+                        handleStudyClass()
+                      }}
+                      className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Study This Now
+                    </Button>
+                  </div>
                 ) : uploadStatus === 'error' ? (
                   <>
                     <AlertCircle className="w-8 h-8 mx-auto mb-2 text-red-600" />
@@ -537,6 +549,20 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                     </div>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleStudyClass()
+                      }}
+                      className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200 h-7 px-3 shrink-0 font-semibold"
+                      aria-label={`Study with ${file.filename}`}
+                    >
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      Study
+                    </Button>
                     <Button
                       type="button"
                       variant="ghost"
