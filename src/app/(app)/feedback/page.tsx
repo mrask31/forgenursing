@@ -31,8 +31,11 @@ export default function FeedbackPage() {
         }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error('Failed to submit feedback')
+        console.error('[Feedback] API error:', data)
+        throw new Error(data.details || data.error || 'Failed to submit feedback')
       }
 
       setIsSubmitted(true)
@@ -46,7 +49,8 @@ export default function FeedbackPage() {
       setRating(null)
     } catch (err) {
       console.error('Error submitting feedback:', err)
-      setError('Failed to submit feedback. Please try again.')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit feedback. Please try again.'
+      setError(errorMessage)
     } finally {
       setIsSubmitting(false)
     }

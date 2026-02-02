@@ -7,14 +7,24 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
+      console.error('[Feedback API] No authenticated user')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
     const { whatYouLove, whatsFrustrating, featureRequest, email, rating } = body
 
+    console.log('[Feedback API] Attempting to insert feedback:', {
+      userId: user.id,
+      hasLove: !!whatYouLove,
+      hasFrustrating: !!whatsFrustrating,
+      hasFeature: !!featureRequest,
+      hasEmail: !!email,
+      rating,
+    })
+
     // Insert feedback into database
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('feedback')
       .insert({
         user_id: user.id,
@@ -24,15 +34,28 @@ export async function POST(request: Request) {
         email: email || null,
         rating: rating || null,
       })
+      .select()
 
     if (error) {
-      console.error('[Feedback API] Error inserting feedback:', error)
-      return NextResponse.json({ error: 'Failed to save feedback' }, { status: 500 })
+      console.error('[Feedback API] Error inserting feedback:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      })
+      return NextResponse.json({ 
+        error: 'Failed to save feedback', 
+        details: error.message 
+      }, { status: 500 })
     }
 
+    console.log('[Feedback API] Feedback saved successfully:', data)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('[Feedback API] Unexpected error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
