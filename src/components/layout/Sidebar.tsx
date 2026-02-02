@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, FileText, Settings, Activity, GraduationCap, BookOpen, HelpCircle } from 'lucide-react'
+import { MessageSquare, FileText, Settings, Activity, GraduationCap, BookOpen, HelpCircle, MessageCircle } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import HistoryButton from './HistoryButton'
 
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { label: 'Medical Dictionary', href: '/dictionary', icon: BookOpen },
   { label: 'Settings', href: '/settings', icon: Settings },
   { label: 'Help', href: '/help', icon: HelpCircle },
+  { label: 'Give Feedback', href: '/feedback', icon: MessageCircle },
 ]
 
 interface SidebarProps {
@@ -70,7 +71,8 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
             const isActive = pathname === item.href || 
               (item.href === '/classes' && pathname.startsWith('/classes')) ||
               (item.href === '/dictionary' && pathname.startsWith('/dictionary')) ||
-              (item.href === '/help' && pathname === '/help')
+              (item.href === '/help' && pathname === '/help') ||
+              (item.href === '/feedback' && pathname === '/feedback')
             const Icon = item.icon
 
             return (
