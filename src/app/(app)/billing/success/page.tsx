@@ -33,12 +33,30 @@ function BillingSuccessContent() {
             const onboardingRes = await fetch('/api/onboarding/status')
             if (onboardingRes.ok) {
               const onboardingData = await onboardingRes.json()
+              const completed = onboardingData.completed || onboardingData.skipped || false
+              
               if (isMounted) {
-                setOnboardingCompleted(onboardingData.completed || onboardingData.skipped || false)
+                setOnboardingCompleted(completed)
+                setLoading(false)
+                
+                // Auto-redirect to onboarding if not completed
+                if (!completed) {
+                  console.log('[Billing Success] Redirecting to onboarding (not completed)')
+                  setTimeout(() => {
+                    window.location.href = '/onboarding'
+                  }, 1500) // Small delay to show success message
+                }
               }
             }
           } catch (e) {
-            // Ignore onboarding check errors
+            console.error('[Billing Success] Error checking onboarding status:', e)
+            // On error, assume not completed and redirect to onboarding
+            if (isMounted) {
+              setLoading(false)
+              setTimeout(() => {
+                window.location.href = '/onboarding'
+              }, 1500)
+            }
           }
           
           if (isMounted) setLoading(false)

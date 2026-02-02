@@ -17,8 +17,6 @@ type Mode = 'tutor'
 interface TutorSessionProps {
   sessionId?: string // Optional - will be created on first message if missing
   mode: Mode
-  strictMode: boolean
-  onStrictModeChange: (strict: boolean) => void
   onSessionCreated?: (sessionId: string) => void // Callback when session is created
   attachedFiles?: { id: string, name: string, document_type: string | null }[] // Attached files from parent
   onDetachFile?: (fileId: string) => void // Callback to detach a file
@@ -31,8 +29,6 @@ interface TutorSessionProps {
 export default function TutorSession({
   sessionId: propSessionId,
   mode,
-  strictMode,
-  onStrictModeChange,
   onSessionCreated,
   attachedFiles: propAttachedFiles = [],
   onDetachFile,
@@ -638,7 +634,6 @@ export default function TutorSession({
         {hasMessages ? (
           <ClinicalTutorWorkspace 
             key={sessionId}
-            strictMode={strictMode} 
             chatId={sessionId} 
             filterMode="mixed"
             mode="tutor"

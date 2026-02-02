@@ -40,7 +40,6 @@ export default function Step2Ask({ fileId, fileName, onComplete, onBack }: Step2
         body: JSON.stringify({
           messages: [{ role: 'user', content: questionText }],
           chatId,
-          strictMode: false,
           filterMode: 'mixed',
           selectedDocIds: [],
           mode: 'tutor',

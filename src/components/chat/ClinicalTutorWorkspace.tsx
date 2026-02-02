@@ -54,7 +54,6 @@ const detectBinderUsage = (content: string): boolean => {
 };
 
 interface ClinicalTutorWorkspaceProps {
-  strictMode?: boolean
   chatId?: string
   filterMode?: 'notes' | 'reference' | 'mixed'
   selectedDocIds?: string[]
@@ -69,7 +68,6 @@ interface ClinicalTutorWorkspaceProps {
 }
 
 export default function ClinicalTutorWorkspace({ 
-  strictMode = false, 
   chatId: providedChatId, 
   filterMode = 'mixed', 
   selectedDocIds = [], 
@@ -199,7 +197,6 @@ export default function ClinicalTutorWorkspace({
     
     return {
       chatId, 
-      strictMode, 
       filterMode, 
       selectedDocIds, 
       mode,
@@ -208,7 +205,7 @@ export default function ClinicalTutorWorkspace({
       selectedClassName,
       attachedFileIds, // Always an array, never 'none'
     };
-  }, [chatId, strictMode, filterMode, selectedDocIds, mode, topicTitle, className, selectedClassName, attachedFiles]);
+  }, [chatId, filterMode, selectedDocIds, mode, topicTitle, className, selectedClassName, attachedFiles]);
   
   const { messages, append, isLoading, setMessages } = useChat({
     api: '/api/chat',
@@ -710,7 +707,6 @@ export default function ClinicalTutorWorkspace({
             onSelectMessage={onSelectMessage}
             isLoading={isLoading}
             chatId={chatId || undefined}
-            strictMode={strictMode}
             onSaveToNotebook={(id) => setSavingToNotebook(id)}
             savingToNotebook={savingToNotebook}
             onSaveClip={(messageId, content) => {

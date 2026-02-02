@@ -24,7 +24,6 @@ interface ChatMessageListProps {
   onSelectMessage?: (id: string) => void
   isLoading?: boolean
   chatId?: string
-  strictMode?: boolean
   onSaveToNotebook?: (messageId: string) => void
   savingToNotebook?: string | null
   onSaveClip?: (messageId: string, content: string) => void // New prop for saving clips
@@ -51,7 +50,6 @@ export default function ChatMessageList({
   onSelectMessage,
   isLoading = false,
   chatId,
-  strictMode = false,
   onSaveToNotebook,
   savingToNotebook,
   onSaveClip,

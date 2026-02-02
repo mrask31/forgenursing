@@ -2,21 +2,19 @@
 
 // General Tutor prompts (broad, NCLEX-focused for all nursing students)
 export const GENERAL_TUTOR_PROMPTS = [
+  "Give me an NCLEX practice question on [topic]",
   "Walk me through an NCLEX-style priority question",
   "Explain a nursing concept step-by-step using ABCs",
   "Help me practice medication dosage calculations",
-  "Give me an NCLEX practice question on pathophysiology",
-  "Explain clinical reasoning for patient assessment",
-  "Help me understand nursing interventions and prioritization",
+  "Quiz me on pathophysiology (NCLEX format)",
 ]
 
 // Class-specific prompts (when a class is selected)
 export const CLASS_TUTOR_PROMPTS = [
-  "Explain key concepts from this class step-by-step",
   "Create NCLEX-style practice questions from this class",
+  "Explain key concepts from this class step-by-step",
   "Help me understand the pathophysiology we're covering",
   "Walk me through nursing interventions for this class",
-  "What are the priority concepts I should focus on?",
   "Test me on important topics from this class",
 ]
 

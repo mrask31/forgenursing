@@ -41,11 +41,17 @@ export default function LoginPage() {
   }, [])
 
   useEffect(() => {
-    // CRITICAL: Clear ALL Supabase cookies and storage IMMEDIATELY on page load
-    // This must happen BEFORE any Supabase client calls to prevent stale token issues
+    // Only clear storage if there's an explicit error parameter
+    // This prevents destroying valid sessions on normal page loads
     if (typeof window !== 'undefined') {
-      // Clear storage first, before anything else
-      clearSupabaseStorage()
+      const params = new URLSearchParams(window.location.search)
+      const hasAuthError = params.get('error') === 'auth-code-error' || params.get('error') === 'session-error'
+      
+      // Only clear storage if there's an auth error
+      if (hasAuthError) {
+        console.log('[Login] Auth error detected, clearing storage')
+        clearSupabaseStorage()
+      }
       
       // Make resetSession available globally for debugging (escape hatch)
       ;(window as any).resetSession = resetSession
@@ -89,24 +95,26 @@ export default function LoginPage() {
         })
       }
 
-      // After clearing storage, check for any remaining session and sign out
-      // This is a safety check - storage should already be cleared above
-      const checkAndCleanSession = async () => {
-        try {
-          // Small delay to ensure cookies are cleared
-          await new Promise(resolve => setTimeout(resolve, 100))
-          
-          // Try to sign out any remaining session (will fail silently if no session)
-          await supabase.auth.signOut()
-          
-          // Clear storage again as a safety measure
-          clearSupabaseStorage()
-        } catch (error) {
-          // Ignore errors - we're just cleaning up
-          debugAuthLog('Cleanup signOut error (expected if no session)', error)
+      // Only clean session if there's an auth error
+      const hasAuthError = params.get('error') === 'auth-code-error' || params.get('error') === 'session-error'
+      if (hasAuthError) {
+        const checkAndCleanSession = async () => {
+          try {
+            // Small delay to ensure cookies are cleared
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            // Try to sign out any remaining session (will fail silently if no session)
+            await supabase.auth.signOut()
+            
+            // Clear storage again as a safety measure
+            clearSupabaseStorage()
+          } catch (error) {
+            // Ignore errors - we're just cleaning up
+            debugAuthLog('Cleanup signOut error (expected if no session)', error)
+          }
         }
+        checkAndCleanSession()
       }
-      checkAndCleanSession()
     }
   }, [supabase])
 
@@ -120,11 +128,11 @@ export default function LoginPage() {
 
     debugAuthLog('Sign-in started', { email: email.trim(), retryCount })
 
-    // Create timeout promise for 12-second timeout
+    // Create timeout promise for 30-second timeout
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
         reject(new Error('TIMEOUT'))
-      }, 12000)
+      }, 30000)
     })
 
     try {
@@ -277,7 +285,7 @@ export default function LoginPage() {
       
       // Handle timeout specifically
       if (err instanceof Error && err.message === 'TIMEOUT') {
-        debugAuthLog('Sign-in timed out after 12 seconds')
+        debugAuthLog('Sign-in timed out after 30 seconds')
         setMessage({ 
           text: 'Login is taking longer than expected. Please check your connection and try again.', 
           type: 'error' 

@@ -24,7 +24,6 @@ function TutorPageContent() {
   const searchParams = useSearchParams()
   
   // State hooks
-  const [strictMode, setStrictMode] = useState(false)
   const [resolvedChatId, setResolvedChatId] = useState<string | null>(null)
   const [sessionType, setSessionType] = useState<string | null>(null)
   const [isResolving, setIsResolving] = useState(true)
@@ -729,8 +728,6 @@ function TutorPageContent() {
         <div className="flex-shrink-0 bg-slate-50 pt-safe-t pb-2 z-40">
           <TutorHeader
             mode="tutor"
-            strictMode={strictMode}
-            onStrictModeChange={setStrictMode}
             selectedClass={tutorContext.selectedClass}
             selectedTopic={tutorContext.selectedTopic}
             onClearTopic={tutorContext.clearTopic}
@@ -789,8 +786,6 @@ function TutorPageContent() {
             <TutorSession
               sessionId={resolvedChatId || undefined}
               mode="tutor"
-              strictMode={strictMode}
-              onStrictModeChange={setStrictMode}
               onSessionCreated={handleSessionCreated}
               attachedFiles={attachedFiles}
               onDetachFile={handleDetachFile}
