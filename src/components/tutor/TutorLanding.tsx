@@ -267,6 +267,30 @@ export default function TutorLanding({
       {/* Contextual CTAs based on user state */}
       {isGeneralTutor && hasAnyMaterials === false && (
         <div className="w-full max-w-2xl mt-4">
+          {/* First-Time Guidance Card */}
+          <div className="mb-4 p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl">
+            <h3 className="text-base font-semibold text-slate-900 mb-2">
+              Not sure where to start?
+            </h3>
+            <p className="text-sm text-slate-700 mb-4">
+              Try asking why one answer is unsafe. This builds clinical judgment faster than memorizing rationales.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={() => handleSuggestionClick("Why is this answer unsafe?")}
+                className="px-4 py-2 bg-white border-2 border-amber-300 text-slate-900 rounded-lg text-sm font-semibold hover:bg-amber-50 transition-all"
+              >
+                Why is this answer unsafe?
+              </button>
+              <button
+                onClick={() => handleSuggestionClick("Help me prioritize this scenario")}
+                className="px-4 py-2 bg-white border-2 border-amber-300 text-slate-900 rounded-lg text-sm font-semibold hover:bg-amber-50 transition-all"
+              >
+                Help me prioritize this scenario
+              </button>
+            </div>
+          </div>
+
           <div className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl">
             <h3 className="text-lg font-semibold text-slate-900 mb-2 flex items-center gap-2">
               <span className="text-2xl">📚</span>
@@ -287,10 +311,34 @@ export default function TutorLanding({
 
       {isGeneralTutor && hasAnyMaterials === true && hasAnyChats === false && (
         <div className="w-full max-w-2xl mt-4">
+          {/* First-Time Guidance Card */}
+          <div className="mb-4 p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl">
+            <h3 className="text-base font-semibold text-slate-900 mb-2">
+              Not sure where to start?
+            </h3>
+            <p className="text-sm text-slate-700 mb-4">
+              Try asking why one answer is unsafe. This builds clinical judgment faster than memorizing rationales.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={() => handleSuggestionClick("Why is this answer unsafe?")}
+                className="px-4 py-2 bg-white border-2 border-amber-300 text-slate-900 rounded-lg text-sm font-semibold hover:bg-amber-50 transition-all"
+              >
+                Why is this answer unsafe?
+              </button>
+              <button
+                onClick={() => handleSuggestionClick("Help me prioritize this scenario")}
+                className="px-4 py-2 bg-white border-2 border-amber-300 text-slate-900 rounded-lg text-sm font-semibold hover:bg-amber-50 transition-all"
+              >
+                Help me prioritize this scenario
+              </button>
+            </div>
+          </div>
+
           <div className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl">
             <h3 className="text-lg font-semibold text-slate-900 mb-2 flex items-center gap-2">
               <span className="text-2xl">✨</span>
-              Ready to Start Studying!
+              Ready to Start Studying
             </h3>
             <p className="text-sm text-slate-700 mb-4">
               Great! You've uploaded your materials. Now ask me any question about your nursing content, or try one of the suggested prompts below.

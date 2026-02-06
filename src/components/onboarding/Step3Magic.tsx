@@ -22,12 +22,13 @@ export default function Step3Magic({ response, onComplete }: Step3MagicProps) {
           <Sparkles className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-3xl font-semibold text-slate-900 mb-3">
-          This is ForgeNursing 🎉
+          See the difference? 🎉
         </h1>
         <p className="text-lg text-slate-600 leading-relaxed">
-          Notice how the AI referenced <span className="font-semibold text-indigo-600">your uploaded material</span>?
+          ForgeNursing just explained that concept using{' '}
+          <span className="font-semibold text-indigo-600">your uploaded material</span> — not generic content.
           <br />
-          That's the ForgeNursing difference.
+          This is how every explanation works.
         </p>
       </div>
 
@@ -98,10 +99,10 @@ export default function Step3Magic({ response, onComplete }: Step3MagicProps) {
             <FileText className="w-5 h-5 text-white" />
           </div>
           <h3 className="text-sm font-semibold text-slate-900 mb-1">
-            Your Materials
+            Personalized to you
           </h3>
           <p className="text-xs text-slate-600">
-            AI learns from your textbooks, notes, and study guides
+            Every explanation uses your textbooks and notes
           </p>
         </div>
 
@@ -110,10 +111,10 @@ export default function Step3Magic({ response, onComplete }: Step3MagicProps) {
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <h3 className="text-sm font-semibold text-slate-900 mb-1">
-            Visual Learning
+            Step-by-step reasoning
           </h3>
           <p className="text-xs text-slate-600">
-            Concepts broken down with clear structure and examples
+            Learn how to think through prioritization
           </p>
         </div>
 
@@ -122,25 +123,31 @@ export default function Step3Magic({ response, onComplete }: Step3MagicProps) {
             <CheckCircle className="w-5 h-5 text-white" />
           </div>
           <h3 className="text-sm font-semibold text-slate-900 mb-1">
-            NCLEX Ready
+            NCLEX-focused
           </h3>
           <p className="text-xs text-slate-600">
-            Clinical reasoning skills for exam success
+            Built for clinical reasoning and exam success
           </p>
         </div>
       </div>
 
-      {/* CTA */}
-      <div className="text-center">
+      {/* Recommended First Step */}
+      <div className="mb-8 p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl">
+        <h3 className="text-base font-semibold text-slate-900 mb-2">
+          Recommended first step
+        </h3>
+        <p className="text-sm text-slate-700 mb-4">
+          Most nursing students struggle with understanding why an answer is unsafe. Start here.
+        </p>
         <button
           onClick={onComplete}
-          className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-base font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
         >
-          Start Studying
+          Go to Clinical Tutor
           <ArrowRight className="w-5 h-5" />
         </button>
-        <p className="text-sm text-slate-500 mt-4">
-          You can upload more materials anytime from the Binder
+        <p className="text-xs text-slate-500 mt-3">
+          You can explore anything — this is just a great place to begin.
         </p>
       </div>
     </div>

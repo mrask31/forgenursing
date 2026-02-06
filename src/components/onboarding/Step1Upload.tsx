@@ -138,13 +138,20 @@ export default function Step1Upload({ onComplete, onSkip }: Step1UploadProps) {
           <Upload className="w-8 h-8 text-indigo-600" />
         </div>
         <h1 className="text-3xl font-semibold text-slate-900 mb-3">
-          Upload Your First Material
+          Let's personalize ForgeNursing for you
         </h1>
         <p className="text-lg text-slate-600 leading-relaxed">
-          ForgeNursing learns from <span className="font-semibold text-indigo-600">your</span> textbooks, notes, and study materials.
-          <br />
-          Let's start by uploading your first file.
+          Upload a textbook chapter or study guide so ForgeNursing can explain concepts using{' '}
+          <span className="font-semibold text-indigo-600">your program's curriculum</span> — not generic content.
         </p>
+        <div className="mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+          <p className="text-sm text-indigo-900 font-medium">
+            💡 Why upload materials?
+          </p>
+          <p className="text-sm text-indigo-700 mt-1">
+            ForgeNursing uses your textbooks to ground every explanation in what your program teaches. This means better alignment with your exams and clinical training.
+          </p>
+        </div>
       </div>
 
       {/* Upload Area */}
@@ -209,24 +216,24 @@ export default function Step1Upload({ onComplete, onSkip }: Step1UploadProps) {
       {/* Examples */}
       <div className="mt-8 p-6 bg-slate-100 rounded-xl">
         <h3 className="text-sm font-semibold text-slate-900 mb-3">
-          What can you upload?
+          Great materials to start with:
         </h3>
         <ul className="space-y-2 text-sm text-slate-600">
           <li className="flex items-start gap-2">
             <span className="text-indigo-600 font-bold">•</span>
-            <span>Nursing textbook chapters (Fundamentals, Med-Surg, Pharmacology)</span>
+            <span>A chapter from your Med-Surg or Fundamentals textbook</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-indigo-600 font-bold">•</span>
-            <span>Class notes and lecture slides</span>
+            <span>Lecture notes from your current nursing class</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-indigo-600 font-bold">•</span>
-            <span>Study guides and review materials</span>
+            <span>Study guides or review sheets from your program</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-indigo-600 font-bold">•</span>
-            <span>Clinical practice guidelines</span>
+            <span>Clinical practice guidelines or care plans</span>
           </li>
         </ul>
       </div>
@@ -237,7 +244,7 @@ export default function Step1Upload({ onComplete, onSkip }: Step1UploadProps) {
           onClick={onSkip}
           className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
         >
-          I'll upload materials later
+          Skip for now — I'll upload later
         </button>
       </div>
     </div>

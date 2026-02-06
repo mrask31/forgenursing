@@ -5,11 +5,11 @@ export default function ThreeFeatures() {
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-white via-indigo-50/30 to-white" aria-labelledby="features-heading">
       <div className="text-center mb-8 sm:mb-12">
         <h2 id="features-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-3 sm:mb-4">
-          <span className="hidden sm:inline">Learn the Why, Not Just the Answer</span>
-          <span className="sm:hidden">Learn the "Why"</span>
+          <span className="hidden sm:inline">Built for how nurses actually think</span>
+          <span className="sm:hidden">How nurses think</span>
         </h2>
         <p className="text-base sm:text-lg text-slate-700 max-w-2xl mx-auto px-4 leading-relaxed hidden sm:block">
-          Turn "I knew this..." into "I can reason through it." Learn how to eliminate choices and prioritize safely.
+          ForgeNursing teaches you to think through prioritization, safety, and clinical judgment — not just memorize answers.
         </p>
       </div>
       
@@ -20,20 +20,20 @@ export default function ThreeFeatures() {
             <Brain className="w-6 h-6 text-indigo-600" />
           </div>
           <h3 className="text-lg font-bold text-slate-900 mb-2">
-            <span className="hidden sm:inline">🧠 Learn Clinical Judgment</span>
+            <span className="hidden sm:inline">Step-by-step clinical reasoning</span>
             <span className="sm:hidden">Clinical reasoning</span>
           </h3>
           <p className="text-slate-600 leading-relaxed mb-4 hidden sm:block">
-            Structured reasoning with visual maps first, then step-by-step explanations. See the big picture before diving into details.
+            Learn to think through prioritization using ABCs, safety protocols, and NCLEX frameworks.
           </p>
           <ul className="space-y-2 text-sm text-slate-600 hidden sm:block">
             <li className="flex items-center gap-2">
               <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-              <span>Map-first structure (visual before explanation)</span>
+              <span>ABCs and safety first</span>
             </li>
             <li className="flex items-center gap-2">
               <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-              <span>Step-by-step reasoning</span>
+              <span>Prioritization frameworks</span>
             </li>
           </ul>
         </div>
@@ -44,20 +44,20 @@ export default function ThreeFeatures() {
             <Bookmark className="w-8 h-8 text-indigo-600" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-3">
-            <span className="hidden sm:inline">📚 Study Using Your Own Course Materials</span>
-            <span className="sm:hidden">Uses your materials</span>
+            <span className="hidden sm:inline">Uses your course materials</span>
+            <span className="sm:hidden">Your materials</span>
           </h3>
           <p className="text-slate-600 leading-relaxed mb-4 hidden sm:block">
-            Upload your syllabus and textbooks so your learning stays aligned with your program.
+            Explanations come from your uploaded textbooks and notes — not generic content.
           </p>
           <ul className="space-y-2 text-sm text-slate-600 hidden sm:block">
             <li className="flex items-center gap-2">
               <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-              <span>Your syllabus & textbooks</span>
+              <span>Your textbooks & notes</span>
             </li>
             <li className="flex items-center gap-2">
               <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-              <span>Aligned with your program</span>
+              <span>Matches your curriculum</span>
             </li>
           </ul>
         </div>
@@ -68,20 +68,20 @@ export default function ThreeFeatures() {
             <MessageSquare className="w-8 h-8 text-indigo-600" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-3">
-            <span className="hidden sm:inline">💬 Socratic Learning — Like a Great Instructor</span>
-            <span className="sm:hidden">Guided explanations</span>
+            <span className="hidden sm:inline">Guides your thinking</span>
+            <span className="sm:hidden">Guided thinking</span>
           </h3>
           <p className="text-slate-600 leading-relaxed mb-4 hidden sm:block">
-            Your tutor guides your thinking with step-by-step reasoning, not just answers.
+            Teaches you how to reason through questions — not just what the answer is.
           </p>
           <ul className="space-y-2 text-sm text-slate-600 hidden sm:block">
             <li className="flex items-center gap-2">
               <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-              <span>Guides your thinking</span>
+              <span>Explains the "why"</span>
             </li>
             <li className="flex items-center gap-2">
               <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-              <span>Asks helpful questions</span>
+              <span>Builds confidence</span>
             </li>
           </ul>
         </div>
@@ -92,20 +92,20 @@ export default function ThreeFeatures() {
             <Bookmark className="w-8 h-8 text-indigo-600" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-3">
-            <span className="hidden sm:inline">📌 Save What Matters</span>
+            <span className="hidden sm:inline">Save what matters</span>
             <span className="sm:hidden">Save insights</span>
           </h3>
           <p className="text-slate-600 leading-relaxed mb-4 hidden sm:block">
-            Save the insights that help prioritization click — review your library before exams.
+            Bookmark key insights and review them before exams.
           </p>
           <ul className="space-y-2 text-sm text-slate-600 hidden sm:block">
             <li className="flex items-center gap-2">
               <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-              <span>Bookmark key moments</span>
+              <span>Personal library</span>
             </li>
             <li className="flex items-center gap-2">
               <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-              <span>Review before exams</span>
+              <span>Quick review</span>
             </li>
           </ul>
         </div>
@@ -114,8 +114,8 @@ export default function ThreeFeatures() {
       {/* Additional Feature Highlights - Enhanced */}
       <div className="bg-white/80 backdrop-blur-sm border border-indigo-200/60 rounded-xl p-6 sm:p-8 md:p-10 shadow-lg shadow-slate-200/50">
         <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 text-center mb-5 sm:mb-6">
-          <span className="hidden sm:inline">What's Included</span>
-          <span className="sm:hidden">Included</span>
+          <span className="hidden sm:inline">Evidence-based and NCLEX-aligned</span>
+          <span className="sm:hidden">NCLEX-aligned</span>
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div className="flex items-start gap-3">
@@ -123,10 +123,10 @@ export default function ThreeFeatures() {
               <Target className="w-7 h-7 text-indigo-600" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 mb-2 hidden sm:block">✔ AI tutor for nursing + NCLEX</h4>
-              <h4 className="font-bold text-slate-900 mb-2 sm:hidden">AI tutor</h4>
+              <h4 className="font-bold text-slate-900 mb-2 hidden sm:block">Standard NCLEX frameworks</h4>
+              <h4 className="font-bold text-slate-900 mb-2 sm:hidden">NCLEX frameworks</h4>
               <p className="text-slate-700 text-sm hidden sm:block">
-                Uses your own textbooks & PDFs
+                ABCs, safety protocols, prioritization
               </p>
             </div>
           </div>
@@ -135,10 +135,10 @@ export default function ThreeFeatures() {
               <Zap className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 mb-2 hidden sm:block">✔ Guided reasoning — not just answers</h4>
-              <h4 className="font-bold text-slate-900 mb-2 sm:hidden">Guided reasoning</h4>
+              <h4 className="font-bold text-slate-900 mb-2 hidden sm:block">Your textbooks, not generic content</h4>
+              <h4 className="font-bold text-slate-900 mb-2 sm:hidden">Your textbooks</h4>
               <p className="text-slate-700 text-sm hidden sm:block">
-                Step-by-step clinical reasoning guidance
+                Explanations grounded in your materials
               </p>
             </div>
           </div>
@@ -147,10 +147,10 @@ export default function ThreeFeatures() {
               <TrendingUp className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 mb-2 hidden sm:block">✔ Medical dictionary with bookmarking</h4>
-              <h4 className="font-bold text-slate-900 mb-2 sm:hidden">Dictionary</h4>
+              <h4 className="font-bold text-slate-900 mb-2 hidden sm:block">Supports learning, doesn't replace it</h4>
+              <h4 className="font-bold text-slate-900 mb-2 sm:hidden">Supports learning</h4>
               <p className="text-slate-700 text-sm hidden sm:block">
-                Save important learning moments
+                Complements your program and study tools
               </p>
             </div>
           </div>
@@ -159,10 +159,10 @@ export default function ThreeFeatures() {
               <MessageSquare className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 mb-2 hidden sm:block">✔ Progress dashboard</h4>
-              <h4 className="font-bold text-slate-900 mb-2 sm:hidden">Dashboard</h4>
+              <h4 className="font-bold text-slate-900 mb-2 hidden sm:block">7-day free trial</h4>
+              <h4 className="font-bold text-slate-900 mb-2 sm:hidden">Free trial</h4>
               <p className="text-slate-700 text-sm hidden sm:block">
-                Cancel anytime
+                Cancel anytime, no questions asked
               </p>
             </div>
           </div>

@@ -184,9 +184,9 @@ export default function OnboardingPage() {
               Step {currentStep} of 3
             </p>
             <p className="text-xs text-slate-500">
-              {currentStep === 1 && 'Upload your first material'}
-              {currentStep === 2 && 'Ask your first question'}
-              {currentStep === 3 && 'See the magic'}
+              {currentStep === 1 && 'Personalize your experience'}
+              {currentStep === 2 && 'See it in action'}
+              {currentStep === 3 && 'You're all set!'}
             </p>
           </div>
         </div>

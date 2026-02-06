@@ -49,22 +49,17 @@ export default function Hero({ user }: HeroProps) {
               <div className="p-0.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-md">
                 <MessageSquare className="w-3 h-3 text-white" />
               </div>
-              AI Tutor for NCLEX Prep
+              Clinical Reasoning Coach for NCLEX
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent tracking-tight mb-4 sm:mb-6 leading-tight pb-1">
-              <span className="hidden sm:inline">Stop Freezing on "What to Do First" Questions</span>
-              <span className="sm:hidden">Master NCLEX Prioritization</span>
+              <span className="hidden sm:inline">Stop guessing on NCLEX questions. Start thinking like a nurse.</span>
+              <span className="sm:hidden">Stop guessing. Start thinking like a nurse.</span>
             </h1>
             
-            <p className="text-base sm:text-lg text-slate-600 mb-3">
-              <span className="hidden sm:inline">For nursing students who know the content but struggle with NCLEX-style prioritization</span>
-              <span className="sm:hidden">For students who struggle with NCLEX prioritization</span>
-            </p>
-            
             <p className="text-base sm:text-lg md:text-xl text-slate-700 mb-4 sm:mb-6 leading-relaxed font-medium">
-              <span className="hidden sm:inline">AI tutor that uses YOUR textbooks to teach NCLEX prioritization step-by-step. Like having a clinical instructor available 24/7.</span>
-              <span className="sm:hidden">AI tutor using YOUR textbooks. Step-by-step NCLEX prep.</span>
+              <span className="hidden sm:inline">ForgeNursing teaches clinical reasoning step by step using your own nursing school materials — so NCLEX-style questions finally make sense.</span>
+              <span className="sm:hidden">Clinical reasoning step by step using your materials.</span>
             </p>
             
             <p className="text-sm text-slate-600 mb-6 sm:mb-8">

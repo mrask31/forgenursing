@@ -134,18 +134,19 @@ export default function Step2Ask({ fileId, fileName, onComplete, onBack }: Step2
           <MessageSquare className="w-8 h-8 text-indigo-600" />
         </div>
         <h1 className="text-3xl font-semibold text-slate-900 mb-3">
-          Ask Your First Question
+          Now let's see it in action
         </h1>
         <p className="text-lg text-slate-600 leading-relaxed">
-          Now let's see ForgeNursing in action. Ask a question about{' '}
-          <span className="font-semibold text-indigo-600">{fileName}</span>
+          Ask a question about{' '}
+          <span className="font-semibold text-indigo-600">{fileName}</span>{' '}
+          and watch ForgeNursing explain it using your material.
         </p>
       </div>
 
       {/* Suggested Questions */}
       <div className="mb-6">
         <h3 className="text-sm font-semibold text-slate-900 mb-3">
-          Try one of these questions:
+          Pick a question to try:
         </h3>
         <div className="space-y-2">
           {suggestedQuestions.map((suggested, index) => (
@@ -213,10 +214,10 @@ export default function Step2Ask({ fileId, fileName, onComplete, onBack }: Step2
         <div className="p-6 bg-indigo-50 border border-indigo-200 rounded-xl text-center">
           <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-3" />
           <p className="text-sm text-indigo-700 font-medium">
-            ForgeNursing is analyzing your material and crafting a response...
+            Reading your material and crafting a personalized explanation...
           </p>
           <p className="text-xs text-indigo-600 mt-1">
-            This may take 10-20 seconds
+            This takes 10-20 seconds
           </p>
         </div>
       )}
