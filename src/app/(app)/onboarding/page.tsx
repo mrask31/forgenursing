@@ -186,7 +186,7 @@ export default function OnboardingPage() {
             <p className="text-xs text-slate-500">
               {currentStep === 1 && 'Personalize your experience'}
               {currentStep === 2 && 'See it in action'}
-              {currentStep === 3 && 'You're all set!'}
+              {currentStep === 3 && "You're all set!"}
             </p>
           </div>
         </div>
