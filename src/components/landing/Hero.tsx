@@ -18,21 +18,21 @@ export default function Hero({ user }: HeroProps) {
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md" aria-hidden="true">
                 <GraduationCap className="w-5 h-5" />
               </div>
-              <div className="text-sm font-semibold">Your Materials</div>
+              <div className="text-sm font-semibold">Your textbooks & notes</div>
               <div className="text-xs opacity-90">Not Generic Content</div>
             </div>
             <div className="flex flex-col items-center gap-1.5">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md" aria-hidden="true">
                 <Award className="w-5 h-5" />
               </div>
-              <div className="text-sm font-semibold">Step-by-Step</div>
-              <div className="text-xs opacity-90">Clinical Reasoning</div>
+              <div className="text-sm font-semibold">Clinical reasoning, explained</div>
+              <div className="text-xs opacity-90">Step-by-Step Guidance</div>
             </div>
             <div className="flex flex-col items-center gap-1.5">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md" aria-hidden="true">
                 <TrendingUp className="w-5 h-5" />
               </div>
-              <div className="text-sm font-semibold">Free Preview</div>
+              <div className="text-sm font-semibold">Try it risk-free</div>
               <div className="text-xs opacity-90">7-Day Trial</div>
             </div>
           </div>
@@ -53,18 +53,19 @@ export default function Hero({ user }: HeroProps) {
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent tracking-tight mb-4 sm:mb-6 leading-tight pb-1">
-              <span className="hidden sm:inline">Stop guessing on NCLEX questions. Start thinking like a nurse.</span>
-              <span className="sm:hidden">Stop guessing. Start thinking like a nurse.</span>
+              Stop guessing on NCLEX. Start thinking like a nurse.
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl text-slate-700 mb-4 sm:mb-6 leading-relaxed font-medium">
-              <span className="hidden sm:inline">ForgeNursing teaches clinical reasoning step by step using your own nursing school materials — so NCLEX-style questions finally make sense.</span>
-              <span className="sm:hidden">Clinical reasoning step by step using your materials.</span>
+              ForgeNursing teaches clinical reasoning step by step using your own nursing school materials — so NCLEX-style questions finally make sense.
+            </p>
+            
+            <p className="text-sm text-slate-600 mb-2 italic">
+              Built specifically for nursing students preparing for NCLEX-style exams.
             </p>
             
             <p className="text-sm text-slate-600 mb-6 sm:mb-8">
-              <span className="hidden sm:inline">Starting at $24.99/month • 7-day free trial • No credit card charged for 7 days • Cancel anytime</span>
-              <span className="sm:hidden">$24.99/mo • 7-day free trial • Cancel anytime</span>
+              Starting at $24.99/month • 7-day free trial • No credit card charged for 7 days • Cancel anytime
             </p>
             
             <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
