@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getBrowserClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
+import type { User, AuthChangeEvent } from '@supabase/supabase-js'
 
 interface UserProfile {
   subscription_status: string | null
@@ -54,7 +54,7 @@ export function useUser(): UseUserReturn {
     loadUser()
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
       setUser(session?.user ?? null)
 
       if (session?.user) {
