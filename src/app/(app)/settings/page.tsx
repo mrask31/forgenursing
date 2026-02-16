@@ -431,12 +431,6 @@ export default function SettingsPage() {
                 })()}
               </div>
             )}
-                      </p>
-                    </>
-                  )
-                })()}
-              </div>
-            )}
 
             {/* Active (past trial) — paid subscription */}
             {subscriptionData?.subscription?.status === 'active' && !subscriptionData?.subscription?.cancelAtPeriodEnd && (
