@@ -416,8 +416,21 @@ export default function SettingsPage() {
                           ? '🎯 Last day of your trial!' 
                           : `🎯 ${daysRemaining} days left in your trial`}
                       </p>
-                      <p className={`${tokens.smallText} text-indigo-700`}>
+                      <p className={`${tokens.smallText} text-indigo-700 mb-3`}>
                         Your trial ends on <span className="font-semibold">{formattedDate}</span>. Subscribe anytime to continue your access.
+                      </p>
+                      <button
+                        onClick={() => router.push('/checkout')}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        Subscribe Now
+                      </button>
+                    </>
+                  )
+                })()}
+              </div>
+            )}
                       </p>
                     </>
                   )
