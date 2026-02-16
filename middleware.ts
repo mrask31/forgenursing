@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
-import { hasSubscriptionAccess } from '@/lib/subscription-access'
+import { hasAccess } from '@/lib/subscription-access'
 
 export async function middleware(request: NextRequest) {
   // Wrap entire middleware in try/catch to prevent ANY crash
@@ -138,6 +138,7 @@ export async function middleware(request: NextRequest) {
         // Use service role key to bypass RLS for subscription status check
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
         let subscriptionStatus: string | undefined
+        let trialEndsAt: string | undefined
         let profileError: any = null
         
         if (serviceRoleKey) {
@@ -148,7 +149,7 @@ export async function middleware(request: NextRequest) {
           )
           const { data: profile, error } = await adminClient
             .from('profiles')
-            .select('subscription_status')
+            .select('subscription_status, trial_ends_at')
             .eq('id', user.id)
             .single()
           
@@ -157,12 +158,13 @@ export async function middleware(request: NextRequest) {
             profileError = error
           } else {
             subscriptionStatus = profile?.subscription_status
+            trialEndsAt = profile?.trial_ends_at
           }
         } else {
           // Fallback to anon key (may be blocked by RLS)
           const { data: profile, error } = await supabase
             .from('profiles')
-            .select('subscription_status')
+            .select('subscription_status, trial_ends_at')
             .eq('id', user.id)
             .single()
           
@@ -171,6 +173,7 @@ export async function middleware(request: NextRequest) {
             profileError = error
           } else {
             subscriptionStatus = profile?.subscription_status
+            trialEndsAt = profile?.trial_ends_at
           }
         }
 
@@ -184,9 +187,9 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
         }
 
-        const hasActiveSubscription = hasSubscriptionAccess(subscriptionStatus)
+        const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt)
 
-        if (hasActiveSubscription) {
+        if (userHasAccess) {
           return NextResponse.redirect(new URL('/tutor', request.url))
         } else {
           // No active subscription, redirect to payment required
@@ -217,6 +220,7 @@ export async function middleware(request: NextRequest) {
         // Use service role key to bypass RLS for subscription status check
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
         let subscriptionStatus: string | undefined
+        let trialEndsAt: string | undefined
         let profileError: any = null
         
         if (serviceRoleKey) {
@@ -227,7 +231,7 @@ export async function middleware(request: NextRequest) {
           )
           const { data: profile, error } = await adminClient
             .from('profiles')
-            .select('subscription_status')
+            .select('subscription_status, trial_ends_at')
             .eq('id', user.id)
             .single()
           
@@ -236,12 +240,13 @@ export async function middleware(request: NextRequest) {
             profileError = error
           } else {
             subscriptionStatus = profile?.subscription_status
+            trialEndsAt = profile?.trial_ends_at
           }
         } else {
           // Fallback to anon key (may be blocked by RLS)
           const { data: profile, error } = await supabase
             .from('profiles')
-            .select('subscription_status')
+            .select('subscription_status, trial_ends_at')
             .eq('id', user.id)
             .single()
           
@@ -250,6 +255,7 @@ export async function middleware(request: NextRequest) {
             profileError = error
           } else {
             subscriptionStatus = profile?.subscription_status
+            trialEndsAt = profile?.trial_ends_at
           }
         }
 
@@ -263,13 +269,14 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
         }
 
-        const hasActiveSubscription = hasSubscriptionAccess(subscriptionStatus)
+        const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt)
 
         console.log('[Middleware] Protected route access check', {
           userId: user.id,
           pathname,
           subscriptionStatus,
-          hasActiveSubscription,
+          trialEndsAt,
+          userHasAccess,
           isOnboarding: pathname.startsWith('/onboarding')
         })
 
@@ -279,11 +286,12 @@ export async function middleware(request: NextRequest) {
         }
 
         // For all other protected routes, require active subscription
-        if (!hasActiveSubscription) {
+        if (!userHasAccess) {
           console.log('[Middleware] BLOCKING: User accessing protected route without subscription - redirecting to checkout', {
             userId: user.id,
             pathname,
-            subscriptionStatus
+            subscriptionStatus,
+            trialEndsAt
           })
           return NextResponse.redirect(new URL('/checkout', request.url))
         }

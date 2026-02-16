@@ -56,6 +56,7 @@ export interface Database {
         Row: {
           id: string
           subscription_status: string | null
+          trial_ends_at: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           created_at: string
@@ -64,6 +65,7 @@ export interface Database {
         Insert: {
           id: string
           subscription_status?: string | null
+          trial_ends_at?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           created_at?: string
@@ -72,6 +74,7 @@ export interface Database {
         Update: {
           id?: string
           subscription_status?: string | null
+          trial_ends_at?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           created_at?: string

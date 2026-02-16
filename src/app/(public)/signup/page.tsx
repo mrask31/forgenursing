@@ -219,6 +219,19 @@ export default function SignupPage() {
         }
       }
       
+      // Set trial period and trigger welcome email (non-blocking)
+      try {
+        await fetch('/api/auth/set-trial', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: data.user.id }),
+        })
+        console.log('[Signup] Trial period set')
+      } catch (trialError) {
+        // Don't block signup if trial setting fails
+        console.error('[Signup] Failed to set trial:', trialError)
+      }
+      
       // Check for session (with email verification disabled, should have immediate session)
       console.log('[Signup] Signup successful, redirecting to checkout')
       setLoading(false)
