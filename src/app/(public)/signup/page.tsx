@@ -33,8 +33,8 @@ export default function SignupPage() {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (user) {
-        // User is already signed in, redirect to checkout
-        router.push('/checkout')
+        // User is already signed in, redirect to tutor
+        router.push('/tutor')
       }
     }
     
@@ -233,22 +233,22 @@ export default function SignupPage() {
       }
       
       // Check for session (with email verification disabled, should have immediate session)
-      console.log('[Signup] Signup successful, redirecting to checkout')
+      console.log('[Signup] Signup successful, redirecting to tutor')
       setLoading(false)
       
       // Try router.push first, fallback to window.location if it fails
       try {
-        router.push('/checkout')
+        router.push('/tutor')
         // If router.push doesn't redirect within 1 second, use window.location
         setTimeout(() => {
           if (window.location.pathname === '/signup') {
             console.log('[Signup] Router.push failed, using window.location')
-            window.location.href = '/checkout'
+            window.location.href = '/tutor'
           }
         }, 1000)
       } catch (error) {
         console.error('[Signup] Router.push error:', error)
-        window.location.href = '/checkout'
+        window.location.href = '/tutor'
       }
       return
 
@@ -333,24 +333,24 @@ export default function SignupPage() {
                   <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                     1
                   </div>
-                  <p><strong className="text-slate-900">Choose plan</strong> — Monthly, semester, or annual</p>
+                  <p><strong className="text-slate-900">Start your trial</strong> — Full access for 7 days</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                     2
                   </div>
-                  <p><strong className="text-slate-900">Quick tutorial</strong> — Upload & ask (2 min)</p>
+                  <p><strong className="text-slate-900">Try the AI tutor</strong> — Upload notes & ask questions</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                     3
                   </div>
-                  <p><strong className="text-slate-900">Start studying</strong> — AI tutor ready</p>
+                  <p><strong className="text-slate-900">Subscribe when ready</strong> — After your trial ends</p>
                 </div>
               </div>
               <p className="text-xs text-indigo-700 font-medium mt-2 pt-2 border-t border-indigo-200/60 flex items-center gap-1">
                 <Shield className="w-3 h-3" />
-                7-day free trial • Cancel anytime
+                No credit card required • Cancel anytime
               </p>
             </div>
 
