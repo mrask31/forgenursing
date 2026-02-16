@@ -29,6 +29,7 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
   const [isCanceling, setIsCanceling] = useState(false)
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null)
   const { density, setDensity } = useDensity()
   const tokens = getDensityTokens(density)
 
@@ -43,7 +44,7 @@ export default function SettingsPage() {
         // Load profile data
         const { data: profile } = await supabase
           .from('profiles')
-          .select('graduation_date, preferred_name, program_track, school_name')
+          .select('graduation_date, preferred_name, program_track, school_name, trial_ends_at')
           .eq('id', user.id)
           .single()
         
@@ -64,6 +65,10 @@ export default function SettingsPage() {
         
         if (profile?.school_name) {
           setSchoolName(profile.school_name)
+        }
+
+        if (profile?.trial_ends_at) {
+          setTrialEndsAt(profile.trial_ends_at)
         }
 
         // Load subscription from /api/subscription/status only (no Stripe/invoice calls)
@@ -391,24 +396,32 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* 7-day trial — every in-app user is subscribed; trialing = first 7 days, then charged */}
-            {subscriptionData?.subscription?.status === 'trialing' && (
+            {/* Trial period - show days remaining */}
+            {trialEndsAt && new Date(trialEndsAt) > new Date() && (
               <div className="p-3 sm:p-4 bg-indigo-50/80 border border-indigo-200/60 rounded-xl">
-                <p className={`${tokens.smallText} font-medium text-indigo-900 mb-1`}>
-                  You're in your 7-day trial. You're not charged until it ends.
-                </p>
-                {subscriptionData.subscription.trialEndDate ? (
-                  <p className={`${tokens.smallText} text-indigo-700`}>
-                    Your trial ends on <span className="font-semibold">{subscriptionData.subscription.trialEndDate}</span>. Billing begins after that unless you cancel.
-                  </p>
-                ) : (
-                  <p className={`${tokens.smallText} text-indigo-600`}>
-                    Your trial end date will appear here once confirmed.
-                  </p>
-                )}
-                <p className={`${tokens.smallText} text-indigo-600 mt-2`}>
-                  Cancel anytime during your trial to avoid being charged.
-                </p>
+                {(() => {
+                  const now = new Date()
+                  const endDate = new Date(trialEndsAt)
+                  const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                  const formattedDate = endDate.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                  
+                  return (
+                    <>
+                      <p className={`${tokens.smallText} font-medium text-indigo-900 mb-1`}>
+                        {daysRemaining === 1 
+                          ? '🎯 Last day of your trial!' 
+                          : `🎯 ${daysRemaining} days left in your trial`}
+                      </p>
+                      <p className={`${tokens.smallText} text-indigo-700`}>
+                        Your trial ends on <span className="font-semibold">{formattedDate}</span>. Subscribe anytime to continue your access.
+                      </p>
+                    </>
+                  )
+                })()}
               </div>
             )}
 
