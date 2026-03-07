@@ -2,11 +2,11 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { streamText, convertToCoreMessages } from 'ai';
 import { buildSystemPrompt } from '@/lib/ai/system-prompt';
 import { buildMessageHistory } from '@/lib/ai/history-manager';
-import { phiScrubberMiddleware } from '@/app/api/_middleware/phi-scrubber';
+import { scorePhiText } from '@/app/api/_middleware/phi-scrubber';
 import { getEntitlementForUser } from '@/lib/entitlement';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 // Validate API key format at module load time (for embeddings client)
@@ -256,31 +256,56 @@ async function retrieveBinderContext(
 }
 
 export async function POST(req: NextRequest) {
-  return phiScrubberMiddleware(req, async (request) => {
-    // Validate OpenAI API key before processing request (still needed for embeddings)
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      console.error('[CHAT] OPENAI_API_KEY is missing from environment variables');
-      return new Response(JSON.stringify({ error: 'OpenAI API key is not configured. Please check your environment variables.' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+  // Validate OpenAI API key before processing request (still needed for embeddings)
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.error('[CHAT] OPENAI_API_KEY is missing from environment variables');
+    return new Response(JSON.stringify({ error: 'OpenAI API key is not configured. Please check your environment variables.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
-    // Validate API key format (should start with 'sk-')
-    if (!apiKey.startsWith('sk-')) {
-      const maskedKey = apiKey.length > 10 
-        ? `${apiKey.substring(0, 3)}...${apiKey.substring(apiKey.length - 3)}`
-        : '***';
-      console.error('[CHAT] Invalid API key format. API key should start with "sk-". Received:', maskedKey);
-      return new Response(JSON.stringify({ error: 'Invalid OpenAI API key format. API key must start with "sk-". Please check your environment variable value (do not include the variable name in the value).' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+  // Validate API key format (should start with 'sk-')
+  if (!apiKey.startsWith('sk-')) {
+    const maskedKey = apiKey.length > 10 
+      ? `${apiKey.substring(0, 3)}...${apiKey.substring(apiKey.length - 3)}`
+      : '***';
+    console.error('[CHAT] Invalid API key format. API key should start with "sk-". Received:', maskedKey);
+    return new Response(JSON.stringify({ error: 'Invalid OpenAI API key format. API key must start with "sk-". Please check your environment variable value (do not include the variable name in the value).' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
-    const body = await request.json();
+  const body = await req.json();
   const { messages, strictMode, filterMode = 'mixed', selectedDocIds = [], chatId, topicTitle, className, selectedClassName, attachedFileIds: rawAttachedFileIds } = body;
+  
+  // PHI Scrubber - check latest user message for PHI content
+  const latestUserMessageContent = messages?.at(-1)?.content ?? '';
+  const phiScore = scorePhiText(latestUserMessageContent);
+  
+  if (phiScore >= 3) {
+    return NextResponse.json(
+      {
+        action: 'block',
+        message: 'This appears to contain real patient information (PHI). ForgeNursing cannot process real patient data. Please use de-identified practice materials only. Your session has not been interrupted.',
+        score: phiScore
+      },
+      { status: 403 }
+    );
+  }
+  
+  if (phiScore === 2) {
+    return NextResponse.json(
+      {
+        action: 'confirm',
+        message: 'This content contains multiple patient identifiers. Are you using practice materials or a real patient record?',
+        score: phiScore
+      },
+      { status: 202 }
+    );
+  }
   
   // CRITICAL: Ensure attachedFileIds is always an array, never 'none' or undefined
   const attachedFileIds = Array.isArray(rawAttachedFileIds) 
@@ -666,5 +691,4 @@ FORMATTING RULES:
       headers: { 'Content-Type': 'application/json' },
     });
   }
-  }); // End of phiScrubberMiddleware wrapper
 }
