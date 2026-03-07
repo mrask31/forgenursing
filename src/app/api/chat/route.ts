@@ -497,29 +497,26 @@ export async function POST(req: NextRequest) {
   // Placeholder - will be set after we determine the mode
   let systemPrompt: string = '';
 
-  // Build messages array with binder context handling
+  // Build messages array - convert to core messages format
   const coreMessages = convertToCoreMessages(messages);
-  const messagesWithBinder: any[] = [...coreMessages];
 
-  // Add binder context instructions ONLY if context exists
+  // Add binder context to system prompt if available
   if (binderResult.hasContext && binderContext && binderContext.trim().length > 0) {
-    // Add instruction about binder context
-    messagesWithBinder.unshift({
-      role: 'system',
-      content: `You have been given excerpts from the student's uploaded files ("binder context"). Use the following binder excerpts as your primary reference. Mention the filenames you are using. Treat them as primary for this conversation. Use them as the main source of truth, mention which file(s) you used by filename and type, and do not invent content that obviously isn't supported by the excerpts.`
-    });
-    
-    // Add the actual binder context
-    messagesWithBinder.unshift({
-      role: 'system',
-      content: `BINDER CONTEXT:\n\n${binderContext}`
-    });
+    systemPrompt += `
+
+### BINDER CONTEXT
+
+You have been given excerpts from the student's uploaded files ("binder context"). Use the following binder excerpts as your primary reference. Mention the filenames you are using. Treat them as primary for this conversation. Use them as the main source of truth, mention which file(s) you used by filename and type, and do not invent content that obviously isn't supported by the excerpts.
+
+${binderContext}
+`;
   } else {
-    // No binder context available
-    messagesWithBinder.unshift({
-      role: 'system',
-      content: `You currently have no binder context for this question. Answer using your general nursing/NCLEX knowledge, and be explicit that you are not using the student's uploaded materials.`
-    });
+    systemPrompt += `
+
+### NO BINDER CONTEXT
+
+You currently have no binder context for this question. Answer using your general nursing/NCLEX knowledge, and be explicit that you are not using the student's uploaded materials.
+`;
   }
 
   // Notes Mode behavior (when in notes mode with selected documents)
@@ -644,8 +641,14 @@ FORMATTING RULES:
 `;
 
   try {
+    // Filter out any system messages from the array
+    // Claude receives the system prompt via the system: parameter only
+    const cleanedMessages = coreMessages.filter(
+      (m: any) => m.role !== 'system'
+    );
+    
     // Build message history with summarization for long conversations
-    const processedMessages = await buildMessageHistory(messagesWithBinder, supabase);
+    const processedMessages = await buildMessageHistory(cleanedMessages, supabase);
     
     // Use Claude Sonnet as the tutor brain
     const result = await streamText({
