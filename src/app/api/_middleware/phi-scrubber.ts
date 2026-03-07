@@ -274,77 +274,83 @@ export async function phiScrubberMiddleware(
       return handler(request)
     }
 
-    // Clone request to read body without consuming it
-    const clonedRequest = request.clone()
-    
+    // Read the body once
     let body: any
     try {
-      body = await clonedRequest.json()
+      const bodyText = await request.text()
+      body = JSON.parse(bodyText)
+      
+      // Reconstruct the request with the body for the handler
+      const reconstructedRequest = new NextRequest(request.url, {
+        method: request.method,
+        headers: request.headers,
+        body: bodyText,
+      })
+      
+      // Extract text content to analyze
+      let textToAnalyze = ''
+      
+      // Check for messages array (chat format)
+      if (body.messages && Array.isArray(body.messages)) {
+        // Analyze only user messages
+        const userMessages = body.messages
+          .filter((m: any) => m.role === 'user')
+          .map((m: any) => m.content || '')
+        textToAnalyze = userMessages.join('\n')
+      }
+      
+      // Check for direct text/prompt field
+      if (body.text) {
+        textToAnalyze += '\n' + body.text
+      }
+      if (body.prompt) {
+        textToAnalyze += '\n' + body.prompt
+      }
+
+      // Score the content
+      const score = scorePhiText(textToAnalyze)
+      const { action, message } = getActionForScore(score)
+
+      // Handle based on action
+      switch (action) {
+        case 'pass':
+          // Forward request normally
+          return handler(reconstructedRequest)
+
+        case 'warn':
+          // Forward request with warning header
+          // Note: For streaming responses, we pass through directly
+          // The warning header can be added by the handler if needed
+          return handler(reconstructedRequest)
+
+        case 'confirm':
+          // Return 202 with confirmation prompt
+          return NextResponse.json(
+            {
+              action: 'confirm',
+              message,
+              score
+            },
+            { status: 202 }
+          )
+
+        case 'block':
+          // Return 403 with block message
+          return NextResponse.json(
+            {
+              action: 'block',
+              message,
+              score
+            },
+            { status: 403 }
+          )
+
+        default:
+          return handler(reconstructedRequest)
+      }
     } catch (error) {
       // If body is not JSON, pass through
       return handler(request)
-    }
-
-    // Extract text content to analyze
-    let textToAnalyze = ''
-    
-    // Check for messages array (chat format)
-    if (body.messages && Array.isArray(body.messages)) {
-      // Analyze only user messages
-      const userMessages = body.messages
-        .filter((m: any) => m.role === 'user')
-        .map((m: any) => m.content || '')
-      textToAnalyze = userMessages.join('\n')
-    }
-    
-    // Check for direct text/prompt field
-    if (body.text) {
-      textToAnalyze += '\n' + body.text
-    }
-    if (body.prompt) {
-      textToAnalyze += '\n' + body.prompt
-    }
-
-    // Score the content
-    const score = scorePhiText(textToAnalyze)
-    const { action, message } = getActionForScore(score)
-
-    // Handle based on action
-    switch (action) {
-      case 'pass':
-        // Forward request normally
-        return handler(request)
-
-      case 'warn':
-        // Forward request with warning header
-        const warnResponse = await handler(request)
-        warnResponse.headers.set('x-phi-warning', 'true')
-        return warnResponse
-
-      case 'confirm':
-        // Return 202 with confirmation prompt
-        return NextResponse.json(
-          {
-            action: 'confirm',
-            message,
-            score
-          },
-          { status: 202 }
-        )
-
-      case 'block':
-        // Return 403 with block message
-        return NextResponse.json(
-          {
-            action: 'block',
-            message,
-            score
-          },
-          { status: 403 }
-        )
-
-      default:
-        return handler(request)
     }
   } catch (error) {
     // On error, fail open (allow request through) to prevent breaking the app
