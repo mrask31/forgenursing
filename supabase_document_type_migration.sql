@@ -30,8 +30,8 @@ DROP FUNCTION IF EXISTS match_documents(vector, float, int, uuid, boolean, text)
 -- 5. Create match_documents function with document_type filtering support
 CREATE FUNCTION match_documents(
   query_embedding vector(1536),
-  match_threshold float DEFAULT 0.7,
-  match_count int DEFAULT 5,
+  match_threshold float DEFAULT 0.35,
+  match_count int DEFAULT 4,
   user_id_filter uuid DEFAULT auth.uid(),
   filter_active boolean DEFAULT true,
   filter_document_type TEXT DEFAULT NULL  -- 'note', 'reference', or NULL for mixed

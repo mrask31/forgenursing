@@ -10,8 +10,8 @@
 -- This function performs vector similarity search with security filters
 CREATE OR REPLACE FUNCTION match_documents(
   query_embedding vector(1536),  -- text-embedding-3-small produces 1536-dimensional vectors
-  match_threshold float DEFAULT 0.7,
-  match_count int DEFAULT 5,
+  match_threshold float DEFAULT 0.35,
+  match_count int DEFAULT 4,
   user_id_filter uuid DEFAULT auth.uid()  -- Default to current user for security
 )
 RETURNS TABLE (

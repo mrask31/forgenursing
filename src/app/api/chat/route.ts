@@ -1,9 +1,12 @@
-import { openai } from '@ai-sdk/openai';
+import { anthropic } from '@ai-sdk/anthropic';
 import { streamText, convertToCoreMessages } from 'ai';
-import { getSystemPrompt } from '@/lib/ai/prompts';
+import { buildSystemPrompt } from '@/lib/ai/system-prompt';
+import { buildMessageHistory } from '@/lib/ai/history-manager';
+import { phiScrubberMiddleware } from '@/app/api/_middleware/phi-scrubber';
 import { getEntitlementForUser } from '@/lib/entitlement';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { NextRequest } from 'next/server';
 import OpenAI from 'openai';
 
 // Validate API key format at module load time (for embeddings client)
@@ -252,30 +255,31 @@ async function retrieveBinderContext(
   }
 }
 
-export async function POST(req: Request) {
-  // Validate OpenAI API key before processing request
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    console.error('[CHAT] OPENAI_API_KEY is missing from environment variables');
-    return new Response(JSON.stringify({ error: 'OpenAI API key is not configured. Please check your environment variables.' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+export async function POST(req: NextRequest) {
+  return phiScrubberMiddleware(req, async (request) => {
+    // Validate OpenAI API key before processing request (still needed for embeddings)
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.error('[CHAT] OPENAI_API_KEY is missing from environment variables');
+      return new Response(JSON.stringify({ error: 'OpenAI API key is not configured. Please check your environment variables.' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
-  // Validate API key format (should start with 'sk-')
-  if (!apiKey.startsWith('sk-')) {
-    const maskedKey = apiKey.length > 10 
-      ? `${apiKey.substring(0, 3)}...${apiKey.substring(apiKey.length - 3)}`
-      : '***';
-    console.error('[CHAT] Invalid API key format. API key should start with "sk-". Received:', maskedKey);
-    return new Response(JSON.stringify({ error: 'Invalid OpenAI API key format. API key must start with "sk-". Please check your environment variable value (do not include the variable name in the value).' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+    // Validate API key format (should start with 'sk-')
+    if (!apiKey.startsWith('sk-')) {
+      const maskedKey = apiKey.length > 10 
+        ? `${apiKey.substring(0, 3)}...${apiKey.substring(apiKey.length - 3)}`
+        : '***';
+      console.error('[CHAT] Invalid API key format. API key should start with "sk-". Received:', maskedKey);
+      return new Response(JSON.stringify({ error: 'Invalid OpenAI API key format. API key must start with "sk-". Please check your environment variable value (do not include the variable name in the value).' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
-  const body = await req.json();
+    const body = await request.json();
   const { messages, strictMode, filterMode = 'mixed', selectedDocIds = [], chatId, topicTitle, className, selectedClassName, attachedFileIds: rawAttachedFileIds } = body;
   
   // CRITICAL: Ensure attachedFileIds is always an array, never 'none' or undefined
@@ -333,6 +337,23 @@ export async function POST(req: Request) {
       status: 402,
       headers: { 'Content-Type': 'application/json' },
     })
+  }
+
+  // Get user's program_level from profile
+  let programLevel: 'LPN' | 'ADN' | 'BSN' | 'MSN' = 'ADN'; // Default to ADN
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('program_level')
+      .eq('id', user.id)
+      .single();
+    
+    if (profile?.program_level) {
+      programLevel = profile.program_level as 'LPN' | 'ADN' | 'BSN' | 'MSN';
+    }
+  } catch (error) {
+    console.error('[CHAT] Error loading program_level:', error);
+    // Continue with default ADN
   }
 
   // Extract latest user message FIRST (before any usage)
@@ -451,9 +472,29 @@ export async function POST(req: Request) {
   const binderContext = binderResult.context;
   const fileSummaries = binderResult.fileSummaries || [];
 
-  // Build system prompt for tutor mode
-  let systemPrompt: string = '';
-  systemPrompt = getSystemPrompt();
+  // Map existing mode values to new system prompt mode type
+  const modeMap: Record<string, 'tutor' | 'strict' | 'notes' | 'topic'> = {
+    'general': 'tutor',
+    'strict': 'strict',
+    'notes': 'notes',
+    'topic': 'topic',
+    'mixed': 'tutor', // Default mixed mode to tutor
+  };
+  
+  // Determine mode based on effectiveMode and topic presence
+  let promptMode: 'tutor' | 'strict' | 'notes' | 'topic' = 'tutor';
+  if (strictMode === true) {
+    promptMode = 'strict';
+  } else if (effectiveMode === 'notes') {
+    promptMode = 'notes';
+  } else if (effectiveTopicTitle) {
+    promptMode = 'topic';
+  } else {
+    promptMode = modeMap[effectiveMode] ?? 'tutor';
+  }
+
+  // Build system prompt using new builder
+  let systemPrompt: string = buildSystemPrompt(programLevel, promptMode);
 
   // Build messages array with binder context handling
   const coreMessages = convertToCoreMessages(messages);
@@ -578,10 +619,14 @@ FORMATTING RULES:
 `;
 
   try {
-    // Use the validated API key explicitly
+    // Build message history with summarization for long conversations
+    const processedMessages = await buildMessageHistory(messagesWithBinder, supabase);
+    
+    // Use Claude Sonnet as the tutor brain
     const result = await streamText({
-      model: openai('gpt-4o') as any,
-      messages: messagesWithBinder,
+      model: anthropic('claude-sonnet-4-20250514') as any,
+      maxTokens: 1200,
+      messages: processedMessages,
       system: systemPrompt,
     });
 
@@ -617,4 +662,5 @@ FORMATTING RULES:
       headers: { 'Content-Type': 'application/json' },
     });
   }
+  }); // End of phiScrubberMiddleware wrapper
 }

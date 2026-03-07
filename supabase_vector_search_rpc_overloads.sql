@@ -9,8 +9,8 @@
 -- 1. 5-arg version: with filter_active parameter
 CREATE OR REPLACE FUNCTION match_documents(
   query_embedding vector(1536),
-  match_threshold float DEFAULT 0.7,
-  match_count int DEFAULT 5,
+  match_threshold float DEFAULT 0.35,
+  match_count int DEFAULT 4,
   user_id_filter uuid DEFAULT auth.uid(),
   filter_active boolean DEFAULT true
 )
@@ -49,8 +49,8 @@ $$;
 -- 2. 6-arg version: with filter_active and filter_document_type parameters
 CREATE OR REPLACE FUNCTION match_documents(
   query_embedding vector(1536),
-  match_threshold float DEFAULT 0.7,
-  match_count int DEFAULT 5,
+  match_threshold float DEFAULT 0.35,
+  match_count int DEFAULT 4,
   user_id_filter uuid DEFAULT auth.uid(),
   filter_active boolean DEFAULT true,
   filter_document_type text DEFAULT NULL
@@ -97,8 +97,8 @@ $$;
 -- 3. Update the base 4-arg function to also cast id to uuid
 CREATE OR REPLACE FUNCTION match_documents(
   query_embedding vector(1536),
-  match_threshold float DEFAULT 0.7,
-  match_count int DEFAULT 5,
+  match_threshold float DEFAULT 0.35,
+  match_count int DEFAULT 4,
   user_id_filter uuid DEFAULT auth.uid()
 )
 RETURNS TABLE (

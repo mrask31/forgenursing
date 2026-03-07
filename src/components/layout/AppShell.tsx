@@ -5,6 +5,7 @@ import { DensityProvider } from '@/contexts/DensityContext'
 import Sidebar from '@/components/layout/Sidebar'
 import MobileNav from '@/components/layout/MobileNav'
 import { PHIAcknowledgmentModal } from '@/components/phi-acknowledgment-modal'
+import { ProgramSelectionModal } from '@/components/program-selection-modal'
 import { Menu } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 
@@ -18,7 +19,9 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
   const [programTrack, setProgramTrack] = useState<string | null>(null)
   const [graduationYear, setGraduationYear] = useState<number | null>(null)
   const [showPHIModal, setShowPHIModal] = useState(false)
+  const [showProgramModal, setShowProgramModal] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const [programLevel, setProgramLevel] = useState<'LPN' | 'ADN' | 'BSN' | 'MSN' | null>(null)
 
   useEffect(() => {
     if (variant !== 'app') return
@@ -33,7 +36,7 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('program_track, graduation_date, phi_acknowledged_at')
+          .select('program_track, graduation_date, phi_acknowledged_at, program_level')
           .eq('id', user.id)
           .single()
 
@@ -44,11 +47,19 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
           if (profile.graduation_date) {
             setGraduationYear(new Date(profile.graduation_date).getFullYear())
           }
+          if (profile.program_level) {
+            setProgramLevel(profile.program_level as 'LPN' | 'ADN' | 'BSN' | 'MSN')
+          }
           
-          // Show PHI modal if user hasn't acknowledged yet
+          // Step 1: Show PHI modal if user hasn't acknowledged yet
           if (!profile.phi_acknowledged_at) {
             setShowPHIModal(true)
           }
+          // Step 2: Show program selection if PHI acknowledged but program not set
+          else if (!profile.program_level) {
+            setShowProgramModal(true)
+          }
+          // Step 3: Both set → render app normally
         }
       } catch (error) {
         console.error('[AppShell] Error loading profile:', error)
@@ -74,8 +85,35 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
       }
 
       setShowPHIModal(false)
+      
+      // After PHI acknowledgment, check if program_level needs to be set
+      if (!programLevel) {
+        setShowProgramModal(true)
+      }
     } catch (error) {
       console.error('[AppShell] Error acknowledging PHI:', error)
+    }
+  }
+
+  const handleProgramSelection = async (selectedLevel: 'LPN' | 'ADN' | 'BSN' | 'MSN') => {
+    if (!userId) return
+
+    try {
+      const supabase = getBrowserClient()
+      const { error } = await supabase
+        .from('profiles')
+        .update({ program_level: selectedLevel })
+        .eq('id', userId)
+
+      if (error) {
+        console.error('[AppShell] Error updating program_level:', error)
+        return
+      }
+
+      setProgramLevel(selectedLevel)
+      setShowProgramModal(false)
+    } catch (error) {
+      console.error('[AppShell] Error selecting program:', error)
     }
   }
 
@@ -93,8 +131,11 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
   return (
     <DensityProvider>
       <div className="h-screen-dynamic bg-slate-50 flex flex-col lg:flex-row overflow-hidden">
-        {/* PHI Acknowledgment Modal */}
+        {/* PHI Acknowledgment Modal - Step 1 */}
         <PHIAcknowledgmentModal open={showPHIModal} onAcknowledge={handlePHIAcknowledge} />
+        
+        {/* Program Selection Modal - Step 2 */}
+        <ProgramSelectionModal open={showProgramModal} onComplete={handleProgramSelection} />
         
         {/* Mobile Header Bar - Sticky, only on mobile */}
         <header className="lg:hidden sticky top-0 z-50 bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 border-b border-indigo-900/50 flex-shrink-0 safe-t">
