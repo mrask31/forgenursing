@@ -10,6 +10,7 @@
     "test:smoke": "playwright test"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.58",
     "@ai-sdk/openai": "^0.0.46",
     "@ai-sdk/react": "^0.0.60",
     "@radix-ui/react-avatar": "^1.1.11",

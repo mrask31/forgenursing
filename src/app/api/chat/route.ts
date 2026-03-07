@@ -161,8 +161,8 @@ async function retrieveBinderContext(
     }
 
     // 2) Search all active user files (ignore class/topic scoping for MVP)
-    const match_threshold = 0.1; // Forgiving threshold
-    const match_count = 10; // Top 10 chunks
+    const match_threshold = 0.35; // Tighter threshold for quality
+    const match_count = 4; // Top 4 chunks
 
     const { data: matchedChunks, error: rpcError } = await supabase.rpc('match_documents', {
       query_embedding: queryEmbedding,

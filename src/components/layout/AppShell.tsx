@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from 'react'
 import { DensityProvider } from '@/contexts/DensityContext'
 import Sidebar from '@/components/layout/Sidebar'
 import MobileNav from '@/components/layout/MobileNav'
+import { PHIAcknowledgmentModal } from '@/components/phi-acknowledgment-modal'
 import { Menu } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 
@@ -16,6 +17,8 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [programTrack, setProgramTrack] = useState<string | null>(null)
   const [graduationYear, setGraduationYear] = useState<number | null>(null)
+  const [showPHIModal, setShowPHIModal] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
     if (variant !== 'app') return
@@ -26,9 +29,11 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
+        setUserId(user.id)
+
         const { data: profile } = await supabase
           .from('profiles')
-          .select('program_track, graduation_date')
+          .select('program_track, graduation_date, phi_acknowledged_at')
           .eq('id', user.id)
           .single()
 
@@ -39,6 +44,11 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
           if (profile.graduation_date) {
             setGraduationYear(new Date(profile.graduation_date).getFullYear())
           }
+          
+          // Show PHI modal if user hasn't acknowledged yet
+          if (!profile.phi_acknowledged_at) {
+            setShowPHIModal(true)
+          }
         }
       } catch (error) {
         console.error('[AppShell] Error loading profile:', error)
@@ -47,6 +57,27 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
 
     loadProfile()
   }, [variant])
+
+  const handlePHIAcknowledge = async () => {
+    if (!userId) return
+
+    try {
+      const supabase = getBrowserClient()
+      const { error } = await supabase
+        .from('profiles')
+        .update({ phi_acknowledged_at: new Date().toISOString() })
+        .eq('id', userId)
+
+      if (error) {
+        console.error('[AppShell] Error updating phi_acknowledged_at:', error)
+        return
+      }
+
+      setShowPHIModal(false)
+    } catch (error) {
+      console.error('[AppShell] Error acknowledging PHI:', error)
+    }
+  }
 
   if (variant === 'public') {
     // Public pages (landing, login, signup, checkout) use simpler layout
@@ -62,6 +93,9 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
   return (
     <DensityProvider>
       <div className="h-screen-dynamic bg-slate-50 flex flex-col lg:flex-row overflow-hidden">
+        {/* PHI Acknowledgment Modal */}
+        <PHIAcknowledgmentModal open={showPHIModal} onAcknowledge={handlePHIAcknowledge} />
+        
         {/* Mobile Header Bar - Sticky, only on mobile */}
         <header className="lg:hidden sticky top-0 z-50 bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 border-b border-indigo-900/50 flex-shrink-0 safe-t">
           <div className="flex items-center justify-between px-4 py-3">
