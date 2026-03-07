@@ -256,6 +256,28 @@ async function retrieveBinderContext(
 }
 
 export async function POST(req: NextRequest) {
+  // Parse body ONCE — everything uses this
+  const body = await req.json();
+  
+  // PHI check inline — score the last user message
+  const lastMessage = body.messages?.findLast(
+    (m: any) => m.role === 'user'
+  )?.content ?? '';
+  const phiScore = scorePhiText(lastMessage);
+  
+  if (phiScore >= 3) {
+    return NextResponse.json({
+      action: 'block',
+      message: 'This appears to contain real patient information (PHI). ForgeNursing cannot process real patient data. Please use de-identified practice materials only. Your session has not been interrupted.'
+    }, { status: 403 });
+  }
+  
+  // Attach phi score to headers for frontend warning/confirm
+  // (frontend can read x-phi-score header and show appropriate UI)
+  const phiHeaders = phiScore > 0 
+    ? { 'x-phi-score': String(phiScore) } 
+    : {};
+  
   // Validate OpenAI API key before processing request (still needed for embeddings)
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -278,34 +300,8 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const body = await req.json();
+  // Rest of handler uses `body` directly — NOT req.json() again
   const { messages, strictMode, filterMode = 'mixed', selectedDocIds = [], chatId, topicTitle, className, selectedClassName, attachedFileIds: rawAttachedFileIds } = body;
-  
-  // PHI Scrubber - check latest user message for PHI content
-  const latestUserMessageContent = messages?.at(-1)?.content ?? '';
-  const phiScore = scorePhiText(latestUserMessageContent);
-  
-  if (phiScore >= 3) {
-    return NextResponse.json(
-      {
-        action: 'block',
-        message: 'This appears to contain real patient information (PHI). ForgeNursing cannot process real patient data. Please use de-identified practice materials only. Your session has not been interrupted.',
-        score: phiScore
-      },
-      { status: 403 }
-    );
-  }
-  
-  if (phiScore === 2) {
-    return NextResponse.json(
-      {
-        action: 'confirm',
-        message: 'This content contains multiple patient identifiers. Are you using practice materials or a real patient record?',
-        score: phiScore
-      },
-      { status: 202 }
-    );
-  }
   
   // CRITICAL: Ensure attachedFileIds is always an array, never 'none' or undefined
   const attachedFileIds = Array.isArray(rawAttachedFileIds) 
@@ -661,6 +657,11 @@ FORMATTING RULES:
 
     // Return response with file summaries in metadata for UI display
     const response = result.toAIStreamResponse();
+    
+    // Add PHI score header if present
+    if (phiHeaders['x-phi-score']) {
+      response.headers.set('x-phi-score', phiHeaders['x-phi-score']);
+    }
     
     // Add file summaries to response headers for UI to display "Using your files" pill
     if (fileSummaries.length > 0 && binderContext && binderContext.trim().length > 0) {
