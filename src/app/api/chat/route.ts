@@ -472,29 +472,9 @@ export async function POST(req: NextRequest) {
   const binderContext = binderResult.context;
   const fileSummaries = binderResult.fileSummaries || [];
 
-  // Map existing mode values to new system prompt mode type
-  const modeMap: Record<string, 'tutor' | 'strict' | 'notes' | 'topic'> = {
-    'general': 'tutor',
-    'strict': 'strict',
-    'notes': 'notes',
-    'topic': 'topic',
-    'mixed': 'tutor', // Default mixed mode to tutor
-  };
-  
-  // Determine mode based on effectiveMode and topic presence
-  let promptMode: 'tutor' | 'strict' | 'notes' | 'topic' = 'tutor';
-  if (strictMode === true) {
-    promptMode = 'strict';
-  } else if (effectiveMode === 'notes') {
-    promptMode = 'notes';
-  } else if (effectiveTopicTitle) {
-    promptMode = 'topic';
-  } else {
-    promptMode = modeMap[effectiveMode] ?? 'tutor';
-  }
-
-  // Build system prompt using new builder
-  let systemPrompt: string = buildSystemPrompt(programLevel, promptMode);
+  // Build system prompt using new builder (mode will be determined after topic variables)
+  // Placeholder - will be set after we determine the mode
+  let systemPrompt: string = '';
 
   // Build messages array with binder context handling
   const coreMessages = convertToCoreMessages(messages);
@@ -554,6 +534,30 @@ DO NOT:
   // Topic Context: Always include topic context when a topic is selected
   const effectiveTopicTitle = topicTitle || chatTopicTerm
   const effectiveClassName = className || selectedClassName
+  
+  // Map existing mode values to new system prompt mode type
+  const modeMap: Record<string, 'tutor' | 'strict' | 'notes' | 'topic'> = {
+    'general': 'tutor',
+    'strict': 'strict',
+    'notes': 'notes',
+    'topic': 'topic',
+    'mixed': 'tutor', // Default mixed mode to tutor
+  };
+  
+  // Determine mode based on effectiveMode and topic presence
+  let promptMode: 'tutor' | 'strict' | 'notes' | 'topic' = 'tutor';
+  if (strictMode === true) {
+    promptMode = 'strict';
+  } else if (effectiveMode === 'notes') {
+    promptMode = 'notes';
+  } else if (effectiveTopicTitle) {
+    promptMode = 'topic';
+  } else {
+    promptMode = modeMap[effectiveMode] ?? 'tutor';
+  }
+
+  // Build system prompt using new builder
+  systemPrompt = buildSystemPrompt(programLevel, promptMode);
   
   if (effectiveTopicTitle) {
     if (isFirstAssistantReply) {
