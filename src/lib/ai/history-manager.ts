@@ -28,7 +28,7 @@ export async function buildMessageHistory(
   try {
     // Call Claude Haiku to summarize older messages
     const { text: summary } = await generateText({
-      model: anthropic('claude-haiku-4-5-20251001'),
+      model: anthropic('claude-haiku-4-5-20251001') as any,
       messages: [
         {
           role: 'user',
