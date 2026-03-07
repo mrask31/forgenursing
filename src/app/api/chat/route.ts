@@ -647,8 +647,15 @@ FORMATTING RULES:
       (m: any) => m.role !== 'system'
     );
     
+    // Convert CoreMessage[] to simple Message[] format for history manager
+    // CoreMessage has complex content types (string | array), but history manager expects string
+    const simpleMessages = cleanedMessages.map((m: any) => ({
+      role: m.role,
+      content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
+    }));
+    
     // Build message history with summarization for long conversations
-    const processedMessages = await buildMessageHistory(cleanedMessages, supabase);
+    const processedMessages = await buildMessageHistory(simpleMessages, supabase);
     
     // Use Claude Sonnet as the tutor brain
     const result = await streamText({
