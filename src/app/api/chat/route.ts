@@ -716,7 +716,7 @@ FORMATTING RULES:
     }
 
     // Return response with file summaries in metadata for UI display
-    const response = result.toDataStreamResponse();
+    const response = result.toAIStreamResponse();
     
     // Add PHI score header if present
     if (phiHeaders['x-phi-score']) {
