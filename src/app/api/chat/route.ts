@@ -666,6 +666,8 @@ FORMATTING RULES:
       (m: any) => m.role !== 'system'
     );
     
+    console.log('[CHAT] Cleaned messages count:', cleanedMessages.length);
+    
     // Convert CoreMessage[] to simple Message[] format for history manager
     // CoreMessage has complex content types (string | array), but history manager expects string
     const simpleMessages = cleanedMessages.map((m: any) => ({
@@ -673,8 +675,13 @@ FORMATTING RULES:
       content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
     }));
     
+    console.log('[CHAT] Calling buildMessageHistory...');
+    
     // Build message history with summarization for long conversations
     const processedMessages = await buildMessageHistory(simpleMessages, supabase);
+    
+    console.log('[CHAT] Processed messages count:', processedMessages.length);
+    console.log('[CHAT] Calling Claude Sonnet...');
     
     // Use Claude Sonnet as the tutor brain
     const result = await streamText({
@@ -683,6 +690,8 @@ FORMATTING RULES:
       messages: processedMessages,
       system: systemPrompt,
     });
+
+    console.log('[CHAT] Claude call successful, streaming response...');
 
     // Return response with file summaries in metadata for UI display
     const response = result.toAIStreamResponse();
@@ -700,17 +709,22 @@ FORMATTING RULES:
 
     return response;
   } catch (error: any) {
-    console.error('[CHAT] Error calling OpenAI:', error);
+    console.error('[CHAT] Error in chat route:', error);
+    console.error('[CHAT] Error name:', error?.name);
+    console.error('[CHAT] Error message:', error?.message);
+    console.error('[CHAT] Error stack:', error?.stack);
     
     // Provide more helpful error messages
     let errorMessage = 'Failed to connect to AI';
     if (error?.message) {
-      if (error.message.includes('API key')) {
-        errorMessage = 'Invalid or missing OpenAI API key. Please check your environment configuration.';
+      if (error.message.includes('API key') || error.message.includes('api_key')) {
+        errorMessage = 'Invalid or missing Anthropic API key. Please check your environment configuration.';
       } else if (error.message.includes('401') || error.message.includes('unauthorized')) {
-        errorMessage = 'OpenAI API authentication failed. Please verify your API key is correct.';
+        errorMessage = 'Anthropic API authentication failed. Please verify your API key is correct.';
       } else if (error.message.includes('429') || error.message.includes('rate limit')) {
-        errorMessage = 'OpenAI API rate limit exceeded. Please try again in a moment.';
+        errorMessage = 'Anthropic API rate limit exceeded. Please try again in a moment.';
+      } else if (error.message.includes('model')) {
+        errorMessage = `Invalid model configuration: ${error.message}`;
       } else {
         errorMessage = `AI service error: ${error.message}`;
       }
