@@ -676,22 +676,44 @@ FORMATTING RULES:
     }));
     
     console.log('[CHAT] Calling buildMessageHistory...');
+    console.log('[CHAT] Simple messages:', JSON.stringify(simpleMessages.map(m => ({ role: m.role, contentLength: m.content.length }))));
     
     // Build message history with summarization for long conversations
-    const processedMessages = await buildMessageHistory(simpleMessages, supabase);
+    let processedMessages;
+    try {
+      processedMessages = await buildMessageHistory(simpleMessages, supabase);
+      console.log('[CHAT] Processed messages count:', processedMessages.length);
+    } catch (historyError: any) {
+      console.error('[CHAT] Error in buildMessageHistory:', historyError);
+      console.error('[CHAT] History error stack:', historyError?.stack);
+      // Fallback to simple messages if history manager fails
+      processedMessages = simpleMessages;
+    }
     
-    console.log('[CHAT] Processed messages count:', processedMessages.length);
     console.log('[CHAT] Calling Claude Sonnet...');
+    console.log('[CHAT] Program level:', programLevel);
+    console.log('[CHAT] Prompt mode:', promptMode);
+    console.log('[CHAT] System prompt length:', systemPrompt.length);
+    console.log('[CHAT] Processed messages:', JSON.stringify(processedMessages.map(m => ({ role: m.role, contentLength: m.content?.length || 0 }))));
     
     // Use Claude Sonnet as the tutor brain
-    const result = await streamText({
-      model: anthropic('claude-sonnet-4-20250514') as any,
-      maxTokens: 1200,
-      messages: processedMessages,
-      system: systemPrompt,
-    });
-
-    console.log('[CHAT] Claude call successful, streaming response...');
+    let result;
+    try {
+      result = await streamText({
+        model: anthropic('claude-sonnet-4-20250514') as any,
+        maxTokens: 1200,
+        messages: processedMessages,
+        system: systemPrompt,
+      });
+      console.log('[CHAT] Claude call successful, streaming response...');
+    } catch (claudeError: any) {
+      console.error('[CHAT] Error calling Claude:', claudeError);
+      console.error('[CHAT] Claude error name:', claudeError?.name);
+      console.error('[CHAT] Claude error message:', claudeError?.message);
+      console.error('[CHAT] Claude error stack:', claudeError?.stack);
+      console.error('[CHAT] Claude error cause:', claudeError?.cause);
+      throw claudeError; // Re-throw to be caught by outer catch
+    }
 
     // Return response with file summaries in metadata for UI display
     const response = result.toAIStreamResponse();
