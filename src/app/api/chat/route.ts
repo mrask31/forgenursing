@@ -278,6 +278,25 @@ export async function POST(req: NextRequest) {
     ? { 'x-phi-score': String(phiScore) } 
     : {};
   
+  // Validate Anthropic API key (required for Claude)
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (!anthropicKey) {
+    console.error('[CHAT] ANTHROPIC_API_KEY is missing from environment variables');
+    return new Response(JSON.stringify({ error: 'Anthropic API key is not configured. Please add ANTHROPIC_API_KEY to your environment variables.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate Anthropic API key format (should start with 'sk-ant-')
+  if (!anthropicKey.startsWith('sk-ant-')) {
+    console.error('[CHAT] Invalid Anthropic API key format. Key should start with "sk-ant-"');
+    return new Response(JSON.stringify({ error: 'Invalid Anthropic API key format. API key must start with "sk-ant-". Please check your ANTHROPIC_API_KEY environment variable.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   // Validate OpenAI API key before processing request (still needed for embeddings)
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
