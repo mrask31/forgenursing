@@ -4,6 +4,11 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { hasAccess } from '@/lib/subscription-access'
 
 export async function middleware(request: NextRequest) {
+  // Hard exit for all API routes — let them handle their own auth
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+  
   // Wrap entire middleware in try/catch to prevent ANY crash
   try {
     let response = NextResponse.next({
@@ -354,15 +359,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     * - api (API routes handle their own auth)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/).*)',
   ],
 }
 
