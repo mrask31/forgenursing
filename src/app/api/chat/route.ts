@@ -288,10 +288,10 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Validate Anthropic API key format (should start with 'sk-ant-')
-  if (!anthropicKey.startsWith('sk-ant-')) {
-    console.error('[CHAT] Invalid Anthropic API key format. Key should start with "sk-ant-"');
-    return new Response(JSON.stringify({ error: 'Invalid Anthropic API key format. API key must start with "sk-ant-". Please check your ANTHROPIC_API_KEY environment variable.' }), {
+  // Validate Anthropic API key format (basic check - should be non-empty string)
+  if (anthropicKey.trim().length === 0) {
+    console.error('[CHAT] ANTHROPIC_API_KEY is empty');
+    return new Response(JSON.stringify({ error: 'Anthropic API key is empty. Please check your ANTHROPIC_API_KEY environment variable.' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
