@@ -715,21 +715,17 @@ FORMATTING RULES:
       throw claudeError; // Re-throw to be caught by outer catch
     }
 
-    // Return response with file summaries in metadata for UI display
-    const response = result.toAIStreamResponse();
-    
-    // Add PHI score header if present
+    const customHeaders: Record<string, string> = {};
+
     if (phiHeaders['x-phi-score']) {
-      response.headers.set('x-phi-score', phiHeaders['x-phi-score']);
-    }
-    
-    // Add file summaries to response headers for UI to display "Using your files" pill
-    if (fileSummaries.length > 0 && binderContext && binderContext.trim().length > 0) {
-      const fileNames = fileSummaries.map(f => f.filename).join(', ');
-      response.headers.set('X-Binder-Files', fileNames);
+      customHeaders['x-phi-score'] = phiHeaders['x-phi-score'];
     }
 
-    return response;
+    if (fileSummaries.length > 0 && binderContext?.trim().length > 0) {
+      customHeaders['X-Binder-Files'] = fileSummaries.map(f => f.filename).join(', ');
+    }
+
+    return result.toDataStreamResponse({ headers: customHeaders });
   } catch (error: any) {
     console.error('[CHAT] Error in chat route:', error);
     console.error('[CHAT] Error name:', error?.name);
