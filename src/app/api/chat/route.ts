@@ -1,5 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText, convertToCoreMessages } from 'ai';
+import { streamText } from 'ai';
 import { buildSystemPrompt } from '@/lib/ai/system-prompt';
 import { buildMessageHistory } from '@/lib/ai/history-manager';
 import { scorePhiText } from '@/app/api/_middleware/phi-scrubber';
@@ -516,8 +516,8 @@ export async function POST(req: NextRequest) {
   // Placeholder - will be set after we determine the mode
   let systemPrompt: string = '';
 
-  // Build messages array - convert to core messages format
-  const coreMessages = convertToCoreMessages(messages);
+  // Build messages array
+  const coreMessages = messages;
 
   // Add binder context to system prompt if available
   if (binderResult.hasContext && binderContext && binderContext.trim().length > 0) {
@@ -676,7 +676,7 @@ FORMATTING RULES:
     }));
     
     console.log('[CHAT] Calling buildMessageHistory...');
-    console.log('[CHAT] Simple messages:', JSON.stringify(simpleMessages.map(m => ({ role: m.role, contentLength: m.content.length }))));
+    console.log('[CHAT] Simple messages:', JSON.stringify(simpleMessages.map((m: any) => ({ role: m.role, contentLength: m.content.length }))));
     
     // Build message history with summarization for long conversations
     let processedMessages;
@@ -694,7 +694,7 @@ FORMATTING RULES:
     console.log('[CHAT] Program level:', programLevel);
     console.log('[CHAT] Prompt mode:', promptMode);
     console.log('[CHAT] System prompt length:', systemPrompt.length);
-    console.log('[CHAT] Processed messages:', JSON.stringify(processedMessages.map(m => ({ role: m.role, contentLength: m.content?.length || 0 }))));
+    console.log('[CHAT] Processed messages:', JSON.stringify(processedMessages.map((m: any) => ({ role: m.role, contentLength: m.content?.length || 0 }))));
     
     // Use Claude Sonnet as the tutor brain
     let result;
