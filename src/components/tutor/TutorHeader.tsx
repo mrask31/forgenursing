@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Plus, Brain } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { useTutorContext } from './TutorContext'
@@ -24,8 +24,8 @@ interface TutorHeaderProps {
   currentSessionId?: string | null // Current active session ID for archiving
 }
 
-export default function TutorHeader({ 
-  mode, 
+export default function TutorHeader({
+  mode,
   selectedClass,
   selectedTopic,
   onClearTopic,
@@ -72,44 +72,43 @@ export default function TutorHeader({
 
   return (
     <>
-      <header className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200/60 bg-white/80 backdrop-blur-sm px-3 sm:px-4 md:px-6 py-3 sm:py-3.5 rounded-xl shadow-lg shadow-slate-200/50 mb-4 sm:mb-5 w-full overflow-hidden">
-        {/* Left: Mode indicator (Clinical Tutor) */}
-        <div className="flex items-center justify-center flex-shrink-0">
-          <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-full border border-indigo-200/60 shadow-sm">
-            <Brain className="w-4 h-4 text-indigo-600" />
-            <span className="text-sm font-semibold text-indigo-900">Clinical Tutor</span>
+      <header className="flex items-center justify-between h-[52px] border-b border-[var(--gray-200)] bg-white px-3 sm:px-4 md:px-6 mb-0 w-full">
+        {/* Left: Forge avatar + identity */}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          {/* Forge avatar — small navy→teal gradient square */}
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--navy)] to-[var(--teal)] text-white text-xs font-bold select-none">
+            Fx
+          </div>
+          <div className="flex flex-col leading-tight">
+            <span className="text-sm font-semibold text-[var(--gray-800)]">Forge</span>
+            <span className="text-xs text-[var(--gray-400)]">Clinical Preceptor</span>
           </div>
         </div>
 
-        {/* Right: Class / Topic strip + New Chat */}
+        {/* Right: Class selector + New Session */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Class select - always visible now */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-              <span className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap hidden sm:inline">
-                Class
-              </span>
-              <select
-                value={selectedClassId ?? ""}
-                onChange={(e) => onSelectClass?.(e.target.value || undefined)}
-                className="rounded-lg border-2 border-slate-200 bg-white/80 backdrop-blur-sm px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 w-[120px] sm:w-[160px] transition-all duration-200"
-              >
-                <option value="">General Tutor</option>
-                {classes.map((cls) => (
-                  <option key={cls.id} value={cls.id}>
-                    {cls.code} – {cls.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Class select */}
+          <select
+            value={selectedClassId ?? ""}
+            onChange={(e) => onSelectClass?.(e.target.value || undefined)}
+            className="rounded-lg border border-[var(--gray-200)] bg-white px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-[var(--gray-800)] focus:outline-none focus:ring-2 focus:ring-[var(--teal)]/30 focus:border-[var(--teal)] w-[120px] sm:w-[160px] transition-colors"
+          >
+            <option value="">General Tutor</option>
+            {classes.map((cls) => (
+              <option key={cls.id} value={cls.id}>
+                {cls.code} – {cls.name}
+              </option>
+            ))}
+          </select>
 
-          {/* Start New Chat button - only show when there's an active session */}
+          {/* New Session button - only show when there's an active session */}
           {currentSessionId && (
             <Button
               variant="outline"
               size="sm"
               onClick={async () => {
                 if (!currentSessionId) return
-                
+
                 // Archive the current chat
                 try {
                   const archiveRes = await fetch('/api/chats/archive', {
@@ -118,7 +117,7 @@ export default function TutorHeader({
                     credentials: 'include',
                     body: JSON.stringify({ chatId: currentSessionId }),
                   })
-                  
+
                   if (!archiveRes.ok) {
                     console.error('[TutorHeader] Failed to archive chat')
                     // Continue anyway - don't block user
@@ -127,7 +126,7 @@ export default function TutorHeader({
                   console.error('[TutorHeader] Error archiving chat:', error)
                   // Continue anyway - don't block user
                 }
-                
+
                 // Clear session and show landing page
                 if (onStartNewSession) {
                   onStartNewSession()
@@ -140,10 +139,10 @@ export default function TutorHeader({
                   router.push(`/tutor?${params.toString()}`)
                 }
               }}
-              className="flex-shrink-0 flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-0 shadow-md shadow-indigo-500/30 hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 font-semibold px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap"
+              className="flex-shrink-0 flex items-center gap-1.5 bg-[var(--teal)] text-white border-0 rounded-lg hover:bg-[#0A7A85] transition-colors font-semibold px-3 py-1.5 text-xs sm:text-sm whitespace-nowrap"
             >
               <Plus className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="hidden sm:inline">New Chat</span>
+              <span className="hidden sm:inline">New Session</span>
               <span className="sm:hidden">New</span>
             </Button>
           )}
@@ -163,4 +162,3 @@ export default function TutorHeader({
     </>
   )
 }
-

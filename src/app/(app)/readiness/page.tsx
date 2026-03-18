@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { 
-  AlertCircle, Calendar, 
-  Flame, Target, GraduationCap, Bookmark, 
+import {
+  AlertCircle, Calendar,
+  Flame, Target, GraduationCap, Bookmark,
   CheckCircle2, Sparkles, Search, Folder, Tag,
   Brain, ChevronRight, MessageSquare, Trash2
 } from 'lucide-react'
@@ -99,7 +99,7 @@ export default function ClinicalDashboard() {
           .select('graduation_date, preferred_name, program_track')
           .eq('id', user.id)
           .single()
-        
+
         if (profile) {
           if (profile.graduation_date) {
             setGraduationDate(profile.graduation_date)
@@ -123,15 +123,15 @@ export default function ClinicalDashboard() {
         if (chatsRes.ok) {
           const chatsData = await chatsRes.json()
           const allChats = (chatsData.chats || []) as Chat[]
-          
+
           // Filter to tutor mode chats only (not reflections)
-          const tutorChats = allChats.filter(chat => 
-            !chat.session_type || 
-            chat.session_type === 'general' || 
-            chat.session_type === 'question' || 
+          const tutorChats = allChats.filter(chat =>
+            !chat.session_type ||
+            chat.session_type === 'general' ||
+            chat.session_type === 'question' ||
             chat.session_type === 'snapshot'
           )
-          
+
 
           // Calculate consistency (active days in last 7)
           const sevenDaysAgo = new Date()
@@ -144,18 +144,18 @@ export default function ClinicalDashboard() {
           setActiveDays(recentActiveDays)
 
           // Calculate study streak (consecutive days with activity)
-          const sortedChats = [...tutorChats].sort((a, b) => 
+          const sortedChats = [...tutorChats].sort((a, b) =>
             new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
           )
           let streak = 0
           const today = new Date()
           today.setHours(0, 0, 0, 0)
-          
+
           for (let i = 0; i < sortedChats.length; i++) {
             const chatDate = new Date(sortedChats[i].updated_at)
             chatDate.setHours(0, 0, 0, 0)
             const daysDiff = Math.floor((today.getTime() - chatDate.getTime()) / (1000 * 60 * 60 * 24))
-            
+
             if (daysDiff === streak) {
               streak++
             } else if (daysDiff > streak) {
@@ -175,13 +175,13 @@ export default function ClinicalDashboard() {
           // Generate focus areas from flagged message pairs
           // Collect all flagged message IDs from all chats
           const flaggedMessagePairs: Array<{ chatId: string; messageId: string; chatTitle: string; updatedAt: string }> = []
-          
+
           for (const chat of allChats) {
-            const isTutorChat = !chat.session_type || 
-              chat.session_type === 'general' || 
-              chat.session_type === 'question' || 
+            const isTutorChat = !chat.session_type ||
+              chat.session_type === 'general' ||
+              chat.session_type === 'question' ||
               chat.session_type === 'snapshot'
-            
+
             if (isTutorChat && chat.metadata?.flaggedMessages && Array.isArray(chat.metadata.flaggedMessages)) {
               const flaggedIds = chat.metadata.flaggedMessages as string[]
               for (const messageId of flaggedIds) {
@@ -194,10 +194,10 @@ export default function ClinicalDashboard() {
               }
             }
           }
-          
+
           // Sort by most recently updated
           flaggedMessagePairs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-          
+
           // Create focus areas from flagged message pairs
           const focusTopics: FocusArea[] = flaggedMessagePairs.map(pair => ({
             topic: `${pair.chatTitle} (Flagged Q&A)`,
@@ -250,7 +250,7 @@ export default function ClinicalDashboard() {
           const docsData = await docsRes.json()
           const docs = (docsData.files || []) as RecentDocument[]
           // Sort by created_at descending and take top 3
-          const sortedDocs = docs.sort((a, b) => 
+          const sortedDocs = docs.sort((a, b) =>
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           ).slice(0, 3)
           setRecentDocuments(sortedDocs)
@@ -324,7 +324,7 @@ export default function ClinicalDashboard() {
 
   const handleDeleteClip = async (clipId: string, e: React.MouseEvent) => {
     e.stopPropagation() // Prevent triggering the review clip action
-    
+
     if (!confirm('Are you sure you want to delete this learning moment? This cannot be undone.')) {
       return
     }
@@ -388,12 +388,12 @@ export default function ClinicalDashboard() {
 
   if (isLoading) {
     return (
-      <div className="h-full bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50 flex items-center justify-center">
+      <div className="h-full bg-[var(--gray-50)] flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 mb-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent"></div>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--teal-light)] mb-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--teal)] border-t-transparent"></div>
           </div>
-          <p className="text-lg font-medium text-slate-600">Loading your dashboard...</p>
+          <p className="text-lg font-medium text-[var(--gray-400)]">Loading your dashboard...</p>
         </div>
       </div>
     )
@@ -402,45 +402,51 @@ export default function ClinicalDashboard() {
   const displayClips = showAllClips ? filteredClips : filteredClips.slice(0, 6)
 
   return (
-    <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
+    <div className="h-full overflow-y-auto bg-[var(--gray-50)]">
       <div className={`${tokens.containerMaxWidth || 'max-w-7xl'} mx-auto px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 pt-safe-t pb-safe-b`}>
-        {/* Medical Dashboard Header - Enhanced */}
+        {/* Medical Dashboard Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-start justify-between mb-3 sm:mb-4 flex-wrap gap-3 sm:gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-2 sm:p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20 flex-shrink-0">
-                  <Target className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
+                <div className="p-2 sm:p-2.5 bg-[var(--teal)] rounded-xl flex-shrink-0">
+                  {/* Teal waveform icon */}
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 12h2l3-9 4 18 4-18 3 9h2" />
+                  </svg>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
-                    Clinical Dashboard
-                  </h1>
-                  <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg sm:rounded-xl shadow-sm">
-                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-sm shadow-emerald-500/50"></div>
-                    <span className="text-xs sm:text-sm font-semibold text-emerald-700">Active</span>
+                <div>
+                  <p className="text-[10px] sm:text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wider">Student Chart</p>
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <h1 className="font-display text-2xl sm:text-3xl md:text-4xl text-[var(--navy)]">
+                      {preferredName || 'Student'}
+                    </h1>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[var(--green)] rounded-full"></div>
+                      <span className="text-xs sm:text-sm font-medium text-[var(--green)]">Active</span>
+                    </div>
                   </div>
                 </div>
               </div>
-              {/* Student Chart Header */}
+              {/* Student Chart Details */}
               <div className="ml-11 sm:ml-14 max-w-2xl space-y-1 sm:space-y-1.5">
-                <p className="text-sm sm:text-base font-medium text-slate-900">
-                  Chart: {preferredName || 'Student'} • {programTrack || 'RN Track'}
+                <p className="text-sm sm:text-base font-medium text-[var(--gray-800)]">
+                  {programTrack || 'RN Track'}
                 </p>
                 {graduationDate && daysUntilGrad !== null && (
-                  <p className="text-xs sm:text-sm text-slate-600">
+                  <p className="text-xs sm:text-sm text-[var(--gray-400)]">
                     {daysUntilGrad > 0 ? (
                       <>
-                        Class of {new Date(graduationDate).getFullYear()} • {daysUntilGrad} day{daysUntilGrad === 1 ? '' : 's'} until {new Date(graduationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        Class of {new Date(graduationDate).getFullYear()} &middot; {daysUntilGrad} day{daysUntilGrad === 1 ? '' : 's'} until {new Date(graduationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </>
                     ) : (
                       <>
-                        Class of {new Date(graduationDate).getFullYear()} • Graduation reached
+                        Class of {new Date(graduationDate).getFullYear()} &middot; Graduation reached
                       </>
                     )}
                   </p>
                 )}
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[var(--gray-400)]">
                   Last updated: {new Date().toLocaleTimeString()}
                 </p>
               </div>
@@ -449,87 +455,87 @@ export default function ClinicalDashboard() {
         </div>
 
         {/* Study Vitals Label */}
-        <div className="mb-3 sm:mb-4">
-          <h2 className="text-xs sm:text-sm font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="mb-3 sm:mb-4 border-b border-[var(--gray-200)] pb-2">
+          <h2 className="text-xs sm:text-sm font-semibold text-[var(--gray-400)] uppercase tracking-wider">
             Study Vitals
           </h2>
         </div>
 
-        {/* Vital Signs Row - Medical Style Metrics - Enhanced */}
+        {/* Vital Signs Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-orange-500 rounded-xl p-3 sm:p-4 md:p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-orange-200/30 transition-all duration-300">
+          <div className="bg-white border border-[var(--gray-200)] border-t-4 border-t-[var(--amber)] rounded-xl p-3 sm:p-4 md:p-5 hover:border-[var(--teal)] transition-colors duration-200">
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-orange-100 to-orange-50 rounded-lg">
-                <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+              <div className="p-1.5 sm:p-2 bg-[var(--amber-light)] rounded-lg">
+                <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--amber)]" />
               </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">Streak</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wide">Streak</span>
             </div>
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-1">{studyStreak}</div>
-            <div className="text-xs sm:text-sm text-slate-600">day{studyStreak === 1 ? '' : 's'} consecutive</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--navy)] mb-1">{studyStreak}</div>
+            <div className="text-xs sm:text-sm text-[var(--gray-400)]">day{studyStreak === 1 ? '' : 's'} consecutive</div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-blue-500 rounded-xl p-3 sm:p-4 md:p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-blue-200/30 transition-all duration-300">
+          <div className="bg-white border border-[var(--gray-200)] border-t-4 border-t-[var(--teal)] rounded-xl p-3 sm:p-4 md:p-5 hover:border-[var(--teal)] transition-colors duration-200">
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg">
-                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+              <div className="p-1.5 sm:p-2 bg-[var(--teal-light)] rounded-lg">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--teal)]" />
               </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">This Week</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wide">This Week</span>
             </div>
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-1">{activeDays}</div>
-            <div className="text-xs sm:text-sm text-slate-600">active day{activeDays === 1 ? '' : 's'}</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--navy)] mb-1">{activeDays}</div>
+            <div className="text-xs sm:text-sm text-[var(--gray-400)]">active day{activeDays === 1 ? '' : 's'}</div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-teal-500 rounded-xl p-3 sm:p-4 md:p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-teal-200/30 transition-all duration-300">
+          <div className="bg-white border border-[var(--gray-200)] border-t-4 border-t-[var(--teal-bright)] rounded-xl p-3 sm:p-4 md:p-5 hover:border-[var(--teal)] transition-colors duration-200">
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-teal-100 to-teal-50 rounded-lg">
-                <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
+              <div className="p-1.5 sm:p-2 bg-[var(--teal-light)] rounded-lg">
+                <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--teal-bright)]" />
               </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">Concepts</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wide">Concepts</span>
             </div>
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-1">{topicsStudied}</div>
-            <div className="text-xs sm:text-sm text-slate-600">topics explored</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--navy)] mb-1">{topicsStudied}</div>
+            <div className="text-xs sm:text-sm text-[var(--gray-400)]">topics explored</div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm border-l-4 border-l-purple-500 rounded-xl p-3 sm:p-4 md:p-5 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-purple-200/30 transition-all duration-300">
+          <div className="bg-white border border-[var(--gray-200)] border-t-4 border-t-[var(--navy)] rounded-xl p-3 sm:p-4 md:p-5 hover:border-[var(--teal)] transition-colors duration-200">
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-purple-100 to-purple-50 rounded-lg">
-                <Bookmark className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+              <div className="p-1.5 sm:p-2 bg-[var(--gray-100)] rounded-lg">
+                <Bookmark className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--navy)]" />
               </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">Saved</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wide">Saved</span>
             </div>
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-1">{clipsCount}</div>
-            <div className="text-xs sm:text-sm text-slate-600">learning moments</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--navy)] mb-1">{clipsCount}</div>
+            <div className="text-xs sm:text-sm text-[var(--gray-400)]">learning moments</div>
           </div>
         </div>
 
-        {/* Study Activity by Class - Enhanced */}
+        {/* Study Activity by Class */}
         {chatCountsByClass.length > 0 && (
-          <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 mb-8 overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-50/80 to-purple-50/80 border-b border-indigo-200/60 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2.5 mb-1">
-                <div className="p-1.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
+          <div className="bg-white border border-[var(--gray-200)] rounded-xl mb-8 overflow-hidden">
+            <div className="border-b border-[var(--gray-200)] px-6 py-4">
+              <h3 className="text-base font-bold text-[var(--navy)] flex items-center gap-2.5 mb-1">
+                <div className="p-1.5 bg-[var(--navy)] rounded-lg">
                   <MessageSquare className="w-4 h-4 text-white" />
                 </div>
-                Study Activity by Class
+                <span className="text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wider">Study Activity by Class</span>
               </h3>
-              <p className="text-sm text-slate-600 ml-8">See where you're spending the most study time</p>
+              <p className="text-sm text-[var(--gray-400)] ml-8">See where you're spending the most study time</p>
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {chatCountsByClass.map((item) => (
                   <div
                     key={item.classId}
-                    className="p-4 bg-gradient-to-br from-slate-50/80 to-white border border-slate-200/60 rounded-xl hover:border-indigo-300 hover:shadow-md hover:shadow-indigo-200/30 transition-all duration-200 transform hover:scale-[1.02]"
+                    className="p-4 bg-white border border-[var(--gray-200)] rounded-xl hover:border-[var(--teal)] transition-colors duration-200"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-slate-900 truncate">
+                      <span className="text-sm font-bold text-[var(--navy)] truncate">
                         {item.classCode}
                       </span>
-                      <span className="text-xs font-bold text-indigo-700 bg-gradient-to-r from-indigo-50 to-purple-50 px-2.5 py-1 rounded-lg border border-indigo-200/50">
+                      <span className="text-xs font-bold text-[var(--teal)] bg-[var(--teal-light)] px-2.5 py-1 rounded-lg border border-[var(--teal)]/20">
                         {item.count} {item.count === 1 ? 'session' : 'sessions'}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 truncate">{item.className}</p>
+                    <p className="text-xs text-[var(--gray-400)] truncate">{item.className}</p>
                   </div>
                 ))}
               </div>
@@ -539,35 +545,35 @@ export default function ClinicalDashboard() {
 
         {/* Quick Study - Recent Materials */}
         {recentDocuments.length > 0 && (
-          <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 mb-8 overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-50/80 to-teal-50/80 border-b border-emerald-200/60 px-6 py-4">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2.5 mb-1">
-                <div className="p-1.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
+          <div className="bg-white border border-[var(--gray-200)] rounded-xl mb-8 overflow-hidden">
+            <div className="border-b border-[var(--gray-200)] px-6 py-4">
+              <h3 className="text-base font-bold text-[var(--navy)] flex items-center gap-2.5 mb-1">
+                <div className="p-1.5 bg-[var(--teal)] rounded-lg">
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
-                Quick Study
+                <span className="text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wider">Quick Study</span>
               </h3>
-              <p className="text-sm text-slate-600 ml-8">Jump right into your recently uploaded materials</p>
+              <p className="text-sm text-[var(--gray-400)] ml-8">Jump right into your recently uploaded materials</p>
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {recentDocuments.map((doc) => (
                   <div
                     key={doc.id}
-                    className="p-4 bg-gradient-to-br from-slate-50/80 to-white border border-slate-200/60 rounded-xl hover:border-emerald-300 hover:shadow-md hover:shadow-emerald-200/30 transition-all duration-200"
+                    className="p-4 bg-white border border-[var(--gray-200)] rounded-xl hover:border-[var(--teal)] transition-colors duration-200"
                   >
                     <div className="flex flex-col gap-3">
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-bold text-slate-900 truncate mb-1">
+                        <h4 className="text-sm font-bold text-[var(--navy)] truncate mb-1">
                           {doc.filename}
                         </h4>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-[var(--gray-400)]">
                           Uploaded {formatTimeAgo(doc.created_at)}
                         </p>
                       </div>
                       <button
                         onClick={() => handleStudyDocument(doc)}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm font-semibold rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--teal)] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity duration-200"
                       >
                         <Sparkles className="w-4 h-4" />
                         Study This
@@ -584,23 +590,23 @@ export default function ClinicalDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-4 sm:mb-6">
           {/* Left Column: Flagged for Review & Graduation */}
           <div className="space-y-4 sm:space-y-5 md:space-y-6">
-            {/* Focus Areas - Medical Alert Panel - Enhanced */}
-            <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 overflow-hidden">
-              <div className="bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-b border-amber-200/60 px-6 py-4">
+            {/* Focus Areas - Flagged for Review */}
+            <div className="bg-white border border-[var(--gray-200)] rounded-xl overflow-hidden">
+              <div className="border-b border-[var(--gray-200)] px-6 py-4">
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-base font-bold text-amber-900 flex items-center gap-2.5">
-                    <div className="p-1.5 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg">
+                  <h3 className="text-base font-bold text-[var(--amber)] flex items-center gap-2.5">
+                    <div className="p-1.5 bg-[var(--amber)] rounded-lg">
                       <Target className="w-4 h-4 text-white" />
                     </div>
-                    Flagged for Review
+                    <span className="text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wider">Flagged for Review</span>
                   </h3>
                   {focusAreas.length > 0 && (
-                    <span className="text-xs font-bold text-amber-700 bg-gradient-to-r from-amber-100 to-orange-100 px-3 py-1 rounded-lg border border-amber-200/50 shadow-sm">
+                    <span className="text-xs font-bold text-[var(--amber)] bg-[var(--amber-light)] px-3 py-1 rounded-lg border border-[var(--amber)]/20">
                       {focusAreas.length}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-amber-700/80 ml-8">Review Queue</p>
+                <p className="text-xs text-[var(--gray-400)] ml-8">Review Queue</p>
               </div>
               <div className="p-6">
                 {focusAreas.length > 0 ? (
@@ -609,25 +615,25 @@ export default function ClinicalDashboard() {
                       <button
                         key={index}
                         onClick={() => handleFocusAreaClick(area)}
-                        className="w-full flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-2 border-amber-200/60 rounded-xl hover:border-amber-300 hover:from-amber-100 hover:to-orange-100 transition-all duration-200 group text-left transform hover:scale-[1.02]"
+                        className="w-full flex items-center justify-between gap-3 p-4 bg-[var(--amber-light)] border border-[var(--amber)]/20 rounded-xl hover:border-[var(--amber)] transition-colors duration-200 group text-left"
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                          <span className="text-sm font-semibold text-amber-900 truncate">
+                          <AlertCircle className="w-5 h-5 text-[var(--amber)] flex-shrink-0" />
+                          <span className="text-sm font-semibold text-[var(--gray-800)] truncate">
                             {area.topic}
                           </span>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-amber-600 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                        <ChevronRight className="w-5 h-5 text-[var(--amber)] group-hover:translate-x-1 transition-transform flex-shrink-0" />
                       </button>
                     ))}
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 mb-4">
-                      <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--green-light)] mb-4">
+                      <CheckCircle2 className="w-8 h-8 text-[var(--green)]" />
                     </div>
-                    <p className="text-sm font-semibold text-slate-700">All clear</p>
-                    <p className="text-xs text-slate-500 mt-1">No topics flagged</p>
+                    <p className="text-sm font-semibold text-[var(--gray-800)]">All clear</p>
+                    <p className="text-xs text-[var(--gray-400)] mt-1">No topics flagged</p>
                   </div>
                 )}
               </div>
@@ -635,31 +641,31 @@ export default function ClinicalDashboard() {
 
           </div>
 
-          {/* Right Column: Learning Library - Enhanced */}
+          {/* Right Column: Learning Library */}
           <div>
-            <div className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-50/80 to-indigo-50/80 border-b border-purple-200/60 px-6 py-4">
+            <div className="bg-white border border-[var(--gray-200)] rounded-xl overflow-hidden">
+              <div className="border-b border-[var(--gray-200)] px-6 py-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2.5">
-                    <div className="p-1.5 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg">
+                  <h3 className="text-base font-bold text-[var(--navy)] flex items-center gap-2.5">
+                    <div className="p-1.5 bg-[var(--navy)] rounded-lg">
                       <Bookmark className="w-4 h-4 text-white" />
                     </div>
-                    Learning Library
+                    <span className="text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wider">Learning Library</span>
                   </h3>
-                  <span className="text-sm font-bold text-slate-700 bg-white/60 px-3 py-1 rounded-lg border border-purple-200/50">{clipsCount} total</span>
+                  <span className="text-sm font-bold text-[var(--gray-800)] bg-[var(--gray-100)] px-3 py-1 rounded-lg border border-[var(--gray-200)]">{clipsCount} total</span>
                 </div>
               </div>
-              
-              {/* Search and Filters - Enhanced */}
-              <div className="p-6 border-b border-slate-200/60 space-y-4 bg-gradient-to-b from-slate-50/50 to-transparent">
+
+              {/* Search and Filters */}
+              <div className="p-6 border-b border-[var(--gray-200)] space-y-4">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--gray-400)]" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search learning moments..."
-                    className="w-full pl-12 pr-4 py-3 text-sm font-medium border-2 border-slate-200 rounded-xl bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="w-full pl-12 pr-4 py-3 text-sm font-medium border border-[var(--gray-200)] rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[var(--teal)]/50 focus:border-[var(--teal)] transition-colors duration-200"
                   />
                 </div>
                 {(folders.length > 0 || tags.length > 0) && (
@@ -669,10 +675,10 @@ export default function ClinicalDashboard() {
                         setSelectedFolder(null)
                         setSelectedTag(null)
                       }}
-                      className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
+                      className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors duration-200 ${
                         !selectedFolder && !selectedTag
-                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
-                          : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50 shadow-sm'
+                          ? 'bg-[var(--teal)] text-white'
+                          : 'bg-white text-[var(--gray-800)] border border-[var(--gray-200)] hover:border-[var(--teal)]'
                       }`}
                     >
                       All
@@ -684,10 +690,10 @@ export default function ClinicalDashboard() {
                           setSelectedFolder(folder)
                           setSelectedTag(null)
                         }}
-                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-1.5 ${
+                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors duration-200 flex items-center gap-1.5 ${
                           selectedFolder === folder
-                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
-                            : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50 shadow-sm'
+                            ? 'bg-[var(--teal)] text-white'
+                            : 'bg-white text-[var(--gray-800)] border border-[var(--gray-200)] hover:border-[var(--teal)]'
                         }`}
                       >
                         <Folder className="w-3.5 h-3.5" />
@@ -701,10 +707,10 @@ export default function ClinicalDashboard() {
                           setSelectedTag(tag)
                           setSelectedFolder(null)
                         }}
-                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center gap-1.5 ${
+                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors duration-200 flex items-center gap-1.5 ${
                           selectedTag === tag
-                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
-                            : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50 shadow-sm'
+                            ? 'bg-[var(--teal)] text-white'
+                            : 'bg-white text-[var(--gray-800)] border border-[var(--gray-200)] hover:border-[var(--teal)]'
                         }`}
                       >
                         <Tag className="w-3.5 h-3.5" />
@@ -715,7 +721,7 @@ export default function ClinicalDashboard() {
                 )}
               </div>
 
-              {/* Clips List - Enhanced */}
+              {/* Clips List */}
               <div className="p-6">
                 {displayClips.length > 0 ? (
                   <div className="space-y-4">
@@ -726,31 +732,31 @@ export default function ClinicalDashboard() {
                       >
                         <button
                           onClick={() => handleReviewClip(clip)}
-                          className="w-full text-left p-5 rounded-xl border-2 border-slate-200/60 bg-gradient-to-br from-white to-slate-50/50 hover:border-purple-300 hover:from-purple-50/80 hover:to-indigo-50/80 transition-all duration-200 transform hover:scale-[1.01] shadow-sm hover:shadow-md hover:shadow-purple-200/30"
+                          className="w-full text-left p-5 rounded-xl border border-[var(--gray-200)] bg-white hover:border-[var(--teal)] transition-colors duration-200"
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2.5 mb-3 flex-wrap">
-                                <h4 className="text-base font-bold text-slate-900 truncate">
+                                <h4 className="text-base font-bold text-[var(--navy)] truncate">
                                   {clip.title}
                                 </h4>
-                                <span className="text-xs font-semibold text-purple-700 bg-gradient-to-r from-purple-100 to-indigo-100 px-3 py-1 rounded-lg border border-purple-200/50">
+                                <span className="text-xs font-semibold text-[var(--teal)] bg-[var(--teal-light)] px-3 py-1 rounded-lg border border-[var(--teal)]/20">
                                   {clip.folder}
                                 </span>
                               </div>
-                              <div className="text-sm text-slate-600 line-clamp-2 mb-3 leading-relaxed">
+                              <div className="text-sm text-[var(--gray-400)] line-clamp-2 mb-3 leading-relaxed">
                                 {clip.content.substring(0, 150)}...
                               </div>
                               <div className="flex items-center gap-2.5 flex-wrap">
                                 {clip.tags.slice(0, 3).map(tag => (
                                   <span
                                     key={tag}
-                                    className="text-xs font-medium px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg border border-slate-200/50"
+                                    className="text-xs font-medium px-2.5 py-1 bg-[var(--gray-100)] text-[var(--gray-800)] rounded-lg border border-[var(--gray-200)]"
                                   >
                                     {tag}
                                   </span>
                                 ))}
-                                <span className="text-xs text-slate-500 font-medium">
+                                <span className="text-xs text-[var(--gray-400)] font-medium">
                                   {formatTimeAgo(clip.created_at)}
                                 </span>
                               </div>
@@ -758,13 +764,13 @@ export default function ClinicalDashboard() {
                             <div className="flex items-center gap-2 flex-shrink-0">
                               <button
                                 onClick={(e) => handleDeleteClip(clip.id, e)}
-                                className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 transform hover:scale-110"
+                                className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-[var(--red)] hover:bg-[var(--red-light)] transition-colors duration-200"
                                 title="Delete this learning moment"
                                 aria-label="Delete clip"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
-                              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-200" />
+                              <ChevronRight className="w-5 h-5 text-[var(--gray-400)] group-hover:text-[var(--teal)] group-hover:translate-x-1 transition-all duration-200" />
                             </div>
                           </div>
                         </button>
@@ -773,23 +779,23 @@ export default function ClinicalDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-16">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-100 to-indigo-100 mb-6">
-                      <Bookmark className="w-10 h-10 text-purple-400" />
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--teal-light)] mb-6">
+                      <Bookmark className="w-10 h-10 text-[var(--teal)]" />
                     </div>
-                    <p className="text-base font-semibold text-slate-700 mb-2">
+                    <p className="text-base font-semibold text-[var(--gray-800)] mb-2">
                       {allClips.length === 0 ? 'No learning moments saved yet' : 'No clips match your filters'}
                     </p>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-[var(--gray-400)]">
                       {allClips.length === 0 && 'Save learning moments during study sessions'}
                     </p>
                   </div>
                 )}
-                
+
                 {filteredClips.length > 6 && (
                   <div className="mt-6 text-center">
                     <Button
                       onClick={() => setShowAllClips(!showAllClips)}
-                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold"
+                      className="bg-[var(--teal)] hover:opacity-90 text-white transition-opacity duration-200 font-semibold"
                     >
                       {showAllClips ? 'Show Less' : `Show All (${filteredClips.length})`}
                     </Button>
@@ -802,7 +808,7 @@ export default function ClinicalDashboard() {
 
         {/* Footer Disclaimer */}
         <div className="mt-6 text-center">
-          <p className="text-xs text-slate-500 italic">
+          <p className="text-xs text-[var(--gray-400)] italic">
             Dashboard metrics reflect study activity and engagement — not a guarantee of NCLEX performance.
           </p>
         </div>

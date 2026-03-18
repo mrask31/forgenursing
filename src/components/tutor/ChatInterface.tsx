@@ -76,9 +76,9 @@ export default function ChatInterface({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
-    
+
     const message = inputValue.trim()
-    
+
     // Call onSend and only clear input on success
     try {
       await onSend(message)
@@ -87,7 +87,7 @@ export default function ChatInterface({
       console.error('[ChatInterface] Error sending message:', error)
       // Keep input value on error so user can retry
     }
-    
+
     // Refocus input after sending
     setTimeout(() => {
       inputRef.current?.focus()
@@ -107,26 +107,26 @@ export default function ChatInterface({
   }
 
   return (
-    <div className="flex-shrink-0 pt-3 bg-slate-50 relative">
+    <div className="flex-shrink-0 pt-3 bg-[var(--gray-50)] relative">
       {/* Medical Math Calculator Panel */}
-      <MedicalMathCalculator 
-        isOpen={isCalculatorOpen} 
-        onClose={() => setIsCalculatorOpen(false)} 
+      <MedicalMathCalculator
+        isOpen={isCalculatorOpen}
+        onClose={() => setIsCalculatorOpen(false)}
       />
 
       {/* Context Pills (Above the dock) */}
       {attachedFiles.length > 0 && (
         <div className="flex gap-2 overflow-x-auto px-2 mb-2">
           {attachedFiles.map((file) => (
-            <div 
-              key={file.id} 
-              className="flex items-center gap-2 rounded-full bg-white/80 border border-indigo-100 px-3 py-1 text-xs text-indigo-700 shadow-sm backdrop-blur-sm transition-all duration-200"
+            <div
+              key={file.id}
+              className="flex items-center gap-2 rounded-full bg-[var(--teal-light)] border border-[var(--teal)]/20 px-3 py-1 text-xs text-[var(--teal)] shadow-sm transition-all duration-200"
             >
               <span className="truncate max-w-[150px]">{file.name}</span>
               {onDetach && (
-                <button 
-                  onClick={() => onDetach(file.id)} 
-                  className="hover:text-indigo-900 transition-colors"
+                <button
+                  onClick={() => onDetach(file.id)}
+                  className="hover:text-[var(--navy)] transition-colors"
                   aria-label={`Remove ${file.name}`}
                 >
                   ×
@@ -149,8 +149,8 @@ export default function ChatInterface({
           className={`
             flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200
             ${isCalculatorOpen
-              ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
-              : 'bg-white/80 text-slate-600 hover:bg-white hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 shadow-sm'
+              ? 'bg-[var(--teal-light)] text-[var(--teal)] border border-[var(--teal)]/30'
+              : 'bg-white text-[var(--gray-800)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] border border-[var(--gray-200)] hover:border-[var(--teal)]/30 shadow-sm'
             }
           `}
           aria-label="Toggle Medical Math Calculator"
@@ -161,23 +161,23 @@ export default function ChatInterface({
       </div>
 
       {/* Chat Input Dock */}
-      <form 
+      <form
         onSubmit={handleSubmit}
-        className="rounded-full bg-white shadow-lg border border-slate-200 px-4 py-2 flex items-center gap-3"
+        className="rounded-xl bg-white shadow-lg border border-[var(--gray-200)] px-4 py-2 flex items-center gap-3"
       >
         {/* Paperclip */}
-        <button 
+        <button
           type="button"
-          className="rounded-full p-2 text-slate-400 hover:bg-slate-50 hover:text-indigo-600 transition-all duration-200"
+          className="rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200"
           aria-label="Attach file"
         >
           <Paperclip className="h-5 w-5" />
         </button>
 
         {/* Textarea */}
-        <textarea 
+        <textarea
           ref={inputRef}
-          className="flex-1 max-h-32 min-h-[44px] resize-none bg-transparent py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+          className="flex-1 max-h-32 min-h-[44px] resize-none bg-white rounded-xl border border-[var(--gray-200)] px-3 py-2 text-sm text-[var(--gray-800)] placeholder:text-[var(--gray-400)] focus:outline-none focus:ring-2 focus:ring-[var(--teal)] focus:border-[var(--teal)]"
           placeholder={getPlaceholderText()}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
@@ -191,11 +191,11 @@ export default function ChatInterface({
           }}
         />
 
-        {/* Send Button - Circular with gradient */}
-        <button 
+        {/* Send Button */}
+        <button
           type="submit"
           disabled={isLoading || !inputValue.trim()}
-          className="rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 p-2.5 text-white shadow-lg hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="rounded-lg bg-[var(--teal)] p-2.5 text-white shadow-lg hover:bg-[#0A7A85] transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           aria-label="Send message"
         >
           <ArrowUp className="h-5 w-5" />
@@ -204,4 +204,3 @@ export default function ChatInterface({
     </div>
   )
 }
-

@@ -251,7 +251,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
     }}>
       <SheetTrigger asChild>
         <button
-          className="w-full flex items-center gap-3 rounded-lg px-4 py-3.5 text-sm font-medium transition-all duration-200 text-indigo-300 hover:bg-gradient-to-r hover:from-indigo-900/50 hover:to-purple-900/50 hover:text-indigo-100"
+          className="w-full flex items-center gap-3 rounded-lg px-4 py-3.5 text-sm font-medium transition-all duration-200 text-[var(--gray-400)] hover:bg-[#1E2D3D] hover:text-white"
         >
           <Clock className="h-5 w-5" />
           <span>History</span>
@@ -284,7 +284,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {isLoading ? (
             <div className="text-center py-8 text-slate-500">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--teal)] mx-auto mb-4"></div>
               <p className="text-sm">Loading history...</p>
             </div>
           ) : groupedChats.length === 0 ? (
@@ -304,7 +304,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                     {/* Class Header - Clickable to expand/collapse */}
                     <button
                       onClick={() => toggleClass(group.classId)}
-                      className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-3 bg-[var(--gray-50)] hover:bg-[var(--gray-100)] transition-colors"
                     >
                       <div className="flex items-center gap-2">
                         {isExpanded ? (
@@ -315,7 +315,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                         <h3 className="text-sm font-semibold text-slate-700">
                           {group.classLabel}
                         </h3>
-                        <span className="text-xs text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full">
+                        <span className="text-xs text-[var(--gray-800)] bg-[var(--gray-200)] px-2 py-0.5 rounded-full">
                           {totalChats}
                         </span>
                       </div>
@@ -326,7 +326,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                       <div className="px-4 py-3 space-y-4 bg-white">
                         {group.timeGroups.map((timeGroup) => (
                           <div key={timeGroup.label}>
-                            <h4 className="text-xs font-medium text-slate-400 mb-2">{timeGroup.label}</h4>
+                            <h4 className="text-xs font-medium text-[var(--gray-400)] mb-2">{timeGroup.label}</h4>
                             <div className="space-y-1">
                               {timeGroup.chats.map((chat) => {
                                 const Icon = getSessionIcon(chat.session_type)
@@ -339,8 +339,8 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                                     key={chat.id}
                                     className={`flex items-center gap-2 p-2 rounded-lg border transition-colors ${
                                       isSelected
-                                        ? 'bg-indigo-50 border-indigo-300'
-                                        : 'bg-white border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50'
+                                        ? 'bg-[var(--teal-light)] border-[var(--teal)]'
+                                        : 'bg-white border-slate-200 hover:border-[var(--teal)] hover:bg-[var(--teal-light)]/50'
                                     }`}
                                   >
                                     <Checkbox

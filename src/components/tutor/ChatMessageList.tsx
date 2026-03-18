@@ -166,14 +166,14 @@ export default function ChatMessageList({
           return (
             <div key={m.id} data-message-id={m.id}>
               {showDivider && (
-                <div className="mb-6 md:mb-8 pt-4 border-t border-slate-200"></div>
+                <div className="mb-6 md:mb-8 pt-4 border-t border-[var(--gray-200)]"></div>
               )}
 
               <article
                 className={clsx(
                   "tutor-card transition-colors",
                   hasEvidence && "cursor-pointer",
-                  isSelected && "border-sky-400 ring-1 ring-sky-200"
+                  isSelected && "border-[var(--teal-bright)] ring-1 ring-[var(--teal-light)]"
                 )}
                 onClick={() => {
                   if (hasEvidence && onSelectMessage) {
@@ -182,12 +182,12 @@ export default function ChatMessageList({
                 }}
               >
                 {/* Grounding Indicator Strip + Actions */}
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--gray-200)]">
                   <div className="flex items-center gap-2">
                     {hasBinderContext ? (
                       <div className="flex items-center gap-2">
-                        <FileIcon className="w-4 h-4 text-teal-600" />
-                        <span className="text-xs text-teal-700 font-medium">
+                        <FileIcon className="w-4 h-4 text-[var(--teal)]" />
+                        <span className="text-xs text-[var(--teal)] font-medium">
                           ✅ Using: {(() => {
                             const filenameMatches = m.content.match(/From\s+["']?([^"'\n]+\.(pdf|docx?|txt))["']?/gi)
                             if (filenameMatches && filenameMatches.length > 0) {
@@ -210,8 +210,8 @@ export default function ChatMessageList({
                       </div>
                     ) : (
                       <>
-                        <ClipboardCheck className="w-4 h-4 text-[var(--tutor-text-muted)]" />
-                        <span className="text-xs text-[var(--tutor-text-muted)] font-medium">NCLEX Reasoning (Learning Only)</span>
+                        <ClipboardCheck className="w-4 h-4 text-[var(--gray-400)]" />
+                        <span className="text-xs text-[var(--gray-400)] font-medium">NCLEX Reasoning (Learning Only)</span>
                       </>
                     )}
                   </div>
@@ -227,7 +227,7 @@ export default function ChatMessageList({
                       className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all duration-200 ${
                         savedClipId === m.id
                           ? 'text-emerald-600 bg-emerald-50'
-                          : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'
+                          : 'text-[var(--gray-400)] hover:text-[var(--teal)] hover:bg-[var(--teal-light)]'
                       }`}
                       title="Save this explanation to your Learning Library (accessible from sidebar)"
                     >
@@ -250,7 +250,7 @@ export default function ChatMessageList({
                         className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all duration-200 ${
                           flaggedMessages.has(m.id)
                             ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 font-medium'
-                            : 'text-slate-500 hover:text-amber-600 hover:bg-amber-50'
+                            : 'text-[var(--gray-400)] hover:text-amber-600 hover:bg-amber-50'
                         } disabled:opacity-50`}
                         title={flaggedMessages.has(m.id) ? 'Flagged for review - Click to remove. This appears in your Dashboard under "Flagged for Review"' : 'Flag this Q&A pair for focused review (appears in Dashboard)'}
                       >
@@ -262,7 +262,7 @@ export default function ChatMessageList({
                       <button
                         onClick={() => handleSaveToNotebook(m.id, m.content)}
                         disabled={savingToNotebook === m.id}
-                        className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-[var(--teal)] hover:text-[var(--teal)] hover:bg-[var(--teal-light)] rounded transition-colors disabled:opacity-50"
                         title="Save to Notebook"
                       >
                         <Star className={`w-3 h-3 ${savingToNotebook === m.id ? 'animate-spin' : ''}`} />
@@ -301,7 +301,7 @@ export default function ChatMessageList({
                         const isSnapshot = typeof children === 'string' && children.trim() === 'Snapshot'
                         return (
                           <h3 
-                            className={`text-lg font-semibold tracking-tight text-slate-900 mb-2 mt-6 first:mt-0 ${isSnapshot ? 'font-bold text-[var(--tutor-primary)] mb-3' : ''}`}
+                            className={`text-lg font-semibold tracking-tight text-slate-900 mb-2 mt-6 first:mt-0 ${isSnapshot ? 'font-bold text-[var(--teal)] mb-3' : ''}`}
                             {...props}
                           >
                             {children}
@@ -309,7 +309,7 @@ export default function ChatMessageList({
                         )
                       },
                       blockquote: ({children}) => (
-                        <blockquote className="border-l-4 border-[var(--tutor-primary)] bg-teal-50 text-slate-700 not-italic rounded-r pl-4 pr-4 py-3 my-4 text-sm sm:text-base leading-relaxed">
+                        <blockquote className="border-l-4 border-[var(--teal)] bg-[var(--teal-light)] text-slate-700 not-italic rounded-r pl-4 pr-4 py-3 my-4 text-sm sm:text-base leading-relaxed">
                           {children}
                         </blockquote>
                       ),
@@ -321,7 +321,7 @@ export default function ChatMessageList({
                 {hasEvidence && (
                   <button
                     type="button"
-                    className="mt-3 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600 xl:hidden"
+                    className="mt-3 inline-flex items-center gap-1 rounded-full bg-[var(--gray-100)] px-2.5 py-1 text-[11px] font-medium text-[var(--gray-800)] xl:hidden"
                     onClick={(e) => {
                       e.stopPropagation()
                       if (onSelectMessage) {
@@ -349,7 +349,7 @@ export default function ChatMessageList({
           return (
             <div key={m.id} className="flex justify-end">
               <div className="ml-auto max-w-[70%]">
-                <div className="inline-block rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-medium text-white shadow-lg hover:shadow-xl transition-all duration-200 leading-relaxed">
+                <div className="inline-block rounded-2xl bg-[#0B2545] px-5 py-3 text-sm font-medium text-white shadow-lg hover:shadow-xl transition-all duration-200 leading-relaxed">
                   {m.content}
                 </div>
               </div>

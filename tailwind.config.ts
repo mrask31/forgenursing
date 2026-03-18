@@ -10,25 +10,31 @@ const config: Config = {
   theme: {
   	extend: {
   		colors: {
-  			// Clinical Light Theme Colors
+  			// Clinical Design System
   			clinical: {
-  				bg: '#F7F9FB',        // Soft off-white background
-  				card: '#FFFFFF',      // Pure white cards
-  				border: '#E5EAF0',    // Subtle gray borders
-  				primary: '#2F6FED',   // Medical Confidence Blue
-  				secondary: '#5FA8D3', // Calm Supportive Blue
+  				bg: '#F7F9FB',
+  				card: '#FFFFFF',
+  				border: '#DDE5EE',
+  				primary: '#0D8F9C',
+  				secondary: '#0BBCD4',
   				text: {
-  					primary: '#1F2933',   // Primary text
-  					secondary: '#4A5568', // Secondary text
+  					primary: '#1E2D3D',
+  					secondary: '#94A3B8',
   				},
   				accent: {
-  					blue: '#E8F1FD',      // Soft blue background for active states
-  					green: '#E6F7F0',     // Soft green for success/active indicators
+  					teal: '#E0F4F6',
+  					green: '#DCFCE7',
   				},
   				message: {
-  					ai: '#F0F6FF',        // Light blue tint for AI bubbles
-  					user: '#F4F6F8',      // Neutral gray for user bubbles
+  					ai: '#F7F9FB',
+  					user: '#0B2545',
   				},
+  			},
+  			navy: '#0B2545',
+  			teal: {
+  				DEFAULT: '#0D8F9C',
+  				light: '#E0F4F6',
+  				bright: '#0BBCD4',
   			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -72,7 +78,8 @@ const config: Config = {
   			}
   		},
   		fontFamily: {
-  			sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+  			sans: ['var(--font-dm-sans)', 'DM Sans', 'system-ui', 'sans-serif'],
+  			display: ['Instrument Serif', 'Georgia', 'serif'],
   		},
   		lineHeight: {
   			'relaxed': '1.6',

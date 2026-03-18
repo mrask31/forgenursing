@@ -7,13 +7,13 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import * as pdfjsLib from 'pdfjs-dist'
 import mammoth from 'mammoth'
-import { 
-  BookOpen, 
-  Edit, 
-  Calendar, 
-  FileText, 
-  UploadCloud, 
-  CheckCircle, 
+import {
+  BookOpen,
+  Edit,
+  Calendar,
+  FileText,
+  UploadCloud,
+  CheckCircle,
   MessageSquare,
   Plus,
   Trash2,
@@ -83,22 +83,22 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
       if (res.ok) {
         const data = await res.json()
         const allFiles = data.files || []
-        
+
         // Debug logging - show ALL files and their metadata
         console.log('[ClassWithMaterials] ===== LOADING MATERIALS =====')
         console.log('[ClassWithMaterials] All files received:', allFiles.length)
         console.log('[ClassWithMaterials] Looking for classId:', classItem.id)
         console.log('[ClassWithMaterials] Class code:', classItem.code)
-        
+
         // Log ALL files with full structure
         console.log('[ClassWithMaterials] ALL FILES DETAIL:', JSON.stringify(allFiles, null, 2))
-        
+
         // Filter files that belong to this class
         const classFiles = allFiles.filter((f: any) => {
           // Check multiple possible locations for class_id
           const fileClassId = f.metadata?.class_id || f.class_id || f.metadata?.classId
           const matches = fileClassId === classItem.id
-          
+
           // Log each file for debugging
           console.log('[ClassWithMaterials] Checking file:', f.filename, {
             fileClassId: fileClassId,
@@ -106,13 +106,13 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
             matches: matches,
             fullFile: f
           })
-          
+
           return matches
         })
-        
+
         console.log('[ClassWithMaterials] Filtered files for class:', classFiles.length)
         console.log('[ClassWithMaterials] Filtered files:', classFiles.map((f: any) => f.filename))
-        
+
         // Map to DocumentFile format
         const mappedFiles: DocumentFile[] = classFiles.map((f: any) => ({
           filename: f.filename,
@@ -121,10 +121,10 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           canonicalId: f.id || f.file_key,
           created_at: f.created_at
         }))
-        
+
         console.log('[ClassWithMaterials] Mapped files:', mappedFiles.length)
         console.log('[ClassWithMaterials] ===== END LOADING =====')
-        
+
         setMaterials(mappedFiles)
       } else {
         console.error('[ClassWithMaterials] API error:', res.status, res.statusText)
@@ -157,7 +157,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
 
     setIsUploading(true)
     setUploadStatus('idle')
-    
+
     try {
       const fileExtension = file.name.toLowerCase().split('.').pop()
       const fileType = file.type
@@ -209,14 +209,14 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
       const res = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          text, 
-          filename: file.name, 
+        body: JSON.stringify({
+          text,
+          filename: file.name,
           document_type: uploadDocumentType,
           class_id: classItem.id
         })
       })
-      
+
       console.log('[ClassWithMaterials] Upload response status:', res.status, res.ok)
 
       if (!res.ok) {
@@ -264,7 +264,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
       if (res.ok) {
         const data = await res.json()
         const classChats = data.chats || []
-        
+
         // Find the most recent chat that's been updated in the last 48 hours
         const recentChat = classChats
           .filter((chat: SavedChat) => {
@@ -272,10 +272,10 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
             const hoursAgo = (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60)
             return hoursAgo <= 48 // Within last 48 hours
           })
-          .sort((a: SavedChat, b: SavedChat) => 
+          .sort((a: SavedChat, b: SavedChat) =>
             new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
           )[0]
-        
+
         if (recentChat) {
           // Continue the recent chat
           console.log('[ClassWithMaterials] Continuing recent chat:', recentChat.id)
@@ -309,17 +309,17 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
   const textbooks = classMaterials.filter(f => f.document_type === 'textbook')
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-indigo-200/30 transition-all duration-300 flex flex-col h-full overflow-hidden group transform hover:scale-[1.02]">
+    <div className="bg-white border border-[var(--gray-200)] rounded-xl hover:border-[var(--teal)] transition-colors duration-300 flex flex-col h-full overflow-hidden group">
       {/* Class Header - Always Visible */}
       <div className="p-6 flex-1 flex flex-col min-h-0">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+              <h3 className="text-xl font-bold text-[var(--navy)] group-hover:text-[var(--teal)] transition-colors">
                 {classItem.code}
               </h3>
-              <Badge variant="outline" className="text-xs font-semibold bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200/60 text-indigo-700 shadow-sm">
-                {classItem.type === 'med_surg' ? 'Med-Surg' : 
+              <Badge variant="outline" className="text-xs font-semibold bg-[var(--teal-light)] border border-[var(--teal)]/20 text-[var(--teal)]">
+                {classItem.type === 'med_surg' ? 'Med-Surg' :
                  classItem.type === 'pharm' ? 'Pharmacology' :
                  classItem.type === 'peds' ? 'Pediatrics' :
                  classItem.type === 'ob' ? 'OB/GYN' :
@@ -327,14 +327,14 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                  classItem.type === 'fundamentals' ? 'Fundamentals' : 'Other'}
               </Badge>
             </div>
-            <p 
-              className="text-sm text-slate-600 mb-3 truncate" 
+            <p
+              className="text-sm text-[var(--gray-400)] mb-3 truncate"
               title={classItem.name}
             >
               {classItem.name}
             </p>
             {classItem.nextExamDate && (
-              <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
+              <div className="flex items-center gap-2 text-xs text-[var(--gray-400)] mb-2">
                 <Calendar className="w-3 h-3" />
                 <span>Next exam: {new Date(classItem.nextExamDate).toLocaleDateString()}</span>
               </div>
@@ -353,8 +353,8 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
         {/* Quick Stats */}
         <div className="flex items-center gap-4 mb-4 text-sm flex-wrap">
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-slate-400" />
-            <span className="text-slate-600">
+            <FileText className="w-4 h-4 text-[var(--gray-400)]" />
+            <span className="text-[var(--gray-400)]">
               {classMaterials.length} {classMaterials.length === 1 ? 'material' : 'materials'}
             </span>
           </div>
@@ -375,7 +375,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           <Button
             onClick={handleStudyClass}
             disabled={isCreatingChat}
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold"
+            className="w-full bg-[var(--teal)] hover:bg-[#0A7A85] text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-semibold"
             size="lg"
           >
             {isCreatingChat ? (
@@ -397,7 +397,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           <Button
             variant="outline"
             onClick={() => setShowUpload(!showUpload)}
-            className="w-full"
+            className="w-full border-[var(--gray-200)]"
             disabled={isUploading}
           >
             {isUploading ? (
@@ -420,37 +420,37 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
 
           {/* Inline Upload UI */}
           {showUpload && (
-            <div className="mt-3 p-4 bg-gradient-to-br from-slate-50/80 to-white/80 backdrop-blur-sm rounded-xl border-2 border-slate-200/60 shadow-sm">
+            <div className="mt-3 p-4 bg-white rounded-xl border border-[var(--gray-200)]">
               <div className="flex items-center gap-3 mb-3">
                 <button
                   type="button"
                   onClick={() => setUploadDocumentType('syllabus')}
-                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 ${
                     uploadDocumentType === 'syllabus'
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
-                      : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50 shadow-sm'
+                      ? 'bg-[var(--teal)] text-white'
+                      : 'bg-white text-[var(--gray-800)] border border-[var(--gray-200)] hover:border-[var(--teal)]'
                   }`}
                 >
-                  📋 Syllabus
+                  Syllabus
                 </button>
                 <button
                   type="button"
                   onClick={() => setUploadDocumentType('textbook')}
-                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 ${
                     uploadDocumentType === 'textbook'
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30'
-                      : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-indigo-300 hover:bg-slate-50 shadow-sm'
+                      ? 'bg-[var(--teal)] text-white'
+                      : 'bg-white text-[var(--gray-800)] border border-[var(--gray-200)] hover:border-[var(--teal)]'
                   }`}
                 >
-                  📚 Textbook/PDF
+                  Textbook/PDF
                 </button>
               </div>
               <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-all ${
-                uploadDocumentType 
-                  ? 'border-indigo-300 bg-indigo-50/30 hover:border-indigo-400 cursor-pointer' 
-                  : 'border-slate-300 bg-white opacity-50 cursor-not-allowed'
-              } ${uploadStatus === 'success' ? 'border-emerald-300 bg-emerald-50' : ''}
-              ${uploadStatus === 'error' ? 'border-red-300 bg-red-50' : ''}`}
+                uploadDocumentType
+                  ? 'border-[var(--teal)] bg-[var(--teal-light)]/30 hover:border-[var(--teal)] cursor-pointer'
+                  : 'border-[var(--gray-200)] bg-white opacity-50 cursor-not-allowed'
+              } ${uploadStatus === 'success' ? 'border-[var(--green)] bg-[var(--green-light)]' : ''}
+              ${uploadStatus === 'error' ? 'border-[var(--red)] bg-[var(--red-light)]' : ''}`}
               onClick={() => uploadDocumentType && !isUploading && fileInputRef.current?.click()}
               >
                 <input
@@ -468,9 +468,9 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                 {uploadStatus === 'success' ? (
                   <div className="space-y-3">
                     <div>
-                      <CheckCircle className="w-8 h-8 mx-auto mb-2 text-emerald-600" />
-                      <p className="text-sm font-medium text-emerald-700">Upload successful!</p>
-                      <p className="text-xs text-emerald-600 mt-1">Your file is being processed...</p>
+                      <CheckCircle className="w-8 h-8 mx-auto mb-2 text-[var(--green)]" />
+                      <p className="text-sm font-medium text-[var(--green)]">Upload successful!</p>
+                      <p className="text-xs text-[var(--green)] mt-1">Your file is being processed...</p>
                     </div>
                     <Button
                       onClick={() => {
@@ -478,7 +478,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                         setUploadStatus('idle')
                         handleStudyClass()
                       }}
-                      className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold"
+                      className="w-full bg-[var(--teal)] hover:bg-[#0A7A85] text-white transition-colors duration-200 font-semibold"
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
                       Study This Now
@@ -486,25 +486,25 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                   </div>
                 ) : uploadStatus === 'error' ? (
                   <>
-                    <AlertCircle className="w-8 h-8 mx-auto mb-2 text-red-600" />
-                    <p className="text-sm font-medium text-red-700">Upload failed</p>
-                    <p className="text-xs text-red-600 mt-1">Please try again</p>
+                    <AlertCircle className="w-8 h-8 mx-auto mb-2 text-[var(--red)]" />
+                    <p className="text-sm font-medium text-[var(--red)]">Upload failed</p>
+                    <p className="text-xs text-[var(--red)] mt-1">Please try again</p>
                   </>
                 ) : isUploading ? (
                   <>
-                    <Loader2 className="animate-spin text-indigo-600 w-8 h-8 mx-auto mb-2" />
-                    <p className="text-sm text-slate-700 font-medium">Processing your file...</p>
-                    <p className="text-xs text-slate-500 mt-1">This may take a moment</p>
+                    <Loader2 className="animate-spin text-[var(--teal)] w-8 h-8 mx-auto mb-2" />
+                    <p className="text-sm text-[var(--gray-800)] font-medium">Processing your file...</p>
+                    <p className="text-xs text-[var(--gray-400)] mt-1">This may take a moment</p>
                   </>
                 ) : (
                   <>
-                    <UploadCloud className="text-indigo-600 w-8 h-8 mx-auto mb-2" />
-                    <p className="text-sm text-slate-700 font-medium mb-1">
-                      {uploadDocumentType 
-                        ? 'Click to upload or drag and drop' 
+                    <UploadCloud className="text-[var(--teal)] w-8 h-8 mx-auto mb-2" />
+                    <p className="text-sm text-[var(--gray-800)] font-medium mb-1">
+                      {uploadDocumentType
+                        ? 'Click to upload or drag and drop'
                         : 'Select document type above'}
                     </p>
-                    <p className="text-xs text-slate-500">PDF or DOCX · Max 20MB</p>
+                    <p className="text-xs text-[var(--gray-400)]">PDF or DOCX · Max 20MB</p>
                   </>
                 )}
               </div>
@@ -515,23 +515,23 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
         {/* Materials List - Always Visible */}
         {hasMaterials ? (
           <div className="mb-4">
-            <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+            <h4 className="text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wide mb-3">
               Your Materials
             </h4>
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
               {classMaterials.map((file) => (
                 <div
                   key={file.canonicalId}
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-white rounded-lg border border-slate-200 hover:border-indigo-300 hover:shadow-sm transition-all duration-200"
+                  className="flex items-center justify-between p-3 bg-[var(--gray-50)] rounded-lg border border-[var(--gray-200)] hover:border-[var(--teal)] transition-colors duration-200"
                   onClick={(e) => {
                     // Prevent any click events from bubbling up
                     e.stopPropagation()
                   }}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <FileText className="w-4 h-4 text-slate-400 shrink-0" />
+                    <FileText className="w-4 h-4 text-[var(--gray-400)] shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">
+                      <p className="text-sm font-medium text-[var(--gray-800)] truncate">
                         {file.filename}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
@@ -541,7 +541,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                            file.document_type === 'reference' ? 'Reference' : 'Document'}
                         </Badge>
                         {file.created_at && (
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-[var(--gray-400)]">
                             {new Date(file.created_at).toLocaleDateString()}
                           </span>
                         )}
@@ -557,7 +557,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                         e.stopPropagation()
                         handleStudyClass()
                       }}
-                      className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200 h-7 px-3 shrink-0 font-semibold"
+                      className="text-[var(--teal)] hover:text-[var(--teal)] hover:bg-[var(--teal-light)] border-[var(--teal)]/30 h-7 px-3 shrink-0 font-semibold"
                       aria-label={`Study with ${file.filename}`}
                     >
                       <Sparkles className="w-3 h-3 mr-1" />
@@ -571,7 +571,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                         e.stopPropagation()
                         handleDelete(file.filename)
                       }}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0 shrink-0"
+                      className="text-[var(--red)] hover:text-[var(--red)] hover:bg-[var(--red-light)] h-7 w-7 p-0 shrink-0"
                       aria-label={`Delete ${file.filename}`}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -583,25 +583,25 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           </div>
         ) : (
           !showUpload && (
-            <div className="mb-4 p-4 bg-slate-50 rounded-lg border border-slate-200 text-center">
-              <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-              <p className="text-sm text-slate-600">No materials yet</p>
-              <p className="text-xs text-slate-500 mt-1">Upload syllabi and textbooks to get started</p>
+            <div className="mb-4 p-4 bg-[var(--gray-50)] rounded-lg border border-[var(--gray-200)] text-center">
+              <FileText className="w-8 h-8 mx-auto mb-2 text-[var(--gray-200)]" />
+              <p className="text-sm text-[var(--gray-400)]">No materials yet</p>
+              <p className="text-xs text-[var(--gray-400)] mt-1">Upload syllabi and textbooks to get started</p>
             </div>
           )
         )}
 
         {/* Saved Chats - Collapsible */}
         {savedChats.length > 0 && (
-          <div className="border-t border-slate-200 pt-4 mt-auto">
+          <div className="border-t border-[var(--gray-200)] pt-4 mt-auto">
             <button
               onClick={() => setShowSessions(!showSessions)}
-              className="w-full flex items-center justify-between mb-3 group"
+              className="w-full flex items-center justify-between mb-3 group/sessions"
             >
-              <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide group-hover:text-indigo-600 transition-colors">
+              <h4 className="text-xs font-semibold text-[var(--gray-400)] uppercase tracking-wide group-hover/sessions:text-[var(--teal)] transition-colors">
                 Recent Study Sessions ({savedChats.length})
               </h4>
-              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${showSessions ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-[var(--gray-400)] transition-transform duration-200 ${showSessions ? 'rotate-180' : ''}`} />
             </button>
             <div className={`overflow-hidden transition-all duration-300 ${showSessions ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
               <div className="space-y-2">
@@ -609,18 +609,18 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                   <button
                     key={chat.id}
                     onClick={() => handleOpenChat(chat.id)}
-                    className="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:border-indigo-300 transition-all duration-200 group shadow-sm hover:shadow"
+                    className="w-full text-left p-3 rounded-lg border border-[var(--gray-200)] hover:bg-[var(--teal-light)] hover:border-[var(--teal)]/30 transition-colors duration-200 group/chat"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <MessageSquare className="w-4 h-4 text-slate-400 shrink-0 group-hover:text-indigo-600 transition-colors" />
-                        <span className="text-sm text-slate-700 truncate group-hover:text-indigo-600 font-medium">
+                        <MessageSquare className="w-4 h-4 text-[var(--gray-400)] shrink-0 group-hover/chat:text-[var(--teal)] transition-colors" />
+                        <span className="text-sm text-[var(--gray-800)] truncate group-hover/chat:text-[var(--teal)] font-medium">
                           {chat.title || 'Untitled Chat'}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <Clock className="w-3 h-3 text-slate-400" />
-                        <span className="text-xs text-slate-500">
+                        <Clock className="w-3 h-3 text-[var(--gray-400)]" />
+                        <span className="text-xs text-[var(--gray-400)]">
                           {new Date(chat.updated_at).toLocaleDateString()}
                         </span>
                       </div>
@@ -628,7 +628,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                   </button>
                 ))}
                 {savedChats.length > 5 && (
-                  <p className="text-xs text-slate-500 text-center pt-1">
+                  <p className="text-xs text-[var(--gray-400)] text-center pt-1">
                     +{savedChats.length - 5} more sessions
                   </p>
                 )}

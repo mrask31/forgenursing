@@ -120,7 +120,7 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
   if (variant === 'public') {
     // Public pages (landing, login, signup, checkout) use simpler layout
     return (
-      <div className="min-h-screen-dynamic bg-slate-50 flex flex-col">
+      <div className="min-h-screen-dynamic bg-[var(--gray-50)] flex flex-col">
         {/* Content will be wrapped by PublicLayout */}
         {children}
       </div>
@@ -130,7 +130,7 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
   // App pages (tutor, dashboard, etc.) use full app shell with sidebar
   return (
     <DensityProvider>
-      <div className="h-screen-dynamic bg-slate-50 flex flex-col lg:flex-row overflow-hidden">
+      <div className="h-screen-dynamic bg-[var(--gray-50)] flex flex-col lg:flex-row overflow-hidden">
         {/* PHI Acknowledgment Modal - Step 1 */}
         <PHIAcknowledgmentModal open={showPHIModal} onAcknowledge={handlePHIAcknowledge} />
         
@@ -138,17 +138,17 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
         <ProgramSelectionModal open={showProgramModal} onComplete={handleProgramSelection} />
         
         {/* Mobile Header Bar - Sticky, only on mobile */}
-        <header className="lg:hidden sticky top-0 z-50 bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 border-b border-indigo-900/50 flex-shrink-0 safe-t">
+        <header className="lg:hidden sticky top-0 z-50 bg-[#0B2545] border-b border-[#1E2D3D] flex-shrink-0 safe-t">
           <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={() => setMobileNavOpen(true)}
-              className="p-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+              className="p-2.5 bg-[var(--teal)] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
               aria-label="Open navigation menu"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2.5">
-              <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+              <div className="w-2 h-2 rounded-full bg-[#0BBCD4]"></div>
               <span className="text-lg font-bold text-white tracking-tight">
                 {programTrack && graduationYear 
                   ? `${programTrack} • Class of ${graduationYear}`
@@ -162,12 +162,12 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
         </header>
 
         {/* Desktop Sidebar - Hidden on mobile, visible on lg+ - Fixed */}
-        <aside className="hidden lg:flex lg:w-64 xl:w-72 flex-shrink-0 bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 border-r border-indigo-900/50 h-screen-dynamic overflow-y-auto">
+        <aside className="hidden lg:flex lg:w-64 xl:w-72 flex-shrink-0 bg-[#0B2545] border-r border-[#1E2D3D] h-screen-dynamic overflow-y-auto">
           <Sidebar />
         </aside>
         
         {/* Main Content Area - Fixed height, no overflow */}
-        <main className="flex-1 min-w-0 h-screen-dynamic overflow-hidden bg-slate-50 flex flex-col">
+        <main className="flex-1 min-w-0 h-screen-dynamic overflow-hidden bg-[var(--gray-50)] flex flex-col">
           {children}
         </main>
 
