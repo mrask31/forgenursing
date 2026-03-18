@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { Plus, Volume2, VolumeX } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { useTutorContext } from './TutorContext'
@@ -40,7 +40,25 @@ export default function TutorHeader({
   const currentMode = mode
   const [isExamDialogOpen, setIsExamDialogOpen] = useState(false)
   const [activeExam, setActiveExam] = useState<ExamPlan | null>(null)
+  const [voiceEnabled, setVoiceEnabled] = useState(false)
   const tutorContext = useTutorContext()
+
+  // Load voice preference from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setVoiceEnabled(localStorage.getItem('forge-voice-enabled') === 'true')
+    }
+  }, [])
+
+  const toggleVoice = () => {
+    const newValue = !voiceEnabled
+    setVoiceEnabled(newValue)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('forge-voice-enabled', String(newValue))
+      // Dispatch event so audio players can react
+      window.dispatchEvent(new CustomEvent('forge-voice-toggle', { detail: { enabled: newValue } }))
+    }
+  }
 
 
   // Load active exam if examId is present
@@ -83,6 +101,19 @@ export default function TutorHeader({
             <span className="text-sm font-semibold text-[var(--gray-800)]">Forge</span>
             <span className="text-xs text-[var(--gray-400)]">Clinical Preceptor</span>
           </div>
+          {/* Voice toggle */}
+          <button
+            onClick={toggleVoice}
+            className={`ml-1 p-1.5 rounded-md transition-all duration-200 ${
+              voiceEnabled
+                ? 'text-[var(--teal)] bg-[var(--teal-light)]'
+                : 'text-[var(--gray-400)] hover:text-[var(--teal)] hover:bg-[var(--teal-light)]'
+            }`}
+            title={voiceEnabled ? 'Voice enabled — click to mute' : 'Voice disabled — click to enable'}
+            aria-label={voiceEnabled ? 'Disable voice' : 'Enable voice'}
+          >
+            {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
         </div>
 
         {/* Right: Class selector + New Session */}

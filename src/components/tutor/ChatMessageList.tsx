@@ -10,6 +10,7 @@ import type { TutorEvidenceItem } from './TutorEvidencePanel'
 import FollowUpPrompts from './FollowUpPrompts'
 import { useState, useEffect } from 'react'
 import MessageWithMedicalTerms from './MessageWithMedicalTerms'
+import ForgeAudioPlayer from '@/components/forge-audio-player'
 
 export interface ChatMessage {
   id: string
@@ -58,6 +59,20 @@ export default function ChatMessageList({
   const tutorContext = useTutorContext()
   const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
   const [savedClipId, setSavedClipId] = useState<string | null>(null)
+  const [voiceEnabled, setVoiceEnabled] = useState(false)
+
+  // Sync voice toggle from TutorHeader
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setVoiceEnabled(localStorage.getItem('forge-voice-enabled') === 'true')
+    }
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ enabled: boolean }>).detail
+      setVoiceEnabled(detail.enabled)
+    }
+    window.addEventListener('forge-voice-toggle', handler)
+    return () => window.removeEventListener('forge-voice-toggle', handler)
+  }, [])
 
   // Track which messages are flagged (per message, not per chat)
   const [flaggedMessages, setFlaggedMessages] = useState<Set<string>>(new Set())
@@ -216,6 +231,9 @@ export default function ChatMessageList({
                     )}
                   </div>
                   <div className="flex items-center gap-2">
+                    {voiceEnabled && (
+                      <ForgeAudioPlayer text={m.content} autoPlay={false} />
+                    )}
                     <button
                       onClick={() => {
                         if (onSaveClip) {
