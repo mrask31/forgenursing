@@ -112,6 +112,7 @@ export default function ClinicalTutorWorkspace({
   const [chatStatus, setChatStatus] = useState<'active' | 'archived'>('active')
   const [chatSummary, setChatSummary] = useState<string | null>(null)
   const [saveClipModal, setSaveClipModal] = useState<{ isOpen: boolean; messageId: string; content: string }>({ isOpen: false, messageId: '', content: '' })
+  const [pendingImageData, setPendingImageData] = useState<Array<{ base64: string; mimeType: string }> | undefined>(undefined)
   const { density } = useDensity()
   const tokens = getDensityTokens(density)
 
@@ -196,16 +197,17 @@ export default function ClinicalTutorWorkspace({
     });
     
     return {
-      chatId, 
-      filterMode, 
-      selectedDocIds, 
+      chatId,
+      filterMode,
+      selectedDocIds,
       mode,
       topicTitle,
       className,
       selectedClassName,
       attachedFileIds, // Always an array, never 'none'
+      imageData: pendingImageData, // Clinical images for Gemini Vision analysis
     };
-  }, [chatId, filterMode, selectedDocIds, mode, topicTitle, className, selectedClassName, attachedFiles]);
+  }, [chatId, filterMode, selectedDocIds, mode, topicTitle, className, selectedClassName, attachedFiles, pendingImageData]);
   
   const { messages, append, isLoading, setMessages } = useChat({
     api: '/api/chat',
@@ -216,6 +218,9 @@ export default function ClinicalTutorWorkspace({
       setCustomError(err.message || "Failed to connect to AI")
     },
     onFinish: async (message) => {
+      // Clear pending image data after response is complete
+      setPendingImageData(undefined)
+
       if (message.role === 'assistant' && chatId && message.content) {
         try {
           await fetch('/api/chat/save', {
@@ -462,8 +467,13 @@ export default function ClinicalTutorWorkspace({
     if (!append) return
     
     const handleMessage = async (event: Event) => {
-      const customEvent = event as CustomEvent<{ message: string; sessionId: string }>
-      const { message, sessionId: eventSessionId } = customEvent.detail
+      const customEvent = event as CustomEvent<{ message: string; sessionId: string; imageData?: Array<{ base64: string; mimeType: string }> }>
+      const { message, sessionId: eventSessionId, imageData: eventImageData } = customEvent.detail
+
+      // Store imageData for the request body (will be included via pendingImageData state)
+      if (eventImageData && eventImageData.length > 0) {
+        setPendingImageData(eventImageData)
+      }
       
       // Create a unique key for this message to prevent duplicates
       const messageKey = `${eventSessionId}:${message}`

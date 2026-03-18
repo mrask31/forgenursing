@@ -380,8 +380,8 @@ export default function TutorSession({
     }
   }
 
-  const handleSend = async (message: string) => {
-    if (!message.trim()) return
+  const handleSend = async (message: string, imageData?: Array<{ base64: string; mimeType: string }>) => {
+    if (!message.trim() && (!imageData || imageData.length === 0)) return
 
     let effectiveSessionId = sessionId
 
@@ -459,12 +459,13 @@ export default function TutorSession({
     const delay = !sessionId ? 500 : 100 // Longer delay if session was just created
     
     setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('tutor-send-message', { 
-        detail: { 
-          message: message.trim(), 
+      window.dispatchEvent(new CustomEvent('tutor-send-message', {
+        detail: {
+          message: message.trim(),
           sessionId: effectiveSessionId,
+          imageData: imageData || undefined,
           // classId and topicId will be available via TutorContext in the chat API
-        } 
+        }
       }))
     }, delay)
   }

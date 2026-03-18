@@ -3,6 +3,7 @@ import { streamText } from 'ai';
 import { buildSystemPrompt } from '@/lib/ai/system-prompt';
 import { buildMessageHistory } from '@/lib/ai/history-manager';
 import { scorePhiText } from '@/app/api/_middleware/phi-scrubber';
+import { analyzeClinicalImage, type GeminiVisionResult } from '@/lib/ai/gemini-vision';
 import { getEntitlementForUser } from '@/lib/entitlement';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
@@ -320,13 +321,18 @@ export async function POST(req: NextRequest) {
   }
 
   // Rest of handler uses `body` directly — NOT req.json() again
-  const { messages, strictMode, filterMode = 'mixed', selectedDocIds = [], chatId, topicTitle, className, selectedClassName, attachedFileIds: rawAttachedFileIds } = body;
+  const { messages, strictMode, filterMode = 'mixed', selectedDocIds = [], chatId, topicTitle, className, selectedClassName, attachedFileIds: rawAttachedFileIds, imageData: rawImageData } = body;
   
   // CRITICAL: Ensure attachedFileIds is always an array, never 'none' or undefined
   const attachedFileIds = Array.isArray(rawAttachedFileIds) 
     ? rawAttachedFileIds.filter(id => id) // Filter out falsy values
     : [];
   
+  // Validate and normalize imageData
+  const imageData: Array<{ base64: string; mimeType: string }> = Array.isArray(rawImageData)
+    ? rawImageData.filter((img: any) => img?.base64 && img?.mimeType).slice(0, 3)
+    : [];
+
   // Log incoming request details
   console.log('[CHAT] Incoming', {
     mode: filterMode,
@@ -334,6 +340,7 @@ export async function POST(req: NextRequest) {
     chatId,
     attachedFileIds: attachedFileIds.length > 0 ? attachedFileIds : 'none (empty array)',
     attachedFileIdsCount: attachedFileIds.length,
+    imageCount: imageData.length,
     firstUserMessage: messages?.[messages.length - 1]?.content?.slice?.(0, 80),
     messageCount: messages?.length || 0,
   });
@@ -536,6 +543,41 @@ ${binderContext}
 
 You currently have no binder context for this question. Answer using your general nursing/NCLEX knowledge, and be explicit that you are not using the student's uploaded materials.
 `;
+  }
+
+  // Gemini Vision: Analyze clinical images if provided
+  if (imageData.length > 0) {
+    console.log('[CHAT] Processing', imageData.length, 'clinical image(s) with Gemini Vision');
+
+    const visionResults: GeminiVisionResult[] = [];
+
+    for (const img of imageData) {
+      try {
+        const result = await analyzeClinicalImage(img.base64, img.mimeType);
+
+        // Block if PHI risk is critical
+        if (result.phi_risk === 'critical') {
+          console.log('[CHAT] Blocked: critical PHI detected in image', { phi_elements: result.phi_elements });
+          return NextResponse.json({
+            action: 'block',
+            message: 'This image appears to contain real patient information (PHI). ForgeNursing cannot process real patient data. Please use de-identified practice materials only. Your session has not been interrupted.'
+          }, { status: 403 });
+        }
+
+        visionResults.push(result);
+      } catch (error: any) {
+        console.error('[CHAT] Gemini Vision error:', error?.message);
+        // Continue without this image — don't block the entire request
+      }
+    }
+
+    if (visionResults.length > 0) {
+      systemPrompt += `\n\n### CLINICAL IMAGE ANALYSIS\n\nThe student has uploaded clinical image(s). Gemini Flash analyzed them and produced the following findings. Use these findings to inform your response. Reference the image analysis when relevant.\n`;
+
+      visionResults.forEach((result, index) => {
+        systemPrompt += `\n[Image ${index + 1} — ${result.description}]\nFindings: ${result.clinicalFindings.join('; ') || 'No specific findings identified'}\nClinical observations: ${result.description}\nPHI risk: ${result.phi_risk}${result.phi_elements.length > 0 ? ` (elements: ${result.phi_elements.join(', ')})` : ''}\n`;
+      });
+    }
   }
 
   // Notes Mode behavior (when in notes mode with selected documents)

@@ -1,17 +1,29 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUp, Paperclip, Calculator } from 'lucide-react'
+import { ArrowUp, Paperclip, Calculator, ImagePlus, X, Loader2 } from 'lucide-react'
 import SuggestedPrompts from '@/components/tutor/SuggestedPrompts'
 import { useTutorContext } from './TutorContext'
 import MedicalMathCalculator from './MedicalMathCalculator'
 
 type Mode = 'tutor'
 
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_IMAGES = 3
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+
+interface PendingImage {
+  id: string
+  file: File
+  preview: string
+  base64: string
+  mimeType: string
+}
+
 interface ChatInterfaceProps {
   mode: Mode
   sessionId?: string // Optional - will be created on first message if missing
-  onSend: (message: string) => Promise<void> | void
+  onSend: (message: string, imageData?: Array<{ base64: string; mimeType: string }>) => Promise<void> | void
   initialPrompt?: string // For topic/exam prefill - does NOT auto-send
   attachedFiles?: { id: string, name: string, document_type: string | null }[]
   attachedContext?: 'none' | 'syllabus' | 'textbook' | 'mixed'
@@ -33,7 +45,10 @@ export default function ChatInterface({
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState('')
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false)
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([])
+  const [isProcessingImages, setIsProcessingImages] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
   const hasAttachedFiles = attachedFiles.length > 0
   const tutorContext = useTutorContext()
   // If sessionId exists, assume there might be messages (don't prefill)
@@ -73,16 +88,102 @@ export default function ChatInterface({
     }
   }, [inputValue])
 
+  // Cleanup preview URLs on unmount
+  useEffect(() => {
+    return () => {
+      pendingImages.forEach(img => URL.revokeObjectURL(img.preview))
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const result = reader.result as string
+        // Strip data URL prefix to get raw base64
+        const base64 = result.split(',')[1]
+        resolve(base64)
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    // Check max image count
+    const remaining = MAX_IMAGES - pendingImages.length
+    if (remaining <= 0) {
+      alert(`Maximum ${MAX_IMAGES} images per message.`)
+      return
+    }
+    const filesToProcess = files.slice(0, remaining)
+
+    setIsProcessingImages(true)
+    try {
+      const newImages: PendingImage[] = []
+      for (const file of filesToProcess) {
+        // Validate type
+        if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+          alert(`${file.name}: Unsupported format. Use JPEG, PNG, WebP, or GIF.`)
+          continue
+        }
+        // Validate size
+        if (file.size > MAX_IMAGE_SIZE) {
+          alert(`${file.name}: File too large. Maximum 10MB per image.`)
+          continue
+        }
+
+        const base64 = await fileToBase64(file)
+        const preview = URL.createObjectURL(file)
+
+        newImages.push({
+          id: crypto.randomUUID(),
+          file,
+          preview,
+          base64,
+          mimeType: file.type,
+        })
+      }
+
+      setPendingImages(prev => [...prev, ...newImages])
+    } finally {
+      setIsProcessingImages(false)
+      // Reset input so same file can be selected again
+      if (imageInputRef.current) {
+        imageInputRef.current.value = ''
+      }
+    }
+  }
+
+  const removeImage = (id: string) => {
+    setPendingImages(prev => {
+      const removed = prev.find(img => img.id === id)
+      if (removed) URL.revokeObjectURL(removed.preview)
+      return prev.filter(img => img.id !== id)
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!inputValue.trim() || isLoading) return
+    if ((!inputValue.trim() && pendingImages.length === 0) || isLoading) return
 
-    const message = inputValue.trim()
+    const message = inputValue.trim() || (pendingImages.length > 0 ? 'Please analyze this clinical image.' : '')
+
+    // Prepare imageData payload
+    const imagePayload = pendingImages.length > 0
+      ? pendingImages.map(img => ({ base64: img.base64, mimeType: img.mimeType }))
+      : undefined
 
     // Call onSend and only clear input on success
     try {
-      await onSend(message)
+      await onSend(message, imagePayload)
       setInputValue('') // Clear ONLY after successful send
+      // Clear images after send
+      pendingImages.forEach(img => URL.revokeObjectURL(img.preview))
+      setPendingImages([])
     } catch (error) {
       console.error('[ChatInterface] Error sending message:', error)
       // Keep input value on error so user can retry
@@ -100,6 +201,9 @@ export default function ChatInterface({
 
   // Get placeholder based on attached files
   const getPlaceholderText = () => {
+    if (pendingImages.length > 0) {
+      return "Describe what you'd like to know about this image..."
+    }
     if (attachedFiles.length > 0) {
       return "Ask a question about your files..."
     }
@@ -134,6 +238,36 @@ export default function ChatInterface({
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Image Thumbnails (Above the dock) */}
+      {pendingImages.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto px-2 mb-2">
+          {pendingImages.map((img) => (
+            <div key={img.id} className="relative flex-shrink-0 group">
+              <img
+                src={img.preview}
+                alt={img.file.name}
+                className="w-16 h-16 object-cover rounded-lg border border-[var(--gray-200)]"
+              />
+              <button
+                onClick={() => removeImage(img.id)}
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[var(--gray-800)] text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label={`Remove ${img.file.name}`}
+              >
+                <X className="w-3 h-3" />
+              </button>
+              <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[8px] text-center truncate rounded-b-lg px-0.5">
+                {img.file.name}
+              </span>
+            </div>
+          ))}
+          {isProcessingImages && (
+            <div className="w-16 h-16 flex items-center justify-center rounded-lg border border-dashed border-[var(--gray-200)] bg-[var(--gray-50)]">
+              <Loader2 className="w-5 h-5 text-[var(--gray-400)] animate-spin" />
+            </div>
+          )}
         </div>
       )}
 
@@ -174,6 +308,26 @@ export default function ChatInterface({
           <Paperclip className="h-5 w-5" />
         </button>
 
+        {/* Image Upload */}
+        <button
+          type="button"
+          onClick={() => imageInputRef.current?.click()}
+          disabled={pendingImages.length >= MAX_IMAGES || isProcessingImages}
+          className="rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+          aria-label="Upload clinical image"
+          title={pendingImages.length >= MAX_IMAGES ? `Maximum ${MAX_IMAGES} images` : 'Upload clinical image (EKG, labs, wound photos)'}
+        >
+          <ImagePlus className="h-5 w-5" />
+        </button>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept={ACCEPTED_IMAGE_TYPES.join(',')}
+          multiple
+          className="hidden"
+          onChange={handleImageSelect}
+        />
+
         {/* Textarea */}
         <textarea
           ref={inputRef}
@@ -194,11 +348,15 @@ export default function ChatInterface({
         {/* Send Button */}
         <button
           type="submit"
-          disabled={isLoading || !inputValue.trim()}
+          disabled={isLoading || (!inputValue.trim() && pendingImages.length === 0)}
           className="rounded-lg bg-[var(--teal)] p-2.5 text-white shadow-lg hover:bg-[#0A7A85] transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           aria-label="Send message"
         >
-          <ArrowUp className="h-5 w-5" />
+          {isLoading && pendingImages.length > 0 ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <ArrowUp className="h-5 w-5" />
+          )}
         </button>
       </form>
     </div>
