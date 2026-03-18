@@ -29,6 +29,8 @@ export function stripMarkdown(text: string): string {
     .replace(/^[\s]*\d+\.\s+/gm, '')
     // Remove emoji shortcodes (common pattern)
     .replace(/:[a-z_]+:/g, '')
+    // Remove UI formatting labels (not meant to be spoken)
+    .replace(/\b(ORIENT|THE MAP|REASONING|TRAP|CHECK|YOUR MATERIALS|CONTINUE LEARNING)\s*:/gi, '')
     // Remove ASCII art / structured text boxes (lines with arrows, box-drawing chars, heavy bracket/pipe structure)
     .replace(/^.*[→←↓↑│├└┌┐┘┤┬┴┼╔╗╚╝║═]+.*$/gm, '')
     // Remove lines that are mostly brackets, pipes, dashes (ASCII diagrams)

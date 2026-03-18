@@ -329,6 +329,14 @@ export async function POST(req: NextRequest) {
     : [];
   
   // Validate and normalize imageData
+  console.log('[CHAT] Raw imageData from body:', {
+    rawImageDataType: typeof rawImageData,
+    rawImageDataIsArray: Array.isArray(rawImageData),
+    rawImageDataLength: Array.isArray(rawImageData) ? rawImageData.length : 'N/A',
+    rawImageDataPresent: rawImageData !== undefined && rawImageData !== null,
+    bodyKeys: Object.keys(body),
+  });
+
   const imageData: Array<{ base64: string; mimeType: string }> = Array.isArray(rawImageData)
     ? rawImageData.filter((img: any) => img?.base64 && img?.mimeType).slice(0, 3)
     : [];
@@ -341,6 +349,7 @@ export async function POST(req: NextRequest) {
     attachedFileIds: attachedFileIds.length > 0 ? attachedFileIds : 'none (empty array)',
     attachedFileIdsCount: attachedFileIds.length,
     imageCount: imageData.length,
+    imageBase64Lengths: imageData.map(img => img.base64?.length ?? 0),
     firstUserMessage: messages?.[messages.length - 1]?.content?.slice?.(0, 80),
     messageCount: messages?.length || 0,
   });

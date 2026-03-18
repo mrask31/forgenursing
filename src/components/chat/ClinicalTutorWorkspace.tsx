@@ -432,6 +432,14 @@ export default function ClinicalTutorWorkspace({
       const imageData = pendingImageDataRef.current
       pendingImageDataRef.current = undefined // Clear immediately
 
+      console.log('[ClinicalTutorWorkspace] handleSendMessage calling append:', {
+        message: trimmedMessage.slice(0, 80),
+        hasImageData: !!imageData,
+        imageCount: imageData?.length ?? 0,
+        imageBase64Lengths: imageData?.map(img => img.base64?.length) ?? [],
+        appendOptions: imageData ? 'body with imageData' : 'no extra body',
+      })
+
       await append(
         { role: 'user', content: trimmedMessage },
         imageData ? { body: { imageData } } : undefined
@@ -475,6 +483,14 @@ export default function ClinicalTutorWorkspace({
     const handleMessage = async (event: Event) => {
       const customEvent = event as CustomEvent<{ message: string; sessionId: string; imageData?: Array<{ base64: string; mimeType: string }> }>
       const { message, sessionId: eventSessionId, imageData: eventImageData } = customEvent.detail
+
+      console.log('[ClinicalTutorWorkspace] Received tutor-send-message event:', {
+        message: message?.slice(0, 80),
+        sessionId: eventSessionId,
+        hasImageData: !!eventImageData,
+        imageCount: eventImageData?.length ?? 0,
+        imageBase64Lengths: eventImageData?.map(img => img.base64?.length) ?? [],
+      })
 
       // Create a unique key for this message to prevent duplicates
       const messageKey = `${eventSessionId}:${message}`

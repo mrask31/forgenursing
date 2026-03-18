@@ -139,6 +139,13 @@ export default function ChatInterface({
         const base64 = await fileToBase64(file)
         const preview = URL.createObjectURL(file)
 
+        console.log('[ChatInterface] Image attached:', {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          base64Length: base64.length,
+        })
+
         newImages.push({
           id: crypto.randomUUID(),
           file,
@@ -176,6 +183,13 @@ export default function ChatInterface({
     const imagePayload = pendingImages.length > 0
       ? pendingImages.map(img => ({ base64: img.base64, mimeType: img.mimeType }))
       : undefined
+
+    console.log('[ChatInterface] handleSubmit:', {
+      message: message.slice(0, 80),
+      hasImagePayload: !!imagePayload,
+      imageCount: imagePayload?.length ?? 0,
+      imageBase64Lengths: imagePayload?.map(img => img.base64.length) ?? [],
+    })
 
     // Call onSend and only clear input on success
     try {
