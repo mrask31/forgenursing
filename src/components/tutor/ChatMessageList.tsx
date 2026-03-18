@@ -232,7 +232,7 @@ export default function ChatMessageList({
                   </div>
                   <div className="flex items-center gap-2">
                     {voiceEnabled && (
-                      <ForgeAudioPlayer text={m.content} autoPlay={false} />
+                      <ForgeAudioPlayer text={m.content} autoPlay={isLastMessage} />
                     )}
                     <button
                       onClick={() => {

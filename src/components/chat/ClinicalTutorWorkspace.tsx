@@ -113,6 +113,7 @@ export default function ClinicalTutorWorkspace({
   const [chatSummary, setChatSummary] = useState<string | null>(null)
   const [saveClipModal, setSaveClipModal] = useState<{ isOpen: boolean; messageId: string; content: string }>({ isOpen: false, messageId: '', content: '' })
   const [pendingImageData, setPendingImageData] = useState<Array<{ base64: string; mimeType: string }> | undefined>(undefined)
+  const pendingImageMessageRef = useRef<{ message: string; sessionId: string } | null>(null)
   const { density } = useDensity()
   const tokens = getDensityTokens(density)
 
@@ -470,26 +471,26 @@ export default function ClinicalTutorWorkspace({
       const customEvent = event as CustomEvent<{ message: string; sessionId: string; imageData?: Array<{ base64: string; mimeType: string }> }>
       const { message, sessionId: eventSessionId, imageData: eventImageData } = customEvent.detail
 
-      // Store imageData for the request body (will be included via pendingImageData state)
-      if (eventImageData && eventImageData.length > 0) {
-        setPendingImageData(eventImageData)
-      }
-      
       // Create a unique key for this message to prevent duplicates
       const messageKey = `${eventSessionId}:${message}`
       if (processedMessagesRef.current.has(messageKey)) {
         console.log('[ClinicalTutorWorkspace] Ignoring duplicate message:', messageKey)
         return
       }
-      
+
       // If chatId matches OR if we don't have a chatId yet (session just created), handle the message
-      // This allows the message to be processed even during component re-initialization
       if (message && (eventSessionId === chatId || (!chatId && eventSessionId))) {
         processedMessagesRef.current.add(messageKey)
-        
-        // If chatId doesn't match yet but we have a sessionId, wait a bit for component to update
+
+        // When imageData is present, defer append until after state update propagates to requestBody
+        if (eventImageData && eventImageData.length > 0) {
+          pendingImageMessageRef.current = { message, sessionId: eventSessionId }
+          setPendingImageData(eventImageData)
+          return // useEffect below will call handleSendMessage after re-render
+        }
+
+        // No imageData — send immediately
         if (eventSessionId !== chatId && eventSessionId) {
-          // Wait for chatId to update, then send
           setTimeout(async () => {
             if (eventSessionId === chatId || chatId === eventSessionId) {
               await handleSendMessage(message, eventSessionId)
@@ -506,7 +507,23 @@ export default function ClinicalTutorWorkspace({
       window.removeEventListener('tutor-send-message', handleMessage)
     }
   }, [chatId, append, handleSendMessage])
-  
+
+  // After pendingImageData state update propagates to requestBody, send the deferred message
+  useEffect(() => {
+    if (!pendingImageData || !pendingImageMessageRef.current) return
+    const { message, sessionId: deferredSessionId } = pendingImageMessageRef.current
+    pendingImageMessageRef.current = null // Clear immediately to prevent double-fire
+
+    // requestBody now includes imageData — safe to call append
+    if (deferredSessionId !== chatId && deferredSessionId) {
+      setTimeout(async () => {
+        await handleSendMessage(message, deferredSessionId)
+      }, 100)
+    } else {
+      handleSendMessage(message, deferredSessionId)
+    }
+  }, [pendingImageData, chatId, handleSendMessage])
+
   // Check for prefilled prompt from landing page and auto-send if needed
   // Use a ref to track if we've already processed the auto-send to prevent duplicates
   const autoSendProcessedRef = useRef(false)
