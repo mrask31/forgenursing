@@ -112,8 +112,7 @@ export default function ClinicalTutorWorkspace({
   const [chatStatus, setChatStatus] = useState<'active' | 'archived'>('active')
   const [chatSummary, setChatSummary] = useState<string | null>(null)
   const [saveClipModal, setSaveClipModal] = useState<{ isOpen: boolean; messageId: string; content: string }>({ isOpen: false, messageId: '', content: '' })
-  const [pendingImageData, setPendingImageData] = useState<Array<{ base64: string; mimeType: string }> | undefined>(undefined)
-  const pendingImageMessageRef = useRef<{ message: string; sessionId: string } | null>(null)
+  const pendingImageDataRef = useRef<Array<{ base64: string; mimeType: string }> | undefined>(undefined)
   const { density } = useDensity()
   const tokens = getDensityTokens(density)
 
@@ -206,9 +205,8 @@ export default function ClinicalTutorWorkspace({
       className,
       selectedClassName,
       attachedFileIds, // Always an array, never 'none'
-      imageData: pendingImageData, // Clinical images for Gemini Vision analysis
     };
-  }, [chatId, filterMode, selectedDocIds, mode, topicTitle, className, selectedClassName, attachedFiles, pendingImageData]);
+  }, [chatId, filterMode, selectedDocIds, mode, topicTitle, className, selectedClassName, attachedFiles]);
   
   const { messages, append, isLoading, setMessages } = useChat({
     api: '/api/chat',
@@ -219,8 +217,8 @@ export default function ClinicalTutorWorkspace({
       setCustomError(err.message || "Failed to connect to AI")
     },
     onFinish: async (message) => {
-      // Clear pending image data after response is complete
-      setPendingImageData(undefined)
+      // Clear pending image data ref after response is complete
+      pendingImageDataRef.current = undefined
 
       if (message.role === 'assistant' && chatId && message.content) {
         try {
@@ -392,13 +390,13 @@ export default function ClinicalTutorWorkspace({
   // Define handleSendMessage with useCallback after append is available
   const handleSendMessage = useCallback(async (messageText: string, sessionId?: string) => {
     if (!messageText.trim()) return;
-    
-    setCustomError(''); 
+
+    setCustomError('');
     const trimmedMessage = messageText.trim();
-    
+
     // Use provided sessionId or fall back to chatId
     const effectiveChatId = sessionId || chatId;
-    
+
     try {
       // Save the message to the database FIRST (before sending to AI)
       if (effectiveChatId) {
@@ -412,7 +410,7 @@ export default function ClinicalTutorWorkspace({
               content: trimmedMessage,
             }),
           });
-          
+
           if (!saveResponse.ok) {
             console.error('[Chat] Error saving user message:', await saveResponse.text());
             throw new Error('Failed to save message');
@@ -422,15 +420,22 @@ export default function ClinicalTutorWorkspace({
           throw error; // Re-throw to prevent sending to AI if save failed
         }
       }
-      
+
       if (!append) {
         throw new Error("Chat initialization failed");
       }
-      
+
       // Mark that we just sent a message to trigger scroll
       justSentMessageRef.current = true
-      
-      await append({ role: 'user', content: trimmedMessage });
+
+      // Pass imageData directly via append options (bypasses state timing issues)
+      const imageData = pendingImageDataRef.current
+      pendingImageDataRef.current = undefined // Clear immediately
+
+      await append(
+        { role: 'user', content: trimmedMessage },
+        imageData ? { body: { imageData } } : undefined
+      );
       
       // Trigger scroll immediately and with retries to ensure it works
       if (scrollContainerRef?.current) {
@@ -482,14 +487,11 @@ export default function ClinicalTutorWorkspace({
       if (message && (eventSessionId === chatId || (!chatId && eventSessionId))) {
         processedMessagesRef.current.add(messageKey)
 
-        // When imageData is present, defer append until after state update propagates to requestBody
+        // Store imageData in ref — handleSendMessage reads it synchronously before append
         if (eventImageData && eventImageData.length > 0) {
-          pendingImageMessageRef.current = { message, sessionId: eventSessionId }
-          setPendingImageData(eventImageData)
-          return // useEffect below will call handleSendMessage after re-render
+          pendingImageDataRef.current = eventImageData
         }
 
-        // No imageData — send immediately
         if (eventSessionId !== chatId && eventSessionId) {
           setTimeout(async () => {
             if (eventSessionId === chatId || chatId === eventSessionId) {
@@ -507,22 +509,6 @@ export default function ClinicalTutorWorkspace({
       window.removeEventListener('tutor-send-message', handleMessage)
     }
   }, [chatId, append, handleSendMessage])
-
-  // After pendingImageData state update propagates to requestBody, send the deferred message
-  useEffect(() => {
-    if (!pendingImageData || !pendingImageMessageRef.current) return
-    const { message, sessionId: deferredSessionId } = pendingImageMessageRef.current
-    pendingImageMessageRef.current = null // Clear immediately to prevent double-fire
-
-    // requestBody now includes imageData — safe to call append
-    if (deferredSessionId !== chatId && deferredSessionId) {
-      setTimeout(async () => {
-        await handleSendMessage(message, deferredSessionId)
-      }, 100)
-    } else {
-      handleSendMessage(message, deferredSessionId)
-    }
-  }, [pendingImageData, chatId, handleSendMessage])
 
   // Check for prefilled prompt from landing page and auto-send if needed
   // Use a ref to track if we've already processed the auto-send to prevent duplicates

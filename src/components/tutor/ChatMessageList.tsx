@@ -8,7 +8,7 @@ import { setTopicSummaryAndStudiedAt } from '@/lib/api/notebook'
 import clsx from 'clsx'
 import type { TutorEvidenceItem } from './TutorEvidencePanel'
 import FollowUpPrompts from './FollowUpPrompts'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import MessageWithMedicalTerms from './MessageWithMedicalTerms'
 import ForgeAudioPlayer from '@/components/forge-audio-player'
 
@@ -60,6 +60,9 @@ export default function ChatMessageList({
   const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
   const [savedClipId, setSavedClipId] = useState<string | null>(null)
   const [voiceEnabled, setVoiceEnabled] = useState(false)
+  // Track message IDs we've already seen so we never autoPlay historical messages
+  const seenMessageIdsRef = useRef<Set<string>>(new Set())
+  const [newestAssistantId, setNewestAssistantId] = useState<string | null>(null)
 
   // Sync voice toggle from TutorHeader
   useEffect(() => {
@@ -73,6 +76,22 @@ export default function ChatMessageList({
     window.addEventListener('forge-voice-toggle', handler)
     return () => window.removeEventListener('forge-voice-toggle', handler)
   }, [])
+
+  // Detect genuinely new assistant messages (not historical)
+  useEffect(() => {
+    const assistantMessages = messages.filter(m => m.role === 'assistant')
+    const lastAssistant = assistantMessages[assistantMessages.length - 1]
+
+    if (lastAssistant && !seenMessageIdsRef.current.has(lastAssistant.id)) {
+      // This is a brand-new assistant message
+      setNewestAssistantId(lastAssistant.id)
+    }
+
+    // Mark all current messages as seen
+    for (const m of messages) {
+      seenMessageIdsRef.current.add(m.id)
+    }
+  }, [messages])
 
   // Track which messages are flagged (per message, not per chat)
   const [flaggedMessages, setFlaggedMessages] = useState<Set<string>>(new Set())
@@ -232,7 +251,7 @@ export default function ChatMessageList({
                   </div>
                   <div className="flex items-center gap-2">
                     {voiceEnabled && (
-                      <ForgeAudioPlayer text={m.content} autoPlay={isLastMessage} />
+                      <ForgeAudioPlayer text={m.content} autoPlay={m.id === newestAssistantId} />
                     )}
                     <button
                       onClick={() => {
