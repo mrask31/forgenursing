@@ -63,7 +63,7 @@ export default function Hero({ user }: HeroProps) {
               </div>
 
               <p className="text-xs text-[#1E2D3D]/50">
-                No credit card charged for 7 days · Cancel anytime · $24.99/month after trial
+                No credit card charged for 7 days · Cancel anytime · $89/semester after trial
               </p>
             </div>
 

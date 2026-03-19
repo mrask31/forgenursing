@@ -1,4 +1,4 @@
-import { BookOpen, Mic, Brain } from 'lucide-react'
+import { BookOpen, Mic, Brain, Upload, FileText } from 'lucide-react'
 
 const features = [
   {
@@ -17,6 +17,33 @@ const features = [
     body: 'Forge has a real NP voice. Toggle it on and hear your clinical preceptor explain concepts out loud while you study. Reinforce learning through listening — not just reading.',
   },
 ]
+
+const UploadCallout = () => (
+  <div className="mt-5 space-y-3">
+    {/* Mock upload zone */}
+    <div className="border-2 border-dashed border-[#0D8F9C]/40 rounded-xl p-4 flex flex-col items-center gap-2 bg-[#F7F9FB]">
+      <div className="w-8 h-8 bg-[#E0F4F6] rounded-lg flex items-center justify-center">
+        <Upload className="w-4 h-4 text-[#0D8F9C]" />
+      </div>
+      <p className="text-xs text-[#1E2D3D]/60 text-center">Drop your textbook or class notes here (.pdf, .docx)</p>
+    </div>
+    {/* File chips */}
+    <div className="space-y-1.5">
+      {[
+        'Fundamentals Ch. 4 — Fluid Balance.pdf',
+        'Professor Kim — Pharm Notes Week 3.pdf',
+      ].map((name) => (
+        <div key={name} className="flex items-center gap-2 px-3 py-2 bg-[#E0F4F6] rounded-lg">
+          <FileText className="w-3.5 h-3.5 text-[#0D8F9C] flex-shrink-0" />
+          <span className="text-xs text-[#0B2545] font-medium truncate">{name}</span>
+        </div>
+      ))}
+    </div>
+    <p className="text-xs text-[#1E2D3D]/60 leading-relaxed">
+      Forge teaches from your materials — not generic content.
+    </p>
+  </div>
+)
 
 export default function ThreeFeatures() {
   return (
@@ -46,6 +73,7 @@ export default function ThreeFeatures() {
                 </div>
                 <h3 className="text-lg font-bold text-[#0B2545] mb-3">{feat.title}</h3>
                 <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">{feat.body}</p>
+                {feat.title === 'Forge knows your materials' && <UploadCallout />}
               </div>
             )
           })}
@@ -62,9 +90,6 @@ export default function ThreeFeatures() {
               <span className="text-white text-xs font-semibold">NP · Clinical Preceptor</span>
             </div>
           </div>
-          <p className="text-xs text-[#1E2D3D]/50 text-center max-w-xs">
-            Powered by Gemini 2.0 Flash · ADPIE clinical reasoning framework
-          </p>
         </div>
 
       </div>
