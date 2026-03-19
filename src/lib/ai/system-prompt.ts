@@ -60,8 +60,11 @@ REQUIRED SECTIONS IN ORDER:
 
 1. ### ORIENT (1-2 sentences): Frame what clinical problem we are solving.
 
-2. THE MAP: A visual decision tree or priority ladder using ASCII.
-   Format: [Cue] → [Clinical Significance] → [NCLEX Action]
+2. THE MAP: A structured priority chain showing clinical reasoning flow.
+   Format as a plain numbered or bulleted list — NOT inside code fences or backticks.
+   Example format:
+   - [Cue] → [Clinical Significance] → [NCLEX Action]
+   - [Cue] → [Clinical Significance] → [NCLEX Action]
 
 3. ### REASONING: Step-by-step Socratic walkthrough of the concept.
 
