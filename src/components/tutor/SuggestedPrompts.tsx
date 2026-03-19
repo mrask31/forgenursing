@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { GENERAL_TUTOR_PROMPTS, CLASS_TUTOR_PROMPTS, TUTOR_PROMPTS, NOTES_PROMPTS } from '@/lib/constants'
+import { inferCourseType } from '@/lib/course-utils'
 
 type Mode = 'tutor'
 
@@ -77,6 +78,20 @@ const COURSE_STARTER_PROMPTS: Record<string, string[]> = {
     "How do I apply ABCs and Maslow to a patient scenario?",
     "Quiz me on fundamental nursing concepts",
   ],
+  pathophysiology: [
+    "Walk me through the cellular mechanisms of a disease process",
+    "Explain how a pathological process leads to clinical manifestations",
+    "Help me understand the chain from cellular injury to organ dysfunction",
+    "What are the key disease mechanisms I need to know for NCLEX?",
+    "Quiz me on pathophysiology — clinical manifestations and underlying causes",
+  ],
+  community_health: [
+    "Walk me through a community health needs assessment",
+    "How do social determinants of health affect patient outcomes?",
+    "Explain the epidemiological triangle for a communicable disease",
+    "What are the priority health promotion strategies for a community?",
+    "Quiz me on community and public health nursing priorities",
+  ],
 }
 
 interface SuggestedPromptsProps {
@@ -90,6 +105,8 @@ interface SuggestedPromptsProps {
   hasActiveExam?: boolean // Exam Mode context
   selectedClassId?: string // Class ID to determine if prompts should be class-specific
   selectedCourseType?: string | null // Course type for course-aware starter chips
+  selectedClassCode?: string | null // Course code for keyword-based type inference
+  selectedClassName?: string | null // Course name for keyword-based type inference
   lastAssistantMessage?: string // Last assistant message from conversation to generate contextual prompts
   hasExistingConversation?: boolean // Whether there's an active conversation with messages
 }
@@ -165,7 +182,7 @@ function generateContextualPrompts(lastMessage: string): string[] {
   return uniquePrompts.slice(0, 5)
 }
 
-export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCompact = false, onSend, hasAttachedFiles = false, attachedContext = 'none', hasActiveExam = false, selectedClassId, selectedCourseType, lastAssistantMessage, hasExistingConversation = false }: SuggestedPromptsProps) {
+export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCompact = false, onSend, hasAttachedFiles = false, attachedContext = 'none', hasActiveExam = false, selectedClassId, selectedCourseType, selectedClassCode, selectedClassName, lastAssistantMessage, hasExistingConversation = false }: SuggestedPromptsProps) {
   if (!isVisible) return null
 
   // Logging for debugging
@@ -203,9 +220,13 @@ export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCo
     }
   } else {
     // No files attached and no existing conversation
-    // Use course-type specific starters if available, otherwise fall back to generic sets
-    if (selectedClassId && selectedCourseType && COURSE_STARTER_PROMPTS[selectedCourseType]) {
-      prompts = COURSE_STARTER_PROMPTS[selectedCourseType]
+    // Resolve effective course type: keyword inference takes priority over stored type
+    const inferredType = selectedClassCode != null && selectedClassName != null
+      ? inferCourseType(selectedClassCode, selectedClassName)
+      : null
+    const effectiveCourseType = inferredType ?? selectedCourseType ?? null
+    if (selectedClassId && effectiveCourseType && COURSE_STARTER_PROMPTS[effectiveCourseType]) {
+      prompts = COURSE_STARTER_PROMPTS[effectiveCourseType]
     } else {
       prompts = selectedClassId ? CLASS_TUTOR_PROMPTS : GENERAL_TUTOR_PROMPTS
     }

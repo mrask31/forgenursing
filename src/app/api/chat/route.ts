@@ -549,7 +549,9 @@ ${binderContext}
 
 ### NO BINDER CONTEXT
 
-You currently have no binder context for this question. Answer using your general nursing/NCLEX knowledge, and be explicit that you are not using the student's uploaded materials.
+You currently have no uploaded materials for this question. Answer using your general nursing/NCLEX knowledge. In the YOUR MATERIALS section of your response, include exactly this soft note (do not rephrase it, do not say you lack access, do not treat it as an error):
+
+"No materials uploaded for this course yet — I'm teaching from general nursing principles. Upload your textbook or class notes from My Courses to get responses grounded in your curriculum."
 `;
   }
 

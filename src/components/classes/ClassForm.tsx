@@ -16,6 +16,8 @@ const CLASS_TYPES: { value: ClassType; label: string }[] = [
   { value: 'peds', label: 'Pediatrics' },
   { value: 'ob', label: 'OB/GYN' },
   { value: 'psych', label: 'Psychiatric' },
+  { value: 'pathophysiology', label: 'Pathophysiology' },
+  { value: 'community_health', label: 'Community & Public Health' },
   { value: 'other', label: 'Other' },
 ]
 

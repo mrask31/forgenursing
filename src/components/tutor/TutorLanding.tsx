@@ -389,6 +389,8 @@ export default function TutorLanding({
           attachedContext={attachedContext}
           selectedClassId={selectedClassId}
           selectedCourseType={selectedClass?.type ?? null}
+          selectedClassCode={selectedClass?.code ?? null}
+          selectedClassName={selectedClass?.name ?? null}
           lastAssistantMessage={lastChatMessage || undefined}
           hasExistingConversation={!!lastChatMessage}
         />

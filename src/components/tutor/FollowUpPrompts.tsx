@@ -110,6 +110,16 @@ function generateFollowUpPrompts(content: string, activeCourse?: string | null, 
       adaptivePrompts.push("What patient teaching is most important for this drug class?")
       adaptivePrompts.push("How do I prioritize medication administration safely?")
       adaptivePrompts.push("What are the contraindications I need to know?")
+    } else if (activeCourseType === 'pathophysiology') {
+      adaptivePrompts.push("How does this cellular mechanism lead to the clinical signs we see?")
+      adaptivePrompts.push("What compensatory responses does the body activate?")
+      adaptivePrompts.push("Walk me through the full disease progression step-by-step")
+      adaptivePrompts.push("How would this pathological process appear on an NCLEX question?")
+    } else if (activeCourseType === 'community_health') {
+      adaptivePrompts.push("How do social determinants of health factor into this?")
+      adaptivePrompts.push("What population-level interventions are most effective here?")
+      adaptivePrompts.push("How would I assess a community for this health issue?")
+      adaptivePrompts.push("How would this appear on an NCLEX community health question?")
     } else {
       adaptivePrompts.push("What are the key nursing considerations here?")
       adaptivePrompts.push("Can you break this down into simpler steps?")

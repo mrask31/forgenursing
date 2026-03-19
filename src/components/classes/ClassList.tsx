@@ -16,6 +16,8 @@ const CLASS_TYPE_LABELS: Record<ClassType, string> = {
   peds: 'Pediatrics',
   ob: 'OB/GYN',
   psych: 'Psychiatric',
+  pathophysiology: 'Pathophysiology',
+  community_health: 'Community & Public Health',
   other: 'Other',
 }
 

@@ -5,6 +5,8 @@ export type ClassType =
   | 'peds'
   | 'ob'
   | 'psych'
+  | 'pathophysiology'
+  | 'community_health'
   | 'other'
 
 export interface StudentClass {

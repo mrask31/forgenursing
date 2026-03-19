@@ -15,6 +15,7 @@ import { useTutorContext } from '@/components/tutor/TutorContext'
 import { setTopicSummaryAndStudiedAt } from '@/lib/api/notebook'
 import { getBrowserClient } from '@/lib/supabase/client'
 import FollowUpPrompts from '@/components/tutor/FollowUpPrompts'
+import { inferCourseType } from '@/lib/course-utils'
 
 // Helper to validate UUID format
 const isValidUUID = (str: string): boolean => {
@@ -745,7 +746,11 @@ export default function ClinicalTutorWorkspace({
               await handleSendMessage(message, chatId || undefined)
             }}
             activeCourse={tutorContext?.selectedClass?.name ?? null}
-            activeCourseType={tutorContext?.selectedClass?.type ?? null}
+            activeCourseType={
+              tutorContext?.selectedClass
+                ? (inferCourseType(tutorContext.selectedClass.code, tutorContext.selectedClass.name) ?? tutorContext.selectedClass.type)
+                : null
+            }
           />
         ) : (
           normalizedMessages.map((m, index) => {
