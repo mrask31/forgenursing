@@ -331,30 +331,29 @@ export default function ChatInterface({
           <Paperclip className="h-5 w-5" />
         </button>
 
-        {/* Image Upload — label wraps the hidden input so tapping it natively opens
-            the file picker on mobile without relying on .click() */}
-        <label
-          htmlFor="chat-image-input"
-          aria-label="Upload clinical image"
-          title={pendingImages.length >= MAX_IMAGES ? `Maximum ${MAX_IMAGES} images` : 'Upload clinical image (EKG, labs, wound photos)'}
-          className={`rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200 cursor-pointer ${
+        {/* Image Upload — invisible file input overlaid on the button area so the
+            browser's native tap-to-open-picker fires directly on the input element.
+            Works on Android Chrome and iOS Safari without .click() or label tricks. */}
+        <div
+          style={{ position: 'relative' }}
+          className={`rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200 ${
             pendingImages.length >= MAX_IMAGES || isProcessingImages
               ? 'opacity-40 pointer-events-none'
               : ''
           }`}
+          title={pendingImages.length >= MAX_IMAGES ? `Maximum ${MAX_IMAGES} images` : 'Upload clinical image (EKG, labs, wound photos)'}
+          aria-label="Upload clinical image"
         >
           <ImagePlus className="h-5 w-5" />
-        </label>
-        <input
-          ref={imageInputRef}
-          id="chat-image-input"
-          type="file"
-          accept="image/*"
-          multiple
-          disabled={pendingImages.length >= MAX_IMAGES || isProcessingImages}
-          className="hidden"
-          onChange={handleImageSelect}
-        />
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+            onChange={handleImageSelect}
+          />
+        </div>
 
         {/* Textarea */}
         <textarea
