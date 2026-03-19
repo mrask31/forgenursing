@@ -29,6 +29,8 @@ interface ChatMessageListProps {
   savingToNotebook?: string | null
   onSaveClip?: (messageId: string, content: string) => void // New prop for saving clips
   onSendMessage?: (message: string) => void // Callback to send a follow-up prompt
+  activeCourse?: string | null
+  activeCourseType?: string | null
 }
 
 // ADPIE block styling config
@@ -99,6 +101,8 @@ export default function ChatMessageList({
   savingToNotebook,
   onSaveClip,
   onSendMessage,
+  activeCourse,
+  activeCourseType,
 }: ChatMessageListProps) {
   const tutorContext = useTutorContext()
   const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
@@ -435,6 +439,8 @@ export default function ChatMessageList({
                     messageContent={m.content}
                     onPromptClick={onSendMessage}
                     isLastMessage={isLastMessage}
+                    activeCourse={activeCourse}
+                    activeCourseType={activeCourseType}
                   />
                 )}
               </article>

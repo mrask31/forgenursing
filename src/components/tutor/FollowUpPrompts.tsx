@@ -6,10 +6,12 @@ interface FollowUpPromptsProps {
   messageContent: string
   onPromptClick: (prompt: string) => void
   isLastMessage?: boolean // Only show on the last assistant message
+  activeCourse?: string | null
+  activeCourseType?: string | null
 }
 
-// Generate contextual follow-up prompts based on message content
-function generateFollowUpPrompts(content: string): string[] {
+// Generate contextual follow-up prompts based on message content and active course
+function generateFollowUpPrompts(content: string, activeCourse?: string | null, activeCourseType?: string | null): string[] {
   const prompts: string[] = []
   const lowerContent = content.toLowerCase()
 
@@ -25,9 +27,16 @@ function generateFollowUpPrompts(content: string): string[] {
   const hasAssessment = /(assessment|symptom|sign|finding|vital|lab|monitor|auscultation|palpation)/i.test(content)
   const hasIntervention = /(intervention|treatment|care|nursing action|management|administer|educate)/i.test(content)
   const hasPriority = /(priority|first|immediate|urgent|abc|maslow|safety)/i.test(content)
-  const hasHeartFailure = /(heart failure|cardiac|edema|jugular|hepatomegaly|ascites)/i.test(content)
   const hasRespiratory = /(respiratory|breathing|oxygen|dyspnea|crackles|wheezing|saturation)/i.test(content)
   const hasComplications = /(complication|risk|adverse|side effect|contraindication|warning)/i.test(content)
+
+  // Heart failure chips are only relevant for adult med-surg courses, not peds/OB/psych
+  // Require an explicit "heart failure" mention (not just "cardiac") when course is peds/OB/psych
+  const adultCardiacCourses = ['med_surg', 'fundamentals', 'other', undefined, null]
+  const isAdultCardiacContext = adultCardiacCourses.includes(activeCourseType as any)
+  const hasHeartFailure = isAdultCardiacContext
+    ? /(heart failure|cardiac|edema|jugular|hepatomegaly|ascites)/i.test(content)
+    : /heart failure/i.test(content) // require explicit "heart failure" for non-adult courses
 
   // ADAPTIVE PROMPTS (context-specific, choose 2)
   const adaptivePrompts: string[] = []
@@ -79,12 +88,34 @@ function generateFollowUpPrompts(content: string): string[] {
     adaptivePrompts.push("How do I recognize early signs of complications?")
   }
 
-  // If no specific context detected, use general adaptive prompts
+  // If no specific context detected, use course-scoped general adaptive prompts
   if (adaptivePrompts.length === 0) {
-    adaptivePrompts.push("What are the key nursing considerations here?")
-    adaptivePrompts.push("Can you break this down into simpler steps?")
-    adaptivePrompts.push("What's the most important thing to remember?")
-    adaptivePrompts.push("How would this appear on an NCLEX question?")
+    if (activeCourseType === 'peds') {
+      adaptivePrompts.push("How does this differ between pediatric and adult patients?")
+      adaptivePrompts.push("What are the key pediatric nursing considerations here?")
+      adaptivePrompts.push("How do I adjust my assessment approach for a child?")
+      adaptivePrompts.push("What growth and development factors are relevant?")
+    } else if (activeCourseType === 'ob') {
+      adaptivePrompts.push("How does this affect the mother and fetus differently?")
+      adaptivePrompts.push("What are the priority nursing interventions in obstetrics?")
+      adaptivePrompts.push("What maternal changes make this different from other patients?")
+      adaptivePrompts.push("How would this present during labor vs. postpartum?")
+    } else if (activeCourseType === 'psych') {
+      adaptivePrompts.push("How does therapeutic communication apply here?")
+      adaptivePrompts.push("What safety considerations are most important?")
+      adaptivePrompts.push("How do I approach this using the mental status exam?")
+      adaptivePrompts.push("What are the priority nursing diagnoses in this scenario?")
+    } else if (activeCourseType === 'pharm') {
+      adaptivePrompts.push("What are the key side effects I should monitor for?")
+      adaptivePrompts.push("What patient teaching is most important for this drug class?")
+      adaptivePrompts.push("How do I prioritize medication administration safely?")
+      adaptivePrompts.push("What are the contraindications I need to know?")
+    } else {
+      adaptivePrompts.push("What are the key nursing considerations here?")
+      adaptivePrompts.push("Can you break this down into simpler steps?")
+      adaptivePrompts.push("What's the most important thing to remember?")
+      adaptivePrompts.push("How would this appear on an NCLEX question?")
+    }
   }
 
   // Combine: 2 static + 2 adaptive (randomly selected from adaptive pool)
@@ -97,15 +128,20 @@ function generateFollowUpPrompts(content: string): string[] {
   return prompts
 }
 
-export default function FollowUpPrompts({ 
-  messageContent, 
+export default function FollowUpPrompts({
+  messageContent,
   onPromptClick,
-  isLastMessage = false 
+  isLastMessage = false,
+  activeCourse,
+  activeCourseType,
 }: FollowUpPromptsProps) {
   // Only show on the last assistant message
   if (!isLastMessage) return null
 
-  const prompts = useMemo(() => generateFollowUpPrompts(messageContent), [messageContent])
+  const prompts = useMemo(
+    () => generateFollowUpPrompts(messageContent, activeCourse, activeCourseType),
+    [messageContent, activeCourse, activeCourseType]
+  )
 
   if (prompts.length === 0) return null
 

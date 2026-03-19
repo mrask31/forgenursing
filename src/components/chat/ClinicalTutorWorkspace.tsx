@@ -744,6 +744,8 @@ export default function ClinicalTutorWorkspace({
             onSendMessage={async (message) => {
               await handleSendMessage(message, chatId || undefined)
             }}
+            activeCourse={tutorContext?.selectedClass?.name ?? null}
+            activeCourseType={tutorContext?.selectedClass?.type ?? null}
           />
         ) : (
           normalizedMessages.map((m, index) => {
