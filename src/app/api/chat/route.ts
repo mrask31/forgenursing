@@ -528,8 +528,7 @@ export async function POST(req: NextRequest) {
   const binderContext = binderResult.context;
   const fileSummaries = binderResult.fileSummaries || [];
 
-  // Build system prompt using new builder (mode will be determined after topic variables)
-  // Placeholder - will be set after we determine the mode
+  // Extra context sections (binder, vision, notes) — built before base prompt, re-appended after
   let systemPrompt: string = '';
 
   // Build messages array
@@ -644,8 +643,14 @@ DO NOT:
     promptMode = modeMap[effectiveMode] ?? 'tutor';
   }
 
-  // Build system prompt using new builder
+  // Save binder context + vision + notes mode sections built above
+  const _extraContext = systemPrompt;
+
+  // Build base system prompt (this replaces the placeholder)
   systemPrompt = buildSystemPrompt(programLevel, promptMode);
+
+  // Re-append binder context, gemini vision results, and notes mode behavior
+  systemPrompt += _extraContext;
   
   if (effectiveTopicTitle) {
     if (isFirstAssistantReply) {

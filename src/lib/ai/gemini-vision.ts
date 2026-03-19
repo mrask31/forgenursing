@@ -62,6 +62,7 @@ export async function analyzeClinicalImage(
 
   try {
     const parsed = JSON.parse(jsonStr);
+    console.log('[GeminiVision] Full result before system prompt injection:', JSON.stringify(parsed, null, 2));
     return {
       description: parsed.description || 'Unable to describe image',
       clinicalFindings: Array.isArray(parsed.clinicalFindings) ? parsed.clinicalFindings : [],
