@@ -10,7 +10,8 @@ type Mode = 'tutor'
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
 const MAX_IMAGES = 3
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+// HEIC/HEIF included for iOS camera photos — Safari's FileReader converts them to JPEG internally
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif']
 
 interface PendingImage {
   id: string
@@ -95,16 +96,21 @@ export default function ChatInterface({
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fileToBase64 = (file: File): Promise<string> => {
+  const fileToBase64 = (file: File): Promise<{ base64: string; actualMimeType: string }> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = () => {
         const result = reader.result as string
-        // Strip data URL prefix to get raw base64
-        const base64 = result.split(',')[1]
-        resolve(base64)
+        const commaIndex = result.indexOf(',')
+        const prefix = result.slice(0, commaIndex)
+        const base64 = result.slice(commaIndex + 1)
+        // Use the MIME type from the data URL, not file.type — on iOS Safari, FileReader
+        // silently converts HEIC to JPEG so the data URL reports image/jpeg even when
+        // file.type is image/heic. Also handles empty file.type on some Android browsers.
+        const actualMimeType = prefix.match(/data:([^;]+)/)?.[1] || file.type || 'image/jpeg'
+        resolve({ base64, actualMimeType })
       }
-      reader.onerror = reject
+      reader.onerror = () => reject(new Error('FileReader failed to read image'))
       reader.readAsDataURL(file)
     })
   }
@@ -125,9 +131,11 @@ export default function ChatInterface({
     try {
       const newImages: PendingImage[] = []
       for (const file of filesToProcess) {
-        // Validate type
-        if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-          alert(`${file.name}: Unsupported format. Use JPEG, PNG, WebP, or GIF.`)
+        // Validate type — allow any image/* type (covers HEIC on iOS, empty type on some Android).
+        // Some Android browsers return "" for file.type on gallery images, so we accept that too.
+        const isImageType = file.type === '' || file.type.startsWith('image/')
+        if (!isImageType) {
+          alert(`${file.name}: Unsupported format. Please select an image file.`)
           continue
         }
         // Validate size
@@ -136,12 +144,13 @@ export default function ChatInterface({
           continue
         }
 
-        const base64 = await fileToBase64(file)
+        const { base64, actualMimeType } = await fileToBase64(file)
         const preview = URL.createObjectURL(file)
 
         console.log('[ChatInterface] Image attached:', {
           name: file.name,
-          type: file.type,
+          reportedType: file.type,
+          actualMimeType,
           size: file.size,
           base64Length: base64.length,
         })
@@ -151,7 +160,7 @@ export default function ChatInterface({
           file,
           preview,
           base64,
-          mimeType: file.type,
+          mimeType: actualMimeType, // Use actual MIME from FileReader, not file.type
         })
       }
 
@@ -267,7 +276,7 @@ export default function ChatInterface({
               />
               <button
                 onClick={() => removeImage(img.id)}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[var(--gray-800)] text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[var(--gray-800)] text-white rounded-full flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                 aria-label={`Remove ${img.file.name}`}
               >
                 <X className="w-3 h-3" />
@@ -336,7 +345,7 @@ export default function ChatInterface({
         <input
           ref={imageInputRef}
           type="file"
-          accept={ACCEPTED_IMAGE_TYPES.join(',')}
+          accept="image/*"
           multiple
           className="hidden"
           onChange={handleImageSelect}
