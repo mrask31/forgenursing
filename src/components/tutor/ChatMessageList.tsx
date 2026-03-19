@@ -31,6 +31,50 @@ interface ChatMessageListProps {
   onSendMessage?: (message: string) => void // Callback to send a follow-up prompt
 }
 
+// ADPIE block styling config
+const ADPIE_BLOCK_CONFIG = {
+  ORIENT: {
+    wrapperClass: 'bg-[#e8f4f4] rounded-lg px-4 py-3 mb-3',
+    labelColor: 'text-[#1a8080]',
+  },
+  REASONING: {
+    wrapperClass: 'bg-gray-50 rounded-lg px-4 py-3 mb-3',
+    labelColor: 'text-slate-900',
+  },
+  TRAP: {
+    wrapperClass: 'bg-[#fef9ec] border-l-4 border-[#e6a817] rounded-r-lg px-4 py-3 mb-3',
+    labelColor: 'text-[#c47a0d]',
+  },
+  CHECK: {
+    wrapperClass: 'bg-[#eef4f7] rounded-lg px-4 py-3 mb-3',
+    labelColor: 'text-[#3d6e82]',
+  },
+} as const
+
+type AdpieBlockType = keyof typeof ADPIE_BLOCK_CONFIG
+
+interface AdpieSection {
+  blockType: AdpieBlockType | null
+  content: string
+}
+
+function splitIntoAdpieSections(content: string): AdpieSection[] {
+  const hasAdpieHeaders = /^#{1,3}\s+(?:ORIENT|REASONING|TRAP|CHECK)\b/m.test(content)
+  if (!hasAdpieHeaders) {
+    return [{ blockType: null, content }]
+  }
+  const parts = content.split(/(?=^#{1,3}\s+(?:ORIENT|REASONING|TRAP|CHECK)\b)/gm)
+  return parts
+    .filter(p => p.trim())
+    .map(part => {
+      const headerMatch = part.match(/^#{1,3}\s+(ORIENT|REASONING|TRAP|CHECK)\b/)
+      return {
+        blockType: headerMatch ? (headerMatch[1] as AdpieBlockType) : null,
+        content: part,
+      }
+    })
+}
+
 // Helper to detect if message likely used binder context
 const detectBinderUsage = (content: string): boolean => {
   const binderIndicators = [
@@ -311,47 +355,62 @@ export default function ChatMessageList({
 
                 {/* Document Content */}
                 <div className="prose prose-slate prose-lg max-w-3xl">
-                  <MessageWithMedicalTerms
-                    content={m.content}
-                    markdownComponents={{
-                      p: ({children}) => <p className="mb-3 last:mb-0 text-sm sm:text-base text-slate-700 leading-relaxed">{children}</p>,
-                      ul: ({children}) => <ul className="list-disc pl-5 space-y-1">{children}</ul>,
-                      ol: ({children}) => <ol className="list-decimal pl-5 space-y-1">{children}</ol>,
-                      li: ({children}) => <li className="my-1 text-slate-700">{children}</li>,
-                      strong: ({children}) => <strong className="font-semibold text-slate-900">{children}</strong>,
-                      code: ({children}) => <code className="bg-slate-50 px-1.5 py-0.5 rounded text-xs font-mono text-slate-900 border border-slate-200">{children}</code>,
-                      pre: ({children}) => (
+                  {splitIntoAdpieSections(m.content).map((section, sectionIdx) => {
+                    const config = section.blockType ? ADPIE_BLOCK_CONFIG[section.blockType] : null
+                    const labelColor = config?.labelColor ?? 'text-slate-900'
+                    const components = {
+                      p: ({children}: {children: React.ReactNode}) => <p className="mb-3 last:mb-0 text-sm sm:text-base text-slate-700 leading-relaxed">{children}</p>,
+                      ul: ({children}: {children: React.ReactNode}) => <ul className="list-disc pl-5 space-y-1">{children}</ul>,
+                      ol: ({children}: {children: React.ReactNode}) => <ol className="list-decimal pl-5 space-y-1">{children}</ol>,
+                      li: ({children}: {children: React.ReactNode}) => <li className="my-1 text-slate-700">{children}</li>,
+                      strong: ({children}: {children: React.ReactNode}) => <strong className="font-semibold text-slate-900">{children}</strong>,
+                      code: ({children}: {children: React.ReactNode}) => <code className="bg-slate-50 px-1.5 py-0.5 rounded text-xs font-mono text-slate-900 border border-slate-200">{children}</code>,
+                      pre: ({children}: {children: React.ReactNode}) => (
                         <pre className="max-w-full overflow-x-auto bg-slate-50 p-4 rounded-lg border border-slate-200 my-4">
                           {children}
                         </pre>
                       ),
-                      table: ({children}) => (
+                      table: ({children}: {children: React.ReactNode}) => (
                         <div className="max-w-full overflow-x-auto my-4">
                           <table className="min-w-full border-collapse border border-slate-300">
                             {children}
                           </table>
                         </div>
                       ),
-                      h1: ({children}) => <h1 className="text-2xl font-semibold tracking-tight text-slate-900 mb-3 mt-6 first:mt-0">{children}</h1>,
-                      h2: ({children}) => <h2 className="text-xl font-semibold tracking-tight text-slate-900 mb-2 mt-5 first:mt-0">{children}</h2>,
+                      h1: ({children}: {children: React.ReactNode}) => <h1 className="text-2xl font-semibold tracking-tight text-slate-900 mb-3 mt-6 first:mt-0">{children}</h1>,
+                      h2: ({children}: {children: React.ReactNode}) => <h2 className="text-xl font-semibold tracking-tight text-slate-900 mb-2 mt-5 first:mt-0">{children}</h2>,
                       h3: ({children, ...props}: { children: React.ReactNode; [key: string]: any }) => {
-                        const isSnapshot = typeof children === 'string' && children.trim() === 'Snapshot'
+                        const text = typeof children === 'string' ? children.trim() : ''
+                        const isAdpieLabel = ['ORIENT', 'REASONING', 'TRAP', 'CHECK'].includes(text)
+                        const isSnapshot = text === 'Snapshot'
                         return (
-                          <h3 
-                            className={`text-lg font-semibold tracking-tight text-slate-900 mb-2 mt-6 first:mt-0 ${isSnapshot ? 'font-bold text-[var(--teal)] mb-3' : ''}`}
+                          <h3
+                            className={clsx(
+                              'mb-2 first:mt-0',
+                              isAdpieLabel
+                                ? `text-base font-bold tracking-wide uppercase mt-0 ${labelColor}`
+                                : clsx('text-lg font-semibold tracking-tight text-slate-900 mt-6', isSnapshot && 'font-bold text-[var(--teal)] mb-3')
+                            )}
                             {...props}
                           >
                             {children}
                           </h3>
                         )
                       },
-                      blockquote: ({children}) => (
+                      blockquote: ({children}: {children: React.ReactNode}) => (
                         <blockquote className="border-l-4 border-[var(--teal)] bg-[var(--teal-light)] text-slate-700 not-italic rounded-r pl-4 pr-4 py-3 my-4 text-sm sm:text-base leading-relaxed">
                           {children}
                         </blockquote>
                       ),
-                    }}
-                  />
+                    }
+                    return config ? (
+                      <div key={sectionIdx} className={config.wrapperClass}>
+                        <MessageWithMedicalTerms content={section.content} markdownComponents={components} />
+                      </div>
+                    ) : (
+                      <MessageWithMedicalTerms key={sectionIdx} content={section.content} markdownComponents={components} />
+                    )
+                  })}
                 </div>
 
                 {/* Mobile evidence button */}
