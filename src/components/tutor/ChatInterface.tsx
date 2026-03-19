@@ -331,22 +331,27 @@ export default function ChatInterface({
           <Paperclip className="h-5 w-5" />
         </button>
 
-        {/* Image Upload */}
-        <button
-          type="button"
-          onClick={() => imageInputRef.current?.click()}
-          disabled={pendingImages.length >= MAX_IMAGES || isProcessingImages}
-          className="rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+        {/* Image Upload — label wraps the hidden input so tapping it natively opens
+            the file picker on mobile without relying on .click() */}
+        <label
+          htmlFor="chat-image-input"
           aria-label="Upload clinical image"
           title={pendingImages.length >= MAX_IMAGES ? `Maximum ${MAX_IMAGES} images` : 'Upload clinical image (EKG, labs, wound photos)'}
+          className={`rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200 cursor-pointer ${
+            pendingImages.length >= MAX_IMAGES || isProcessingImages
+              ? 'opacity-40 pointer-events-none'
+              : ''
+          }`}
         >
           <ImagePlus className="h-5 w-5" />
-        </button>
+        </label>
         <input
           ref={imageInputRef}
+          id="chat-image-input"
           type="file"
           accept="image/*"
           multiple
+          disabled={pendingImages.length >= MAX_IMAGES || isProcessingImages}
           className="hidden"
           onChange={handleImageSelect}
         />
