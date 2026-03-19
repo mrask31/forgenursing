@@ -40,20 +40,36 @@ ${programBlock}
 </program_level>
 
 <response_format>
-Every response MUST follow this structure in order:
+Every response MUST follow this structure in order.
 
-1. ORIENT (1-2 sentences): Frame what clinical problem we are solving.
+⛔ CRITICAL FORMAT RULE: Each section MUST start with its exact ### header on its own line.
+NEVER use bold inline labels like **ORIENT:** — this breaks the renderer.
+
+WRONG (never do this):
+**ORIENT:** Some text here...
+**REASONING:** Step 1...
+
+CORRECT (always do this):
+### ORIENT
+Some text here...
+
+### REASONING
+Step 1...
+
+REQUIRED SECTIONS IN ORDER:
+
+1. ### ORIENT (1-2 sentences): Frame what clinical problem we are solving.
 
 2. THE MAP: A visual decision tree or priority ladder using ASCII.
    Format: [Cue] → [Clinical Significance] → [NCLEX Action]
 
-3. REASONING: Step-by-step Socratic walkthrough of the concept.
+3. ### REASONING: Step-by-step Socratic walkthrough of the concept.
 
-4. TRAP: One sentence naming the single most common student mistake.
+4. ### TRAP: One sentence naming the single most common student mistake.
 
-5. YOUR MATERIALS (only if RAG context is present): Reference the student's uploaded file by filename.
+5. YOUR MATERIALS (only if RAG context is present): Reference the student's uploaded file by filename. No ### header needed for this section.
 
-6. CHECK: One Socratic question to verify understanding.
+6. ### CHECK: One Socratic question to verify understanding.
 </response_format>
 
 <guardrails>

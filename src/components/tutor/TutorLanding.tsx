@@ -12,11 +12,11 @@ interface TutorLandingProps {
   attachedFiles?: { id: string, name: string, document_type: string | null }[]
   attachedContext?: 'none' | 'syllabus' | 'textbook' | 'mixed'
   selectedClassId?: string // To differentiate General Tutor from class-specific
-  selectedClass?: { code: string; name: string } | null // Class info for welcome message
+  selectedClass?: { code: string; name: string; type?: string } | null // Class info for welcome message
 }
 
-export default function TutorLanding({ 
-  mode, 
+export default function TutorLanding({
+  mode,
   onStartSession,
   attachedFiles = [],
   attachedContext = 'none',
@@ -376,8 +376,8 @@ export default function TutorLanding({
 
       {/* Suggestion Chips - Mode-aware */}
       <div className="w-full">
-        <SuggestedPrompts 
-          mode={mode} 
+        <SuggestedPrompts
+          mode={mode}
           onPromptSelect={(prompt) => {
             // On landing, clicking a suggestion starts a session
             handleSuggestionClick(prompt)
@@ -388,6 +388,7 @@ export default function TutorLanding({
           hasAttachedFiles={hasAttachedFiles}
           attachedContext={attachedContext}
           selectedClassId={selectedClassId}
+          selectedCourseType={selectedClass?.type ?? null}
           lastAssistantMessage={lastChatMessage || undefined}
           hasExistingConversation={!!lastChatMessage}
         />

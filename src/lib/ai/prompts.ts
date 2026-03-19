@@ -110,7 +110,33 @@ MAP-FIRST RULES:
 
 REQUIRED ORDER (enforce for all in-scope answers):
 
-CRITICAL FORMATTING RULE: You MUST use the exact section headers below — written exactly as shown, with ### and all-caps label. These headers are required for the UI to render each section with the correct color and style. Do NOT use bold inline labels like **ORIENT:** or **TRAP:**. Use the ### header format only.
+⛔ CRITICAL FORMAT RULE — READ THIS FIRST:
+You MUST begin each section with the exact markdown header on its own line:
+  ### ORIENT
+  ### REASONING
+  ### TRAP
+  ### CHECK
+
+NEVER use bold inline labels. Using **ORIENT:** or **TRAP:** will BREAK the renderer and destroy the visual formatting for the student. This is a hard requirement, not a suggestion.
+
+WRONG FORMAT — DO NOT DO THIS:
+**ORIENT:** This question is about fluid overload and perfusion.
+**REASONING:** Starting with ABCs...
+**TRAP:** Students often choose the intervention first.
+**CHECK:** What would you monitor?
+
+CORRECT FORMAT — ALWAYS DO THIS:
+### ORIENT
+This question is about fluid overload and perfusion.
+
+### REASONING
+Starting with ABCs...
+
+### TRAP
+Students often choose the intervention first.
+
+### CHECK
+What would you monitor?
 
 1) ### ORIENT (1-2 lines max)
 - Start your response with the literal header: ### ORIENT

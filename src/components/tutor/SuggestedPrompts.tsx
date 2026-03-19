@@ -33,6 +33,52 @@ const EXAM_PROMPTS = [
   "Help me build a study schedule for this exam.",
 ]
 
+// Course-type specific starter chip sets
+const COURSE_STARTER_PROMPTS: Record<string, string[]> = {
+  peds: [
+    "Walk me through pediatric assessment priorities",
+    "How do I calculate a pediatric medication dose?",
+    "What are the developmental milestones I need to know for NCLEX?",
+    "Explain a common pediatric condition step-by-step",
+    "Quiz me on pediatric nursing priorities",
+  ],
+  ob: [
+    "Walk me through labor and delivery nursing priorities",
+    "What are the priority assessments for a postpartum patient?",
+    "Explain fetal heart rate monitoring and what to watch for",
+    "How do I differentiate normal vs. concerning findings in OB?",
+    "Quiz me on maternal-newborn nursing priorities",
+  ],
+  psych: [
+    "Walk me through therapeutic communication techniques",
+    "How do I prioritize safety in psychiatric nursing?",
+    "Explain the mental status exam step-by-step",
+    "What are the priority nursing interventions for a patient in crisis?",
+    "Quiz me on psychiatric medications and their nursing considerations",
+  ],
+  pharm: [
+    "Walk me through safe medication administration (the rights)",
+    "How do I calculate IV drip rates?",
+    "What are the priority drug-drug interactions I need to know?",
+    "Help me understand a drug class step-by-step",
+    "Quiz me on high-alert medications",
+  ],
+  med_surg: [
+    "Walk me through medical-surgical nursing priorities",
+    "Explain a common med-surg condition using ABCs",
+    "Help me think through priority setting for multiple patients",
+    "What are the most tested med-surg topics on NCLEX?",
+    "Quiz me on pathophysiology and nursing interventions",
+  ],
+  fundamentals: [
+    "Walk me through the nursing process step-by-step",
+    "Help me understand basic nursing assessment priorities",
+    "Explain a fundamental nursing skill and the reasoning behind it",
+    "How do I apply ABCs and Maslow to a patient scenario?",
+    "Quiz me on fundamental nursing concepts",
+  ],
+}
+
 interface SuggestedPromptsProps {
   mode: Mode
   onPromptSelect: (prompt: string) => void
@@ -43,6 +89,7 @@ interface SuggestedPromptsProps {
   attachedContext?: 'none' | 'syllabus' | 'textbook' | 'mixed' // Context based on attached files
   hasActiveExam?: boolean // Exam Mode context
   selectedClassId?: string // Class ID to determine if prompts should be class-specific
+  selectedCourseType?: string | null // Course type for course-aware starter chips
   lastAssistantMessage?: string // Last assistant message from conversation to generate contextual prompts
   hasExistingConversation?: boolean // Whether there's an active conversation with messages
 }
@@ -118,7 +165,7 @@ function generateContextualPrompts(lastMessage: string): string[] {
   return uniquePrompts.slice(0, 5)
 }
 
-export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCompact = false, onSend, hasAttachedFiles = false, attachedContext = 'none', hasActiveExam = false, selectedClassId, lastAssistantMessage, hasExistingConversation = false }: SuggestedPromptsProps) {
+export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCompact = false, onSend, hasAttachedFiles = false, attachedContext = 'none', hasActiveExam = false, selectedClassId, selectedCourseType, lastAssistantMessage, hasExistingConversation = false }: SuggestedPromptsProps) {
   if (!isVisible) return null
 
   // Logging for debugging
@@ -156,8 +203,12 @@ export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCo
     }
   } else {
     // No files attached and no existing conversation
-    // Use General Tutor prompts if no class selected, Class prompts if class is selected
-    prompts = selectedClassId ? CLASS_TUTOR_PROMPTS : GENERAL_TUTOR_PROMPTS
+    // Use course-type specific starters if available, otherwise fall back to generic sets
+    if (selectedClassId && selectedCourseType && COURSE_STARTER_PROMPTS[selectedCourseType]) {
+      prompts = COURSE_STARTER_PROMPTS[selectedCourseType]
+    } else {
+      prompts = selectedClassId ? CLASS_TUTOR_PROMPTS : GENERAL_TUTOR_PROMPTS
+    }
   }
   
   // Log which prompt set is being used
