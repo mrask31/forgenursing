@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
-import { Check, ArrowRight, Sparkles, Shield, Heart } from 'lucide-react'
+import { Check, ArrowRight, Shield, Heart, Sparkles, Clock } from 'lucide-react'
 import Hero from '@/components/landing/Hero'
 import HowItClicks from '@/components/landing/HowItClicks'
 import ThreeFeatures from '@/components/landing/ThreeFeatures'
@@ -15,21 +15,18 @@ export default function HomePage() {
   // Structured Data (JSON-LD) for SEO
   useEffect(() => {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://forgenursing.com'
-    
+
     const organizationSchema = {
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'ForgeNursing',
       url: baseUrl,
       logo: `${baseUrl}/logo.png`,
-      description: 'AI-powered clinical reasoning tutor for nursing students preparing for NCLEX',
-      sameAs: [
-        // Add social media URLs when available
-      ],
+      description: 'AI clinical preceptor for nursing students using ADPIE framework',
+      sameAs: [],
       contactPoint: {
         '@type': 'ContactPoint',
         contactType: 'Customer Service',
-        // Add email when available
       }
     }
 
@@ -43,24 +40,17 @@ export default function HomePage() {
         '@type': 'Offer',
         price: '24.99',
         priceCurrency: 'USD',
-        priceValidUntil: '2025-12-31',
+        priceValidUntil: '2026-12-31',
         availability: 'https://schema.org/InStock',
         url: `${baseUrl}/signup`
       },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.8',
-        ratingCount: '150',
-        bestRating: '5',
-        worstRating: '1'
-      },
-      description: 'AI tutor that turns your nursing textbooks and lecture notes into step-by-step clinical reasoning guidance for NCLEX preparation',
+      description: 'AI clinical preceptor that teaches nursing students to think in ADPIE using their own textbooks and course materials. Includes NP voice.',
       featureList: [
-        'Step-by-step clinical reasoning',
-        'Uses your own course materials',
-        'NCLEX-style question practice',
-        'Visual concept maps',
-        'Progress tracking',
+        'ADPIE clinical reasoning framework',
+        'Upload your own textbooks and notes',
+        'NP voice for audio learning',
+        'Gemini Vision for clinical images',
+        'Session history and clinical pearls',
         '7-day free trial'
       ]
     }
@@ -74,15 +64,15 @@ export default function HomePage() {
           name: 'What is ForgeNursing?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'ForgeNursing is an AI-powered clinical reasoning tutor that helps nursing students prepare for NCLEX by turning their lecture notes and textbooks into step-by-step clinical reasoning guidance. It helps students understand prioritization, safety protocols, and clinical judgment.'
+            text: 'ForgeNursing is an AI clinical preceptor for nursing students. Forge teaches clinical reasoning using the ADPIE framework and your own uploaded course materials — textbooks, notes, and syllabi.'
           }
         },
         {
           '@type': 'Question',
-          name: 'How does ForgeNursing help with NCLEX prep?',
+          name: 'How does Forge use ADPIE?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'ForgeNursing uses your own course materials to provide step-by-step clinical reasoning guidance. It helps you think through NCLEX-style questions using frameworks like ABCs, Maslow\'s hierarchy, and safety protocols. Instead of just giving answers, it teaches you how to reason through prioritization and clinical decisions.'
+            text: 'Every response from Forge follows the ADPIE clinical reasoning structure: Orient (foundational understanding), The Map (priority framework), Reasoning (Socratic guidance), Trap (common NCLEX mistakes), and Check (follow-up question to test understanding).'
           }
         },
         {
@@ -90,7 +80,7 @@ export default function HomePage() {
           name: 'Do I need to upload my own materials?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes, ForgeNursing works best when you upload your syllabus, textbooks, and lecture notes. This ensures the AI tutor aligns with your specific nursing program\'s curriculum and teaching style.'
+            text: 'Yes. Forge works best when you upload your syllabus, textbooks, and lecture notes. This ensures Forge teaches from your specific program curriculum, not generic nursing content.'
           }
         },
         {
@@ -98,21 +88,20 @@ export default function HomePage() {
           name: 'Is there a free trial?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes, ForgeNursing offers a 7-day free trial. You can start using the platform immediately and cancel anytime during the trial period without being charged.'
+            text: 'Yes. ForgeNursing includes a 7-day free trial. No credit card is charged during the trial. Cancel anytime.'
           }
         },
         {
           '@type': 'Question',
-          name: 'What makes ForgeNursing different from other NCLEX prep tools?',
+          name: 'What makes Forge different from other NCLEX prep tools?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'ForgeNursing focuses on teaching clinical reasoning and prioritization using your own materials, rather than generic question banks. It provides step-by-step guidance that helps you understand the "why" behind clinical decisions, not just memorizing answers.'
+            text: 'Forge is a clinical preceptor, not a question bank. It teaches you how to think using ADPIE — the framework your professors actually test — and grounds every explanation in your own course materials. It also includes a real NP voice so you can hear clinical reasoning explained out loud.'
           }
         }
       ]
     }
 
-    // Add schemas to page
     const addSchema = (schema: object, id: string) => {
       const script = document.createElement('script')
       script.type = 'application/ld+json'
@@ -121,11 +110,10 @@ export default function HomePage() {
       document.head.appendChild(script)
     }
 
-    // Remove existing schemas if they exist (for hot reload)
     const existingOrg = document.getElementById('organization-schema')
     const existingApp = document.getElementById('software-application-schema')
     const existingFaq = document.getElementById('faq-schema')
-    
+
     if (existingOrg) existingOrg.remove()
     if (existingApp) existingApp.remove()
     if (existingFaq) existingFaq.remove()
@@ -134,7 +122,6 @@ export default function HomePage() {
     addSchema(softwareApplicationSchema, 'software-application-schema')
     addSchema(faqSchema, 'faq-schema')
 
-    // Cleanup on unmount
     return () => {
       const org = document.getElementById('organization-schema')
       const app = document.getElementById('software-application-schema')
@@ -144,207 +131,248 @@ export default function HomePage() {
       if (faq) faq.remove()
     }
   }, [])
+
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
-    // Safely create Supabase client - don't break landing page if env vars are missing
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    
+
     if (!supabaseUrl || !supabaseAnonKey) {
       console.warn('[Landing Page] Supabase environment variables are missing - user detection disabled')
       return
     }
-    
+
     try {
       const supabase = getBrowserClient()
-      
+
       supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
         setUser(user)
       }).catch((error: any) => {
         console.error('[Landing Page] Error getting user:', error)
-        // Don't break the page if auth check fails
       })
     } catch (error) {
       console.error('[Landing Page] Error creating Supabase client:', error)
-      // Don't break the page if Supabase client creation fails
     }
   }, [])
 
   return (
-    <main className="w-full bg-slate-50">
-      <div className="flex flex-col">
-        {/* Hero Section */}
-        <div className="order-1">
-          <Hero user={user} />
-        </div>
+    <main className="w-full bg-white">
+      {/* Section 1: Hero */}
+      <Hero user={user} />
 
-        {/* If this sounds like you... */}
-        <div className="order-2 md:order-4">
-          <BeliefValidation />
-        </div>
+      {/* Section 2: The Problem — Sound familiar? */}
+      <BeliefValidation />
 
-        {/* How studying finally clicks */}
-        <div className="order-3 md:order-2">
-          <HowItClicks />
-        </div>
+      {/* Section 3: This is Forge. */}
+      <ThreeFeatures />
 
-        {/* Built for how nurses actually learn */}
-        <div className="order-4 md:order-3">
-          <ThreeFeatures />
-        </div>
+      {/* Section 4: How Forge teaches clinical reasoning */}
+      <HowItClicks />
 
-        {/* Pricing - Enhanced */}
-        <section className="order-5 md:order-5 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-white via-indigo-50/30 to-white" aria-labelledby="pricing-heading">
+      {/* Section 5: What's Coming */}
+      <section className="bg-[#F7F9FB] py-14 sm:py-18 md:py-20" aria-labelledby="whats-coming-heading">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-12">
-            <h2 id="pricing-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-4">
-              <span className="hidden sm:inline">Simple, Student-Friendly Pricing</span>
-              <span className="sm:hidden">Simple Pricing</span>
+            <h2 id="whats-coming-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3">
+              ForgeNursing is just getting started.
             </h2>
-            <p className="text-base sm:text-lg text-slate-700 mb-4 hidden sm:block">
-              Start with a free preview. If you feel stuck, give yourself one week with a tutor that uses your materials.
+            <p className="text-base sm:text-lg text-[#1E2D3D]/70">
+              The clinical workspace is growing. Here's what's next.
             </p>
-            <p className="text-base sm:text-lg text-slate-700 mb-4 sm:hidden">
-              Free preview. One week to see if it helps.
-            </p>
-            
-            {/* All Plans Include */}
-            <div className="mt-6 mb-8 max-w-3xl mx-auto">
-              <p className="text-xs sm:text-sm font-semibold text-slate-700 mb-3">All plans include full access to:</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                  <span>Step-by-step clinical reasoning</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                  <span>Clinical Studio (NCLEX-style simulations)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                  <span>Strict testing mode</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                  <span>Key concepts & evidence review</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                  <span>Support for your uploaded textbooks</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Check className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                  <span>Progress insights & history</span>
-                </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+            {/* Clinical Simulations */}
+            <div className="bg-white border border-[#DDE5EE] rounded-2xl p-6 sm:p-7 relative overflow-hidden shadow-sm">
+              <div className="absolute top-4 right-4">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#0D8F9C]/10 text-[#0D8F9C] text-[10px] font-bold rounded-full uppercase tracking-wide">
+                  <Clock className="w-2.5 h-2.5" />
+                  Coming Soon
+                </span>
               </div>
+              <div className="w-11 h-11 bg-[#E0F4F6] rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-[#0D8F9C]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+              <h3 className="text-base font-bold text-[#0B2545] mb-2">Clinical Simulations</h3>
+              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
+                Practice being the nurse before you ever touch a patient. Forge presents an unfolding patient case. Your decisions change what happens next.
+              </p>
+            </div>
+
+            {/* Gemini Vision */}
+            <div className="bg-white border border-[#DDE5EE] rounded-2xl p-6 sm:p-7 relative overflow-hidden shadow-sm">
+              <div className="absolute top-4 right-4">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#0D8F9C]/10 text-[#0D8F9C] text-[10px] font-bold rounded-full uppercase tracking-wide">
+                  <Clock className="w-2.5 h-2.5" />
+                  Coming Soon
+                </span>
+              </div>
+              <div className="w-11 h-11 bg-[#E0F4F6] rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-[#0D8F9C]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+              <h3 className="text-base font-bold text-[#0B2545] mb-2">Gemini Vision</h3>
+              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
+                Upload EKG strips, wound photos, lab results. Forge analyzes the image and teaches you what to look for — clinically, not just descriptively.
+              </p>
+            </div>
+
+            {/* Course Workspace */}
+            <div className="bg-white border border-[#DDE5EE] rounded-2xl p-6 sm:p-7 relative overflow-hidden shadow-sm">
+              <div className="absolute top-4 right-4">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#0D8F9C]/10 text-[#0D8F9C] text-[10px] font-bold rounded-full uppercase tracking-wide">
+                  <Clock className="w-2.5 h-2.5" />
+                  Coming Soon
+                </span>
+              </div>
+              <div className="w-11 h-11 bg-[#E0F4F6] rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-[#0D8F9C]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <h3 className="text-base font-bold text-[#0B2545] mb-2">Course Workspace</h3>
+              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
+                Forge remembers what you covered last session and picks up where you left off. No more re-establishing context every time you open the app.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 6: Pricing */}
+      <section className="bg-white py-14 sm:py-18 md:py-20" aria-labelledby="pricing-heading">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-12">
+            <h2 id="pricing-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3">
+              One price. Full access. Cancel anytime.
+            </h2>
+            <p className="text-base sm:text-lg text-[#1E2D3D]/70">
+              Every plan includes the full Forge experience — no feature tiers.
+            </p>
+          </div>
+
+          {/* What's included */}
+          <div className="max-w-2xl mx-auto mb-10 bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl p-6">
+            <p className="text-xs font-bold text-[#0B2545] uppercase tracking-widest mb-4">All plans include</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {[
+                { icon: '✅', text: 'Forge — AI clinical preceptor with NP voice' },
+                { icon: '✅', text: 'ADPIE clinical reasoning on every response' },
+                { icon: '✅', text: 'Upload your textbooks and class notes' },
+                { icon: '✅', text: 'Gemini Vision for clinical image analysis' },
+                { icon: '✅', text: 'Session history and clinical pearls saved' },
+                { icon: '✅', text: 'BSN, ADN, LPN, MSN program support' },
+                { icon: '🔜', text: 'Clinical simulations (coming soon)' },
+                { icon: '🔜', text: 'Persistent course workspace (coming soon)' },
+              ].map((item) => (
+                <div key={item.text} className="flex items-start gap-2 text-sm text-[#1E2D3D]">
+                  <span className="text-sm leading-none mt-0.5 flex-shrink-0">{item.icon}</span>
+                  <span className="leading-snug">{item.text}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          <p className="text-sm sm:text-base text-slate-700 text-center mb-6 sm:mb-8">
+          <p className="text-sm text-[#1E2D3D]/60 text-center mb-8">
             Most students decide if ForgeNursing helps within the first 2–3 sessions.
           </p>
 
           {/* Pricing Cards */}
-          {/* UI display-only; billing handled by Stripe Price IDs */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
-            {/* Monthly Plan - Enhanced */}
-            <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl p-6 sm:p-8 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-indigo-200/30 transition-all duration-300 transform hover:scale-[1.02]">
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Monthly Access</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 mb-10">
+            {/* Monthly */}
+            <div className="bg-white border-2 border-[#DDE5EE] rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md hover:border-[#0D8F9C]/40 transition-all duration-200">
+              <h3 className="text-lg font-bold text-[#0B2545] mb-2">Monthly Access</h3>
               <div className="mb-4">
-                <span className="text-3xl sm:text-4xl font-bold text-slate-900">$24.99</span>
-                <span className="text-slate-600 text-sm sm:text-base ml-1">/month</span>
+                <span className="text-3xl sm:text-4xl font-bold text-[#0B2545]">$24.99</span>
+                <span className="text-[#1E2D3D]/60 text-sm ml-1">/month</span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 mb-6">Perfect for focused study periods</p>
+              <p className="text-xs text-[#1E2D3D]/60 mb-6">Perfect for focused study periods</p>
               <button
                 onClick={() => startStripeCheckout('monthly')}
-                className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm sm:text-base font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
+                className="w-full px-4 py-3 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
               >
-                Start Your 7-Day Free Trial
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 inline-block ml-2" />
+                Start 7-Day Free Trial
+                <ArrowRight className="w-4 h-4 inline-block ml-2" />
               </button>
             </div>
 
-            {/* Semester Plan - Enhanced */}
-            <div className="bg-white/80 backdrop-blur-sm border-2 border-indigo-300/60 rounded-2xl p-6 sm:p-8 shadow-lg shadow-indigo-200/50 hover:shadow-xl hover:shadow-indigo-300/40 transition-all duration-300 transform hover:scale-[1.02] relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold rounded-full">
+            {/* Semester — Most Popular */}
+            <div className="bg-white border-2 border-[#0D8F9C] rounded-2xl p-6 sm:p-8 shadow-md relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#0D8F9C] text-white text-xs font-bold rounded-full">
                 Most Popular
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Semester Access</h3>
-              <div className="mb-2">
-                <span className="text-3xl sm:text-4xl font-bold text-slate-900">$89</span>
-                <span className="text-slate-600 text-sm sm:text-base ml-1">/semester</span>
+              <h3 className="text-lg font-bold text-[#0B2545] mb-2">Semester Access</h3>
+              <div className="mb-1">
+                <span className="text-3xl sm:text-4xl font-bold text-[#0B2545]">$89</span>
+                <span className="text-[#1E2D3D]/60 text-sm ml-1">/semester</span>
               </div>
-              <p className="text-[10px] sm:text-xs text-slate-400 mb-1">4 months</p>
-              <p className="text-xs sm:text-sm text-indigo-600 font-semibold mb-4">
-                ~$22.25/month • Save 11% vs monthly
-              </p>
-              <p className="text-xs sm:text-sm text-slate-600 mb-6">Best value for a full term</p>
+              <p className="text-[10px] text-[#1E2D3D]/40 mb-1">4 months</p>
+              <p className="text-xs text-[#0D8F9C] font-semibold mb-4">~$22.25/month · Save 11% vs monthly</p>
+              <p className="text-xs text-[#1E2D3D]/60 mb-6">Best value for a full term</p>
               <button
                 onClick={() => startStripeCheckout('semester')}
-                className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm sm:text-base font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
+                className="w-full px-4 py-3 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
               >
-                Start Your 7-Day Free Trial
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 inline-block ml-2" />
+                Start 7-Day Free Trial
+                <ArrowRight className="w-4 h-4 inline-block ml-2" />
               </button>
             </div>
 
-            {/* Annual Plan - Enhanced */}
-            <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl p-6 sm:p-8 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-indigo-200/30 transition-all duration-300 transform hover:scale-[1.02]">
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Annual Access</h3>
-              <div className="mb-2">
-                <span className="text-3xl sm:text-4xl font-bold text-slate-900">$199</span>
-                <span className="text-slate-600 text-sm sm:text-base ml-1">/year</span>
+            {/* Annual */}
+            <div className="bg-white border-2 border-[#DDE5EE] rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md hover:border-[#0D8F9C]/40 transition-all duration-200">
+              <h3 className="text-lg font-bold text-[#0B2545] mb-2">Annual Access</h3>
+              <div className="mb-1">
+                <span className="text-3xl sm:text-4xl font-bold text-[#0B2545]">$199</span>
+                <span className="text-[#1E2D3D]/60 text-sm ml-1">/year</span>
               </div>
-              <p className="text-[10px] sm:text-xs text-slate-400 mb-1">12 months</p>
-              <p className="text-xs sm:text-sm text-indigo-600 font-semibold mb-4">
-                ~$16.58/month • Save 34% vs monthly
-              </p>
-              <p className="text-xs sm:text-sm text-slate-600 mb-6">Maximum savings for long-term commitment</p>
+              <p className="text-[10px] text-[#1E2D3D]/40 mb-1">12 months</p>
+              <p className="text-xs text-[#0D8F9C] font-semibold mb-4">~$16.58/month · Save 34% vs monthly</p>
+              <p className="text-xs text-[#1E2D3D]/60 mb-6">Maximum savings for long-term commitment</p>
               <button
                 onClick={() => startStripeCheckout('annual')}
-                className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm sm:text-base font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
+                className="w-full px-4 py-3 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
               >
-                Start Your 7-Day Free Trial
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 inline-block ml-2" />
+                Start 7-Day Free Trial
+                <ArrowRight className="w-4 h-4 inline-block ml-2" />
               </button>
             </div>
           </div>
 
-          {/* Trust Section - Enhanced */}
-          <div className="text-center pt-8 sm:pt-12 border-t border-slate-200">
-            <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-600">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
-                <span>7-day free trial included</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
-                <span>Cancel anytime</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
-                <span>No hidden fees</span>
-              </div>
+          {/* Trust row */}
+          <div className="flex flex-wrap justify-center items-center gap-5 sm:gap-8 text-xs sm:text-sm text-[#1E2D3D]/60 border-t border-[#DDE5EE] pt-8">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-[#0D8F9C]" />
+              <span>7-day free trial</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Heart className="w-4 h-4 text-[#0D8F9C]" />
+              <span>Cancel anytime</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#0D8F9C]" />
+              <span>No hidden fees</span>
             </div>
           </div>
-        </section>
-
-        {/* Closing CTA */}
-        <div className="order-6 md:order-6">
-          <ClosingCTA />
         </div>
+      </section>
 
-        {/* Disclaimer Section */}
-        <section className="order-7 md:order-7 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 bg-slate-50" aria-label="Disclaimer">
-          <div className="text-center">
-            <p className="text-xs sm:text-sm text-slate-600 max-w-3xl mx-auto">
-              <span className="hidden sm:inline">ForgeNursing supports clinical reasoning and supplements your nursing education. It does not replace instruction, clinical training, or NCLEX prep resources.</span>
-              <span className="sm:hidden">Supplemental study tool — not a replacement for instruction.</span>
-            </p>
-          </div>
-        </section>
-      </div>
+      {/* Section 7: Final CTA */}
+      <ClosingCTA />
+
+      {/* Disclaimer */}
+      <section className="bg-[#F7F9FB] py-8 sm:py-10" aria-label="Disclaimer">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-xs text-[#1E2D3D]/50">
+            <span className="hidden sm:inline">ForgeNursing supports clinical reasoning and supplements your nursing education. It does not replace instruction, clinical training, or licensed NCLEX prep resources.</span>
+            <span className="sm:hidden">Supplemental study tool — not a replacement for instruction or clinical training.</span>
+          </p>
+        </div>
+      </section>
     </main>
   )
 }
-

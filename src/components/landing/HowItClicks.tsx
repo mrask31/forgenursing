@@ -1,104 +1,119 @@
-import UploadMaterialsMockup from './UploadMaterialsMockup'
-import ChatInterfaceMockup from './ChatInterfaceMockup'
-import LibraryMockup from './LibraryMockup'
-
 export default function HowItClicks() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50" aria-labelledby="how-it-works-heading">
-      <div className="text-center mb-8 sm:mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200/60 rounded-full text-xs font-semibold text-indigo-700 mb-3 shadow-sm">
-          How it works
-        </div>
-        <h2 id="how-it-works-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-3 sm:mb-4">
-          <span className="hidden sm:inline">Three simple steps to better clinical reasoning</span>
-          <span className="sm:hidden">3 Simple Steps</span>
-        </h2>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 md:gap-12">
-        {/* Step 1 */}
-        <div className="text-center">
-          <div className="mb-6">
-            <div className="w-full max-w-[400px] mx-auto bg-white/90 backdrop-blur-sm border-2 border-indigo-200/60 rounded-xl shadow-xl shadow-indigo-500/10 overflow-hidden transform hover:scale-[1.02] transition-all duration-300">
-              <div className="h-8 bg-indigo-50 border-b border-indigo-200 flex items-center px-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-rose-400"></div>
-                  <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-                  <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-                </div>
-              </div>
-              <div className="aspect-[4/3] bg-white relative overflow-hidden">
-                <UploadMaterialsMockup />
-              </div>
-            </div>
-          </div>
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-full text-xl font-bold mb-6 shadow-lg shadow-indigo-500/30">
-            1
-          </div>
-          <h3 className="text-2xl font-bold text-slate-900 mb-4">
-            <span className="hidden sm:inline">Upload your materials</span>
-            <span className="sm:hidden">Upload</span>
-          </h3>
-          <p className="text-slate-700 leading-relaxed font-medium hidden sm:block">
-            Your textbooks, notes, and syllabi — so explanations match what your program teaches.
+    <section id="how-forge-thinks" className="bg-white py-14 sm:py-18 md:py-20" aria-labelledby="how-forge-thinks-heading">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10 sm:mb-14">
+          <h2 id="how-forge-thinks-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3 sm:mb-4">
+            How Forge teaches clinical reasoning
+          </h2>
+          <p className="text-base sm:text-lg text-[#1E2D3D]/70 max-w-2xl mx-auto">
+            Not steps — a real conversation. Forge never hands you the answer. Forge teaches you to find it.
           </p>
         </div>
 
-        {/* Step 2 */}
-        <div className="text-center">
-          <div className="mb-6">
-            <div className="w-full max-w-[400px] mx-auto bg-white/90 backdrop-blur-sm border-2 border-indigo-200/60 rounded-xl shadow-xl shadow-indigo-500/10 overflow-hidden transform hover:scale-[1.02] transition-all duration-300">
-              <div className="h-8 bg-indigo-50 border-b border-indigo-200 flex items-center px-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-rose-400"></div>
-                  <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-                  <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-                </div>
+        {/* Conversation flow */}
+        <div className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl overflow-hidden shadow-lg shadow-[#0B2545]/5">
+
+          {/* Tutor chrome */}
+          <div className="bg-[#0B2545] px-5 py-3 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0B2545] to-[#0D8F9C] border border-white/20 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold text-xs">Fx</span>
+            </div>
+            <div>
+              <div className="text-xs font-bold text-white">Forge</div>
+              <div className="text-[10px] text-[#0BBCD4]">Clinical Preceptor · NP</div>
+            </div>
+          </div>
+
+          <div className="p-5 sm:p-6 space-y-4">
+            {/* Student question */}
+            <div className="flex justify-end">
+              <div className="bg-[#0B2545] text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-[85%] shadow-sm">
+                <p className="text-sm font-medium">What are the priority assessments for a patient with heart failure?</p>
               </div>
-              <div className="aspect-[4/3] bg-white relative overflow-hidden">
-                <ChatInterfaceMockup />
+            </div>
+
+            {/* Forge response */}
+            <div className="flex justify-start">
+              <div className="bg-white border border-[#DDE5EE] rounded-2xl rounded-tl-sm px-5 py-4 max-w-[100%] shadow-sm space-y-3 w-full">
+
+                {/* ORIENT */}
+                <div className="bg-[#E0F4F6] rounded-xl p-3.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-widest">ORIENT</span>
+                    <span className="text-[10px] text-[#0D8F9C]/70">· Building foundational understanding</span>
+                  </div>
+                  <p className="text-sm text-[#1E2D3D] leading-relaxed">
+                    Heart failure means the heart can't pump effectively. Blood backs up — into the lungs (left-sided) or the body (right-sided). Before we prioritize, we need to know which direction the failure is going.
+                  </p>
+                </div>
+
+                {/* THE MAP */}
+                <div className="bg-[#0B2545]/5 rounded-xl p-3.5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] font-bold text-[#0B2545] uppercase tracking-widest">THE MAP</span>
+                    <span className="text-[10px] text-[#0B2545]/50">· Priority ladder</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {[
+                      { num: '1', label: 'Respiratory status', detail: 'O2 sat, lung sounds, RR, work of breathing' },
+                      { num: '2', label: 'Circulatory status', detail: 'BP, HR, skin perfusion, cap refill' },
+                      { num: '3', label: 'Fluid balance', detail: 'Edema, I&O, daily weight, JVD' },
+                      { num: '4', label: 'Mental status', detail: 'Confusion = decreased cerebral perfusion' },
+                    ].map((item) => (
+                      <div key={item.num} className="flex items-start gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-[#0B2545] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{item.num}</span>
+                        <div>
+                          <span className="text-xs font-bold text-[#0B2545]">{item.label}</span>
+                          <span className="text-xs text-[#1E2D3D]/70"> — {item.detail}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* REASONING */}
+                <div className="bg-white border border-[#DDE5EE] rounded-xl p-3.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[10px] font-bold text-[#0B2545] uppercase tracking-widest">REASONING</span>
+                    <span className="text-[10px] text-[#0B2545]/50">· Socratic guidance</span>
+                  </div>
+                  <p className="text-sm text-[#1E2D3D] leading-relaxed">
+                    Before I give you the full assessment checklist — what tells you this patient is in distress <em>right now</em>? Which system is most threatened when fluid overloads the pulmonary circulation?
+                  </p>
+                </div>
+
+                {/* TRAP */}
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[10px] font-bold text-amber-700 uppercase tracking-widest">TRAP</span>
+                    <span className="text-[10px] text-amber-600/70">· Common NCLEX mistake</span>
+                  </div>
+                  <p className="text-sm text-[#1E2D3D] leading-relaxed">
+                    Students often jump straight to administering diuretics. NCLEX will test whether you assess respiratory status <strong>before</strong> any intervention. Airway always comes first.
+                  </p>
+                </div>
+
+                {/* CHECK */}
+                <div className="bg-[#0D8F9C]/10 rounded-xl p-3.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-widest">CHECK</span>
+                    <span className="text-[10px] text-[#0D8F9C]/70">· Test your understanding</span>
+                  </div>
+                  <p className="text-sm text-[#1E2D3D] leading-relaxed">
+                    Which specific vital sign finding would prompt you to call a rapid response immediately for this patient?
+                  </p>
+                </div>
+
               </div>
             </div>
           </div>
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-full text-xl font-bold mb-6 shadow-lg shadow-indigo-500/30">
-            2
-          </div>
-          <h3 className="text-2xl font-bold text-slate-900 mb-4">
-            <span className="hidden sm:inline">Ask questions and practice</span>
-            <span className="sm:hidden">Practice</span>
-          </h3>
-          <p className="text-slate-700 leading-relaxed font-medium hidden sm:block">
-            Get step-by-step guidance on prioritization, safety, and clinical judgment.
-          </p>
         </div>
 
-        {/* Step 3 */}
-        <div className="text-center">
-          <div className="mb-6">
-            <div className="w-full max-w-[400px] mx-auto bg-white/90 backdrop-blur-sm border-2 border-indigo-200/60 rounded-xl shadow-xl shadow-indigo-500/10 overflow-hidden transform hover:scale-[1.02] transition-all duration-300">
-              <div className="h-8 bg-indigo-50 border-b border-indigo-200 flex items-center px-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-rose-400"></div>
-                  <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-                  <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-                </div>
-              </div>
-              <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
-                <LibraryMockup />
-              </div>
-            </div>
-          </div>
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-full text-xl font-bold mb-6 shadow-lg shadow-indigo-500/30">
-            3
-          </div>
-          <h3 className="text-2xl font-bold text-slate-900 mb-4">
-            <span className="hidden sm:inline">Save what clicks</span>
-            <span className="sm:hidden">Save</span>
-          </h3>
-          <p className="text-slate-700 leading-relaxed font-medium hidden sm:block">
-            Build your personal library of insights to review before exams.
-          </p>
-        </div>
+        {/* Caption */}
+        <p className="text-center text-sm text-[#1E2D3D]/60 mt-6 italic max-w-2xl mx-auto">
+          "Forge doesn't give you the answer. Forge teaches you to find it — the way a real preceptor does."
+        </p>
       </div>
     </section>
   )
