@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { MessageSquare, BarChart3, GraduationCap, BookOpen, Activity } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { MessageSquare, BarChart3, GraduationCap, BookOpen, Activity, Settings, LogOut, ChevronUp, User } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import HistoryButton from './HistoryButton'
 
@@ -13,9 +13,12 @@ interface SidebarProps {
 
 export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   const pathname = usePathname()
+  const router = useRouter()
   const [preferredName, setPreferredName] = useState<string | null>(null)
   const [programTrack, setProgramTrack] = useState<string | null>(null)
   const [graduationDate, setGraduationDate] = useState<string | null>(null)
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -42,6 +45,26 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
 
     loadProfile()
   }, [])
+
+  // Close profile menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setIsProfileMenuOpen(false)
+      }
+    }
+    if (isProfileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isProfileMenuOpen])
+
+  const handleLogout = async () => {
+    const supabase = getBrowserClient()
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
+  }
 
   const mainNav = [
     { label: 'Clinical Tutor', href: '/tutor', icon: MessageSquare },
@@ -160,16 +183,48 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
           </div>
         </nav>
 
-        {/* User Card */}
-        <div className="mt-auto pt-5 border-t border-white/10">
-          <div className="flex items-center gap-3 px-1">
+        {/* User Card — clickable with dropdown */}
+        <div className="mt-auto pt-5 border-t border-white/10 relative" ref={profileMenuRef}>
+          {/* Dropdown menu — renders above the profile card */}
+          {isProfileMenuOpen && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 mx-1 rounded-lg overflow-hidden border border-white/10" style={{ backgroundColor: '#112D4E' }}>
+              <Link
+                href="/settings"
+                onClick={() => { setIsProfileMenuOpen(false); onNavigate?.() }}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Edit Profile
+              </Link>
+              <Link
+                href="/settings"
+                onClick={() => { setIsProfileMenuOpen(false); onNavigate?.() }}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                Settings
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors w-full text-left"
+              >
+                <LogOut className="w-4 h-4" />
+                Log Out
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+            className="w-full flex items-center gap-3 px-1 py-1 rounded-lg hover:bg-white/5 transition-colors"
+          >
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
               style={{ background: 'linear-gradient(135deg, #0B2545, #0D8F9C)' }}
             >
               {getInitials()}
             </div>
-            <div className="flex flex-col min-w-0">
+            <div className="flex flex-col min-w-0 text-left flex-1">
               {preferredName ? (
                 <>
                   <span className="text-sm font-bold text-white truncate">{preferredName}</span>
@@ -192,7 +247,8 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
                 </>
               )}
             </div>
-          </div>
+            <ChevronUp className={`w-4 h-4 text-[#94A3B8] flex-shrink-0 transition-transform duration-200 ${isProfileMenuOpen ? '' : 'rotate-180'}`} />
+          </button>
         </div>
       </div>
     </aside>

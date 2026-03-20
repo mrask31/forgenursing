@@ -117,15 +117,15 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
+    <div className="h-full overflow-y-auto bg-[var(--gray-50)]">
       <div className={`${tokens.containerMaxWidth || 'max-w-4xl'} mx-auto px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pt-safe-t`}>
         {/* Header - Enhanced */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-3">
-            <div className="p-2 sm:p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20 flex-shrink-0">
+            <div className="p-2 sm:p-2.5 bg-[var(--navy)] rounded-xl flex-shrink-0">
               <Layout className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--navy)]">
               Settings
             </h1>
           </div>
@@ -137,8 +137,8 @@ export default function SettingsPage() {
         {/* Identity Section - New */}
         <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
           <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
-              <GraduationCap className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
+              <GraduationCap className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
             </div>
             <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
               Identity
@@ -212,7 +212,7 @@ export default function SettingsPage() {
                 }
               }}
               disabled={isSaving}
-              className={`w-full px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl ${tokens.smallText || 'text-sm'} font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40`}
+              className={`w-full px-5 py-2.5 bg-[var(--teal)] text-white rounded-xl ${tokens.smallText || 'text-sm'} font-semibold hover:bg-[#0A7A85] transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none `}
             >
               {isSaving ? 'Saving...' : 'Save Identity'}
             </button>
@@ -222,8 +222,8 @@ export default function SettingsPage() {
         {/* Display Density Section - Enhanced */}
         <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
           <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
-              <Layout className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
+              <Layout className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
             </div>
             <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
               Display Density
@@ -239,8 +239,8 @@ export default function SettingsPage() {
                   onClick={() => setDensity('comfort')}
                   className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                     density === 'comfort'
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-transparent shadow-md shadow-indigo-500/30'
-                      : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                      ? 'bg-[var(--teal)] text-white border-transparent '
+                      : 'bg-white text-slate-700 border-slate-200 hover:border-[var(--teal)]/30 hover:bg-[var(--gray-50)]'
                   } ${tokens.bodyText || 'text-sm'} font-semibold`}
                 >
                   Comfort
@@ -249,8 +249,8 @@ export default function SettingsPage() {
                   onClick={() => setDensity('compact')}
                   className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                     density === 'compact'
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-transparent shadow-md shadow-indigo-500/30'
-                      : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                      ? 'bg-[var(--teal)] text-white border-transparent '
+                      : 'bg-white text-slate-700 border-slate-200 hover:border-[var(--teal)]/30 hover:bg-[var(--gray-50)]'
                   } ${tokens.bodyText || 'text-sm'} font-semibold`}
                 >
                   Compact
@@ -263,8 +263,8 @@ export default function SettingsPage() {
         {/* Academic Goals Section - Enhanced */}
         <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
           <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
-              <Calendar className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
+              <Calendar className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
             </div>
             <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
               Academic Goals
@@ -309,7 +309,7 @@ export default function SettingsPage() {
                     }
                   }}
                   disabled={isSaving}
-                  className={`px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl ${tokens.smallText || 'text-sm'} font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40`}
+                  className={`px-5 py-2.5 bg-[var(--teal)] text-white rounded-xl ${tokens.smallText || 'text-sm'} font-semibold hover:bg-[#0A7A85] transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none `}
                 >
                   {isSaving ? 'Saving...' : 'Save'}
                 </button>
@@ -324,8 +324,8 @@ export default function SettingsPage() {
         {/* Account Section - Enhanced */}
         <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
           <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
-              <Mail className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
+              <Mail className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
             </div>
             <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
               Account
@@ -354,8 +354,8 @@ export default function SettingsPage() {
         {/* Subscription Section - Enhanced */}
         <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
           <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
-              <CreditCard className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
+              <CreditCard className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
             </div>
             <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
               Subscription
@@ -368,7 +368,7 @@ export default function SettingsPage() {
                 {subscriptionData?.subscription ? (
                   <>
                     {subscriptionData.subscription.status === 'trialing' ? (
-                      <CheckCircle className="w-4 h-4 text-indigo-600" />
+                      <CheckCircle className="w-4 h-4 text-[var(--teal)]" />
                     ) : subscriptionData.subscription.status === 'active' ? (
                       <CheckCircle className="w-4 h-4 text-green-600" />
                     ) : (
@@ -398,7 +398,7 @@ export default function SettingsPage() {
 
             {/* Trial period - show days remaining */}
             {trialEndsAt && new Date(trialEndsAt) > new Date() && (
-              <div className="p-3 sm:p-4 bg-indigo-50/80 border border-indigo-200/60 rounded-xl">
+              <div className="p-3 sm:p-4 bg-[var(--teal-light)] border border-[var(--teal)]/20 rounded-xl">
                 {(() => {
                   const now = new Date()
                   const endDate = new Date(trialEndsAt)
@@ -411,17 +411,17 @@ export default function SettingsPage() {
                   
                   return (
                     <>
-                      <p className={`${tokens.smallText} font-medium text-indigo-900 mb-1`}>
+                      <p className={`${tokens.smallText} font-medium text-[var(--navy)] mb-1`}>
                         {daysRemaining === 1 
                           ? '🎯 Last day of your trial!' 
                           : `🎯 ${daysRemaining} days left in your trial`}
                       </p>
-                      <p className={`${tokens.smallText} text-indigo-700 mb-3`}>
+                      <p className={`${tokens.smallText} text-[var(--teal)] mb-3`}>
                         Your trial ends on <span className="font-semibold">{formattedDate}</span>. Subscribe anytime to continue your access.
                       </p>
                       <button
                         onClick={() => router.push('/checkout')}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--teal)] text-white text-sm font-semibold rounded-lg hover:bg-[#0A7A85] transition-colors"
                       >
                         <CreditCard className="w-4 h-4" />
                         Subscribe Now
@@ -504,8 +504,8 @@ export default function SettingsPage() {
         {/* Support Section - Enhanced */}
         <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'}`}>
           <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
-              <Mail className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
+              <Mail className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
             </div>
             <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
               Support
