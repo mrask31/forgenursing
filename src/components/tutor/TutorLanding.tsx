@@ -190,24 +190,24 @@ export default function TutorLanding({
     return (
       <div className="mt-6 p-6 bg-[var(--teal-light)] border border-[var(--teal)]/20 rounded-xl max-w-2xl">
         <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-          <span className="text-[#2a9d8f]">💡</span>
+          <span className="text-[#0D8F9C]">💡</span>
           How I can help you:
         </h3>
         <ul className="space-y-2 text-sm text-slate-700">
           <li className="flex items-start gap-2">
-            <span className="text-[#2a9d8f] mt-0.5">•</span>
+            <span className="text-[#0D8F9C] mt-0.5">•</span>
             <span><strong>Explain concepts:</strong> Ask me to break down any nursing topic step-by-step</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-[#2a9d8f] mt-0.5">•</span>
+            <span className="text-[#0D8F9C] mt-0.5">•</span>
             <span><strong>Practice questions:</strong> Request NCLEX-style questions on any subject</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-[#2a9d8f] mt-0.5">•</span>
+            <span className="text-[#0D8F9C] mt-0.5">•</span>
             <span><strong>Clinical scenarios:</strong> Work through patient cases and care planning</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-[#2a9d8f] mt-0.5">•</span>
+            <span className="text-[#0D8F9C] mt-0.5">•</span>
             <span><strong>Study strategies:</strong> Get tips on how to study effectively for nursing school</span>
           </li>
         </ul>
@@ -366,7 +366,7 @@ export default function TutorLanding({
                 const historyButton = document.querySelector('[data-history-button]') as HTMLButtonElement
                 if (historyButton) historyButton.click()
               }}
-              className="text-sm text-[#2a9d8f] hover:text-[#0D8F9C] font-semibold underline"
+              className="text-sm text-[#0D8F9C] hover:text-[#0D8F9C] font-semibold underline"
             >
               View Recent Chats →
             </button>

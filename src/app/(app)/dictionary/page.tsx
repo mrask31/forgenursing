@@ -183,7 +183,7 @@ export default function DictionaryPage() {
                 onClick={() => setSavedFilter('all')}
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                   savedFilter === 'all'
-                    ? 'bg-[#2a9d8f] text-white'
+                    ? 'bg-[#0D8F9C] text-white'
                     : 'bg-white text-[var(--gray-800)] hover:bg-[var(--gray-50)] border border-[var(--gray-200)]'
                 }`}
               >
@@ -193,7 +193,7 @@ export default function DictionaryPage() {
                 onClick={() => setSavedFilter('saved')}
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                   savedFilter === 'saved'
-                    ? 'bg-[#2a9d8f] text-white'
+                    ? 'bg-[#0D8F9C] text-white'
                     : 'bg-white text-[var(--gray-800)] hover:bg-[var(--gray-50)] border border-[var(--gray-200)]'
                 }`}
               >
@@ -206,7 +206,7 @@ export default function DictionaryPage() {
                 onClick={() => setSavedFilter('not-saved')}
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                   savedFilter === 'not-saved'
-                    ? 'bg-[#2a9d8f] text-white'
+                    ? 'bg-[#0D8F9C] text-white'
                     : 'bg-white text-[var(--gray-800)] hover:bg-[var(--gray-50)] border border-[var(--gray-200)]'
                 }`}
               >
@@ -223,7 +223,7 @@ export default function DictionaryPage() {
                 onClick={() => setSelectedCategory(null)}
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                   !selectedCategory
-                    ? 'bg-[#2a9d8f] text-white'
+                    ? 'bg-[#0D8F9C] text-white'
                     : 'bg-white text-[var(--gray-800)] hover:bg-[var(--gray-50)] border border-[var(--gray-200)]'
                 }`}
               >
@@ -235,7 +235,7 @@ export default function DictionaryPage() {
                   onClick={() => setSelectedCategory(category || null)}
                   className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                     selectedCategory === category
-                      ? 'bg-[#2a9d8f] text-white'
+                      ? 'bg-[#0D8F9C] text-white'
                       : 'bg-white text-[var(--gray-800)] hover:bg-[var(--gray-50)] border border-[var(--gray-200)]'
                   }`}
                 >
