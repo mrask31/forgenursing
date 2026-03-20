@@ -116,7 +116,6 @@ export default function ClinicalTutorWorkspace({
   const [chatSummary, setChatSummary] = useState<string | null>(null)
   const [saveClipModal, setSaveClipModal] = useState<{ isOpen: boolean; messageId: string; content: string }>({ isOpen: false, messageId: '', content: '' })
   const pendingImageDataRef = useRef<Array<{ base64: string; mimeType: string }> | undefined>(undefined)
-  const [pendingImageDataState, setPendingImageDataState] = useState<Array<{ base64: string; mimeType: string }> | undefined>(undefined)
   const { density } = useDensity()
   const tokens = getDensityTokens(density)
 
@@ -194,12 +193,6 @@ export default function ClinicalTutorWorkspace({
       ? attachedFiles.map(f => f.id).filter(id => id) // Filter out any falsy IDs
       : [];
     
-    console.log('[ChatInterface] Submitting with files:', {
-      attachedFilesCount: attachedFiles.length,
-      attachedFileIds: attachedFileIds,
-      fileNames: attachedFiles.map(f => f.name),
-    });
-    
     return {
       chatId,
       filterMode,
@@ -209,9 +202,9 @@ export default function ClinicalTutorWorkspace({
       className,
       selectedClassName,
       attachedFileIds, // Always an array, never 'none'
-      ...(pendingImageDataState ? { imageData: pendingImageDataState } : {}),
+      // imageData is passed per-request via append() options, not in the hook-level body
     };
-  }, [chatId, filterMode, selectedDocIds, mode, topicTitle, className, selectedClassName, attachedFiles, pendingImageDataState]);
+  }, [chatId, filterMode, selectedDocIds, mode, topicTitle, className, selectedClassName, attachedFiles]);
   
   const { messages, append, isLoading, setMessages } = useChat({
     api: '/api/chat',
@@ -222,9 +215,8 @@ export default function ClinicalTutorWorkspace({
       setCustomError(err.message || "Failed to connect to AI")
     },
     onFinish: async (message) => {
-      // Clear pending image data after response is complete
+      // Clear pending image data ref after response is complete
       pendingImageDataRef.current = undefined
-      setPendingImageDataState(undefined)
 
       if (message.role === 'assistant' && chatId && message.content) {
         try {
@@ -509,10 +501,9 @@ export default function ClinicalTutorWorkspace({
       if (message && (eventSessionId === chatId || (!chatId && eventSessionId))) {
         processedMessagesRef.current.add(messageKey)
 
-        // Store imageData in both ref (for sync access in append options) and state (for hook-level body)
+        // Store imageData in ref — handleSendMessage reads it synchronously before append
         if (eventImageData && eventImageData.length > 0) {
           pendingImageDataRef.current = eventImageData
-          setPendingImageDataState(eventImageData)
           // Create data URLs for chat history rendering
           const dataUrls = eventImageData.map(img => `data:${img.mimeType};base64,${img.base64}`)
           setMessageImageMap(prev => new Map(prev).set(message, dataUrls))
