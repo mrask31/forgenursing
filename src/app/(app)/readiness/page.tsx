@@ -84,6 +84,7 @@ export default function ClinicalDashboard() {
   const [showAllClips, setShowAllClips] = useState(false)
   const [chatCountsByClass, setChatCountsByClass] = useState<Array<{ classId: string; className: string; classCode: string; count: number }>>([])
   const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([])
+  const [expandedClipId, setExpandedClipId] = useState<string | null>(null)
 
   useEffect(() => {
     const loadData = async () => {
@@ -303,23 +304,36 @@ export default function ClinicalDashboard() {
     }
   }
 
-  const handleReviewClip = (clip: Clip) => {
-    if (clip.chat_id) {
-      const params = new URLSearchParams()
-      params.set('mode', 'tutor')
-      params.set('sessionId', clip.chat_id)
-      if (clip.class_id) params.set('classId', clip.class_id)
-      if (clip.message_id) params.set('messageId', clip.message_id)
-      router.push(`/tutor?${params.toString()}`)
-    } else {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('forgenursing-tutor-prefill', `Review this learning moment: ${clip.title}\n\n${clip.content}`)
-      }
-      const params = new URLSearchParams()
-      params.set('mode', 'tutor')
-      if (clip.class_id) params.set('classId', clip.class_id)
-      router.push(`/tutor?${params.toString()}`)
+  const handleReviewClip = async (clip: Clip) => {
+    // If no chat_id, show content inline
+    if (!clip.chat_id) {
+      setExpandedClipId(expandedClipId === clip.id ? null : clip.id)
+      return
     }
+
+    // Verify the session still exists before navigating
+    try {
+      const res = await fetch(`/api/history?id=${clip.chat_id}`, { credentials: 'include' })
+      if (res.ok) {
+        const data = await res.json()
+        const messages = Array.isArray(data) ? data : data.messages || []
+        if (messages.length > 0) {
+          // Session exists — navigate to it
+          const params = new URLSearchParams()
+          params.set('mode', 'tutor')
+          params.set('sessionId', clip.chat_id)
+          if (clip.class_id) params.set('classId', clip.class_id)
+          if (clip.message_id) params.set('messageId', clip.message_id)
+          router.push(`/tutor?${params.toString()}`)
+          return
+        }
+      }
+    } catch {
+      // Session check failed — fall through to inline display
+    }
+
+    // Session is deleted or empty — show content inline
+    setExpandedClipId(expandedClipId === clip.id ? null : clip.id)
   }
 
   const handleDeleteClip = async (clipId: string, e: React.MouseEvent) => {
@@ -744,17 +758,22 @@ export default function ClinicalDashboard() {
                                   {clip.folder}
                                 </span>
                               </div>
-                              <div className="text-sm text-[var(--gray-400)] line-clamp-2 mb-3 leading-relaxed">
-                                {(() => {
-                                  // Strip conversational openers to show substantive clinical content
-                                  const stripped = clip.content
-                                    .replace(/^(certainly|sure|great question|absolutely|of course|let'?s|okay|alright|i'?d be happy to|here'?s|let me)[!,.]?\s*/i, '')
-                                    .replace(/^(let'?s\s+)?(break\s+down|dive\s+into|explore|look\s+at|walk\s+through|go\s+over)\s+(some\s+)?(key\s+)?(concepts?|topics?|points?|details?|information)[\s.!,]*/i, '')
-                                    .replace(/^#{1,3}\s+\S+\s*\n?/, '') // Strip markdown headers
-                                    .trim()
-                                  return (stripped || clip.content).substring(0, 150) + '...'
-                                })()}
-                              </div>
+                              {expandedClipId === clip.id ? (
+                                <div className="text-sm text-[var(--gray-800)] mb-3 leading-relaxed whitespace-pre-wrap">
+                                  <ReactMarkdown>{clip.content}</ReactMarkdown>
+                                </div>
+                              ) : (
+                                <div className="text-sm text-[var(--gray-400)] line-clamp-2 mb-3 leading-relaxed">
+                                  {(() => {
+                                    const stripped = clip.content
+                                      .replace(/^(certainly|sure|great question|absolutely|of course|let'?s|okay|alright|i'?d be happy to|here'?s|let me)[!,.]?\s*/i, '')
+                                      .replace(/^(let'?s\s+)?(break\s+down|dive\s+into|explore|look\s+at|walk\s+through|go\s+over)\s+(some\s+)?(key\s+)?(concepts?|topics?|points?|details?|information)[\s.!,]*/i, '')
+                                      .replace(/^#{1,3}\s+\S+\s*\n?/, '')
+                                      .trim()
+                                    return (stripped || clip.content).substring(0, 150) + '...'
+                                  })()}
+                                </div>
+                              )}
                               <div className="flex items-center gap-2.5 flex-wrap">
                                 {clip.tags.slice(0, 3).map(tag => (
                                   <span
@@ -767,6 +786,9 @@ export default function ClinicalDashboard() {
                                 <span className="text-xs text-[var(--gray-400)] font-medium">
                                   {formatTimeAgo(clip.created_at)}
                                 </span>
+                                {expandedClipId === clip.id && (
+                                  <span className="text-xs text-[var(--teal)] font-medium">Viewing saved content</span>
+                                )}
                               </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
