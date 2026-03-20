@@ -188,26 +188,26 @@ export default function TutorLanding({
       return null
     }
     return (
-      <div className="mt-6 p-6 bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-200 rounded-xl max-w-2xl">
+      <div className="mt-6 p-6 bg-[var(--teal-light)] border border-[var(--teal)]/20 rounded-xl max-w-2xl">
         <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-          <span className="text-indigo-600">💡</span>
+          <span className="text-[#2a9d8f]">💡</span>
           How I can help you:
         </h3>
         <ul className="space-y-2 text-sm text-slate-700">
           <li className="flex items-start gap-2">
-            <span className="text-indigo-600 mt-0.5">•</span>
+            <span className="text-[#2a9d8f] mt-0.5">•</span>
             <span><strong>Explain concepts:</strong> Ask me to break down any nursing topic step-by-step</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-indigo-600 mt-0.5">•</span>
+            <span className="text-[#2a9d8f] mt-0.5">•</span>
             <span><strong>Practice questions:</strong> Request NCLEX-style questions on any subject</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-indigo-600 mt-0.5">•</span>
+            <span className="text-[#2a9d8f] mt-0.5">•</span>
             <span><strong>Clinical scenarios:</strong> Work through patient cases and care planning</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-indigo-600 mt-0.5">•</span>
+            <span className="text-[#2a9d8f] mt-0.5">•</span>
             <span><strong>Study strategies:</strong> Get tips on how to study effectively for nursing school</span>
           </li>
         </ul>
@@ -238,11 +238,11 @@ export default function TutorLanding({
       {!isGeneralTutor && selectedClassId && (
         <div className="mt-4 sm:mt-6 w-full max-w-2xl">
           {isLoadingWelcome ? (
-            <div className="p-4 sm:p-6 bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-200 rounded-xl">
+            <div className="p-4 sm:p-6 bg-[var(--teal-light)] border border-[var(--teal)]/20 rounded-xl">
               <p className="text-slate-600 text-xs sm:text-sm">Loading your study context...</p>
             </div>
           ) : welcomeMessage ? (
-            <div className="p-4 sm:p-6 bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-200 rounded-xl text-left welcome-message-card">
+            <div className="p-4 sm:p-6 bg-[var(--teal-light)] border border-[var(--teal)]/20 rounded-xl text-left welcome-message-card">
               <div className="prose prose-sm max-w-none">
                 <div className="whitespace-pre-wrap text-xs sm:text-sm text-slate-700 leading-relaxed max-w-full">
                   {welcomeMessage.split('**').map((part, i) => {
@@ -335,7 +335,7 @@ export default function TutorLanding({
             </div>
           </div>
 
-          <div className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl">
+          <div className="p-6 bg-[var(--teal-light)] border-2 border-[var(--teal)]/20 rounded-xl">
             <h3 className="text-lg font-semibold text-slate-900 mb-2 flex items-center gap-2">
               <span className="text-2xl">✨</span>
               Ready to Start Studying
@@ -352,7 +352,7 @@ export default function TutorLanding({
 
       {isGeneralTutor && hasAnyChats === true && (
         <div className="w-full max-w-2xl mt-4">
-          <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
+          <div className="p-6 bg-[var(--teal-light)] border-2 border-[var(--teal)]/20 rounded-xl">
             <h3 className="text-lg font-semibold text-slate-900 mb-2 flex items-center gap-2">
               <span className="text-2xl">📖</span>
               Welcome Back!
@@ -366,7 +366,7 @@ export default function TutorLanding({
                 const historyButton = document.querySelector('[data-history-button]') as HTMLButtonElement
                 if (historyButton) historyButton.click()
               }}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-semibold underline"
+              className="text-sm text-[#2a9d8f] hover:text-[#0D8F9C] font-semibold underline"
             >
               View Recent Chats →
             </button>

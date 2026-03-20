@@ -556,37 +556,19 @@ export default function ClinicalTutorWorkspace({
       })
       
       if (prefill && shouldAutoSend) {
-        // If a tutor-send-message event with imageData is expected (the normal send
-        // path from ChatInterface → TutorSession), skip auto-send entirely and let
-        // the event-based path handle it. The event carries imageData; auto-send doesn't.
-        // Check: if pendingImageDataRef already has data, the event path is in flight.
-        if (pendingImageDataRef.current && pendingImageDataRef.current.length > 0) {
-          console.log('[ClinicalTutorWorkspace] Auto-send skipped — image data pending, deferring to event path')
-          // Don't mark as processed — the event handler will handle it
-          // Don't clear localStorage — the event path doesn't read from it
-          localStorage.removeItem('forgenursing-tutor-prefill')
-          localStorage.removeItem('forgenursing-tutor-auto-send')
-          return
-        }
-
-        // Also check if a tutor-send-message event is about to arrive (the event
-        // is dispatched with a 100-500ms delay from TutorSession). If the same prefill
-        // text was just submitted via ChatInterface, the event will carry imageData.
-        // Listen briefly for the event before auto-sending.
+        // If images are pending (user uploaded an image), skip auto-send entirely.
+        // The user's manual send via ChatInterface will carry imageData through the
+        // event path. Auto-send cannot carry images and would race the manual send.
         const hasImagePending = localStorage.getItem('forgenursing-tutor-has-images') === 'true'
-        if (hasImagePending) {
-          console.log('[ClinicalTutorWorkspace] Auto-send deferred — waiting for image data via event')
-          localStorage.removeItem('forgenursing-tutor-has-images')
+        if (hasImagePending || (pendingImageDataRef.current && pendingImageDataRef.current.length > 0)) {
           localStorage.removeItem('forgenursing-tutor-prefill')
           localStorage.removeItem('forgenursing-tutor-auto-send')
-          // Don't mark as processed — the event path will handle the send
+          localStorage.removeItem('forgenursing-tutor-has-images')
           return
         }
 
         // Mark as processed immediately to prevent duplicate sends
         autoSendProcessedRef.current = true
-
-        // Clear the flags immediately
         localStorage.removeItem('forgenursing-tutor-prefill')
         localStorage.removeItem('forgenursing-tutor-auto-send')
 
@@ -596,15 +578,12 @@ export default function ClinicalTutorWorkspace({
         )
         const messageAlreadySent = userMessageIndex !== -1
 
-        // Check if there's already an assistant response after this user message
         let hasAssistantResponse = false
         if (messageAlreadySent) {
           hasAssistantResponse = messages.slice(userMessageIndex + 1).some(m => m.role === 'assistant')
         }
 
-        // Only send if message wasn't already sent OR if it was sent but no assistant response yet
         if (!messageAlreadySent || (messageAlreadySent && !hasAssistantResponse)) {
-          console.log('[ClinicalTutorWorkspace] Auto-sending prefilled message:', prefill.substring(0, 50))
           setTimeout(() => {
             handleSendMessage(prefill, chatId)
           }, 500)
