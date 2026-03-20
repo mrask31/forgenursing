@@ -408,6 +408,36 @@ export default function ChatMessageList({
                           {children}
                         </blockquote>
                       ),
+                      a: ({href, children}: {href?: string; children: React.ReactNode}) => {
+                        if (href === 'forge://report-image-issue') {
+                          return (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch('/api/emails/image-issue', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    credentials: 'include',
+                                    body: JSON.stringify({ sessionId: chatId }),
+                                  })
+                                  if (res.ok) {
+                                    alert('Report sent! Our team will look into this.')
+                                  } else {
+                                    alert('Failed to send report. Please try again.')
+                                  }
+                                } catch {
+                                  alert('Failed to send report. Please try again.')
+                                }
+                              }}
+                              className="text-[#0D8F9C] underline cursor-pointer bg-transparent border-none p-0 font-inherit"
+                            >
+                              {children}
+                            </button>
+                          )
+                        }
+                        return <a href={href} className="text-[#0D8F9C] underline" target="_blank" rel="noopener noreferrer">{children}</a>
+                      },
                     }
                     return config ? (
                       <div key={sectionIdx} className={config.wrapperClass}>

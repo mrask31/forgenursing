@@ -590,6 +590,16 @@ You currently have no uploaded materials for this question. Answer using your ge
     }
   }
 
+  // Detect image intent without image data — guide user to retry or report
+  if (imageData.length === 0 && latestUserMessageStr) {
+    const imageIntentPatterns = /\b(analy[sz]e|look at|review|read|interpret|check)\b.{0,30}\b(image|photo|picture|ekg|ecg|lab|wound|x-?ray|scan|strip|result|screenshot|attachment)/i;
+    const defaultImagePrompt = /please analyze this clinical image/i;
+    if (imageIntentPatterns.test(latestUserMessageStr) || defaultImagePrompt.test(latestUserMessageStr)) {
+      console.log('[CHAT] Image intent detected but no imageData present');
+      systemPrompt += `\n\n### NO IMAGE DETECTED\n\nThe student's message suggests they want to analyze a clinical image, but no image data was received in this request. Begin your ORIENT section with exactly this text (do not modify it):\n\n"I don't see an image attached. If you uploaded one, try sending it again — this sometimes happens on the first attempt in a new session. If it still isn't working, [report this issue](forge://report-image-issue) and we'll look into it."\n\nAfter this message, continue with your normal ORIENT framing of the clinical question the student asked. The link format must be exactly as shown — the client will handle it.\n`;
+    }
+  }
+
   // Notes Mode behavior (when in notes mode with selected documents)
   if (effectiveMode === 'notes' && effectiveSelectedIds.length > 0) {
     systemPrompt += `
