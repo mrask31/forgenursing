@@ -1,23 +1,19 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUp, Paperclip, Calculator, ImagePlus, X, Loader2, FileText, Check } from 'lucide-react'
+import { ArrowUp, Paperclip, Calculator, ImagePlus, X, Loader2, FileText, Check, CheckCircle, UploadCloud, ChevronLeft, AlertCircle } from 'lucide-react'
 import SuggestedPrompts from '@/components/tutor/SuggestedPrompts'
 import { useTutorContext } from './TutorContext'
 import MedicalMathCalculator from './MedicalMathCalculator'
+import * as pdfjsLib from 'pdfjs-dist'
+import mammoth from 'mammoth'
 
-interface BinderFile {
-  canonicalId: string
-  filename?: string
-  name?: string
-  document_type?: string | null
-}
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
 
 type Mode = 'tutor'
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
 const MAX_IMAGES = 3
-// HEIC/HEIF included for iOS camera photos — Safari's FileReader converts them to JPEG internally
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif']
 
 interface PendingImage {
@@ -28,17 +24,23 @@ interface PendingImage {
   mimeType: string
 }
 
+interface UploadCourse {
+  id: string
+  code: string
+  name: string
+}
+
 interface ChatInterfaceProps {
   mode: Mode
-  sessionId?: string // Optional - will be created on first message if missing
+  sessionId?: string
   onSend: (message: string, imageData?: Array<{ base64: string; mimeType: string }>) => Promise<void> | void
-  initialPrompt?: string // For topic/exam prefill - does NOT auto-send
+  initialPrompt?: string
   attachedFiles?: { id: string, name: string, document_type: string | null }[]
   attachedContext?: 'none' | 'syllabus' | 'textbook' | 'mixed'
   isLoading?: boolean
-  messages?: any[] // Optional messages array to check if session is empty
-  onDetach?: (fileId: string) => void // Callback to detach a file
-  onAttachFiles?: (files: { id: string, name: string, document_type: string | null }[]) => void // Callback to attach binder files
+  messages?: any[]
+  onDetach?: (fileId: string) => void
+  onAttachFiles?: (files: { id: string, name: string, document_type: string | null }[]) => void
 }
 
 export default function ChatInterface({
@@ -57,19 +59,23 @@ export default function ChatInterface({
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false)
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([])
   const [isProcessingImages, setIsProcessingImages] = useState(false)
-  const [isBinderPickerOpen, setIsBinderPickerOpen] = useState(false)
-  const [binderFiles, setBinderFiles] = useState<BinderFile[]>([])
-  const [isLoadingBinder, setIsLoadingBinder] = useState(false)
-  const [selectedBinderIds, setSelectedBinderIds] = useState<Set<string>>(new Set())
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
-  const hasAttachedFiles = attachedFiles.length > 0
+  const uploadFileInputRef = useRef<HTMLInputElement>(null)
   const tutorContext = useTutorContext()
-  // If sessionId exists, assume there might be messages (don't prefill)
-  // If no sessionId, it's a fresh session (safe to prefill)
   const hasMessages = !!sessionId || (messages && messages.length > 0)
 
-  // Debug: Log incoming attachedFiles prop
+  // Upload modal state
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [uploadStep, setUploadStep] = useState<'pick-course' | 'upload'>('pick-course')
+  const [courses, setCourses] = useState<UploadCourse[]>([])
+  const [isLoadingCourses, setIsLoadingCourses] = useState(false)
+  const [selectedCourse, setSelectedCourse] = useState<UploadCourse | null>(null)
+  const [uploadDocType, setUploadDocType] = useState<'syllabus' | 'textbook' | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [uploadedCourseName, setUploadedCourseName] = useState('')
+
   useEffect(() => {
     console.log('🔍 ChatInterface received files:', {
       count: attachedFiles.length,
@@ -77,24 +83,13 @@ export default function ChatInterface({
     });
   }, [attachedFiles]);
 
-  // Get placeholder based on context
-  const getPlaceholder = () => {
-    return "Ask a clinical question or reference your binder materials…"
-  }
-
-  const placeholder = getPlaceholder()
-
-  // Update input when initialPrompt changes, but only if no messages and user hasn't typed
   useEffect(() => {
     if (!hasMessages && initialPrompt && !inputValue) {
       setInputValue(initialPrompt)
-      setTimeout(() => {
-        inputRef.current?.focus()
-      }, 100)
+      setTimeout(() => { inputRef.current?.focus() }, 100)
     }
-  }, [initialPrompt, hasMessages]) // Only depend on initialPrompt and hasMessages - don't depend on inputValue to avoid loops
+  }, [initialPrompt, hasMessages]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-resize textarea
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = 'auto'
@@ -102,11 +97,8 @@ export default function ChatInterface({
     }
   }, [inputValue])
 
-  // Cleanup preview URLs on unmount
   useEffect(() => {
-    return () => {
-      pendingImages.forEach(img => URL.revokeObjectURL(img.preview))
-    }
+    return () => { pendingImages.forEach(img => URL.revokeObjectURL(img.preview)) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fileToBase64 = (file: File): Promise<{ base64: string; actualMimeType: string }> => {
@@ -117,9 +109,6 @@ export default function ChatInterface({
         const commaIndex = result.indexOf(',')
         const prefix = result.slice(0, commaIndex)
         const base64 = result.slice(commaIndex + 1)
-        // Use the MIME type from the data URL, not file.type — on iOS Safari, FileReader
-        // silently converts HEIC to JPEG so the data URL reports image/jpeg even when
-        // file.type is image/heic. Also handles empty file.type on some Android browsers.
         const actualMimeType = prefix.match(/data:([^;]+)/)?.[1] || file.type || 'image/jpeg'
         resolve({ base64, actualMimeType })
       }
@@ -131,59 +120,25 @@ export default function ChatInterface({
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
-
-    // Check max image count
     const remaining = MAX_IMAGES - pendingImages.length
-    if (remaining <= 0) {
-      alert(`Maximum ${MAX_IMAGES} images per message.`)
-      return
-    }
+    if (remaining <= 0) { alert(`Maximum ${MAX_IMAGES} images per message.`); return }
     const filesToProcess = files.slice(0, remaining)
-
     setIsProcessingImages(true)
     try {
       const newImages: PendingImage[] = []
       for (const file of filesToProcess) {
-        // Validate type — allow any image/* type (covers HEIC on iOS, empty type on some Android).
-        // Some Android browsers return "" for file.type on gallery images, so we accept that too.
         const isImageType = file.type === '' || file.type.startsWith('image/')
-        if (!isImageType) {
-          alert(`${file.name}: Unsupported format. Please select an image file.`)
-          continue
-        }
-        // Validate size
-        if (file.size > MAX_IMAGE_SIZE) {
-          alert(`${file.name}: File too large. Maximum 10MB per image.`)
-          continue
-        }
-
+        if (!isImageType) { alert(`${file.name}: Unsupported format. Please select an image file.`); continue }
+        if (file.size > MAX_IMAGE_SIZE) { alert(`${file.name}: File too large. Maximum 10MB per image.`); continue }
         const { base64, actualMimeType } = await fileToBase64(file)
         const preview = URL.createObjectURL(file)
-
-        console.log('[ChatInterface] Image attached:', {
-          name: file.name,
-          reportedType: file.type,
-          actualMimeType,
-          size: file.size,
-          base64Length: base64.length,
-        })
-
-        newImages.push({
-          id: crypto.randomUUID(),
-          file,
-          preview,
-          base64,
-          mimeType: actualMimeType, // Use actual MIME from FileReader, not file.type
-        })
+        console.log('[ChatInterface] Image attached:', { name: file.name, actualMimeType, base64Length: base64.length })
+        newImages.push({ id: crypto.randomUUID(), file, preview, base64, mimeType: actualMimeType })
       }
-
       setPendingImages(prev => [...prev, ...newImages])
     } finally {
       setIsProcessingImages(false)
-      // Reset input so same file can be selected again
-      if (imageInputRef.current) {
-        imageInputRef.current.value = ''
-      }
+      if (imageInputRef.current) imageInputRef.current.value = ''
     }
   }
 
@@ -198,159 +153,211 @@ export default function ChatInterface({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if ((!inputValue.trim() && pendingImages.length === 0) || isLoading) return
-
     const message = inputValue.trim() || (pendingImages.length > 0 ? 'Please analyze this clinical image.' : '')
-
-    // Prepare imageData payload
     const imagePayload = pendingImages.length > 0
       ? pendingImages.map(img => ({ base64: img.base64, mimeType: img.mimeType }))
       : undefined
-
-    console.log('[ChatInterface] handleSubmit:', {
-      message: message.slice(0, 80),
-      hasImagePayload: !!imagePayload,
-      imageCount: imagePayload?.length ?? 0,
-      imageBase64Lengths: imagePayload?.map(img => img.base64.length) ?? [],
-    })
-
-    // Call onSend and only clear input on success
+    console.log('[ChatInterface] handleSubmit:', { message: message.slice(0, 80), imageCount: imagePayload?.length ?? 0 })
     try {
       await onSend(message, imagePayload)
-      setInputValue('') // Clear ONLY after successful send
-      // Clear images after send
+      setInputValue('')
       pendingImages.forEach(img => URL.revokeObjectURL(img.preview))
       setPendingImages([])
     } catch (error) {
       console.error('[ChatInterface] Error sending message:', error)
-      // Keep input value on error so user can retry
     }
-
-    // Refocus input after sending
-    setTimeout(() => {
-      inputRef.current?.focus()
-    }, 100)
+    setTimeout(() => { inputRef.current?.focus() }, 100)
   }
 
-  const handleSuggestionClick = async (prompt: string) => {
-    await onSend(prompt)
-  }
+  const handleSuggestionClick = async (prompt: string) => { await onSend(prompt) }
 
-  // Binder file picker
-  const openBinderPicker = async () => {
-    if (!onAttachFiles) return
-    setIsBinderPickerOpen(true)
-    setSelectedBinderIds(new Set(attachedFiles.map(f => f.id)))
-    setIsLoadingBinder(true)
+  // === Upload modal logic ===
+
+  const openUploadModal = async () => {
+    setIsUploadModalOpen(true)
+    setUploadStep('pick-course')
+    setSelectedCourse(null)
+    setUploadDocType(null)
+    setUploadStatus('idle')
+    setIsLoadingCourses(true)
     try {
-      const res = await fetch('/api/binder', { credentials: 'include' })
+      const res = await fetch('/api/classes', { credentials: 'include' })
       if (res.ok) {
         const data = await res.json()
-        const files = (data.files || [])
-          .filter((f: any) =>
-            f.document_type === 'syllabus' ||
-            f.document_type === 'textbook' ||
-            f.document_type === 'reference' ||
-            f.document_type == null
-          )
-          .map((f: any) => ({
-            canonicalId: f.canonicalId || f.id || '',
-            filename: f.filename || f.name || 'Untitled',
-            document_type: f.document_type ?? null,
-          }))
-          .filter((f: BinderFile) => f.canonicalId)
-        setBinderFiles(files)
+        const classList = (data.classes || data || []).map((c: any) => ({
+          id: c.id,
+          code: c.code || '',
+          name: c.name || '',
+        }))
+        setCourses(classList)
       }
     } catch (error) {
-      console.error('[ChatInterface] Failed to fetch binder files:', error)
+      console.error('[ChatInterface] Failed to fetch courses:', error)
     } finally {
-      setIsLoadingBinder(false)
+      setIsLoadingCourses(false)
     }
   }
 
-  const handleBinderApply = () => {
-    if (!onAttachFiles) return
-    const selected = binderFiles
-      .filter(f => selectedBinderIds.has(f.canonicalId))
-      .map(f => ({
-        id: f.canonicalId,
-        name: f.filename || 'Unknown file',
-        document_type: f.document_type ?? null,
-      }))
-    onAttachFiles(selected)
-    setIsBinderPickerOpen(false)
+  const closeUploadModal = () => {
+    setIsUploadModalOpen(false)
+    setSelectedCourse(null)
+    setUploadDocType(null)
+    setUploadStatus('idle')
+    setIsUploading(false)
   }
 
-  const toggleBinderFile = (id: string) => {
-    setSelectedBinderIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  const selectCourse = (course: UploadCourse) => {
+    setSelectedCourse(course)
+    setUploadStep('upload')
+    setUploadDocType(null)
+    setUploadStatus('idle')
   }
 
-  // Get placeholder based on attached files
+  const handleDocUpload = async (file: File) => {
+    if (!uploadDocType || !selectedCourse) return
+
+    const fileExtension = file.name.toLowerCase().split('.').pop()
+    const fileType = file.type
+
+    if (fileExtension === 'doc') {
+      alert('Please save as .docx or PDF. Legacy .doc files are not supported.')
+      return
+    }
+
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ]
+    if (!allowedTypes.includes(fileType) && fileExtension !== 'pdf' && fileExtension !== 'docx') {
+      alert('Please upload a PDF or DOCX file.')
+      return
+    }
+
+    setIsUploading(true)
+    setUploadStatus('idle')
+
+    try {
+      const buffer = await file.arrayBuffer()
+      let text = ''
+
+      if (fileExtension === 'pdf' || fileType === 'application/pdf') {
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i)
+          const content = await page.getTextContent()
+          text += content.items.map((item: any) => item.str).join(' ') + '\n\n'
+        }
+      } else if (fileExtension === 'docx' || fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        const result = await mammoth.extractRawText({ arrayBuffer: buffer })
+        text = result.value
+        text = text.replace(/\n{3,}/g, '\n\n')
+      }
+
+      if (!text || text.trim().length === 0) {
+        throw new Error('No text could be extracted from the document')
+      }
+
+      const res = await fetch('/api/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          filename: file.name,
+          document_type: uploadDocType,
+          class_id: selectedCourse.id
+        })
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Upload failed' }))
+        throw new Error(errorData.error || 'Upload failed')
+      }
+
+      setUploadedCourseName(selectedCourse.name || selectedCourse.code)
+      setUploadStatus('success')
+
+      // If uploaded course matches the active session course, bring file into context
+      if (tutorContext.selectedClassId === selectedCourse.id && onAttachFiles) {
+        // Wait a moment for processing, then fetch updated binder files for this class
+        setTimeout(async () => {
+          try {
+            const binderRes = await fetch('/api/binder', { credentials: 'include' })
+            if (binderRes.ok) {
+              const binderData = await binderRes.json()
+              const allFiles = binderData.files || []
+              // Find the newly uploaded file
+              const classFiles = allFiles
+                .filter((f: any) => {
+                  const fClassId = f.metadata?.class_id || f.class_id || f.metadata?.classId
+                  return fClassId === selectedCourse.id
+                })
+                .map((f: any) => ({
+                  id: f.canonicalId || f.id || '',
+                  name: f.filename || f.name || 'Unknown',
+                  document_type: f.document_type ?? null,
+                }))
+                .filter((f: any) => f.id)
+
+              // Merge with existing attached files (avoid duplicates)
+              const existingIds = new Set(attachedFiles.map(f => f.id))
+              const newFiles = classFiles.filter((f: any) => !existingIds.has(f.id))
+              if (newFiles.length > 0) {
+                onAttachFiles([...attachedFiles, ...newFiles])
+              }
+            }
+          } catch (err) {
+            console.error('[ChatInterface] Failed to refresh binder after upload:', err)
+          }
+        }, 2000)
+      }
+
+      // Auto-close after showing success
+      setTimeout(() => { closeUploadModal() }, 3000)
+
+    } catch (error: any) {
+      console.error('[ChatInterface] Upload error:', error)
+      setUploadStatus('error')
+      alert(error.message || 'Failed to upload file. Please try again.')
+    } finally {
+      setIsUploading(false)
+      if (uploadFileInputRef.current) uploadFileInputRef.current.value = ''
+    }
+  }
+
   const getPlaceholderText = () => {
-    if (pendingImages.length > 0) {
-      return "Describe what you'd like to know about this image..."
-    }
-    if (attachedFiles.length > 0) {
-      return "Ask a question about your files..."
-    }
+    if (pendingImages.length > 0) return "Describe what you'd like to know about this image..."
+    if (attachedFiles.length > 0) return "Ask a question about your files..."
     return "Ask a clinical question..."
   }
 
   return (
     <div className="flex-shrink-0 pt-3 bg-[var(--gray-50)] relative">
-      {/* Medical Math Calculator Panel */}
-      <MedicalMathCalculator
-        isOpen={isCalculatorOpen}
-        onClose={() => setIsCalculatorOpen(false)}
-      />
+      <MedicalMathCalculator isOpen={isCalculatorOpen} onClose={() => setIsCalculatorOpen(false)} />
 
-      {/* Context Pills (Above the dock) */}
+      {/* Context Pills */}
       {attachedFiles.length > 0 && (
         <div className="flex gap-2 overflow-x-auto px-2 mb-2">
           {attachedFiles.map((file) => (
-            <div
-              key={file.id}
-              className="flex items-center gap-2 rounded-full bg-[var(--teal-light)] border border-[var(--teal)]/20 px-3 py-1 text-xs text-[var(--teal)] shadow-sm transition-all duration-200"
-            >
+            <div key={file.id} className="flex items-center gap-2 rounded-full bg-[var(--teal-light)] border border-[var(--teal)]/20 px-3 py-1 text-xs text-[var(--teal)] shadow-sm transition-all duration-200">
               <span className="truncate max-w-[150px]">{file.name}</span>
               {onDetach && (
-                <button
-                  onClick={() => onDetach(file.id)}
-                  className="hover:text-[var(--navy)] transition-colors"
-                  aria-label={`Remove ${file.name}`}
-                >
-                  ×
-                </button>
+                <button onClick={() => onDetach(file.id)} className="hover:text-[var(--navy)] transition-colors" aria-label={`Remove ${file.name}`}>×</button>
               )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Image Thumbnails (Above the dock) */}
+      {/* Image Thumbnails */}
       {pendingImages.length > 0 && (
         <div className="flex gap-2 overflow-x-auto px-2 mb-2">
           {pendingImages.map((img) => (
             <div key={img.id} className="relative flex-shrink-0 group">
-              <img
-                src={img.preview}
-                alt={img.file.name}
-                className="w-16 h-16 object-cover rounded-lg border border-[var(--gray-200)]"
-              />
-              <button
-                onClick={() => removeImage(img.id)}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[var(--gray-800)] text-white rounded-full flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                aria-label={`Remove ${img.file.name}`}
-              >
+              <img src={img.preview} alt={img.file.name} className="w-16 h-16 object-cover rounded-lg border border-[var(--gray-200)]" />
+              <button onClick={() => removeImage(img.id)} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[var(--gray-800)] text-white rounded-full flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" aria-label={`Remove ${img.file.name}`}>
                 <X className="w-3 h-3" />
               </button>
-              <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[8px] text-center truncate rounded-b-lg px-0.5">
-                {img.file.name}
-              </span>
+              <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[8px] text-center truncate rounded-b-lg px-0.5">{img.file.name}</span>
             </div>
           ))}
           {isProcessingImages && (
@@ -361,68 +368,40 @@ export default function ChatInterface({
         </div>
       )}
 
-      {/* Medical Math Button - Above input on desktop */}
+      {/* Medical Math Button */}
       <div className="px-2 mb-2 flex justify-center md:justify-start">
         <button
           type="button"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setIsCalculatorOpen(!isCalculatorOpen)
-          }}
-          className={`
-            flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200
-            ${isCalculatorOpen
-              ? 'bg-[var(--teal-light)] text-[var(--teal)] border border-[var(--teal)]/30'
-              : 'bg-white text-[var(--gray-800)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] border border-[var(--gray-200)] hover:border-[var(--teal)]/30 shadow-sm'
-            }
-          `}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsCalculatorOpen(!isCalculatorOpen) }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${isCalculatorOpen ? 'bg-[var(--teal-light)] text-[var(--teal)] border border-[var(--teal)]/30' : 'bg-white text-[var(--gray-800)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] border border-[var(--gray-200)] hover:border-[var(--teal)]/30 shadow-sm'}`}
           aria-label="Toggle Medical Math Calculator"
         >
-          <Calculator className="w-3.5 h-3.5" />
-          <span>Medical Math</span>
+          <Calculator className="w-3.5 h-3.5" /><span>Medical Math</span>
         </button>
       </div>
 
       {/* Chat Input Dock */}
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-xl bg-white shadow-lg border border-[var(--gray-200)] px-4 py-2 flex items-center gap-3"
-      >
-        {/* Paperclip — opens binder file picker */}
+      <form onSubmit={handleSubmit} className="rounded-xl bg-white shadow-lg border border-[var(--gray-200)] px-4 py-2 flex items-center gap-3">
+        {/* Paperclip — opens upload modal */}
         <button
           type="button"
-          onClick={openBinderPicker}
-          disabled={!onAttachFiles}
-          className="rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200 disabled:opacity-40"
-          aria-label="Attach files from binder"
-          title="Attach files from My Classes"
+          onClick={openUploadModal}
+          className="rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200"
+          aria-label="Upload materials"
+          title="Upload Materials"
         >
           <Paperclip className="h-5 w-5" />
         </button>
 
-        {/* Image Upload — invisible file input overlaid on the button area so the
-            browser's native tap-to-open-picker fires directly on the input element.
-            Works on Android Chrome and iOS Safari without .click() or label tricks. */}
+        {/* Image Upload */}
         <div
           style={{ position: 'relative' }}
-          className={`rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200 ${
-            pendingImages.length >= MAX_IMAGES || isProcessingImages
-              ? 'opacity-40 pointer-events-none'
-              : ''
-          }`}
+          className={`rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200 ${pendingImages.length >= MAX_IMAGES || isProcessingImages ? 'opacity-40 pointer-events-none' : ''}`}
           title={pendingImages.length >= MAX_IMAGES ? `Maximum ${MAX_IMAGES} images` : 'Upload clinical image (EKG, labs, wound photos)'}
           aria-label="Upload clinical image"
         >
           <ImagePlus className="h-5 w-5" />
-          <input
-            ref={imageInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
-            onChange={handleImageSelect}
-          />
+          <input ref={imageInputRef} type="file" accept="image/*" multiple style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} onChange={handleImageSelect} />
         </div>
 
         {/* Textarea */}
@@ -434,12 +413,7 @@ export default function ChatInterface({
           onChange={(e) => setInputValue(e.target.value)}
           disabled={isLoading}
           rows={1}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault()
-              handleSubmit(e)
-            }
-          }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e) } }}
         />
 
         {/* Send Button */}
@@ -449,84 +423,157 @@ export default function ChatInterface({
           className="rounded-lg bg-[var(--teal)] p-2.5 text-white shadow-lg hover:bg-[#0A7A85] transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           aria-label="Send message"
         >
-          {isLoading && pendingImages.length > 0 ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <ArrowUp className="h-5 w-5" />
-          )}
+          {isLoading && pendingImages.length > 0 ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
         </button>
       </form>
 
-      {/* Binder file picker overlay */}
-      {isBinderPickerOpen && (
+      {/* Upload Materials Modal */}
+      {isUploadModalOpen && (
         <>
-          <div
-            className="fixed inset-0 z-50 bg-black/40"
-            onClick={() => setIsBinderPickerOpen(false)}
-          />
-          <div className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-lg bg-white rounded-xl border border-[var(--gray-200)] shadow-xl max-h-[60vh] flex flex-col">
+          <div className="fixed inset-0 z-50 bg-black/40" onClick={closeUploadModal} />
+          <div className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-lg bg-white rounded-xl border border-[var(--gray-200)] shadow-xl max-h-[70vh] flex flex-col">
+            {/* Header */}
             <div className="px-4 py-3 border-b border-[var(--gray-200)] flex items-center justify-between flex-shrink-0">
-              <h3 className="text-sm font-semibold text-[var(--gray-800)]">Attach from My Classes</h3>
-              <button onClick={() => setIsBinderPickerOpen(false)} className="p-1 rounded hover:bg-[var(--gray-100)]">
+              <div className="flex items-center gap-2">
+                {uploadStep === 'upload' && selectedCourse && (
+                  <button
+                    onClick={() => { setUploadStep('pick-course'); setSelectedCourse(null); setUploadDocType(null); setUploadStatus('idle') }}
+                    className="p-1 rounded hover:bg-[var(--gray-100)] text-[var(--gray-400)]"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                )}
+                <h3 className="text-sm font-semibold text-[var(--gray-800)]">
+                  {uploadStep === 'pick-course' ? 'Upload Materials' : `Upload to ${selectedCourse?.code || ''}`}
+                </h3>
+              </div>
+              <button onClick={closeUploadModal} className="p-1 rounded hover:bg-[var(--gray-100)]">
                 <X className="w-4 h-4 text-[var(--gray-400)]" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
-              {isLoadingBinder ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-5 h-5 text-[var(--teal)] animate-spin" />
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* Step 1: Pick course */}
+              {uploadStep === 'pick-course' && (
+                <div className="space-y-2">
+                  {isLoadingCourses ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-5 h-5 text-[var(--teal)] animate-spin" />
+                    </div>
+                  ) : courses.length === 0 ? (
+                    <p className="text-sm text-[var(--gray-400)] text-center py-8">
+                      No courses found. Create a course in My Courses first.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-xs text-[var(--gray-400)] mb-3">Select which course to upload to:</p>
+                      {courses.map(course => (
+                        <button
+                          key={course.id}
+                          type="button"
+                          onClick={() => selectCourse(course)}
+                          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg border border-[var(--gray-200)] hover:border-[var(--teal)]/40 hover:bg-[var(--teal-light)]/30 text-left transition-colors"
+                        >
+                          <FileText className="w-4 h-4 text-[var(--gray-400)] flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[var(--gray-800)]">{course.code}</p>
+                            <p className="text-xs text-[var(--gray-400)] truncate">{course.name}</p>
+                          </div>
+                          <ChevronLeft className="w-4 h-4 text-[var(--gray-400)] rotate-180" />
+                        </button>
+                      ))}
+                    </>
+                  )}
                 </div>
-              ) : binderFiles.length === 0 ? (
-                <p className="text-sm text-[var(--gray-400)] text-center py-8">
-                  No files available. Upload files in My Classes first.
-                </p>
-              ) : (
-                binderFiles.map(file => {
-                  const isSelected = selectedBinderIds.has(file.canonicalId)
-                  return (
-                    <button
-                      key={file.canonicalId}
-                      type="button"
-                      onClick={() => toggleBinderFile(file.canonicalId)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border text-left transition-colors ${
-                        isSelected
-                          ? 'border-[var(--teal)] bg-[var(--teal-light)]'
-                          : 'border-[var(--gray-200)] hover:border-[var(--teal)]/40'
-                      }`}
-                    >
-                      <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? 'bg-[var(--teal)] text-white' : 'border border-[var(--gray-200)]'
-                      }`}>
-                        {isSelected && <Check className="w-3 h-3" />}
+              )}
+
+              {/* Step 2: Pick type + Upload */}
+              {uploadStep === 'upload' && selectedCourse && (
+                <div className="space-y-4">
+                  {uploadStatus === 'success' ? (
+                    <div className="text-center py-6">
+                      <CheckCircle className="w-10 h-10 mx-auto mb-3 text-emerald-500" />
+                      <p className="text-sm font-medium text-[var(--gray-800)]">
+                        Added to {uploadedCourseName}
+                        {tutorContext.selectedClassId === selectedCourse.id ? ' — using it now' : ''}
+                      </p>
+                      {tutorContext.selectedClassId !== selectedCourse.id && (
+                        <p className="text-xs text-[var(--gray-400)] mt-1">
+                          Saved to My Courses. Switch to {selectedCourse.code} to use it.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      {/* Document type selector */}
+                      <div>
+                        <p className="text-xs text-[var(--gray-400)] mb-2">Document type:</p>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setUploadDocType('syllabus')}
+                            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${uploadDocType === 'syllabus' ? 'bg-[var(--teal)] text-white' : 'bg-white text-[var(--gray-800)] border border-[var(--gray-200)] hover:border-[var(--teal)]/40'}`}
+                          >
+                            Syllabus
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setUploadDocType('textbook')}
+                            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${uploadDocType === 'textbook' ? 'bg-[var(--teal)] text-white' : 'bg-white text-[var(--gray-800)] border border-[var(--gray-200)] hover:border-[var(--teal)]/40'}`}
+                          >
+                            Textbook / PDF
+                          </button>
+                        </div>
                       </div>
-                      <FileText className="w-4 h-4 text-[var(--gray-400)] flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-[var(--gray-800)] truncate">{file.filename}</p>
-                        {file.document_type && (
-                          <p className="text-xs text-[var(--gray-400)]">{file.document_type}</p>
+
+                      {/* Upload area */}
+                      <div
+                        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                          uploadDocType
+                            ? 'border-[var(--teal)]/40 bg-[var(--teal-light)]/20 cursor-pointer hover:border-[var(--teal)]'
+                            : 'border-[var(--gray-200)] bg-[var(--gray-50)] opacity-50 cursor-not-allowed'
+                        } ${uploadStatus === 'error' ? 'border-red-300 bg-red-50' : ''}`}
+                        onClick={() => uploadDocType && !isUploading && uploadFileInputRef.current?.click()}
+                      >
+                        <input
+                          ref={uploadFileInputRef}
+                          type="file"
+                          accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          className="hidden"
+                          disabled={!uploadDocType || isUploading}
+                          onChange={(e) => {
+                            if (e.target.files?.[0] && uploadDocType) {
+                              handleDocUpload(e.target.files[0])
+                            }
+                          }}
+                        />
+                        {isUploading ? (
+                          <>
+                            <Loader2 className="w-8 h-8 mx-auto mb-2 text-[var(--teal)] animate-spin" />
+                            <p className="text-sm text-[var(--gray-800)] font-medium">Processing your file...</p>
+                            <p className="text-xs text-[var(--gray-400)] mt-1">This may take a moment</p>
+                          </>
+                        ) : uploadStatus === 'error' ? (
+                          <>
+                            <AlertCircle className="w-8 h-8 mx-auto mb-2 text-red-500" />
+                            <p className="text-sm font-medium text-red-700">Upload failed</p>
+                            <p className="text-xs text-red-600 mt-1">Please try again</p>
+                          </>
+                        ) : (
+                          <>
+                            <UploadCloud className="w-8 h-8 mx-auto mb-2 text-[var(--teal)]" />
+                            <p className="text-sm text-[var(--gray-800)] font-medium">
+                              {uploadDocType ? 'Click to upload or drag and drop' : 'Select document type above'}
+                            </p>
+                            <p className="text-xs text-[var(--gray-400)] mt-1">PDF or DOCX</p>
+                          </>
                         )}
                       </div>
-                    </button>
-                  )
-                })
+                    </>
+                  )}
+                </div>
               )}
-            </div>
-            <div className="px-4 py-3 border-t border-[var(--gray-200)] flex justify-end gap-2 flex-shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsBinderPickerOpen(false)}
-                className="px-3 py-1.5 text-sm text-[var(--gray-800)] rounded-lg border border-[var(--gray-200)] hover:bg-[var(--gray-50)]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleBinderApply}
-                disabled={selectedBinderIds.size === 0}
-                className="px-3 py-1.5 text-sm text-white rounded-lg bg-[var(--teal)] hover:bg-[#0A7A85] disabled:opacity-50"
-              >
-                Attach{selectedBinderIds.size > 0 ? ` (${selectedBinderIds.size})` : ''}
-              </button>
             </div>
           </div>
         </>
