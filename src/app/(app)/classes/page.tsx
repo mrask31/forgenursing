@@ -30,6 +30,19 @@ export default function ClassesPage() {
     })
   }, [refreshKey])
 
+  // Backfill course types on first load (runs once, updates 'other' → inferred type)
+  useEffect(() => {
+    fetch('/api/classes/backfill-types', { method: 'POST', credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.updated > 0) {
+          console.log('[Classes] Backfilled', data.updated, 'course types:', data.updates)
+          setRefreshKey(k => k + 1) // Reload to show updated types
+        }
+      })
+      .catch(() => {}) // Silent fail
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const loadClasses = async (uid: string) => {
     setLoading(true)
     try {

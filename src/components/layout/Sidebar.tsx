@@ -50,16 +50,25 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   ]
 
   const clinicalTools = [
-    { label: 'Body Systems', href: '/dictionary', icon: Heart },
+    { label: 'Body Systems', href: '/dictionary?view=body-systems', icon: Heart },
     { label: 'Med Dictionary', href: '/dictionary', icon: BookOpen },
     { label: 'Readiness Score', href: '/readiness', icon: Activity },
   ]
 
   const isActive = (href: string, label: string) => {
-    if (pathname === href) return true
-    if (href === '/classes' && pathname.startsWith('/classes')) return true
-    if (href === '/dictionary' && pathname.startsWith('/dictionary')) return true
-    if (href === '/readiness' && pathname.startsWith('/readiness') && label === 'My Chart') return true
+    const [hrefPath, hrefQuery] = href.split('?')
+    const currentSearch = typeof window !== 'undefined' ? window.location.search : ''
+    // Exact path + query match for items with query params
+    if (hrefQuery) {
+      return pathname === hrefPath && currentSearch === `?${hrefQuery}`
+    }
+    // For /dictionary without query, only active when no query params
+    if (hrefPath === '/dictionary') {
+      return pathname.startsWith('/dictionary') && !currentSearch.includes('view=')
+    }
+    if (pathname === hrefPath) return true
+    if (hrefPath === '/classes' && pathname.startsWith('/classes')) return true
+    if (hrefPath === '/readiness' && pathname.startsWith('/readiness') && label === 'My Chart') return true
     return false
   }
 
