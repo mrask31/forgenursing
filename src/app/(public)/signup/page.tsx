@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Mail, Lock, ArrowRight, Loader2, MessageSquare, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 export default function SignupPage() {
@@ -273,22 +273,22 @@ export default function SignupPage() {
     <div className="min-h-[calc(100dvh-4rem)] bg-slate-50">
       <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100dvh-4rem)] flex-col-reverse lg:flex-row">
         {/* Left Column - Desktop Only */}
-        <div className="hidden lg:flex bg-gradient-to-br from-indigo-50 to-purple-50 border-r border-slate-200 flex flex-col justify-center items-center h-full px-8 text-center">
+        <div className="hidden lg:flex bg-gradient-to-br from-[#f0fafa] to-[#e8f4f4] border-r border-slate-200 flex flex-col justify-center items-center h-full px-8 text-center">
           <div className="max-w-md space-y-8">
             <div className="space-y-4">
-              <div className="w-16 h-16 bg-indigo-600 rounded-xl flex items-center justify-center mx-auto shadow-lg">
-                <MessageSquare className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-[#0B2545] rounded-xl flex items-center justify-center mx-auto shadow-lg">
+                <span className="text-2xl font-bold text-white">Fx</span>
               </div>
               <blockquote className="text-xl text-slate-700 italic leading-relaxed font-medium">
-                "<span className="font-semibold text-indigo-700">Reasoning</span> is the difference between knowing the answer and saving a life."
+                "<span className="font-semibold text-[#0D8F9C]">Reasoning</span> is the difference between knowing the answer and saving a life."
               </blockquote>
             </div>
-            
+
             {/* Quick Benefits */}
-            <div className="space-y-4 pt-8 border-t border-indigo-200">
+            <div className="space-y-4 pt-8 border-t border-[#0D8F9C]/20">
               <div className="flex items-start gap-3 text-left">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <BookOpen className="w-5 h-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#E0F4F6] flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
                   <div className="font-semibold text-slate-900 text-sm mb-1">Learn from your materials</div>
@@ -296,8 +296,8 @@ export default function SignupPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3 text-left">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <GraduationCap className="w-5 h-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#E0F4F6] flex items-center justify-center flex-shrink-0">
+                  <GraduationCap className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
                   <div className="font-semibold text-slate-900 text-sm mb-1">Build clinical reasoning</div>
@@ -305,8 +305,8 @@ export default function SignupPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3 text-left">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-5 h-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#E0F4F6] flex items-center justify-center flex-shrink-0">
+                  <Shield className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
                   <div className="font-semibold text-slate-900 text-sm mb-1">Free preview</div>
@@ -321,34 +321,34 @@ export default function SignupPage() {
         <div className="flex items-start justify-center px-4 sm:px-6 py-6 bg-white order-1 lg:order-2 overflow-y-auto">
           <div className="w-full max-w-md">
             {/* What Happens Next - At Top, Always Visible */}
-            <div className="mb-4 p-3 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200/60">
+            <div className="mb-4 p-3 bg-[#E0F4F6] rounded-xl border border-[#0D8F9C]/20">
               <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                <Sparkles className="w-4 h-4 text-[#0D8F9C] flex-shrink-0" />
                 <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
                   What happens next?
                 </h3>
               </div>
               <div className="space-y-1.5 text-xs text-slate-600">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                     1
                   </div>
                   <p><strong className="text-slate-900">Start your trial</strong> — Full access for 7 days</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                     2
                   </div>
                   <p><strong className="text-slate-900">Try the AI tutor</strong> — Upload notes & ask questions</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                     3
                   </div>
                   <p><strong className="text-slate-900">Subscribe when ready</strong> — After your trial ends</p>
                 </div>
               </div>
-              <p className="text-xs text-indigo-700 font-medium mt-2 pt-2 border-t border-indigo-200/60 flex items-center gap-1">
+              <p className="text-xs text-[#0D8F9C] font-medium mt-2 pt-2 border-t border-[#0D8F9C]/20 flex items-center gap-1">
                 <Shield className="w-3 h-3" />
                 No credit card required • Cancel anytime
               </p>
@@ -385,7 +385,7 @@ export default function SignupPage() {
                     <input
                       type="email"
                       placeholder="Email address"
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value)
@@ -400,7 +400,7 @@ export default function SignupPage() {
                     <input
                       type="password"
                       placeholder="Password (8+ characters)"
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value)
@@ -419,7 +419,7 @@ export default function SignupPage() {
                       className={`w-full pl-10 pr-3 py-2.5 bg-slate-50 border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
                         confirmPassword && password !== confirmPassword
                           ? 'border-red-300 focus:ring-red-600'
-                          : 'border-slate-200 focus:ring-indigo-600'
+                          : 'border-slate-200 focus:ring-[#0D8F9C]'
                       }`}
                       value={confirmPassword}
                       onChange={(e) => {
@@ -461,16 +461,16 @@ export default function SignupPage() {
                     type="checkbox"
                     checked={acceptedTerms}
                     onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-2 focus:ring-indigo-600 cursor-pointer flex-shrink-0"
+                    className="mt-0.5 w-4 h-4 text-[#0D8F9C] border-slate-300 rounded focus:ring-2 focus:ring-[#0D8F9C] cursor-pointer flex-shrink-0"
                     required
                   />
                   <span className="text-xs text-slate-600 leading-snug">
                     I agree to the{' '}
-                    <Link href="/terms" target="_blank" className="text-indigo-600 hover:text-indigo-700 underline font-medium">
+                    <Link href="/terms" target="_blank" className="text-[#0D8F9C] hover:text-[#0A7A85] underline font-medium">
                       Terms
                     </Link>
                     {' '}and{' '}
-                    <Link href="/privacy" target="_blank" className="text-indigo-600 hover:text-indigo-700 underline font-medium">
+                    <Link href="/privacy" target="_blank" className="text-[#0D8F9C] hover:text-[#0A7A85] underline font-medium">
                       Privacy Policy
                     </Link>
                   </span>
@@ -479,7 +479,7 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={loading || !email || !password || !confirmPassword || password !== confirmPassword || !acceptedTerms}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-2.5 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0A7A85] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {loading ? (
                     <>
@@ -502,7 +502,7 @@ export default function SignupPage() {
                 </span>
                 <Link
                   href="/login"
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                  className="text-xs font-semibold text-[#0D8F9C] hover:text-[#0A7A85] transition-colors"
                 >
                   Sign in
                 </Link>

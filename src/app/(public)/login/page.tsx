@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Mail, Lock, ArrowRight, Loader2, MessageSquare, BookOpen, GraduationCap, Shield } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { clearSupabaseStorage, isSessionError, debugAuthLog, resetSession } from '@/lib/auth-utils'
 import { hasSubscriptionAccess } from '@/lib/subscription-access'
@@ -328,22 +328,22 @@ export default function LoginPage() {
     <div className="min-h-[calc(100dvh-4rem)] bg-slate-50">
       <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100dvh-4rem)] flex-col-reverse lg:flex-row">
         {/* Left Column - Desktop Only, shown below on mobile */}
-        <div className="hidden lg:flex bg-gradient-to-br from-indigo-50 to-purple-50 border-r border-slate-200 flex flex-col justify-center items-center h-full px-8 text-center">
+        <div className="hidden lg:flex bg-gradient-to-br from-[#f0fafa] to-[#e8f4f4] border-r border-slate-200 flex flex-col justify-center items-center h-full px-8 text-center">
           <div className="max-w-md space-y-8">
             <div className="space-y-4">
-              <div className="w-16 h-16 bg-indigo-600 rounded-xl flex items-center justify-center mx-auto shadow-lg">
-                <MessageSquare className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-[#0B2545] rounded-xl flex items-center justify-center mx-auto shadow-lg">
+                <span className="text-2xl font-bold text-white">Fx</span>
               </div>
               <blockquote className="text-xl text-slate-700 italic leading-relaxed font-medium">
-                "<span className="font-semibold text-indigo-700">Reasoning</span> is the difference between knowing the answer and saving a life."
+                "<span className="font-semibold text-[#0D8F9C]">Reasoning</span> is the difference between knowing the answer and saving a life."
               </blockquote>
             </div>
-            
+
             {/* Quick Benefits */}
-            <div className="space-y-4 pt-8 border-t border-indigo-200">
+            <div className="space-y-4 pt-8 border-t border-[#0D8F9C]/20">
               <div className="flex items-start gap-3 text-left">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <BookOpen className="w-5 h-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#E0F4F6] flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
                   <div className="font-semibold text-slate-900 text-sm mb-1">Continue your studies</div>
@@ -351,8 +351,8 @@ export default function LoginPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3 text-left">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-5 h-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#E0F4F6] flex items-center justify-center flex-shrink-0">
+                  <Shield className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
                   <div className="font-semibold text-slate-900 text-sm mb-1">Your learning library</div>
@@ -360,8 +360,8 @@ export default function LoginPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3 text-left">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <GraduationCap className="w-5 h-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#E0F4F6] flex items-center justify-center flex-shrink-0">
+                  <GraduationCap className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
                   <div className="font-semibold text-slate-900 text-sm mb-1">Access your dashboard</div>
@@ -375,11 +375,11 @@ export default function LoginPage() {
         {/* Right Column - Auth Form - Shown first on mobile */}
         <div className="flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 bg-white order-1 lg:order-2">
           <div className="w-full max-w-md">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-lg">
+            <div className="bg-white border border-[#DDE5EE] rounded-2xl p-6 sm:p-8 shadow-lg">
               {/* Header */}
               <div className="text-center mb-6 sm:mb-8">
-                <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-xl mb-4 shadow-lg">
-                  <MessageSquare className="w-7 h-7 text-white" />
+                <div className="inline-flex items-center justify-center w-14 h-14 bg-[#0B2545] rounded-xl mb-4 shadow-lg">
+                  <span className="text-xl font-bold text-white">Fx</span>
                 </div>
                 {showVerificationSuccess ? (
                   <>
@@ -392,7 +392,7 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
+                    <h1 className="text-2xl sm:text-3xl font-semibold font-display text-slate-900 mb-2">
                       Welcome back
                     </h1>
                     <p className="text-sm text-slate-600">
@@ -410,7 +410,7 @@ export default function LoginPage() {
                     <input
                       type="email"
                       placeholder="Enter your email"
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
+                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -421,7 +421,7 @@ export default function LoginPage() {
                     <input
                       type="password"
                       placeholder="Enter your password"
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all"
+                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -442,7 +442,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading || !email || !password}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 sm:py-3.5 bg-indigo-600 text-white rounded-xl text-base font-medium hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl min-h-[44px]"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 sm:py-3.5 bg-[#0D8F9C] text-white rounded-xl text-base font-medium hover:bg-[#0A7A85] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl min-h-[44px]"
                 >
                   {loading ? (
                     <>
@@ -465,7 +465,7 @@ export default function LoginPage() {
                 </span>
                 <Link
                   href="/signup"
-                  className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                  className="text-sm font-semibold text-[#0D8F9C] hover:text-[#0A7A85] transition-colors"
                 >
                   Sign up
                 </Link>
