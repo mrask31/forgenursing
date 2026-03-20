@@ -1,10 +1,17 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUp, Paperclip, Calculator, ImagePlus, X, Loader2 } from 'lucide-react'
+import { ArrowUp, Paperclip, Calculator, ImagePlus, X, Loader2, FileText, Check } from 'lucide-react'
 import SuggestedPrompts from '@/components/tutor/SuggestedPrompts'
 import { useTutorContext } from './TutorContext'
 import MedicalMathCalculator from './MedicalMathCalculator'
+
+interface BinderFile {
+  canonicalId: string
+  filename?: string
+  name?: string
+  document_type?: string | null
+}
 
 type Mode = 'tutor'
 
@@ -31,6 +38,7 @@ interface ChatInterfaceProps {
   isLoading?: boolean
   messages?: any[] // Optional messages array to check if session is empty
   onDetach?: (fileId: string) => void // Callback to detach a file
+  onAttachFiles?: (files: { id: string, name: string, document_type: string | null }[]) => void // Callback to attach binder files
 }
 
 export default function ChatInterface({
@@ -42,12 +50,17 @@ export default function ChatInterface({
   attachedContext = 'none',
   isLoading = false,
   messages = [],
-  onDetach
+  onDetach,
+  onAttachFiles
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState('')
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false)
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([])
   const [isProcessingImages, setIsProcessingImages] = useState(false)
+  const [isBinderPickerOpen, setIsBinderPickerOpen] = useState(false)
+  const [binderFiles, setBinderFiles] = useState<BinderFile[]>([])
+  const [isLoadingBinder, setIsLoadingBinder] = useState(false)
+  const [selectedBinderIds, setSelectedBinderIds] = useState<Set<string>>(new Set())
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const hasAttachedFiles = attachedFiles.length > 0
@@ -222,6 +235,60 @@ export default function ChatInterface({
     await onSend(prompt)
   }
 
+  // Binder file picker
+  const openBinderPicker = async () => {
+    if (!onAttachFiles) return
+    setIsBinderPickerOpen(true)
+    setSelectedBinderIds(new Set(attachedFiles.map(f => f.id)))
+    setIsLoadingBinder(true)
+    try {
+      const res = await fetch('/api/binder', { credentials: 'include' })
+      if (res.ok) {
+        const data = await res.json()
+        const files = (data.files || [])
+          .filter((f: any) =>
+            f.document_type === 'syllabus' ||
+            f.document_type === 'textbook' ||
+            f.document_type === 'reference' ||
+            f.document_type == null
+          )
+          .map((f: any) => ({
+            canonicalId: f.canonicalId || f.id || '',
+            filename: f.filename || f.name || 'Untitled',
+            document_type: f.document_type ?? null,
+          }))
+          .filter((f: BinderFile) => f.canonicalId)
+        setBinderFiles(files)
+      }
+    } catch (error) {
+      console.error('[ChatInterface] Failed to fetch binder files:', error)
+    } finally {
+      setIsLoadingBinder(false)
+    }
+  }
+
+  const handleBinderApply = () => {
+    if (!onAttachFiles) return
+    const selected = binderFiles
+      .filter(f => selectedBinderIds.has(f.canonicalId))
+      .map(f => ({
+        id: f.canonicalId,
+        name: f.filename || 'Unknown file',
+        document_type: f.document_type ?? null,
+      }))
+    onAttachFiles(selected)
+    setIsBinderPickerOpen(false)
+  }
+
+  const toggleBinderFile = (id: string) => {
+    setSelectedBinderIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
   // Get placeholder based on attached files
   const getPlaceholderText = () => {
     if (pendingImages.length > 0) {
@@ -322,11 +389,14 @@ export default function ChatInterface({
         onSubmit={handleSubmit}
         className="rounded-xl bg-white shadow-lg border border-[var(--gray-200)] px-4 py-2 flex items-center gap-3"
       >
-        {/* Paperclip */}
+        {/* Paperclip — opens binder file picker */}
         <button
           type="button"
-          className="rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200"
-          aria-label="Attach file"
+          onClick={openBinderPicker}
+          disabled={!onAttachFiles}
+          className="rounded-full p-2 text-[var(--gray-400)] hover:bg-[var(--teal-light)] hover:text-[var(--teal)] transition-all duration-200 disabled:opacity-40"
+          aria-label="Attach files from binder"
+          title="Attach files from My Classes"
         >
           <Paperclip className="h-5 w-5" />
         </button>
@@ -386,6 +456,81 @@ export default function ChatInterface({
           )}
         </button>
       </form>
+
+      {/* Binder file picker overlay */}
+      {isBinderPickerOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-50 bg-black/40"
+            onClick={() => setIsBinderPickerOpen(false)}
+          />
+          <div className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-lg bg-white rounded-xl border border-[var(--gray-200)] shadow-xl max-h-[60vh] flex flex-col">
+            <div className="px-4 py-3 border-b border-[var(--gray-200)] flex items-center justify-between flex-shrink-0">
+              <h3 className="text-sm font-semibold text-[var(--gray-800)]">Attach from My Classes</h3>
+              <button onClick={() => setIsBinderPickerOpen(false)} className="p-1 rounded hover:bg-[var(--gray-100)]">
+                <X className="w-4 h-4 text-[var(--gray-400)]" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+              {isLoadingBinder ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 text-[var(--teal)] animate-spin" />
+                </div>
+              ) : binderFiles.length === 0 ? (
+                <p className="text-sm text-[var(--gray-400)] text-center py-8">
+                  No files available. Upload files in My Classes first.
+                </p>
+              ) : (
+                binderFiles.map(file => {
+                  const isSelected = selectedBinderIds.has(file.canonicalId)
+                  return (
+                    <button
+                      key={file.canonicalId}
+                      type="button"
+                      onClick={() => toggleBinderFile(file.canonicalId)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border text-left transition-colors ${
+                        isSelected
+                          ? 'border-[var(--teal)] bg-[var(--teal-light)]'
+                          : 'border-[var(--gray-200)] hover:border-[var(--teal)]/40'
+                      }`}
+                    >
+                      <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 ${
+                        isSelected ? 'bg-[var(--teal)] text-white' : 'border border-[var(--gray-200)]'
+                      }`}>
+                        {isSelected && <Check className="w-3 h-3" />}
+                      </div>
+                      <FileText className="w-4 h-4 text-[var(--gray-400)] flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-[var(--gray-800)] truncate">{file.filename}</p>
+                        {file.document_type && (
+                          <p className="text-xs text-[var(--gray-400)]">{file.document_type}</p>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })
+              )}
+            </div>
+            <div className="px-4 py-3 border-t border-[var(--gray-200)] flex justify-end gap-2 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsBinderPickerOpen(false)}
+                className="px-3 py-1.5 text-sm text-[var(--gray-800)] rounded-lg border border-[var(--gray-200)] hover:bg-[var(--gray-50)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleBinderApply}
+                disabled={selectedBinderIds.size === 0}
+                className="px-3 py-1.5 text-sm text-white rounded-lg bg-[var(--teal)] hover:bg-[#0A7A85] disabled:opacity-50"
+              >
+                Attach{selectedBinderIds.size > 0 ? ` (${selectedBinderIds.size})` : ''}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

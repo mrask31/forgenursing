@@ -709,6 +709,7 @@ export default function TutorSession({
           attachedFiles={attachedFiles}
           attachedContext={attachedContext}
           onDetach={onDetachFile}
+          onAttachFiles={handleAttachedFilesChange}
         />
         {/* Disclaimer below chat box */}
         <p className="text-[9px] text-slate-400 text-center mt-2 pb-2">
