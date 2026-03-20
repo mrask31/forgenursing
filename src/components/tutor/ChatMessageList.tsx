@@ -40,6 +40,10 @@ const ADPIE_BLOCK_CONFIG = {
     wrapperClass: 'bg-[#e8f4f4] rounded-lg px-4 py-3 mb-3',
     labelColor: 'text-[#1a8080]',
   },
+  'THE MAP': {
+    wrapperClass: 'bg-gray-50 rounded-lg px-4 py-3 mb-3',
+    labelColor: 'text-slate-900',
+  },
   REASONING: {
     wrapperClass: 'bg-gray-50 rounded-lg px-4 py-3 mb-3',
     labelColor: 'text-slate-900',
@@ -47,6 +51,10 @@ const ADPIE_BLOCK_CONFIG = {
   TRAP: {
     wrapperClass: 'bg-[#fef9ec] border-l-4 border-[#e6a817] rounded-r-lg px-4 py-3 mb-3',
     labelColor: 'text-[#c47a0d]',
+  },
+  'YOUR MATERIALS': {
+    wrapperClass: 'rounded-lg px-4 py-3 mb-3',
+    labelColor: 'text-slate-700',
   },
   CHECK: {
     wrapperClass: 'bg-[#eef4f7] rounded-lg px-4 py-3 mb-3',
@@ -61,16 +69,20 @@ interface AdpieSection {
   content: string
 }
 
+const ADPIE_HEADERS_PATTERN = /(?:ORIENT|THE MAP|REASONING|TRAP|YOUR MATERIALS|CHECK)/
+
 function splitIntoAdpieSections(content: string): AdpieSection[] {
-  const hasAdpieHeaders = /^#{1,3}\s+(?:ORIENT|REASONING|TRAP|CHECK)\b/m.test(content)
+  const hasAdpieHeaders = new RegExp('^#{1,3}\\s+' + ADPIE_HEADERS_PATTERN.source, 'm').test(content)
   if (!hasAdpieHeaders) {
     return [{ blockType: null, content }]
   }
-  const parts = content.split(/(?=^#{1,3}\s+(?:ORIENT|REASONING|TRAP|CHECK)\b)/gm)
+  const splitRegex = new RegExp('(?=^#{1,3}\\s+' + ADPIE_HEADERS_PATTERN.source + ')', 'gm')
+  const parts = content.split(splitRegex)
   return parts
     .filter(p => p.trim())
     .map(part => {
-      const headerMatch = part.match(/^#{1,3}\s+(ORIENT|REASONING|TRAP|CHECK)\b/)
+      const headerRegex = new RegExp('^#{1,3}\\s+(' + ADPIE_HEADERS_PATTERN.source + ')')
+      const headerMatch = part.match(headerRegex)
       return {
         blockType: headerMatch ? (headerMatch[1] as AdpieBlockType) : null,
         content: part,
@@ -387,7 +399,7 @@ export default function ChatMessageList({
                       h2: ({children}: {children: React.ReactNode}) => <h2 className="text-xl font-semibold tracking-tight text-slate-900 mb-2 mt-5 first:mt-0">{children}</h2>,
                       h3: ({children, ...props}: { children: React.ReactNode; [key: string]: any }) => {
                         const text = typeof children === 'string' ? children.trim() : ''
-                        const isAdpieLabel = ['ORIENT', 'REASONING', 'TRAP', 'CHECK'].includes(text)
+                        const isAdpieLabel = ['ORIENT', 'THE MAP', 'REASONING', 'TRAP', 'YOUR MATERIALS', 'CHECK'].includes(text)
                         const isSnapshot = text === 'Snapshot'
                         return (
                           <h3

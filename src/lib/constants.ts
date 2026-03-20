@@ -2,11 +2,11 @@
 
 // General Tutor prompts (broad, NCLEX-focused for all nursing students)
 export const GENERAL_TUTOR_PROMPTS = [
-  "Give me an NCLEX practice question on [topic]",
+  "Give me an NCLEX practice question on fluid balance",
   "Walk me through an NCLEX-style priority question",
-  "Explain a nursing concept step-by-step using ABCs",
+  "Explain heart failure step-by-step using ABCs",
   "Help me practice medication dosage calculations",
-  "Quiz me on pathophysiology (NCLEX format)",
+  "Quiz me on diabetes pathophysiology (NCLEX format)",
 ]
 
 // Class-specific prompts (when a class is selected)

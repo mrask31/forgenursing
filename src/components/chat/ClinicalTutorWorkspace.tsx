@@ -996,7 +996,20 @@ export default function ClinicalTutorWorkspace({
           // Close modal on success
           setSaveClipModal({ isOpen: false, messageId: '', content: '' })
         }}
-        defaultTitle={saveClipModal.content.substring(0, 50) + (saveClipModal.content.length > 50 ? '...' : '')}
+        defaultTitle={(() => {
+          // Use the preceding user message as the clip title (clinical topic), not the AI response text
+          if (saveClipModal.messageId) {
+            const msgIndex = normalizedMessages.findIndex(m => m.id === saveClipModal.messageId)
+            if (msgIndex > 0) {
+              const prevUserMsg = normalizedMessages.slice(0, msgIndex).reverse().find(m => m.role === 'user')
+              if (prevUserMsg?.content) {
+                const title = prevUserMsg.content.trim().substring(0, 80)
+                return title + (prevUserMsg.content.length > 80 ? '...' : '')
+              }
+            }
+          }
+          return saveClipModal.content.substring(0, 50) + (saveClipModal.content.length > 50 ? '...' : '')
+        })()}
       />
 
       {/* NO INPUT HERE - ChatInterface in TutorSession handles input */}
