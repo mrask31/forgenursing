@@ -745,7 +745,15 @@ export default function ClinicalDashboard() {
                                 </span>
                               </div>
                               <div className="text-sm text-[var(--gray-400)] line-clamp-2 mb-3 leading-relaxed">
-                                {clip.content.substring(0, 150)}...
+                                {(() => {
+                                  // Strip conversational openers to show substantive clinical content
+                                  const stripped = clip.content
+                                    .replace(/^(certainly|sure|great question|absolutely|of course|let'?s|okay|alright|i'?d be happy to|here'?s|let me)[!,.]?\s*/i, '')
+                                    .replace(/^(let'?s\s+)?(break\s+down|dive\s+into|explore|look\s+at|walk\s+through|go\s+over)\s+(some\s+)?(key\s+)?(concepts?|topics?|points?|details?|information)[\s.!,]*/i, '')
+                                    .replace(/^#{1,3}\s+\S+\s*\n?/, '') // Strip markdown headers
+                                    .trim()
+                                  return (stripped || clip.content).substring(0, 150) + '...'
+                                })()}
                               </div>
                               <div className="flex items-center gap-2.5 flex-wrap">
                                 {clip.tags.slice(0, 3).map(tag => (

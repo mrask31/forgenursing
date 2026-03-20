@@ -193,7 +193,7 @@ export default function DictionaryPage() {
                 onClick={() => setSavedFilter('saved')}
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                   savedFilter === 'saved'
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/30'
+                    ? 'bg-[#2a9d8f] text-white'
                     : 'bg-white text-[var(--gray-800)] hover:bg-[var(--gray-50)] border border-[var(--gray-200)]'
                 }`}
               >
@@ -206,7 +206,7 @@ export default function DictionaryPage() {
                 onClick={() => setSavedFilter('not-saved')}
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                   savedFilter === 'not-saved'
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/30'
+                    ? 'bg-[#2a9d8f] text-white'
                     : 'bg-white text-[var(--gray-800)] hover:bg-[var(--gray-50)] border border-[var(--gray-200)]'
                 }`}
               >
