@@ -31,6 +31,7 @@ interface ChatMessageListProps {
   onSendMessage?: (message: string) => void // Callback to send a follow-up prompt
   activeCourse?: string | null
   activeCourseType?: string | null
+  messageImageMap?: Map<string, string[]> // Maps message content → image data URLs
 }
 
 // ADPIE block styling config
@@ -103,6 +104,7 @@ export default function ChatMessageList({
   onSendMessage,
   activeCourse,
   activeCourseType,
+  messageImageMap,
 }: ChatMessageListProps) {
   const tutorContext = useTutorContext()
   const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
@@ -448,9 +450,17 @@ export default function ChatMessageList({
           )
         } else {
           // User message - right-aligned bubble
+          const userImages = messageImageMap?.get(m.content)
           return (
             <div key={m.id} className="flex justify-end">
               <div className="ml-auto max-w-[70%]">
+                {userImages && userImages.length > 0 && (
+                  <div className="flex gap-1.5 justify-end mb-1.5">
+                    {userImages.map((src, i) => (
+                      <img key={i} src={src} alt={`Attached image ${i + 1}`} className="w-14 h-14 object-cover rounded-lg border border-white/20" />
+                    ))}
+                  </div>
+                )}
                 <div className="inline-block rounded-2xl bg-[#0B2545] px-5 py-3 text-sm font-medium text-white shadow-lg hover:shadow-xl transition-all duration-200 leading-relaxed">
                   {m.content}
                 </div>

@@ -161,6 +161,7 @@ export default function ChatInterface({
     try {
       await onSend(message, imagePayload)
       setInputValue('')
+      // Revoke blob preview URLs — chat history uses data URLs from base64 instead
       pendingImages.forEach(img => URL.revokeObjectURL(img.preview))
       setPendingImages([])
     } catch (error) {

@@ -84,6 +84,8 @@ export default function ClinicalTutorWorkspace({
   const [customError, setCustomError] = useState('')
   const tutorContext = useTutorContext()
   const [savingToNotebook, setSavingToNotebook] = useState<string | null>(null) // messageId being saved
+  // Map message content → image data URLs for rendering in chat history
+  const [messageImageMap, setMessageImageMap] = useState<Map<string, string[]>>(new Map())
   const [flaggedMessages, setFlaggedMessages] = useState<Set<string>>(new Set())
   const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
   const justSentMessageRef = useRef<boolean>(false) // Track when we just sent a message
@@ -507,6 +509,9 @@ export default function ClinicalTutorWorkspace({
         // Store imageData in ref — handleSendMessage reads it synchronously before append
         if (eventImageData && eventImageData.length > 0) {
           pendingImageDataRef.current = eventImageData
+          // Create data URLs for chat history rendering
+          const dataUrls = eventImageData.map(img => `data:${img.mimeType};base64,${img.base64}`)
+          setMessageImageMap(prev => new Map(prev).set(message, dataUrls))
         }
 
         if (eventSessionId !== chatId && eventSessionId) {
@@ -751,6 +756,7 @@ export default function ClinicalTutorWorkspace({
                 ? (inferCourseType(tutorContext.selectedClass.code, tutorContext.selectedClass.name) ?? tutorContext.selectedClass.type)
                 : null
             }
+            messageImageMap={messageImageMap}
           />
         ) : (
           normalizedMessages.map((m, index) => {
