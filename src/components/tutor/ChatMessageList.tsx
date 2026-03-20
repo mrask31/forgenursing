@@ -53,8 +53,8 @@ const ADPIE_BLOCK_CONFIG = {
     labelColor: 'text-[#c47a0d]',
   },
   'YOUR MATERIALS': {
-    wrapperClass: 'rounded-lg px-4 py-3 mb-3',
-    labelColor: 'text-slate-700',
+    wrapperClass: 'bg-white rounded-lg px-4 py-3 mb-3 border border-[var(--gray-200)]',
+    labelColor: 'text-[#0D8F9C]',
   },
   CHECK: {
     wrapperClass: 'bg-[#eef4f7] rounded-lg px-4 py-3 mb-3',
@@ -78,7 +78,7 @@ function splitIntoAdpieSections(content: string): AdpieSection[] {
   }
   const splitRegex = new RegExp('(?=^#{1,3}\\s+' + ADPIE_HEADERS_PATTERN.source + ')', 'gm')
   const parts = content.split(splitRegex)
-  return parts
+  const sections = parts
     .filter(p => p.trim())
     .map(part => {
       const headerRegex = new RegExp('^#{1,3}\\s+(' + ADPIE_HEADERS_PATTERN.source + ')')
@@ -88,6 +88,28 @@ function splitIntoAdpieSections(content: string): AdpieSection[] {
         content: part,
       }
     })
+
+  // Post-process: split out inline YOUR MATERIALS that got absorbed into another block
+  // Catches patterns like "**Your Materials:**" or "Your Materials:" without a ### header
+  const result: AdpieSection[] = []
+  for (const section of sections) {
+    const inlineMatch = section.content.match(/^([\s\S]*?)(\n\s*\*{0,2}(?:Your Materials|YOUR MATERIALS)\s*:?\*{0,2}\s*\n)([\s\S]*)$/i)
+    if (inlineMatch && section.blockType !== 'YOUR MATERIALS') {
+      const before = inlineMatch[1].trim()
+      const after = (inlineMatch[2] + inlineMatch[3]).trim()
+      if (before) {
+        result.push({ blockType: section.blockType, content: before })
+      }
+      if (after) {
+        // Normalize to ### header format for consistent rendering
+        const normalized = after.replace(/^\s*\*{0,2}(?:Your Materials|YOUR MATERIALS)\s*:?\*{0,2}/i, '### YOUR MATERIALS')
+        result.push({ blockType: 'YOUR MATERIALS', content: normalized })
+      }
+    } else {
+      result.push(section)
+    }
+  }
+  return result
 }
 
 // Helper to detect if message likely used binder context

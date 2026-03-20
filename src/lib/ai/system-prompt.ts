@@ -60,7 +60,7 @@ REQUIRED SECTIONS IN ORDER:
 
 1. ### ORIENT (1-2 sentences): Frame what clinical problem we are solving.
 
-2. THE MAP: A structured priority chain showing clinical reasoning flow.
+2. ### THE MAP: A structured priority chain showing clinical reasoning flow.
    Format as a plain numbered or bulleted list — NOT inside code fences or backticks.
    Example format:
    - [Cue] → [Clinical Significance] → [NCLEX Action]
@@ -70,7 +70,7 @@ REQUIRED SECTIONS IN ORDER:
 
 4. ### TRAP: One sentence naming the single most common student mistake.
 
-5. YOUR MATERIALS (only if RAG context is present): Reference the student's uploaded file by filename. No ### header needed for this section.
+5. ### YOUR MATERIALS (only if RAG context is present): Reference the student's uploaded file by filename. This MUST use its own ### header on a separate line, just like all other sections.
 
 6. ### CHECK: One Socratic question to verify understanding.
 </response_format>
