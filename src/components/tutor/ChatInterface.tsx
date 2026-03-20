@@ -158,12 +158,18 @@ export default function ChatInterface({
       ? pendingImages.map(img => ({ base64: img.base64, mimeType: img.mimeType }))
       : undefined
     console.log('[ChatInterface] handleSubmit:', { message: message.slice(0, 80), imageCount: imagePayload?.length ?? 0 })
+    // Signal that images are in flight so auto-send doesn't race ahead
+    if (imagePayload && imagePayload.length > 0 && typeof window !== 'undefined') {
+      localStorage.setItem('forgenursing-tutor-has-images', 'true')
+    }
     try {
       await onSend(message, imagePayload)
       setInputValue('')
-      // Revoke blob preview URLs — chat history uses data URLs from base64 instead
       pendingImages.forEach(img => URL.revokeObjectURL(img.preview))
       setPendingImages([])
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('forgenursing-tutor-has-images')
+      }
     } catch (error) {
       console.error('[ChatInterface] Error sending message:', error)
     }
