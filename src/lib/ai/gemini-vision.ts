@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Anthropic from '@anthropic-ai/sdk';
 
 export interface GeminiVisionResult {
   description: string;
@@ -33,28 +33,48 @@ export async function analyzeClinicalImage(
   imageBase64: string,
   mimeType: string
 ): Promise<GeminiVisionResult> {
-  const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    throw new Error('GOOGLE_GEMINI_API_KEY is not configured');
+    throw new Error('ANTHROPIC_API_KEY is not configured');
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel(
-    { model: 'gemini-1.5-flash-latest' },
-    { apiVersion: 'v1' }
-  );
+  // Normalize mimeType for Claude's accepted image types
+  const supportedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
+  type SupportedMediaType = typeof supportedTypes[number];
+  const mediaType: SupportedMediaType = supportedTypes.includes(mimeType as SupportedMediaType)
+    ? (mimeType as SupportedMediaType)
+    : 'image/jpeg';
 
-  const result = await model.generateContent([
-    { text: VISION_SYSTEM_PROMPT },
-    {
-      inlineData: {
-        mimeType,
-        data: imageBase64,
+  const client = new Anthropic({ apiKey });
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1024,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mediaType,
+              data: imageBase64,
+            },
+          },
+          {
+            type: 'text',
+            text: VISION_SYSTEM_PROMPT,
+          },
+        ],
       },
-    },
-  ]);
+    ],
+  });
 
-  const responseText = result.response.text();
+  const responseText = response.content
+    .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+    .map(block => block.text)
+    .join('');
 
   // Extract JSON from response (handle markdown code fences)
   let jsonStr = responseText.trim();
@@ -65,7 +85,7 @@ export async function analyzeClinicalImage(
 
   try {
     const parsed = JSON.parse(jsonStr);
-    console.log('[GeminiVision] Full result before system prompt injection:', JSON.stringify(parsed, null, 2));
+    console.log('[VisionAnalysis] Result:', JSON.stringify(parsed, null, 2));
     return {
       description: parsed.description || 'Unable to describe image',
       clinicalFindings: Array.isArray(parsed.clinicalFindings) ? parsed.clinicalFindings : [],
@@ -75,7 +95,7 @@ export async function analyzeClinicalImage(
       phi_elements: Array.isArray(parsed.phi_elements) ? parsed.phi_elements : [],
     };
   } catch {
-    console.error('[GeminiVision] Failed to parse response:', responseText);
+    console.error('[VisionAnalysis] Failed to parse response:', responseText);
     return {
       description: 'Image analysis completed but response could not be parsed',
       clinicalFindings: [],
