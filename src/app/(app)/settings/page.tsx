@@ -13,6 +13,7 @@ interface SubscriptionData {
     id: string
     status: string
     trialEndDate: string | null
+    currentPeriodEnd: string | null
     cancelAtPeriodEnd: boolean
   } | null
   status: string | null
@@ -77,13 +78,23 @@ export default function SettingsPage() {
           if (subRes.ok) {
             const data = await subRes.json()
             const status = data.status ?? null
+            // Format trial_end from API: prefer trial_end_display (string), fallback to trial_end (Unix timestamp)
+            let trialEndDate: string | null = data.trial_end_display ?? null
+            if (!trialEndDate && data.trial_end) {
+              trialEndDate = new Date(data.trial_end * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+            }
+            let currentPeriodEnd: string | null = null
+            if (data.current_period_end) {
+              currentPeriodEnd = new Date(data.current_period_end * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+            }
             setSubscriptionData({
               status,
               subscription: status
                 ? {
                     id: data.stripe_subscription_id ?? '',
                     status,
-                    trialEndDate: data.trial_end_display ?? data.trial_end_date ?? null,
+                    trialEndDate,
+                    currentPeriodEnd,
                     cancelAtPeriodEnd: data.cancel_at_period_end ?? false,
                   }
                 : null,
@@ -376,12 +387,14 @@ export default function SettingsPage() {
                     )}
                     <p className={`${tokens.smallText} font-medium text-clinical-text-primary`}>
                       {subscriptionData.subscription.status === 'trialing'
-                        ? `Trial active — ends ${subscriptionData.subscription.trialEndDate ?? '—'}`
+                        ? `Trial active — ends ${subscriptionData.subscription.trialEndDate || 'soon'}`
                         : subscriptionData.subscription.status === 'active'
-                          ? 'Active subscription'
+                          ? `Active subscription${subscriptionData.subscription.currentPeriodEnd ? ` — next billing ${subscriptionData.subscription.currentPeriodEnd}` : ''}`
                           : subscriptionData.subscription.status === 'canceled'
                             ? 'Canceled'
-                            : String(subscriptionData.subscription.status || 'Unknown')}
+                            : subscriptionData.subscription.status === 'past_due'
+                              ? 'Past due'
+                              : String(subscriptionData.subscription.status || 'Unknown')}
                     </p>
                   </>
                 ) : subscriptionData !== null ? (
@@ -475,9 +488,13 @@ export default function SettingsPage() {
                     if (subRes.ok) {
                       const data = await subRes.json()
                       const status = data.status ?? null
+                      let refreshTrialEnd: string | null = data.trial_end_display ?? null
+                      if (!refreshTrialEnd && data.trial_end) {
+                        refreshTrialEnd = new Date(data.trial_end * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                      }
                       setSubscriptionData({
                         status,
-                        subscription: status ? { id: data.stripe_subscription_id ?? '', status, trialEndDate: data.trial_end_display ?? data.trial_end_date ?? null, cancelAtPeriodEnd: data.cancel_at_period_end ?? false } : null,
+                        subscription: status ? { id: data.stripe_subscription_id ?? '', status, trialEndDate: refreshTrialEnd, currentPeriodEnd: data.current_period_end ? new Date(data.current_period_end * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : null, cancelAtPeriodEnd: data.cancel_at_period_end ?? false } : null,
                       })
                     }
                     const successMsg = isTrialing
@@ -515,7 +532,7 @@ export default function SettingsPage() {
             Need help? Email{' '}
             <a
               href="mailto:support@forgenursing.com"
-              className="text-clinical-primary hover:text-clinical-secondary transition-colors"
+              className="text-[#0D8F9C] hover:text-[#0A7A85] transition-colors"
             >
               support@forgenursing.com
             </a>

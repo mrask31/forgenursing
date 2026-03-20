@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { MessageSquare, BarChart3, GraduationCap, BookOpen, Activity, Settings, LogOut, ChevronUp, User } from 'lucide-react'
+import { MessageSquare, BarChart3, GraduationCap, BookOpen, Activity, Settings, LogOut, ChevronUp } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import HistoryButton from './HistoryButton'
 
@@ -188,14 +188,6 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
           {/* Dropdown menu — renders above the profile card */}
           {isProfileMenuOpen && (
             <div className="absolute bottom-full left-0 right-0 mb-2 mx-1 rounded-lg overflow-hidden border border-white/10" style={{ backgroundColor: '#112D4E' }}>
-              <Link
-                href="/settings"
-                onClick={() => { setIsProfileMenuOpen(false); onNavigate?.() }}
-                className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors"
-              >
-                <User className="w-4 h-4" />
-                Edit Profile
-              </Link>
               <Link
                 href="/settings"
                 onClick={() => { setIsProfileMenuOpen(false); onNavigate?.() }}
