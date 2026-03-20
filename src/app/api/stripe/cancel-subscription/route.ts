@@ -82,10 +82,6 @@ export async function POST(req: Request) {
       }
     )
 
-    console.log('[Stripe Cancel] Subscription canceled at period end:', {
-      subscriptionId: subscription.id,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    })
 
     // Update profile status to reflect cancellation
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY

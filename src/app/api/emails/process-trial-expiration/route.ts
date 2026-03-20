@@ -46,14 +46,12 @@ export async function POST(request: Request) {
     }
 
     // Step 1: Find and queue Day 6 reminders (24h before expiration)
-    console.log('[Trial Expiration] Finding users for Day 6 reminder...')
     const { data: day6Users, error: day6Error } = await supabase
       .rpc('get_users_for_day_6_reminder')
 
     if (day6Error) {
       console.error('[Trial Expiration] Error fetching Day 6 users:', day6Error)
     } else if (day6Users && day6Users.length > 0) {
-      console.log(`[Trial Expiration] Found ${day6Users.length} users for Day 6 reminder`)
       
       for (const user of day6Users) {
         await supabase.rpc('queue_trial_expiration_email', {
@@ -68,14 +66,12 @@ export async function POST(request: Request) {
     }
 
     // Step 2: Find and queue Day 7 expiration notices (trial expired)
-    console.log('[Trial Expiration] Finding users for Day 7 expiration...')
     const { data: day7Users, error: day7Error } = await supabase
       .rpc('get_users_for_day_7_expiration')
 
     if (day7Error) {
       console.error('[Trial Expiration] Error fetching Day 7 users:', day7Error)
     } else if (day7Users && day7Users.length > 0) {
-      console.log(`[Trial Expiration] Found ${day7Users.length} users for Day 7 expiration`)
       
       for (const user of day7Users) {
         await supabase.rpc('queue_trial_expiration_email', {
@@ -90,7 +86,6 @@ export async function POST(request: Request) {
     }
 
     // Step 3: Process pending emails from queue
-    console.log('[Trial Expiration] Processing pending emails...')
     const { data: pendingEmails, error: queueError } = await supabase
       .rpc('get_pending_trial_expiration_emails', { batch_size: 50 })
 
@@ -112,7 +107,6 @@ export async function POST(request: Request) {
       })
     }
 
-    console.log(`[Trial Expiration] Processing ${pendingEmails.length} emails`)
 
     // Step 4: Send each email
     for (const item of pendingEmails) {
@@ -150,7 +144,6 @@ export async function POST(request: Request) {
         })
 
         results.sent++
-        console.log(`[Trial Expiration] Sent ${item.email_type} to ${item.email}`)
       } catch (error: any) {
         await supabase.rpc('mark_trial_expiration_email_sent', {
           p_email_id: item.id,

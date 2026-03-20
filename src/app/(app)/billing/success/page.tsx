@@ -41,7 +41,6 @@ function BillingSuccessContent() {
                 
                 // Auto-redirect to onboarding if not completed
                 if (!completed) {
-                  console.log('[Billing Success] Redirecting to onboarding (not completed)')
                   setTimeout(() => {
                     window.location.href = '/onboarding'
                   }, 1500) // Small delay to show success message

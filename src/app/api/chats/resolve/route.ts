@@ -54,8 +54,6 @@ async function seedInitialMessage(
     console.error('[Resolve API] Error details:', JSON.stringify(error, null, 2))
     // Don't throw - chat creation succeeded, message seeding is best-effort
   } else {
-    console.log('[Resolve API] Successfully seeded initial message with sequence_number:', sequenceNumber)
-    console.log('[Resolve API] Message content preview:', content.substring(0, 100))
   }
 }
 
@@ -258,7 +256,6 @@ export async function POST(req: Request) {
     const classId = body.classId as string | undefined
     const topicId = body.topicId as string | undefined
 
-    console.log('[Resolve API] POST request:', { intent, hasReflection: !!reflectionText, hasSnapshot: !!snapshotText, noteIdsCount: selectedNoteIds.length })
 
     // 3. Handle different intents
     if (intent === 'resume_last') {
@@ -273,7 +270,6 @@ export async function POST(req: Request) {
         .maybeSingle()
 
       if (lastChat) {
-        console.log('[Resolve API] Found last chat:', { id: lastChat.id, session_type: lastChat.session_type, title: lastChat.title })
         return NextResponse.json({
           chatId: lastChat.id,
           session_type: lastChat.session_type || 'general',
@@ -281,7 +277,6 @@ export async function POST(req: Request) {
           mode: lastChat.mode || 'tutor',
         })
       } else {
-        console.log('[Resolve API] No chats found for resume_last')
         return NextResponse.json({
           chatId: null,
           session_type: null,
@@ -445,10 +440,7 @@ export async function POST(req: Request) {
           
           // Seed the welcome message as the first assistant message
           try {
-            console.log('[Resolve API] About to seed welcome message for chat:', newChat.id, 'classId:', classId)
             await seedInitialMessage(supabase, newChat.id, welcomeMessage, 'assistant')
-            console.log('[Resolve API] Seeded welcome message for class:', classId)
-            console.log('[Resolve API] Welcome message content (first 100 chars):', welcomeMessage.substring(0, 100))
             
             // Verify the message was saved and wait a moment for DB commit
             try {
@@ -464,12 +456,6 @@ export async function POST(req: Request) {
                 .maybeSingle()
               
               if (savedMessage) {
-                console.log('[Resolve API] Verified welcome message saved:', {
-                  id: savedMessage.id,
-                  role: savedMessage.role,
-                  sequence_number: savedMessage.sequence_number,
-                  contentLength: savedMessage.content?.length
-                })
               } else {
                 console.warn('[Resolve API] WARNING: Welcome message may not have been saved! Retrying...')
                 // Retry once after a longer delay
@@ -482,7 +468,6 @@ export async function POST(req: Request) {
                   .limit(1)
                   .maybeSingle()
                 if (retryMessage) {
-                  console.log('[Resolve API] Welcome message found on retry')
                 } else {
                   console.error('[Resolve API] Welcome message not found after retry - may need to check DB')
                 }
@@ -514,11 +499,6 @@ export async function POST(req: Request) {
     }
 
     if (intent === 'new_notes') {
-      console.log('[Resolve API] new_notes intent received:', { 
-        selectedNoteIdsCount: selectedNoteIds.length,
-        selectedNoteIds: selectedNoteIds,
-        bodyKeys: Object.keys(body)
-      })
       
       if (selectedNoteIds.length === 0) {
         console.error('[Resolve API] new_notes: No noteIds provided in request body')
@@ -528,11 +508,6 @@ export async function POST(req: Request) {
       // Validate UUIDs
       const validNoteIds = selectedNoteIds.filter(id => isValidUUID(id))
       
-      console.log('[Resolve API] new_notes: UUID validation:', {
-        originalCount: selectedNoteIds.length,
-        validCount: validNoteIds.length,
-        invalidIds: selectedNoteIds.filter(id => !isValidUUID(id))
-      })
       if (validNoteIds.length === 0) {
         return NextResponse.json({ error: 'Invalid note IDs provided' }, { status: 400 })
       }
@@ -664,15 +639,6 @@ export async function GET(req: Request) {
       })
     }
     
-    console.log('[Resolve API] Request params:', {
-      mode,
-      rawNoteIdsLength: rawNoteIds.length,
-      validNoteIdsLength: selectedNoteIds.length,
-      selectedNoteIds,
-      invalidIds: rawNoteIds.filter(id => !isValidUUID(id)),
-      chatIdParam,
-      branch: mode === 'notes' && selectedNoteIds.length > 0 ? 'NOTES MODE BRANCH' : 'TUTOR MODE BRANCH'
-    })
     
     // If explicit chatId provided, verify it matches the requested mode
     if (chatIdParam) {
@@ -688,10 +654,8 @@ export async function GET(req: Request) {
         if (mode === 'notes' && chat.mode !== 'notes') {
           // Chat exists but is not a notes chat - ignore it and proceed with Notes Mode resolution
           // This ensures Notes Mode always takes priority
-          console.log('[Resolve API] Ignoring tutor chat, proceeding with Notes Mode resolution')
         } else {
           // Chat matches requested mode, return it
-          console.log('[Resolve API] Returning existing chat:', { chatId: chat.id, mode: chat.mode })
           return NextResponse.json({
             chatId: chat.id,
             mode: chat.mode,
@@ -706,7 +670,6 @@ export async function GET(req: Request) {
     // When notes are provided in URL params, create or resolve the session.
     // Only return requiresPicker if no notes are in URL params.
     if (mode === 'notes') {
-      console.log('[Resolve API] NOTES MODE BRANCH - selectedNoteIds:', selectedNoteIds)
       
       // CRITICAL: If no valid UUIDs provided, return error (NEVER fall back to tutor chat)
       if (selectedNoteIds.length === 0) {
@@ -732,20 +695,17 @@ export async function GET(req: Request) {
         .order('updated_at', { ascending: false })
         .limit(10)
 
-      console.log('[Resolve API] Found', existingChats?.length || 0, 'existing notes chats')
 
       // Find chat with matching note IDs (order-independent)
       const matchingChat = existingChats?.find(chat => {
         const chatNoteIds = (chat.selected_note_ids || []) as string[]
         const matches = arraysEqual(chatNoteIds, selectedNoteIds)
         if (matches) {
-          console.log('[Resolve API] Found matching notes chat:', chat.id)
         }
         return matches
       })
 
       if (matchingChat) {
-        console.log('[Resolve API] Returning existing notes chat:', matchingChat.id)
         return NextResponse.json({
           chatId: matchingChat.id,
           mode: 'notes',
@@ -779,7 +739,6 @@ export async function GET(req: Request) {
         }
       }
       
-      console.log('[Resolve API] Creating new notes chat with title:', chatTitle)
       
       // Create new notes-scoped chat
       const { data: newChat, error: createError } = await supabase
@@ -798,7 +757,6 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: 'Failed to create chat' }, { status: 500 })
       }
 
-      console.log('[Resolve API] Created new notes chat:', newChat.id)
       return NextResponse.json({
         chatId: newChat.id,
         mode: 'notes',
@@ -808,7 +766,6 @@ export async function GET(req: Request) {
 
     // 4. Handle Tutor Mode (default)
     // Load most recent tutor chat
-    console.log('[Resolve API] TUTOR MODE BRANCH - loading most recent tutor chat')
     const { data: lastTutorChat } = await supabase
       .from('chats')
       .select('id, title')
@@ -818,7 +775,6 @@ export async function GET(req: Request) {
       .limit(1)
       .maybeSingle()
 
-    console.log('[Resolve API] Returning tutor chat:', lastTutorChat?.id || null)
     return NextResponse.json({
       chatId: lastTutorChat?.id || null,
       mode: 'tutor',

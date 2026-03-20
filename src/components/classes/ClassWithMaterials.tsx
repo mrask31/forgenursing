@@ -85,13 +85,8 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
         const allFiles = data.files || []
 
         // Debug logging - show ALL files and their metadata
-        console.log('[ClassWithMaterials] ===== LOADING MATERIALS =====')
-        console.log('[ClassWithMaterials] All files received:', allFiles.length)
-        console.log('[ClassWithMaterials] Looking for classId:', classItem.id)
-        console.log('[ClassWithMaterials] Class code:', classItem.code)
 
         // Log ALL files with full structure
-        console.log('[ClassWithMaterials] ALL FILES DETAIL:', JSON.stringify(allFiles, null, 2))
 
         // Filter files that belong to this class
         const classFiles = allFiles.filter((f: any) => {
@@ -100,18 +95,10 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           const matches = fileClassId === classItem.id
 
           // Log each file for debugging
-          console.log('[ClassWithMaterials] Checking file:', f.filename, {
-            fileClassId: fileClassId,
-            classItemId: classItem.id,
-            matches: matches,
-            fullFile: f
-          })
 
           return matches
         })
 
-        console.log('[ClassWithMaterials] Filtered files for class:', classFiles.length)
-        console.log('[ClassWithMaterials] Filtered files:', classFiles.map((f: any) => f.filename))
 
         // Map to DocumentFile format
         const mappedFiles: DocumentFile[] = classFiles.map((f: any) => ({
@@ -122,8 +109,6 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           created_at: f.created_at
         }))
 
-        console.log('[ClassWithMaterials] Mapped files:', mappedFiles.length)
-        console.log('[ClassWithMaterials] ===== END LOADING =====')
 
         setMaterials(mappedFiles)
       } else {
@@ -199,12 +184,6 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
         throw new Error('No text could be extracted from the document')
       }
 
-      console.log('[ClassWithMaterials] Uploading file:', {
-        filename: file.name,
-        document_type: uploadDocumentType,
-        class_id: classItem.id,
-        class_code: classItem.code
-      })
 
       const res = await fetch('/api/process', {
         method: 'POST',
@@ -217,7 +196,6 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
         })
       })
 
-      console.log('[ClassWithMaterials] Upload response status:', res.status, res.ok)
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: 'Upload failed' }))
@@ -278,11 +256,9 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
 
         if (recentChat) {
           // Continue the recent chat
-          console.log('[ClassWithMaterials] Continuing recent chat:', recentChat.id)
           router.push(`/tutor?mode=tutor&sessionId=${recentChat.id}&classId=${classItem.id}`)
         } else {
           // Start fresh with class context
-          console.log('[ClassWithMaterials] Starting fresh chat for class:', classItem.id)
           router.push(`/tutor?mode=tutor&classId=${classItem.id}&intent=new_question`)
         }
       } else {

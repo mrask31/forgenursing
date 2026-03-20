@@ -49,7 +49,6 @@ export default function LoginPage() {
       
       // Only clear storage if there's an auth error
       if (hasAuthError) {
-        console.log('[Login] Auth error detected, clearing storage')
         clearSupabaseStorage()
       }
       
@@ -223,7 +222,6 @@ export default function LoginPage() {
           hint: profileError.hint
         })
         // On error, default to checkout to be safe
-        console.log('[Login] Redirecting to checkout (profile error)')
         window.location.replace('/checkout')
         return // Exit early, redirecting so don't set loading to false
       }
@@ -233,24 +231,13 @@ export default function LoginPage() {
       const hasStripeSubscription = !!profile?.stripe_subscription_id
       
       // Log everything for debugging
-      console.log('[Login] 🔍 Subscription check:', {
-        subscriptionStatus: subscriptionStatus || 'null/undefined',
-        subscriptionStatusType: typeof subscriptionStatus,
-        hasStripeSubscription,
-        stripeSubscriptionId: profile?.stripe_subscription_id || 'none',
-        profileExists: !!profile,
-        rawProfile: JSON.stringify(profile, null, 2),
-        userId: data.user.id
-      })
       
       // PRIORITY 1: If user has ANY Stripe subscription ID, they've completed checkout
       // Allow them in regardless of status (webhook might be delayed)
       if (hasStripeSubscription) {
-        console.log('[Login] ✅ User has Stripe subscription ID - allowing access (webhook may be delayed)')
         
         // If status is not trialing or active, update it
         if (subscriptionStatus !== 'trialing' && subscriptionStatus !== 'active') {
-          console.log('[Login] Updating status to trialing (user has Stripe subscription)')
           const { error: updateError } = await supabase
             .from('profiles')
             .update({ subscription_status: 'trialing' })
@@ -260,24 +247,20 @@ export default function LoginPage() {
             console.error('[Login] Error updating status to trialing:', updateError)
             // Still allow access even if update fails
           } else {
-            console.log('[Login] ✅ Updated status to trialing')
           }
         }
         
-        console.log('[Login] Redirecting to tutor')
         window.location.replace(redirect)
         return
       }
       
       // PRIORITY 2: Access = trialing | active (no payment/invoice required)
       if (hasSubscriptionAccess(subscriptionStatus)) {
-        console.log('[Login] ✅ User has access (trialing or active), redirecting to:', redirect)
         window.location.replace(redirect)
         return
       }
       
       // PRIORITY 3: No access — redirect to checkout
-      console.log('[Login] ❌ Redirecting to checkout. Status:', subscriptionStatus || 'null')
       window.location.replace('/checkout')
       // Note: We don't set loading to false on success because we're redirecting
     } catch (err) {

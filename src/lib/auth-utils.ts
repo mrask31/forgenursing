@@ -116,6 +116,5 @@ export function resetSession(): void {
  */
 export function debugAuthLog(message: string, data?: any): void {
   if (process.env.NEXT_PUBLIC_DEBUG_AUTH === 'true') {
-    console.debug(`[Auth Debug] ${message}`, data || '')
   }
 }

@@ -187,13 +187,6 @@ export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCo
 
   // Logging for debugging
   useEffect(() => {
-    console.log('[SuggestedPrompts] Props:', {
-      mode,
-      hasAttachedFiles,
-      attachedContext,
-      hasExistingConversation,
-      hasLastMessage: !!lastAssistantMessage,
-    })
   }, [mode, hasAttachedFiles, attachedContext, hasExistingConversation, lastAssistantMessage])
 
   // Priority Logic:
@@ -206,7 +199,6 @@ export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCo
   // NEW: Generate contextual prompts from last assistant message if conversation exists
   if (hasExistingConversation && lastAssistantMessage && lastAssistantMessage.trim().length > 0) {
     prompts = generateContextualPrompts(lastAssistantMessage)
-    console.log('[SuggestedPrompts] Generated contextual prompts from last message:', prompts.length)
   } else if (hasActiveExam) {
     prompts = EXAM_PROMPTS
   } else if (hasAttachedFiles) {
@@ -244,14 +236,6 @@ export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCo
       : isMixed || isDefaultFile ? 'DEFAULT_FILE'
       : 'TUTOR'
     
-    console.log('[SuggestedPrompts] Selected prompt set:', {
-      promptType,
-      hasAttachedFiles,
-      attachedContext,
-      mode,
-      promptCount: prompts.length,
-      firstPrompt: prompts[0]
-    })
   }, [hasAttachedFiles, attachedContext, mode])
 
   const handleClick = (prompt: string) => {

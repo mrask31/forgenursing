@@ -17,7 +17,6 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const typeParam = searchParams.get('type') // 'syllabus' | 'textbook' | 'note' | 'all' | null
 
-    console.log('[Binder API] Incoming query:', { type: typeParam ?? 'all' })
 
     // 1. Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -32,18 +31,6 @@ export async function GET(req: Request) {
       .order('created_at', { ascending: false })
       .limit(5)
 
-    console.log('[Binder API] RAW CHUNKS SAMPLE:', { 
-      count: rawChunks?.length ?? 0, 
-      rows: rawChunks?.map(r => ({
-        id: r.id,
-        file_key: r.file_key,
-        user_id: r.user_id,
-        document_type: r.document_type,
-        metadata: r.metadata,
-        has_is_active_in_metadata: r.metadata?.is_active !== undefined,
-        is_active_value: r.metadata?.is_active
-      }))
-    })
 
     if (rawError) {
       console.error('[Binder API] Raw chunks debug error:', rawError)
@@ -69,17 +56,11 @@ export async function GET(req: Request) {
     }
 
     if (!chunkRows || chunkRows.length === 0) {
-      console.log('[Binder API] No chunks found for user:', user.id)
-      console.log('[Binder API] Debug: Raw chunks count was:', rawChunks?.length ?? 0)
       if (rawChunks && rawChunks.length > 0) {
-        console.log('[Binder API] Debug: Sample raw chunk user_id:', rawChunks[0]?.user_id)
-        console.log('[Binder API] Debug: Query user_id:', user.id)
-        console.log('[Binder API] Debug: User IDs match?', rawChunks[0]?.user_id === user.id)
       }
       return NextResponse.json({ files: [] })
     }
 
-    console.log('[Binder API] Found chunks:', { count: chunkRows.length, sample: chunkRows[0] })
     
     // Filter by is_active if needed (stored in metadata.is_active)
     const activeChunks = chunkRows.filter((row: any) => {
@@ -87,10 +68,6 @@ export async function GET(req: Request) {
       return row.metadata?.is_active !== false
     })
     
-    console.log('[Binder API] Active chunks after filtering:', { 
-      total: chunkRows.length, 
-      active: activeChunks.length 
-    })
 
     // 3. Group by file_key → one logical file per file_key
     const filesByKey = new Map<string, any>()
@@ -158,15 +135,7 @@ export async function GET(req: Request) {
 
     let files = Array.from(filesByKey.values())
 
-    console.log('[Binder API] Grouped into files:', { count: files.length })
     if (files.length > 0) {
-      console.log('[Binder API] Sample file metadata:', {
-        filename: files[0].filename,
-        metadata: files[0].metadata,
-        class_id: files[0].metadata?.class_id,
-        classId: files[0].metadata?.classId,
-        document_type: files[0].document_type
-      })
     }
 
     // 4. Apply type filter (client-side filtering after grouping)
@@ -201,11 +170,6 @@ export async function GET(req: Request) {
       }
     }))
 
-    console.log('[Binder API] Returning files', {
-      type: type ?? 'all',
-      count: formattedFiles.length,
-      sample: formattedFiles[0] ? { filename: formattedFiles[0].filename, document_type: formattedFiles[0].document_type } : null
-    })
 
     return NextResponse.json({ files: formattedFiles })
   } catch (error: any) {

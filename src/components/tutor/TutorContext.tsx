@@ -190,7 +190,6 @@ export function TutorProvider({ children }: { children: ReactNode }) {
     // Only update if URL value differs from state (prevents loops)
     // This will only trigger when URL changes externally (browser nav), not when we update it programmatically
     if (urlClassId !== stateClassId) {
-      console.log('[TutorContext] Syncing classId from URL:', { url: urlClassId, state: stateClassId })
       setSelectedClassIdState(urlClassId)
     }
     if (urlTopicId !== stateTopicId) {

@@ -72,7 +72,6 @@ async function logWebhookEvent(
     if (dbError) {
       console.error('[Webhook] Error logging to database:', dbError)
     } else {
-      console.log(`[Webhook] Logged event ${event.id} with status: ${status}`)
     }
   } catch (error) {
     console.error('[Webhook] Error in logWebhookEvent:', error)
@@ -121,12 +120,6 @@ async function processWebhookEvent(
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         
-        console.log('[Webhook] Processing checkout.session.completed:', {
-          sessionId: session.id,
-          customerId: session.customer,
-          clientReferenceId: session.client_reference_id,
-          subscriptionId: session.subscription,
-        })
         
         // Get user ID from client_reference_id
         let userId = session.client_reference_id
@@ -134,7 +127,6 @@ async function processWebhookEvent(
 
         // Fallback: lookup by Stripe customer ID
         if (!userId && customerId) {
-          console.log('[Webhook] Looking up user by customer ID:', customerId)
           const { data: existingProfile } = await supabase
             .from('profiles')
             .select('id')
@@ -143,7 +135,6 @@ async function processWebhookEvent(
           
           if (existingProfile?.id) {
             userId = existingProfile.id
-            console.log('[Webhook] Found user:', userId)
           }
         }
 
@@ -165,11 +156,6 @@ async function processWebhookEvent(
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
         const status = subscription.status === 'trialing' ? 'trialing' : 'active'
         
-        console.log('[Webhook] Subscription status:', {
-          subscriptionId,
-          status: subscription.status,
-          mappedStatus: status,
-        })
 
         // Update profile
         const { data: updatedProfile, error: updateError } = await supabase
@@ -190,11 +176,6 @@ async function processWebhookEvent(
           }
         }
 
-        console.log('[Webhook] ✅ Successfully updated profile:', {
-          userId,
-          status,
-          profile: updatedProfile?.[0]
-        })
         
         return { success: true }
       }
@@ -205,12 +186,6 @@ async function processWebhookEvent(
         const subscription = event.data.object as Stripe.Subscription
         const customerId = subscription.customer as string
 
-        console.log('[Webhook] Processing subscription event:', {
-          eventType: event.type,
-          subscriptionId: subscription.id,
-          customerId,
-          status: subscription.status,
-        })
 
         // Find user by Stripe customer ID
         const { data: profile } = await supabase
@@ -257,17 +232,11 @@ async function processWebhookEvent(
           }
         }
 
-        console.log('[Webhook] ✅ Updated subscription:', {
-          userId: profile.id,
-          status,
-          subscriptionId: subscription.id,
-        })
         
         return { success: true }
       }
 
       default:
-        console.log('[Webhook] Unhandled event type:', event.type)
         return { success: true } // Not an error, just unhandled
     }
   } catch (error) {
@@ -347,7 +316,6 @@ export async function POST(req: Request) {
       )
     }
 
-    console.log('[Webhook] Received event:', event.type, 'ID:', event.id)
 
     // Log event as pending
     await logWebhookEvent(supabase, event, 'pending')
@@ -361,7 +329,6 @@ export async function POST(req: Request) {
     if (result.success) {
       // Mark as succeeded
       await updateWebhookAttempt(supabase, event.id, 'succeeded')
-      console.log('[Webhook] ✅ Event processed successfully:', event.id)
       return NextResponse.json({ received: true, success: true })
     } else {
       // Mark as failed (will be retried by background job)

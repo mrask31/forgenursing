@@ -268,7 +268,6 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log('[Welcome Email] Sent successfully to:', email, 'ID:', data?.id)
 
     return NextResponse.json({
       success: true,

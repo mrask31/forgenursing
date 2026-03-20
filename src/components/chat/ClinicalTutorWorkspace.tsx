@@ -105,9 +105,7 @@ export default function ClinicalTutorWorkspace({
   useEffect(() => {
     if (chatId && typeof window !== 'undefined' && isValidUUID(chatId)) {
       localStorage.setItem('forgenursing-chat-id', chatId)
-      console.log('[ClinicalTutorWorkspace] Using chatId:', chatId, 'mode:', mode, 'filterMode:', filterMode, 'selectedDocIds:', selectedDocIds.length)
     } else if (!chatId) {
-      console.log('[ClinicalTutorWorkspace] Waiting for chatId resolution...', 'mode:', mode)
     }
   }, [chatId, mode, filterMode, selectedDocIds.length])
   const [initialMessages, setInitialMessages] = useState<any[]>([])
@@ -121,22 +119,16 @@ export default function ClinicalTutorWorkspace({
 
   // Debug: Log attachedFiles prop received by ClinicalTutorWorkspace
   useEffect(() => {
-    console.log('🔍 ClinicalTutorWorkspace received files:', {
-      count: attachedFiles.length,
-      files: attachedFiles.map(f => ({ id: f.id, name: f.name, document_type: f.document_type })),
-    });
   }, [attachedFiles]);
 
   // Load chat history
   useEffect(() => {
     if (!chatId) return;
 
-    console.log('[ClinicalTutorWorkspace] Loading history for chatId:', chatId, 'mode:', mode)
 
     const loadHistory = async () => {
       try {
         const historyUrl = `/api/history?id=${chatId}`
-        console.log('[ClinicalTutorWorkspace] Calling /api/history:', historyUrl)
         const response = await fetch(historyUrl);
         const data = await response.json();
         // Handle both old format (array) and new format (object)
@@ -430,13 +422,6 @@ export default function ClinicalTutorWorkspace({
       const imageData = pendingImageDataRef.current
       pendingImageDataRef.current = undefined // Clear immediately
 
-      console.log('[ClinicalTutorWorkspace] handleSendMessage calling append:', {
-        message: trimmedMessage.slice(0, 80),
-        hasImageData: !!imageData,
-        imageCount: imageData?.length ?? 0,
-        imageBase64Lengths: imageData?.map(img => img.base64?.length) ?? [],
-        appendOptions: imageData ? 'body with imageData' : 'no extra body',
-      })
 
       await append(
         { role: 'user', content: trimmedMessage },
@@ -482,18 +467,10 @@ export default function ClinicalTutorWorkspace({
       const customEvent = event as CustomEvent<{ message: string; sessionId: string; imageData?: Array<{ base64: string; mimeType: string }> }>
       const { message, sessionId: eventSessionId, imageData: eventImageData } = customEvent.detail
 
-      console.log('[ClinicalTutorWorkspace] Received tutor-send-message event:', {
-        message: message?.slice(0, 80),
-        sessionId: eventSessionId,
-        hasImageData: !!eventImageData,
-        imageCount: eventImageData?.length ?? 0,
-        imageBase64Lengths: eventImageData?.map(img => img.base64?.length) ?? [],
-      })
 
       // Create a unique key for this message to prevent duplicates
       const messageKey = `${eventSessionId}:${message}`
       if (processedMessagesRef.current.has(messageKey)) {
-        console.log('[ClinicalTutorWorkspace] Ignoring duplicate message:', messageKey)
         return
       }
 
@@ -533,13 +510,11 @@ export default function ClinicalTutorWorkspace({
   
   useEffect(() => {
     if (!chatId || !append) {
-      console.log('[ClinicalTutorWorkspace] Auto-send check skipped:', { chatId: !!chatId, append: !!append })
       return
     }
     
     // Wait for history to finish loading before checking
     if (isLoadingHistory) {
-      console.log('[ClinicalTutorWorkspace] Auto-send check skipped - history still loading')
       return
     }
     
@@ -548,12 +523,6 @@ export default function ClinicalTutorWorkspace({
       const prefill = localStorage.getItem('forgenursing-tutor-prefill')
       const shouldAutoSend = localStorage.getItem('forgenursing-tutor-auto-send') === 'true'
       
-      console.log('[ClinicalTutorWorkspace] Auto-send check:', { 
-        hasPrefill: !!prefill, 
-        shouldAutoSend, 
-        messagesCount: messages.length,
-        alreadyProcessed: autoSendProcessedRef.current 
-      })
       
       if (prefill && shouldAutoSend) {
         // If images are pending (user uploaded an image), skip auto-send entirely.
@@ -652,7 +621,6 @@ export default function ClinicalTutorWorkspace({
       const a = messages[messages.length - 1];
       const b = messages[messages.length - 2];
       if (a.role === 'user' && b.role === 'user' && a.content === b.content) {
-        console.log('[ClinicalTutorWorkspace] Removing duplicate user message:', a.content);
         return messages.slice(0, -1);
       }
     }

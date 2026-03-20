@@ -91,13 +91,6 @@ export default function AttachedSourcesBar({
         return fileObj
       }).filter((file: BinderFile) => file.canonicalId && file.canonicalId.trim() !== '')
 
-      console.log('[AttachedSourcesBar] Loaded binder files:', {
-        count: filesWithCanonicalId.length,
-        sample: filesWithCanonicalId[0] ? {
-          filename: filesWithCanonicalId[0].filename,
-          document_type: filesWithCanonicalId[0].document_type
-        } : null
-      })
 
       setBinderFiles(filesWithCanonicalId)
     } catch (error) {
@@ -143,13 +136,6 @@ export default function AttachedSourcesBar({
             document_type: documentType // CRITICAL: Preserve document_type exactly as it is
           }
           
-          console.log('[AttachedSourcesBar] Attaching file:', {
-            id: fileObj.id,
-            name: fileObj.name,
-            document_type: fileObj.document_type,
-            source: 'binderFiles',
-            binderFile_document_type: binderFile.document_type
-          })
           
           return fileObj
         }
@@ -157,12 +143,6 @@ export default function AttachedSourcesBar({
         // Fallback: try to find in existing attachedFiles (preserve if already attached)
         const existing = attachedFiles.find(f => f.id === id)
         if (existing) {
-          console.log('[AttachedSourcesBar] Using existing file:', {
-            id: existing.id,
-            name: existing.name,
-            document_type: existing.document_type,
-            source: 'existing'
-          })
           return existing
         }
         
@@ -172,10 +152,6 @@ export default function AttachedSourcesBar({
       })
       .filter(f => f.id) // Remove any invalid entries
     
-    console.log('[AttachedSourcesBar] Applying attached files:', {
-      count: newAttachedFiles.length,
-      files: newAttachedFiles.map(f => ({ id: f.id, name: f.name, document_type: f.document_type }))
-    })
     
     onAttachedFilesChange(newAttachedFiles)
     
@@ -198,7 +174,6 @@ export default function AttachedSourcesBar({
         if (!response.ok) {
           console.error('[AttachedSourcesBar] Failed to save attached files:', await response.text())
         } else {
-          console.log('[AttachedSourcesBar] Saved attached files to chat metadata:', newAttachedFiles.map(f => f.id))
         }
       } catch (error) {
         console.error('[AttachedSourcesBar] Failed to save attached files:', error)

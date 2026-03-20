@@ -170,14 +170,12 @@ export async function POST(req: Request) {
     }
 
     if (!failedWebhooks || failedWebhooks.length === 0) {
-      console.log('[Webhook Retry] No webhooks to retry')
       return NextResponse.json({ 
         message: 'No webhooks to retry',
         processed: 0 
       })
     }
 
-    console.log(`[Webhook Retry] Found ${failedWebhooks.length} webhooks to retry`)
 
     const results = {
       total: failedWebhooks.length,
@@ -189,7 +187,6 @@ export async function POST(req: Request) {
     // Process each failed webhook
     for (const webhook of failedWebhooks) {
       try {
-        console.log(`[Webhook Retry] Retrying event ${webhook.stripe_event_id} (attempt ${webhook.attempt_count + 1})`)
 
         // Reconstruct the Stripe event from stored payload
         const event = webhook.payload as Stripe.Event
@@ -219,7 +216,6 @@ export async function POST(req: Request) {
             .eq('id', webhook.id)
 
           results.succeeded++
-          console.log(`[Webhook Retry] ✅ Successfully retried ${webhook.stripe_event_id}`)
         } else {
           // Mark as failed
           await supabase
@@ -251,7 +247,6 @@ export async function POST(req: Request) {
       }
     }
 
-    console.log('[Webhook Retry] Retry job complete:', results)
 
     return NextResponse.json({
       message: 'Webhook retry job complete',

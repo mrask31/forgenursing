@@ -62,7 +62,6 @@ export async function POST(request: Request) {
       })
     }
 
-    console.log(`[Welcome Queue] Processing ${pendingEmails.length} emails`)
 
     const results = {
       sent: 0,
@@ -102,7 +101,6 @@ export async function POST(request: Request) {
         })
 
         results.sent++
-        console.log(`[Welcome Queue] Sent email to ${item.email} (ID: ${emailData?.id})`)
       } catch (error: any) {
         // Mark as failed in database
         await supabase.rpc('mark_welcome_email_sent', {

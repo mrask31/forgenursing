@@ -39,7 +39,6 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log(`[Set Trial] Trial set for user ${userId} until ${trialEndsAt.toISOString()}`)
 
     // Trigger welcome email processing (non-blocking)
     // This will process the queue that was populated by the database trigger

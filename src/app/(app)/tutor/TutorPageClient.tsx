@@ -52,10 +52,6 @@ function TutorPageContent() {
   
   // Callbacks - MUST be defined before any returns
   const handleAttachedFilesChange = useCallback((files: { id: string, name: string, document_type: string | null }[]) => {
-    console.log("🔍 [TutorPage] Setting attached files:", {
-      count: files.length,
-      files: files.map(f => ({ id: f.id, name: f.name, document_type: f.document_type }))
-    })
     setAttachedFiles(files)
   }, [])
 
@@ -206,13 +202,6 @@ function TutorPageContent() {
 
   // Effect hooks - all defined before any returns
   useEffect(() => {
-    console.log("[Tutor Page] attachedFiles changed:", {
-      count: attachedFiles.length,
-      files: attachedFiles.map(f => ({ id: f.id, name: f.name, document_type: f.document_type })),
-      attachedTypes,
-      attachedContext,
-      hasAttachedFiles
-    })
   }, [attachedFiles, attachedContext, attachedTypes, hasAttachedFiles])
 
   const prevClassIdRef = useRef<string | undefined>(undefined)
@@ -228,14 +217,6 @@ function TutorPageContent() {
       (currentExamId && currentExamId !== prevExamIdRef.current) ||
       (currentClassId !== prevClassIdRef.current) // Class changed
     ) {
-      console.log('[Tutor] Context changed (topic, exam, or class), resetting session', {
-        topicId: currentTopicId,
-        examId: currentExamId,
-        classId: currentClassId,
-        prevTopicId: prevTopicIdRef.current,
-        prevExamId: prevExamIdRef.current,
-        prevClassId: prevClassIdRef.current,
-      })
       
       // Clear resolved session to force fresh start
       setResolvedChatId(null)
@@ -260,13 +241,11 @@ function TutorPageContent() {
       
       // Prevent infinite loops: if we're already resolving the same params, skip
       if (isResolvingRef.current && lastResolvedParamsRef.current === paramsKey) {
-        console.log('[Tutor] Already resolving with same params, skipping:', paramsKey)
         return
       }
       
       // Prevent re-resolution of the same params (only if we have a resolved chatId)
       if (lastResolvedParamsRef.current === paramsKey && resolvedChatId && sessionIdParam && resolvedChatId === sessionIdParam) {
-        console.log('[Tutor] Already resolved these params, skipping:', paramsKey)
         return
       }
       
@@ -275,17 +254,9 @@ function TutorPageContent() {
       setIsResolving(true)
       setError(null)
       
-      console.log('[Tutor] Resolve Session - Params:', {
-        intent: intentParam,
-        sessionId: sessionIdParam,
-        topicId: tutorContext.selectedTopicId,
-        examId: tutorContext.activeExamId,
-        classId: tutorContext.selectedClassId,
-      })
 
       // PRIORITY 0: If intent is new_question or new_reflection, create a new chat (skip auto-resume)
       if (intentParam === 'new_question' || intentParam === 'new_reflection') {
-        console.log('[Tutor] New chat intent detected, will create fresh chat on first message')
         setResolvedChatId(null)
         setIsResolving(false)
         isResolvingRef.current = false
@@ -302,7 +273,6 @@ function TutorPageContent() {
       // PRIORITY 0.5: If topicId or examId is present but no sessionId, start fresh (don't auto-resume)
       // But still render TutorSession (it will create session on first message)
       if ((tutorContext.selectedTopicId || tutorContext.activeExamId) && !sessionIdParam && !intentParam) {
-        console.log('[Tutor] Topic/exam context active, starting fresh (session will be created on first message)')
         setResolvedChatId(null)
         setIsResolving(false)
         isResolvingRef.current = false
@@ -340,13 +310,6 @@ function TutorPageContent() {
             const classMatches = normalizedChatClassId === normalizedEffectiveClassId
             
             if (!classMatches) {
-              console.log('[Tutor] SessionId class mismatch - updating URL to match chat', {
-                sessionId: sessionIdParam,
-                chatClassId: chatClassId || 'General',
-                urlClassId: urlClassId || 'General',
-                contextClassId: contextClassId || 'General',
-                effectiveClassId: effectiveClassId || 'General'
-              })
               
               // Update URL to match chat's classId (if URL doesn't already have it)
               // This will trigger context sync naturally without clearing sessionId
@@ -370,7 +333,6 @@ function TutorPageContent() {
           // Continue with normal flow if metadata check fails
         }
         
-        console.log('[Tutor] Using explicit sessionId:', sessionIdParam)
         setResolvedChatId(sessionIdParam)
         
         // Load attached files from chat metadata (non-blocking)
@@ -383,7 +345,6 @@ function TutorPageContent() {
             if (metadataRes.ok) {
               const metadata = await metadataRes.json()
               
-              console.log('[Tutor Page] Raw metadata from API:', metadata)
               
               // PRIORITY: Use attachedFiles directly from metadata if available (has document_type)
               if (metadata.metadata?.attachedFiles && Array.isArray(metadata.metadata.attachedFiles)) {
@@ -394,21 +355,15 @@ function TutorPageContent() {
                     document_type: f.document_type !== undefined ? f.document_type : null
                   }))
                 
-                console.log('[Tutor Page] Loaded attachedFiles directly from metadata:', {
-                  count: attachedFilesList.length,
-                  files: attachedFilesList.map(f => ({ id: f.id, name: f.name, document_type: f.document_type }))
-                })
                 
                 // Only update if we have files (don't overwrite with empty array if user just attached)
                 if (attachedFilesList.length > 0 || attachedFiles.length === 0) {
                   setAttachedFiles(attachedFilesList)
                 } else {
-                  console.log('[Tutor Page] Skipping metadata load - user has local changes')
                 }
               } 
               // FALLBACK: If only attachedFileIds exist, fetch full objects from Binder API
               else if (metadata.metadata?.attachedFileIds && Array.isArray(metadata.metadata.attachedFileIds)) {
-                console.log('[Tutor Page] Fallback: Loading from attachedFileIds (legacy)')
                 const allFilesRes = await fetch('/api/binder', { credentials: 'include' })
                 if (allFilesRes.ok) {
                   const allFilesData = await allFilesRes.json()
@@ -435,7 +390,6 @@ function TutorPageContent() {
                   }
                 }
               } else {
-                console.log('[Tutor Page] No attached files in metadata')
                 // Only set empty if we don't have local state
                 if (attachedFiles.length === 0) {
                   setAttachedFiles([])
@@ -480,7 +434,6 @@ function TutorPageContent() {
           
           if (effectiveClassId) {
             payload.classId = effectiveClassId
-            console.log('[Tutor] Including classId in resolve:', effectiveClassId)
           }
           if (effectiveTopicId) {
             payload.topicId = effectiveTopicId
@@ -530,7 +483,6 @@ function TutorPageContent() {
           }
 
           // Redirect to sessionId-based URL for clean state (preserve mode)
-          console.log('[Tutor] Resolved to chatId:', chatId, 'Redirecting...')
           isResolvingRef.current = false // Reset before redirect
           router.replace(`/tutor?sessionId=${chatId}`)
           // The redirect will trigger this effect again with sessionId, but the guard will prevent re-resolution
@@ -549,7 +501,6 @@ function TutorPageContent() {
       // Now supports both General Tutor and class-specific chats
       // Skip auto-resume if flag is set (user clicked "New Chat")
       if (skipAutoResumeRef.current) {
-        console.log('[Tutor] Skipping auto-resume - user requested new chat')
         setResolvedChatId(null)
         setIsResolving(false)
         isResolvingRef.current = false
@@ -558,7 +509,6 @@ function TutorPageContent() {
       }
       
       try {
-        console.log('[Tutor] No session specified, attempting auto-resume for classId:', tutorContext.selectedClassId || 'General Tutor')
         
         // Build API URL - for General Tutor, explicitly request null classId
         // For class-specific, filter by classId
@@ -602,12 +552,6 @@ function TutorPageContent() {
           if (filteredChats.length > 0) {
             // Chats are already sorted by updated_at desc from API
             const mostRecent = filteredChats[0]
-            console.log('[Tutor] Auto-resuming most recent session for mode:', {
-              chatId: mostRecent.id,
-              session_type: mostRecent.session_type,
-              title: mostRecent.title,
-              classId: tutorContext.selectedClassId || 'General Tutor'
-            })
             // Update paramsKey to prevent re-resolution
             lastResolvedParamsRef.current = `${intentParam || ''}-${mostRecent.id}-${tutorContext.selectedClassId || ''}`
             isResolvingRef.current = false // Reset before redirect
@@ -618,7 +562,6 @@ function TutorPageContent() {
             return // Will trigger effect again with sessionId, but the guard will prevent re-resolution
           } else {
             // No chat found for this context - show empty state
-            console.log('[Tutor] No chat found for context:', tutorContext.selectedClassId || 'General Tutor')
             setResolvedChatId(null)
             setIsResolving(false)
             isResolvingRef.current = false
@@ -627,7 +570,6 @@ function TutorPageContent() {
         }
         
         // No active sessions found, show empty state
-        console.log('[Tutor] No active sessions found, showing empty state')
         setResolvedChatId(null)
         setSessionType(null)
         setError(null)

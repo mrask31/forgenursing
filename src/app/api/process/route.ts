@@ -66,11 +66,9 @@ export async function POST(req: Request) {
 
     const entitlement = await getEntitlementForUser(user.id)
     if (!entitlement.hasAccess) {
-      console.log('[Entitlement] Blocked', { route: '/api/process', userId: user.id, status: entitlement.status })
       return NextResponse.json({ error: "Payment required", status: entitlement.status }, { status: 402 })
     }
 
-    console.log(`[API] Processing ${text.length} chars for User: ${user.id}`);
 
     // 3. Chunk Text
     // Split by double newlines or periods to get reasonable chunks
@@ -79,7 +77,6 @@ export async function POST(req: Request) {
         .filter((chunk: string) => chunk.length > 50) 
         .map((chunk: string) => chunk.trim());
 
-    console.log(`[API] Generated ${chunks.length} chunks. Embedding now...`);
 
     // 4. Generate file_key for this upload (durable file-level identifier)
     // Format: user_id:filename:date (YYYY-MM-DD)
@@ -109,14 +106,11 @@ export async function POST(req: Request) {
             // Add class_id to metadata if provided
             if (class_id) {
                 metadata.class_id = class_id
-                console.log(`[API Process] Adding class_id to metadata: ${class_id} for file: ${filename}`)
             } else {
-                console.log(`[API Process] No class_id provided for file: ${filename}`)
             }
             
             // Log metadata for first chunk of each file
             if (i === 0 && chunkIndex === 0) {
-                console.log(`[API Process] Metadata for first chunk:`, JSON.stringify(metadata, null, 2))
             }
             
             const { data: insertData, error: insertError } = await supabase
@@ -144,13 +138,10 @@ export async function POST(req: Request) {
             
             // Log document_type for debugging (only for first chunk)
             if (i === 0 && chunkIndex === 0) {
-              console.log(`[API] Processing file "${filename}" with document_type: "${document_type}", user_id: "${user.id}"`);
-              console.log(`[API] Inserted chunk with id: ${insertData?.id}, user_id: ${insertData?.user_id}`);
             }
         }));
     }
 
-    console.log(`[API] Success! Saved ${chunks.length} chunks.`);
     return NextResponse.json({ success: true, chunks: chunks.length });
 
   } catch (error: any) {

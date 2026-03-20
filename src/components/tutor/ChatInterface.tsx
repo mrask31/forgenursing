@@ -77,10 +77,6 @@ export default function ChatInterface({
   const [uploadedCourseName, setUploadedCourseName] = useState('')
 
   useEffect(() => {
-    console.log('🔍 ChatInterface received files:', {
-      count: attachedFiles.length,
-      files: attachedFiles.map(f => ({ id: f.id, name: f.name, document_type: f.document_type })),
-    });
   }, [attachedFiles]);
 
   useEffect(() => {
@@ -132,7 +128,6 @@ export default function ChatInterface({
         if (file.size > MAX_IMAGE_SIZE) { alert(`${file.name}: File too large. Maximum 10MB per image.`); continue }
         const { base64, actualMimeType } = await fileToBase64(file)
         const preview = URL.createObjectURL(file)
-        console.log('[ChatInterface] Image attached:', { name: file.name, actualMimeType, base64Length: base64.length })
         newImages.push({ id: crypto.randomUUID(), file, preview, base64, mimeType: actualMimeType })
       }
       setPendingImages(prev => [...prev, ...newImages])
@@ -157,7 +152,6 @@ export default function ChatInterface({
     const imagePayload = pendingImages.length > 0
       ? pendingImages.map(img => ({ base64: img.base64, mimeType: img.mimeType }))
       : undefined
-    console.log('[ChatInterface] handleSubmit:', { message: message.slice(0, 80), imageCount: imagePayload?.length ?? 0 })
     // Signal that images are in flight so auto-send doesn't race ahead
     if (imagePayload && imagePayload.length > 0 && typeof window !== 'undefined') {
       localStorage.setItem('forgenursing-tutor-has-images', 'true')

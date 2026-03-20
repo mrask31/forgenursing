@@ -62,7 +62,6 @@ export async function GET(req: Request) {
       content: msg.content,
     }));
 
-    console.log(`[DB] Successfully loaded ${formattedMessages.length} messages for chat ${chatId}`);
     return NextResponse.json({
       messages: formattedMessages,
       chatStatus: chatInfo?.status || 'active',

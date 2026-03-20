@@ -185,11 +185,6 @@ async function retrieveBinderContext(
 
     // 3) Filter by attachedFileIds if provided (for specific file selection)
     if (attachedFileIds.length > 0) {
-      console.log('[RAG] Filtering by attachedFileIds', {
-        attachedFileIdsCount: attachedFileIds.length,
-        attachedFileIds: attachedFileIds.slice(0, 5),
-        documentsBeforeFilter: documents.length,
-      });
       
       documents = documents.filter((doc: any) => {
         const docId = String(doc.id || doc.document_id || '');
@@ -203,9 +198,6 @@ async function retrieveBinderContext(
         return matchesId || matchesFileKey || matchesChunkId;
       });
       
-      console.log('[RAG] After filtering by attachedFileIds', {
-        documentsAfterFilter: documents.length,
-      });
     }
 
     // 4) Build context and extract file info
@@ -329,30 +321,12 @@ export async function POST(req: NextRequest) {
     : [];
   
   // Validate and normalize imageData
-  console.log('[CHAT] Raw imageData from body:', {
-    rawImageDataType: typeof rawImageData,
-    rawImageDataIsArray: Array.isArray(rawImageData),
-    rawImageDataLength: Array.isArray(rawImageData) ? rawImageData.length : 'N/A',
-    rawImageDataPresent: rawImageData !== undefined && rawImageData !== null,
-    bodyKeys: Object.keys(body),
-  });
 
   const imageData: Array<{ base64: string; mimeType: string }> = Array.isArray(rawImageData)
     ? rawImageData.filter((img: any) => img?.base64 && img?.mimeType).slice(0, 3)
     : [];
 
   // Log incoming request details
-  console.log('[CHAT] Incoming', {
-    mode: filterMode,
-    sessionId: chatId,
-    chatId,
-    attachedFileIds: attachedFileIds.length > 0 ? attachedFileIds : 'none (empty array)',
-    attachedFileIdsCount: attachedFileIds.length,
-    imageCount: imageData.length,
-    imageBase64Lengths: imageData.map(img => img.base64?.length ?? 0),
-    firstUserMessage: messages?.[messages.length - 1]?.content?.slice?.(0, 80),
-    messageCount: messages?.length || 0,
-  });
 
   // Authenticated Supabase client (cookies)
   const cookieStore = cookies();
@@ -388,7 +362,6 @@ export async function POST(req: NextRequest) {
 
   const entitlement = await getEntitlementForUser(user.id)
   if (!entitlement.hasAccess) {
-    console.log('[Entitlement] Blocked', { route: '/api/chat', userId: user.id, status: entitlement.status })
     return new Response(JSON.stringify({ error: 'Payment required', status: entitlement.status }), {
       status: 402,
       headers: { 'Content-Type': 'application/json' },
@@ -498,12 +471,6 @@ export async function POST(req: NextRequest) {
     ? requestAttachedIds 
     : (effectiveAttachedIds.length > 0 ? effectiveAttachedIds : effectiveSelectedIds);
   
-  console.log('[CHAT] RAG context filter IDs', {
-    requestAttachedIds: requestAttachedIds.length,
-    chatMetadataAttachedIds: effectiveAttachedIds.length,
-    selectedDocIds: effectiveSelectedIds.length,
-    finalContextFilterIds: contextFilterIds.length,
-  });
   
   // Call robust RAG helper
   let binderResult: BinderContextResult = { hasContext: false, context: '', contextLength: 0, fileCount: 0 };
@@ -517,12 +484,6 @@ export async function POST(req: NextRequest) {
     );
     
     // Debug log immediately after retrieval
-    console.log('[BinderContext] Result summary:', {
-      hasContext: binderResult.hasContext,
-      fileCount: binderResult.fileCount,
-      contextLength: binderResult.contextLength,
-      query: latestUserMessageStr.substring(0, 50),
-    });
   }
 
   const binderContext = binderResult.context;
@@ -557,7 +518,6 @@ You currently have no uploaded materials for this question. Answer using your ge
 
   // Gemini Vision: Analyze clinical images if provided
   if (imageData.length > 0) {
-    console.log('[CHAT] Processing', imageData.length, 'clinical image(s) with Gemini Vision');
 
     const visionResults: GeminiVisionResult[] = [];
 
@@ -567,7 +527,6 @@ You currently have no uploaded materials for this question. Answer using your ge
 
         // Block if PHI risk is critical
         if (result.phi_risk === 'critical') {
-          console.log('[CHAT] Blocked: critical PHI detected in image', { phi_elements: result.phi_elements });
           return NextResponse.json({
             action: 'block',
             message: 'This image appears to contain real patient information (PHI). ForgeNursing cannot process real patient data. Please use de-identified practice materials only. Your session has not been interrupted.'
@@ -595,7 +554,6 @@ You currently have no uploaded materials for this question. Answer using your ge
     const imageIntentPatterns = /\b(analy[sz]e|look at|review|read|interpret|check)\b.{0,30}\b(image|photo|picture|ekg|ecg|lab|wound|x-?ray|scan|strip|result|screenshot|attachment)/i;
     const defaultImagePrompt = /please analyze this clinical image/i;
     if (imageIntentPatterns.test(latestUserMessageStr) || defaultImagePrompt.test(latestUserMessageStr)) {
-      console.log('[CHAT] Image intent detected but no imageData present');
       systemPrompt += `\n\n### NO IMAGE DETECTED\n\nThe student's message suggests they want to analyze a clinical image, but no image data was received in this request. Begin your ORIENT section with exactly this text (do not modify it):\n\n"I don't see an image attached. If you uploaded one, try sending it again — this sometimes happens on the first attempt in a new session. If it still isn't working, [report this issue](forge://report-image-issue) and we'll look into it."\n\nAfter this message, continue with your normal ORIENT framing of the clinical question the student asked. The link format must be exactly as shown — the client will handle it.\n`;
     }
   }
@@ -734,7 +692,6 @@ FORMATTING RULES:
       (m: any) => m.role !== 'system'
     );
     
-    console.log('[CHAT] Cleaned messages count:', cleanedMessages.length);
     
     // Convert CoreMessage[] to simple Message[] format for history manager
     // CoreMessage has complex content types (string | array), but history manager expects string
@@ -743,14 +700,11 @@ FORMATTING RULES:
       content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
     }));
     
-    console.log('[CHAT] Calling buildMessageHistory...');
-    console.log('[CHAT] Simple messages:', JSON.stringify(simpleMessages.map((m: any) => ({ role: m.role, contentLength: m.content.length }))));
     
     // Build message history with summarization for long conversations
     let processedMessages;
     try {
       processedMessages = await buildMessageHistory(simpleMessages, supabase);
-      console.log('[CHAT] Processed messages count:', processedMessages.length);
     } catch (historyError: any) {
       console.error('[CHAT] Error in buildMessageHistory:', historyError);
       console.error('[CHAT] History error stack:', historyError?.stack);
@@ -758,11 +712,6 @@ FORMATTING RULES:
       processedMessages = simpleMessages;
     }
     
-    console.log('[CHAT] Calling Claude Sonnet...');
-    console.log('[CHAT] Program level:', programLevel);
-    console.log('[CHAT] Prompt mode:', promptMode);
-    console.log('[CHAT] System prompt length:', systemPrompt.length);
-    console.log('[CHAT] Processed messages:', JSON.stringify(processedMessages.map((m: any) => ({ role: m.role, contentLength: m.content?.length || 0 }))));
     
     // Use Claude Sonnet as the tutor brain
     let result;
@@ -773,7 +722,6 @@ FORMATTING RULES:
         messages: processedMessages,
         system: systemPrompt,
       });
-      console.log('[CHAT] Claude call successful, streaming response...');
     } catch (claudeError: any) {
       console.error('[CHAT] Error calling Claude:', claudeError);
       console.error('[CHAT] Claude error name:', claudeError?.name);

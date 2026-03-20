@@ -17,14 +17,6 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { whatYouLove, whatsFrustrating, featureRequest, email, rating } = body
 
-    console.log('[Feedback API] Attempting to insert feedback:', {
-      userId: user.id,
-      hasLove: !!whatYouLove,
-      hasFrustrating: !!whatsFrustrating,
-      hasFeature: !!featureRequest,
-      hasEmail: !!email,
-      rating,
-    })
 
     // Insert feedback into database
     const { data, error } = await supabase
@@ -52,7 +44,6 @@ export async function POST(request: Request) {
       }, { status: 500 })
     }
 
-    console.log('[Feedback API] Feedback saved successfully:', data)
 
     // Send email notification
     try {
@@ -109,9 +100,7 @@ export async function POST(request: Request) {
           `,
         })
         
-        console.log('[Feedback API] Email notification sent successfully')
       } else {
-        console.log('[Feedback API] Email notification skipped - missing configuration')
       }
     } catch (emailError) {
       // Don't fail the request if email fails

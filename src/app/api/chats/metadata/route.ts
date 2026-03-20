@@ -44,14 +44,6 @@ export async function GET(req: Request) {
     const rawMetadata = chat.metadata || {}
     
     // Log the full structure to debug
-    console.log('[Chats Metadata API] Raw metadata from DB:', {
-      hasAttachedFiles: !!rawMetadata.attachedFiles,
-      attachedFilesCount: Array.isArray(rawMetadata.attachedFiles) ? rawMetadata.attachedFiles.length : 0,
-      hasAttachedFileIds: !!rawMetadata.attachedFileIds,
-      attachedFileIdsCount: Array.isArray(rawMetadata.attachedFileIds) ? rawMetadata.attachedFileIds.length : 0,
-      fullMetadata: rawMetadata,
-      metadataKeys: Object.keys(rawMetadata)
-    })
 
     const result = {
       session_type: chat.session_type || 'general',
@@ -60,13 +52,6 @@ export async function GET(req: Request) {
       metadata: rawMetadata, // Return the full metadata object as-is
     }
 
-    console.log('[Chats Metadata API] Returning metadata:', {
-      hasAttachedFiles: !!result.metadata.attachedFiles,
-      attachedFilesCount: Array.isArray(result.metadata.attachedFiles) ? result.metadata.attachedFiles.length : 0,
-      attachedFiles: result.metadata.attachedFiles,
-      hasAttachedFileIds: !!result.metadata.attachedFileIds,
-      attachedFileIds: result.metadata.attachedFileIds
-    })
 
     return NextResponse.json(result)
   } catch (error: any) {
@@ -126,21 +111,7 @@ export async function PATCH(req: Request) {
       ...(metadata.attachedFileIds !== undefined ? { attachedFileIds: metadata.attachedFileIds } : {})
     }
     
-    console.log('[Chats Metadata API] Metadata merge:', {
-      existingHasAttachedFiles: !!existingMetadata.attachedFiles,
-      existingAttachedFilesCount: Array.isArray(existingMetadata.attachedFiles) ? existingMetadata.attachedFiles.length : 0,
-      incomingHasAttachedFiles: metadata.attachedFiles !== undefined,
-      incomingAttachedFilesCount: Array.isArray(metadata.attachedFiles) ? metadata.attachedFiles.length : 0,
-      finalHasAttachedFiles: !!updatedMetadata.attachedFiles,
-      finalAttachedFilesCount: Array.isArray(updatedMetadata.attachedFiles) ? updatedMetadata.attachedFiles.length : 0
-    })
 
-    console.log('[Chats Metadata API] Updating metadata:', {
-      chatId,
-      hasAttachedFiles: !!metadata.attachedFiles,
-      attachedFilesCount: metadata.attachedFiles?.length || 0,
-      sampleFile: metadata.attachedFiles?.[0] || null
-    })
 
     const { error: updateError } = await supabase
       .from('chats')
@@ -153,7 +124,6 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Failed to update session metadata' }, { status: 500 })
     }
 
-    console.log('[Chats Metadata API] Successfully updated metadata')
 
     return NextResponse.json({ success: true, metadata: updatedMetadata })
   } catch (error: any) {

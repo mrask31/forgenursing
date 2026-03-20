@@ -55,7 +55,6 @@ export async function POST() {
       }
     }
 
-    console.log('[BackfillTypes] Updated', updated, 'of', classes.length, 'courses:', updates);
     return NextResponse.json({ updated, total: classes.length, updates });
   } catch (error: any) {
     console.error('[BackfillTypes] Error:', error?.message);

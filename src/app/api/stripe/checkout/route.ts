@@ -64,11 +64,6 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { priceId } = body
 
-    console.log('[Stripe Checkout] Request received:', { 
-      userId: user.id, 
-      email: user.email,
-      priceId: priceId ? `${priceId.substring(0, 10)}...` : 'missing'
-    })
 
     if (!priceId || typeof priceId !== 'string') {
       console.error('[Stripe Checkout] Invalid price ID:', { priceId, body })
@@ -97,7 +92,6 @@ export async function POST(req: Request) {
       appUrl = requestUrl.origin
     }
     
-    console.log('[Stripe Checkout] Using app URL:', appUrl)
     
     // 4. Create Stripe Checkout Session with 7-day free trial
     // Note: Stripe will start a 7-day trial and only charge after the trial ends

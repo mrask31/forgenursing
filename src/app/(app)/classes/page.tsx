@@ -36,7 +36,6 @@ export default function ClassesPage() {
       .then(res => res.json())
       .then(data => {
         if (data.updated > 0) {
-          console.log('[Classes] Backfilled', data.updated, 'course types:', data.updates)
           setRefreshKey(k => k + 1) // Reload to show updated types
         }
       })

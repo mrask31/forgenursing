@@ -53,12 +53,6 @@ export default function TutorSession({
   
   // Debug: Log attachedFiles prop flow
   useEffect(() => {
-    console.log('🔍 TutorSession attachedFiles state:', {
-      propAttachedFilesCount: propAttachedFiles.length,
-      localAttachedFilesCount: localAttachedFiles.length,
-      finalAttachedFilesCount: attachedFiles.length,
-      finalAttachedFiles: attachedFiles.map(f => ({ id: f.id, name: f.name })),
-    });
   }, [propAttachedFiles, localAttachedFiles, attachedFiles]);
   
   const [localSessionId, setLocalSessionId] = useState<string | undefined>(propSessionId)
@@ -458,12 +452,6 @@ export default function TutorSession({
     // If session was just created, wait longer for ClinicalTutorWorkspace to re-initialize
     const delay = !sessionId ? 500 : 100 // Longer delay if session was just created
     
-    console.log('[TutorSession] Dispatching tutor-send-message:', {
-      message: message.trim().slice(0, 80),
-      sessionId: effectiveSessionId,
-      hasImageData: !!imageData,
-      imageCount: imageData?.length ?? 0,
-    })
 
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('tutor-send-message', {

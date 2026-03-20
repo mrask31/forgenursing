@@ -55,7 +55,6 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    console.log('[Signup] Starting signup process')
 
     setLoading(true)
     setMessage(null)
@@ -63,7 +62,6 @@ export default function SignupPage() {
     // Anti-bot checks
     // 1. Honeypot check - if filled, it's a bot
     if (honeypot) {
-      console.log('[Signup] Honeypot triggered - likely bot')
       setLoading(false)
       // Don't show error to bot, just silently fail
       setTimeout(() => {
@@ -75,7 +73,6 @@ export default function SignupPage() {
     // 2. Time check - if submitted too fast (< 3 seconds), likely bot
     const timeSpent = Date.now() - startTime
     if (timeSpent < 3000) {
-      console.log('[Signup] Form submitted too fast - likely bot')
       setLoading(false)
       setTimeout(() => {
         setMessage({ text: 'Please take your time filling out the form.', type: 'error' })
@@ -85,7 +82,6 @@ export default function SignupPage() {
 
     // 3. Interaction check - if no interaction detected, likely bot
     if (!formInteractedRef.current) {
-      console.log('[Signup] No form interaction detected - likely bot')
       setLoading(false)
       setTimeout(() => {
         setMessage({ text: 'Please fill out the form manually.', type: 'error' })
@@ -126,7 +122,6 @@ export default function SignupPage() {
         ])
 
       // Health check
-      console.log('[Signup] Performing health check')
       try {
         const healthRes = await fetch(`${supabaseUrl}/auth/v1/health`, {
           headers: { apikey: supabaseAnonKey },
@@ -134,7 +129,6 @@ export default function SignupPage() {
         if (!healthRes.ok) {
           throw new Error(`Health check failed (${healthRes.status})`)
         }
-        console.log('[Signup] Health check passed')
       } catch (healthError) {
         console.error('[Signup] Health check failed:', healthError)
         setMessage({
@@ -145,7 +139,6 @@ export default function SignupPage() {
         return
       }
 
-      console.log('[Signup] Calling signUp')
       
       // Add a manual timeout promise (30 seconds)
       const signupPromise = supabase.auth.signUp({
@@ -159,11 +152,6 @@ export default function SignupPage() {
       
       const { data, error } = await Promise.race([signupPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.signUp>>
 
-      console.log('[Signup] SignUp response received', { 
-        hasUser: !!data?.user, 
-        hasSession: !!data?.session,
-        userId: data?.user?.id 
-      })
 
       if (error) {
         console.error('[Signup] SignUp error:', error)
@@ -215,7 +203,6 @@ export default function SignupPage() {
             method: 'email'
           })
           signUpEventFiredRef.current = true
-          console.log('[GA4] sign_up event fired')
         }
       }
       
@@ -226,14 +213,12 @@ export default function SignupPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: data.user.id }),
         })
-        console.log('[Signup] Trial period set')
       } catch (trialError) {
         // Don't block signup if trial setting fails
         console.error('[Signup] Failed to set trial:', trialError)
       }
       
       // Check for session (with email verification disabled, should have immediate session)
-      console.log('[Signup] Signup successful, redirecting to tutor')
       setLoading(false)
       
       // Try router.push first, fallback to window.location if it fails
@@ -242,7 +227,6 @@ export default function SignupPage() {
         // If router.push doesn't redirect within 1 second, use window.location
         setTimeout(() => {
           if (window.location.pathname === '/signup') {
-            console.log('[Signup] Router.push failed, using window.location')
             window.location.href = '/tutor'
           }
         }, 1000)

@@ -19,7 +19,6 @@ export async function deleteDocuments(filenames: string[]) {
 
   const entitlement = await getEntitlementForUser(user.id)
   if (!entitlement.hasAccess) {
-    console.log('[Entitlement] Blocked', { route: 'action:deleteDocuments', userId: user.id, status: entitlement.status })
     throw new Error('Payment required')
   }
 
@@ -72,7 +71,6 @@ export async function toggleDocumentContext(filename: string, isActive: boolean)
 
     const entitlement = await getEntitlementForUser(user.id)
     if (!entitlement.hasAccess) {
-      console.log('[Entitlement] Blocked', { route: 'action:toggleDocumentContext', userId: user.id, status: entitlement.status })
       throw new Error('Payment required')
     }
 
@@ -95,7 +93,6 @@ export async function toggleDocumentContext(filename: string, isActive: boolean)
       throw new Error(`Document "${filename}" not found`)
     }
 
-    console.log(`[toggleDocumentContext] Found ${existingDocs.length} chunks for ${filename}, setting is_active to ${isActive}`)
 
     // 3. Update each chunk's metadata with is_active flag
     const updatePromises = existingDocs.map(async (doc) => {
@@ -124,7 +121,6 @@ export async function toggleDocumentContext(filename: string, isActive: boolean)
 
     await Promise.all(updatePromises)
 
-    console.log(`[toggleDocumentContext] Successfully toggled ${filename} to ${isActive ? 'active' : 'inactive'}`)
 
     // 4. Refresh the UI
     revalidatePath('/classes', 'page')

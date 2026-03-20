@@ -49,7 +49,6 @@ export async function DELETE(req: Request) {
       }, { status: 500 })
     }
 
-    console.log(`[API] Successfully deleted ${chatIds.length} chat(s)`)
     return NextResponse.json({ 
       success: true, 
       deleted: chatIds.length 
