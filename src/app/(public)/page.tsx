@@ -261,17 +261,21 @@ export default function HomePage() {
             <p className="text-xs font-bold text-[#0B2545] uppercase tracking-widest mb-4">All plans include</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {[
-                { icon: '✅', text: 'Forge — AI clinical preceptor with NP voice' },
-                { icon: '✅', text: 'ADPIE clinical reasoning on every response' },
-                { icon: '✅', text: 'Upload your textbooks and class notes' },
-                { icon: '✅', text: 'Gemini Vision for clinical image analysis' },
-                { icon: '✅', text: 'Session history and clinical pearls saved' },
-                { icon: '✅', text: 'BSN, ADN, LPN, MSN program support' },
-                { icon: '🔜', text: 'Clinical simulations (coming soon)' },
-                { icon: '🔜', text: 'Persistent course workspace (coming soon)' },
+                { included: true, text: 'Forge — AI clinical preceptor with NP voice' },
+                { included: true, text: 'ADPIE clinical reasoning on every response' },
+                { included: true, text: 'Upload your textbooks and class notes' },
+                { included: true, text: 'Clinical image analysis (EKG, labs, wounds)' },
+                { included: true, text: 'Session history and clinical pearls saved' },
+                { included: true, text: 'BSN, ADN, LPN, MSN program support' },
+                { included: false, text: 'Clinical simulations (coming soon)' },
+                { included: false, text: 'Persistent course workspace (coming soon)' },
               ].map((item) => (
                 <div key={item.text} className="flex items-start gap-2 text-sm text-[#1E2D3D]">
-                  <span className="text-sm leading-none mt-0.5 flex-shrink-0">{item.icon}</span>
+                  {item.included ? (
+                    <Check className="w-4 h-4 text-[#0D8F9C] mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <Clock className="w-4 h-4 text-[#94A3B8] mt-0.5 flex-shrink-0" />
+                  )}
                   <span className="leading-snug">{item.text}</span>
                 </div>
               ))}

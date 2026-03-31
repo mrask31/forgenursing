@@ -70,7 +70,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="w-full bg-[#0D8F9C] text-white text-center text-xs sm:text-sm py-2.5 px-4 relative flex-shrink-0 z-50">
           <span>
             {/* UPDATE BETA SPOTS REMAINING HERE */}
-            🩺 Looking for beta testers — get the rest of the semester free. <strong>14</strong> spots remaining. Email{' '}
+            Looking for beta testers — get the rest of the semester free. <strong>14</strong> spots remaining. Email{' '}
             <a href="mailto:support@forgenursing.com" className="text-white underline font-semibold">support@forgenursing.com</a> to claim yours.
           </span>
           <button
