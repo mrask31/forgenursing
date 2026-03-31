@@ -56,7 +56,7 @@ export default function BeliefValidation() {
             href="/signup?plan=monthly"
             className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-[#0D8F9C] text-white rounded-lg text-sm sm:text-base font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm min-h-[44px]"
           >
-            Try Forge free for 7 days
+            Join Free Beta
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </Link>
         </div>

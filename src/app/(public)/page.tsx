@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
-import { Check, ArrowRight, Shield, Heart, Sparkles, Clock } from 'lucide-react'
+import { Check, Clock } from 'lucide-react'
 import Hero from '@/components/landing/Hero'
 import HowItClicks from '@/components/landing/HowItClicks'
 import ThreeFeatures from '@/components/landing/ThreeFeatures'
 import BeliefValidation from '@/components/landing/BeliefValidation'
 import ClosingCTA from '@/components/landing/ClosingCTA'
-import { startStripeCheckout } from '@/lib/stripeClient'
+// import { startStripeCheckout } from '@/lib/stripeClient' // Disabled during beta
 
 export default function HomePage() {
   // Structured Data (JSON-LD) for SEO
@@ -51,7 +51,7 @@ export default function HomePage() {
         'NP voice for audio learning',
         'Gemini Vision for clinical images',
         'Session history and clinical pearls',
-        '7-day free trial'
+        'Free beta access'
       ]
     }
 
@@ -85,10 +85,10 @@ export default function HomePage() {
         },
         {
           '@type': 'Question',
-          name: 'Is there a free trial?',
+          name: 'Is ForgeNursing free?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. ForgeNursing includes a 7-day free trial. No credit card is charged during the trial. Cancel anytime.'
+            text: 'Yes. ForgeNursing is currently in free beta. No credit card required. Sign up and start studying immediately.'
           }
         },
         {
@@ -282,86 +282,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          <p className="text-sm text-[#1E2D3D]/60 text-center mb-8">
-            Most students decide if ForgeNursing helps within the first 2–3 sessions.
+          <p className="text-sm text-[#1E2D3D]/50 text-center italic mt-8">
+            Beta access is free. Pricing starts at $89/semester after launch.
           </p>
-
-          {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 mb-10">
-            {/* Monthly */}
-            <div className="bg-white border-2 border-[#DDE5EE] rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md hover:border-[#0D8F9C]/40 transition-all duration-200">
-              <h3 className="text-lg font-bold text-[#0B2545] mb-2">Monthly Access</h3>
-              <div className="mb-4">
-                <span className="text-3xl sm:text-4xl font-bold text-[#0B2545]">$24.99</span>
-                <span className="text-[#1E2D3D]/60 text-sm ml-1">/month</span>
-              </div>
-              <p className="text-xs text-[#1E2D3D]/60 mb-6">Perfect for focused study periods</p>
-              <button
-                onClick={() => startStripeCheckout('monthly')}
-                className="w-full px-4 py-3 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
-              >
-                Start 7-Day Free Trial
-                <ArrowRight className="w-4 h-4 inline-block ml-2" />
-              </button>
-            </div>
-
-            {/* Semester — Most Popular */}
-            <div className="bg-white border-2 border-[#0D8F9C] rounded-2xl p-6 sm:p-8 shadow-md relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#0D8F9C] text-white text-xs font-bold rounded-full">
-                Most Popular
-              </div>
-              <h3 className="text-lg font-bold text-[#0B2545] mb-2">Semester Access</h3>
-              <div className="mb-1">
-                <span className="text-3xl sm:text-4xl font-bold text-[#0B2545]">$89</span>
-                <span className="text-[#1E2D3D]/60 text-sm ml-1">/semester</span>
-              </div>
-              <p className="text-[10px] text-[#1E2D3D]/40 mb-1">4 months</p>
-              <p className="text-xs text-[#0D8F9C] font-semibold mb-4">~$22.25/month · Save 11% vs monthly</p>
-              <p className="text-xs text-[#1E2D3D]/60 mb-6">Best value for a full term</p>
-              <button
-                onClick={() => startStripeCheckout('semester')}
-                className="w-full px-4 py-3 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
-              >
-                Start 7-Day Free Trial
-                <ArrowRight className="w-4 h-4 inline-block ml-2" />
-              </button>
-            </div>
-
-            {/* Annual */}
-            <div className="bg-white border-2 border-[#DDE5EE] rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md hover:border-[#0D8F9C]/40 transition-all duration-200">
-              <h3 className="text-lg font-bold text-[#0B2545] mb-2">Annual Access</h3>
-              <div className="mb-1">
-                <span className="text-3xl sm:text-4xl font-bold text-[#0B2545]">$199</span>
-                <span className="text-[#1E2D3D]/60 text-sm ml-1">/year</span>
-              </div>
-              <p className="text-[10px] text-[#1E2D3D]/40 mb-1">12 months</p>
-              <p className="text-xs text-[#0D8F9C] font-semibold mb-4">~$16.58/month · Save 34% vs monthly</p>
-              <p className="text-xs text-[#1E2D3D]/60 mb-6">Maximum savings for long-term commitment</p>
-              <button
-                onClick={() => startStripeCheckout('annual')}
-                className="w-full px-4 py-3 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
-              >
-                Start 7-Day Free Trial
-                <ArrowRight className="w-4 h-4 inline-block ml-2" />
-              </button>
-            </div>
-          </div>
-
-          {/* Trust row */}
-          <div className="flex flex-wrap justify-center items-center gap-5 sm:gap-8 text-xs sm:text-sm text-[#1E2D3D]/60 border-t border-[#DDE5EE] pt-8">
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-[#0D8F9C]" />
-              <span>7-day free trial</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-[#0D8F9C]" />
-              <span>Cancel anytime</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#0D8F9C]" />
-              <span>No hidden fees</span>
-            </div>
-          </div>
         </div>
       </section>
 

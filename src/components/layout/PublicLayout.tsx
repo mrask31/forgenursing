@@ -68,10 +68,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       {/* Beta Tester Recruitment Banner */}
       {showBetaBanner && (
         <div className="w-full bg-[#0D8F9C] text-white text-center text-xs sm:text-sm py-2.5 px-4 relative flex-shrink-0 z-50">
-          <span>
+          <span className="inline-flex items-center gap-2 flex-wrap justify-center">
             {/* UPDATE BETA SPOTS REMAINING HERE */}
-            Looking for beta testers — get the rest of the semester free. <strong>14</strong> spots remaining. Email{' '}
-            <a href="mailto:support@forgenursing.com" className="text-white underline font-semibold">support@forgenursing.com</a> to claim yours.
+            Free beta — <strong>14</strong> spots remaining. No credit card needed.
+            <Link
+              href="/signup?plan=monthly"
+              className="inline-flex items-center gap-1 px-3 py-1 bg-white text-[#0D8F9C] rounded-full text-xs font-bold hover:bg-white/90 transition-colors"
+            >
+              Claim Your Spot →
+            </Link>
           </span>
           <button
             onClick={() => {
@@ -125,13 +130,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   Log In
                 </Link>
               )}
-              {/* Start Free Trial */}
+              {/* Join Free Beta */}
               {pathname === '/' && (!user || !hasActiveSubscription) && (
                 <Link
                   href="/signup?plan=monthly"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#0D8F9C] text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-[#0a7d88] transition-colors min-h-[40px] sm:min-h-[44px] flex items-center shadow-sm"
                 >
-                  Start Free Trial
+                  Join Free Beta
                 </Link>
               )}
             </div>

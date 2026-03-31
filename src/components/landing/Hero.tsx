@@ -15,8 +15,8 @@ export default function Hero({ user }: HeroProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-14 sm:pt-14 sm:pb-20 md:pt-18 md:pb-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
-            {/* Left: Text Content */}
-            <div className="order-2 lg:order-1">
+            {/* Left: Text Content — order-1 on mobile so headline is above fold */}
+            <div className="order-1 lg:order-1">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#E0F4F6] border border-[#0D8F9C]/30 text-[#0B2545] rounded-full text-xs font-semibold mb-5">
                 <div className="w-2 h-2 rounded-full bg-[#0D8F9C]" />
@@ -49,7 +49,7 @@ export default function Hero({ user }: HeroProps) {
                       href="/signup?plan=monthly"
                       className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
                     >
-                      Start Free — 7 Days
+                      Join Free Beta
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                     <a
@@ -63,12 +63,12 @@ export default function Hero({ user }: HeroProps) {
               </div>
 
               <p className="text-xs text-[#1E2D3D]/50">
-                No credit card charged for 7 days · Cancel anytime · $89/semester after trial
+                Free access for beta testers · No credit card required
               </p>
             </div>
 
-            {/* Right: ADPIE Interface Mockup */}
-            <div className="order-1 lg:order-2 w-full max-w-[560px] mx-auto lg:mx-0">
+            {/* Right: ADPIE Interface Mockup — order-2 on mobile so it's below CTA */}
+            <div className="order-2 lg:order-2 w-full max-w-[560px] mx-auto lg:mx-0">
               <div className="bg-white border border-[#DDE5EE] rounded-2xl shadow-xl shadow-[#0B2545]/10 overflow-hidden">
 
                 {/* App chrome bar */}
