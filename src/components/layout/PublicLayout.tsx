@@ -6,11 +6,21 @@ import { usePathname } from 'next/navigation'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { AuthChangeEvent, Session } from '@supabase/supabase-js'
+import { X } from 'lucide-react'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [user, setUser] = useState<any>(null)
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
+  const [showBetaBanner, setShowBetaBanner] = useState(false)
+
+  // Show beta banner unless dismissed this session
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const dismissed = sessionStorage.getItem('forge-beta-banner-dismissed')
+      if (!dismissed) setShowBetaBanner(true)
+    }
+  }, [])
 
   useEffect(() => {
     const supabase = getBrowserClient()
@@ -55,6 +65,27 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen-dynamic bg-[#F7F9FB] flex flex-col">
+      {/* Beta Tester Recruitment Banner */}
+      {showBetaBanner && (
+        <div className="w-full bg-[#0D8F9C] text-white text-center text-xs sm:text-sm py-2.5 px-4 relative flex-shrink-0 z-50">
+          <span>
+            {/* UPDATE BETA SPOTS REMAINING HERE */}
+            🩺 Looking for beta testers — get the rest of the semester free. <strong>14</strong> spots remaining. Email{' '}
+            <a href="mailto:support@forgenursing.com" className="text-white underline font-semibold">support@forgenursing.com</a> to claim yours.
+          </span>
+          <button
+            onClick={() => {
+              setShowBetaBanner(false)
+              sessionStorage.setItem('forge-beta-banner-dismissed', 'true')
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/20 transition-colors"
+            aria-label="Dismiss banner"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Top Navigation */}
       <nav className="sticky top-0 z-40 border-b border-[#DDE5EE] bg-white shadow-sm flex-shrink-0 safe-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
