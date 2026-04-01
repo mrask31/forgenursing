@@ -140,26 +140,37 @@ export default function Hero({ user, betaFull = false }: HeroProps) {
 
                       {/* ORIENT */}
                       <div className="bg-[#E0F4F6] rounded-lg p-2.5">
-                        <div className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-wide mb-1">ORIENT</div>
-                        <p className="text-xs text-[#1E2D3D]">Heart failure = impaired cardiac output → fluid backs up into lungs and periphery. Let's build the picture before we prioritize.</p>
+                        <div className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-wide mb-0.5">ORIENT <span className="font-normal text-[#0D8F9C]/70 normal-case tracking-normal">· Building foundational understanding</span></div>
+                        <p className="text-xs text-[#1E2D3D]">Heart failure means the heart can&apos;t pump effectively. Blood backs up — into the lungs (left-sided) or the body (right-sided). Before we prioritize, we need to know which direction the failure is going.</p>
+                      </div>
+
+                      {/* THE MAP */}
+                      <div className="bg-[#0B2545] rounded-lg p-2.5">
+                        <div className="text-[10px] font-bold text-white uppercase tracking-wide mb-1.5">THE MAP <span className="font-normal text-white/60 normal-case tracking-normal">· Priority ladder</span></div>
+                        <ol className="text-xs text-white/90 space-y-1 list-none pl-0">
+                          <li className="flex gap-1.5"><span className="text-white/50 shrink-0">1.</span><span><strong className="text-white">Respiratory status</strong> — O₂ sat, lung sounds, RR, work of breathing</span></li>
+                          <li className="flex gap-1.5"><span className="text-white/50 shrink-0">2.</span><span><strong className="text-white">Circulatory status</strong> — BP, HR, skin perfusion, cap refill</span></li>
+                          <li className="flex gap-1.5"><span className="text-white/50 shrink-0">3.</span><span><strong className="text-white">Fluid balance</strong> — Edema, I&amp;O, daily weight, JVD</span></li>
+                          <li className="flex gap-1.5"><span className="text-white/50 shrink-0">4.</span><span><strong className="text-white">Mental status</strong> — Confusion = decreased cerebral perfusion</span></li>
+                        </ol>
                       </div>
 
                       {/* REASONING */}
                       <div className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-lg p-2.5">
-                        <div className="text-[10px] font-bold text-[#0B2545] uppercase tracking-wide mb-1">REASONING</div>
-                        <p className="text-xs text-[#1E2D3D]">What tells you this patient is in distress right now? Think ABCs — which system is most threatened with fluid overload?</p>
+                        <div className="text-[10px] font-bold text-[#0B2545] uppercase tracking-wide mb-0.5">REASONING <span className="font-normal text-[#0B2545]/60 normal-case tracking-normal">· Socratic guidance</span></div>
+                        <p className="text-xs text-[#1E2D3D]">Before I give you the full assessment checklist — what tells you this patient is in distress <em>right now</em>? Which system is most threatened when fluid overloads the pulmonary circulation?</p>
                       </div>
 
                       {/* TRAP */}
                       <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
-                        <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">TRAP</div>
-                        <p className="text-xs text-[#1E2D3D]">Common NCLEX mistake: jumping to diuretics before confirming respiratory status. Airway always comes before intervention.</p>
+                        <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-0.5">TRAP <span className="font-normal text-amber-700/60 normal-case tracking-normal">· Common NCLEX mistake</span></div>
+                        <p className="text-xs text-[#1E2D3D]">Students often jump straight to administering diuretics. NCLEX will test whether you assess respiratory status <strong>before</strong> any intervention. Airway always comes first.</p>
                       </div>
 
                       {/* CHECK */}
                       <div className="bg-[#0B2545]/5 rounded-lg p-2.5">
-                        <div className="text-[10px] font-bold text-[#0B2545] uppercase tracking-wide mb-1">CHECK</div>
-                        <p className="text-xs text-[#1E2D3D]">Which vital sign finding would prompt you to call rapid response immediately?</p>
+                        <div className="text-[10px] font-bold text-[#0B2545] uppercase tracking-wide mb-0.5">CHECK <span className="font-normal text-[#0B2545]/60 normal-case tracking-normal">· Test your understanding</span></div>
+                        <p className="text-xs text-[#1E2D3D]">Which specific vital sign finding would prompt you to call a rapid response immediately for this patient?</p>
                       </div>
 
                     </div>
