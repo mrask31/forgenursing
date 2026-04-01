@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { hasSubscriptionAccess } from '@/lib/subscription-access'
+import { hasSubscriptionAccess, isBetaActive } from '@/lib/subscription-access'
 import { usePathname } from 'next/navigation'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
@@ -13,14 +13,34 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   const [user, setUser] = useState<any>(null)
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
   const [showBetaBanner, setShowBetaBanner] = useState(false)
+  const [spotsRemaining, setSpotsRemaining] = useState<number | null>(null)
+  const [betaFull, setBetaFull] = useState(false)
 
-  // Show beta banner unless dismissed this session
+  // Fetch beta spots for the banner
   useEffect(() => {
+    fetch('/api/beta-spots')
+      .then((r) => r.json())
+      .then(({ spotsRemaining, isFull }) => {
+        setSpotsRemaining(spotsRemaining)
+        setBetaFull(isFull)
+      })
+      .catch(() => {
+        setSpotsRemaining(null)
+        setBetaFull(false)
+      })
+  }, [])
+
+  // Show beta banner unless dismissed this session or beta is full
+  useEffect(() => {
+    if (betaFull) {
+      setShowBetaBanner(false)
+      return
+    }
     if (typeof window !== 'undefined') {
       const dismissed = sessionStorage.getItem('forge-beta-banner-dismissed')
       if (!dismissed) setShowBetaBanner(true)
     }
-  }, [])
+  }, [betaFull])
 
   useEffect(() => {
     const supabase = getBrowserClient()
@@ -32,12 +52,16 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status')
+          .select('subscription_status, is_beta, beta_expires_at')
           .eq('id', user.id)
           .single()
 
         const subscriptionStatus = profile?.subscription_status
-        setHasActiveSubscription(hasSubscriptionAccess(subscriptionStatus))
+        const betaFlag = profile?.is_beta ?? false
+        const betaExp = profile?.beta_expires_at ?? null
+        setHasActiveSubscription(
+          hasSubscriptionAccess(subscriptionStatus) || isBetaActive(betaFlag, betaExp)
+        )
       } else {
         setHasActiveSubscription(false)
       }
@@ -51,10 +75,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       if (session?.user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status')
+          .select('subscription_status, is_beta, beta_expires_at')
           .eq('id', session.user.id)
           .single()
-        setHasActiveSubscription(hasSubscriptionAccess(profile?.subscription_status))
+
+        const betaFlag = profile?.is_beta ?? false
+        const betaExp = profile?.beta_expires_at ?? null
+        setHasActiveSubscription(
+          hasSubscriptionAccess(profile?.subscription_status) || isBetaActive(betaFlag, betaExp)
+        )
       } else {
         setHasActiveSubscription(false)
       }
@@ -65,12 +94,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen-dynamic bg-[#F7F9FB] flex flex-col">
-      {/* Beta Tester Recruitment Banner */}
-      {showBetaBanner && (
+      {/* Beta Tester Recruitment Banner — hidden when beta is full */}
+      {showBetaBanner && !betaFull && (
         <div className="w-full bg-[#0D8F9C] text-white text-center text-xs sm:text-sm py-2.5 px-4 relative flex-shrink-0 z-50">
           <span className="inline-flex items-center gap-2 flex-wrap justify-center">
-            {/* UPDATE BETA SPOTS REMAINING HERE */}
-            Free beta — <strong>14</strong> spots remaining. No credit card needed.
+            Free beta —{' '}
+            <strong>
+              {spotsRemaining !== null ? spotsRemaining : '...'} spot{spotsRemaining !== 1 ? 's' : ''} remaining
+            </strong>
+            . No credit card needed.
             <Link
               href="/signup?plan=monthly"
               className="inline-flex items-center gap-1 px-3 py-1 bg-white text-[#0D8F9C] rounded-full text-xs font-bold hover:bg-white/90 transition-colors"
@@ -130,13 +162,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   Log In
                 </Link>
               )}
-              {/* Join Free Beta */}
+              {/* Join Free Beta / Start Trial CTA */}
               {pathname === '/' && (!user || !hasActiveSubscription) && (
                 <Link
-                  href="/signup?plan=monthly"
+                  href={betaFull ? '/checkout' : '/signup?plan=monthly'}
                   className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#0D8F9C] text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-[#0a7d88] transition-colors min-h-[40px] sm:min-h-[44px] flex items-center shadow-sm"
                 >
-                  Join Free Beta
+                  {betaFull ? 'Start Free Trial' : 'Join Free Beta'}
                 </Link>
               )}
             </div>

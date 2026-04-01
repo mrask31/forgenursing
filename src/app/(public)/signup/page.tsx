@@ -13,11 +13,12 @@ export default function SignupPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null)
+  const [betaAvailable, setBetaAvailable] = useState<boolean | null>(null)
   const router = useRouter()
-  
+
   // Track if GA4 sign_up event has been fired to prevent duplicate events
   const signUpEventFiredRef = useRef(false)
-  
+
   // Anti-bot measures
   const [honeypot, setHoneypot] = useState('') // Honeypot field (hidden from users)
   const [startTime] = useState(Date.now()) // Track how long user takes to fill form
@@ -40,6 +41,14 @@ export default function SignupPage() {
     
     checkExistingAuth()
   }, [router, supabase])
+
+  // Fetch beta availability
+  useEffect(() => {
+    fetch('/api/beta-spots')
+      .then((r) => r.json())
+      .then(({ isFull }) => setBetaAvailable(!isFull))
+      .catch(() => setBetaAvailable(false))
+  }, [])
 
   // Store plan parameter from URL in localStorage
   useEffect(() => {
@@ -206,13 +215,18 @@ export default function SignupPage() {
         }
       }
       
-      // Set trial period and trigger welcome email (non-blocking)
+      // Set trial period (or beta access) and trigger welcome email (non-blocking)
       try {
-        await fetch('/api/auth/set-trial', {
+        const trialRes = await fetch('/api/auth/set-trial', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: data.user.id }),
         })
+        const trialData = await trialRes.json()
+        if (trialData.isBeta && trialData.betaExpiresAt) {
+          // Store beta welcome for display in the app
+          localStorage.setItem('forgenursing-beta-welcome', trialData.betaExpiresAt)
+        }
       } catch (trialError) {
         // Don't block signup if trial setting fails
         console.error('[Signup] Failed to set trial:', trialError)
@@ -312,29 +326,54 @@ export default function SignupPage() {
                   What happens next?
                 </h3>
               </div>
-              <div className="space-y-1.5 text-xs text-slate-600">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                    1
+              {betaAvailable ? (
+                /* Beta available messaging */
+                <div className="space-y-1.5 text-xs text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      1
+                    </div>
+                    <p><strong className="text-slate-900">Create your account</strong> — Free, no credit card needed</p>
                   </div>
-                  <p><strong className="text-slate-900">Start your trial</strong> — Full access for 7 days</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                    2
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      2
+                    </div>
+                    <p><strong className="text-slate-900">You're a beta tester</strong> — Full access for 90 days</p>
                   </div>
-                  <p><strong className="text-slate-900">Try the AI tutor</strong> — Upload notes & ask questions</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                    3
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      3
+                    </div>
+                    <p><strong className="text-slate-900">Ask Forge anything</strong> — Start learning now</p>
                   </div>
-                  <p><strong className="text-slate-900">Subscribe when ready</strong> — After your trial ends</p>
                 </div>
-              </div>
+              ) : (
+                /* Beta full — standard trial messaging */
+                <div className="space-y-1.5 text-xs text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      1
+                    </div>
+                    <p><strong className="text-slate-900">Start your trial</strong> — Full access for 7 days</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      2
+                    </div>
+                    <p><strong className="text-slate-900">Try the AI tutor</strong> — Upload notes & ask questions</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      3
+                    </div>
+                    <p><strong className="text-slate-900">Subscribe when ready</strong> — After your trial ends</p>
+                  </div>
+                </div>
+              )}
               <p className="text-xs text-[#0D8F9C] font-medium mt-2 pt-2 border-t border-[#0D8F9C]/20 flex items-center gap-1">
                 <Shield className="w-3 h-3" />
-                No credit card required • Cancel anytime
+                {betaAvailable ? 'No credit card required · Free for 90 days' : 'No credit card required • Cancel anytime'}
               </p>
             </div>
 

@@ -133,6 +133,18 @@ export default function HomePage() {
   }, [])
 
   const [user, setUser] = useState<any>(null)
+  const [betaFull, setBetaFull] = useState(false)
+  const [spotsRemaining, setSpotsRemaining] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch('/api/beta-spots')
+      .then((r) => r.json())
+      .then(({ spotsRemaining, isFull }) => {
+        setSpotsRemaining(spotsRemaining)
+        setBetaFull(isFull)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -159,7 +171,7 @@ export default function HomePage() {
   return (
     <main className="w-full bg-white">
       {/* Section 1: Hero */}
-      <Hero user={user} />
+      <Hero user={user} betaFull={betaFull} />
 
       {/* Section 2: The Problem — Sound familiar? */}
       <BeliefValidation />
@@ -282,14 +294,72 @@ export default function HomePage() {
             </div>
           </div>
 
-          <p className="text-sm text-[#1E2D3D]/50 text-center italic mt-8">
-            Beta access is free. Pricing starts at $89/semester after launch.
-          </p>
+          {betaFull ? (
+            /* Beta full: show pricing cards */
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
+              {/* Monthly */}
+              <a
+                href="/checkout?plan=monthly"
+                className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl p-6 hover:border-[#0D8F9C] transition-colors text-left group"
+              >
+                <h3 className="font-bold text-[#0B2545] mb-1">Monthly</h3>
+                <div className="mb-3">
+                  <span className="text-3xl font-bold text-[#0B2545]">$24.99</span>
+                  <span className="text-sm text-[#1E2D3D]/60"> / month</span>
+                </div>
+                <p className="text-xs text-[#1E2D3D]/60 mb-4">Flexible, cancel anytime</p>
+                <span className="text-xs font-semibold text-[#0D8F9C] group-hover:underline">
+                  Start 7-day free trial →
+                </span>
+              </a>
+
+              {/* Semester — highlighted */}
+              <a
+                href="/checkout?plan=semester"
+                className="bg-[#E0F4F6] border-2 border-[#0D8F9C] rounded-2xl p-6 hover:bg-[#d0ecef] transition-colors text-left relative group"
+              >
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0D8F9C] text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold">
+                  Most Popular
+                </span>
+                <h3 className="font-bold text-[#0B2545] mb-1 mt-2">Semester</h3>
+                <div className="mb-1">
+                  <span className="text-3xl font-bold text-[#0B2545]">$89</span>
+                </div>
+                <p className="text-xs text-[#0D8F9C] font-semibold mb-1">One-time · 4 months</p>
+                <p className="text-xs text-[#1E2D3D]/60 mb-4">Save $11 vs monthly</p>
+                <span className="text-xs font-semibold text-[#0D8F9C] group-hover:underline">
+                  Start 7-day free trial →
+                </span>
+              </a>
+
+              {/* Annual */}
+              <a
+                href="/checkout?plan=annual"
+                className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl p-6 hover:border-[#0D8F9C] transition-colors text-left group"
+              >
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0B2545] text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold hidden">
+                  Best Value
+                </span>
+                <h3 className="font-bold text-[#0B2545] mb-1">Annual</h3>
+                <div className="mb-3">
+                  <span className="text-3xl font-bold text-[#0B2545]">$149</span>
+                </div>
+                <p className="text-xs text-[#1E2D3D]/60 mb-4">Best value for a full year</p>
+                <span className="text-xs font-semibold text-[#0D8F9C] group-hover:underline">
+                  Start 7-day free trial →
+                </span>
+              </a>
+            </div>
+          ) : (
+            <p className="text-sm text-[#1E2D3D]/50 text-center italic mt-8">
+              Beta access is free. Pricing starts at $89/semester after launch.
+            </p>
+          )}
         </div>
       </section>
 
       {/* Section 7: Final CTA */}
-      <ClosingCTA />
+      <ClosingCTA betaFull={betaFull} />
 
       {/* Disclaimer */}
       <section className="bg-[#F7F9FB] py-8 sm:py-10" aria-label="Disclaimer">

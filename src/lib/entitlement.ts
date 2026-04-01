@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
-import { hasAccess, isTrialActive } from '@/lib/subscription-access'
+import { hasAccess, isTrialActive, isBetaActive } from '@/lib/subscription-access'
 
 const ACCESS_STATUSES = new Set(['trialing', 'active'])
 
@@ -11,6 +11,8 @@ type EntitlementResult = {
   hasAccess: boolean
   isTrialActive: boolean
   trialEndsAt: string | null
+  isBeta: boolean
+  betaExpiresAt: string | null
   stripe_customer_id: string | null
   stripe_subscription_id: string | null
 }
@@ -23,6 +25,8 @@ export async function getEntitlementForUser(userId?: string | null): Promise<Ent
       hasAccess: false,
       isTrialActive: false,
       trialEndsAt: null,
+      isBeta: false,
+      betaExpiresAt: null,
       stripe_customer_id: null,
       stripe_subscription_id: null,
     }
@@ -31,7 +35,7 @@ export async function getEntitlementForUser(userId?: string | null): Promise<Ent
   const supabase = createClient()
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('subscription_status, trial_ends_at, stripe_customer_id, stripe_subscription_id')
+    .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, stripe_customer_id, stripe_subscription_id')
     .eq('id', userId)
     .single()
 
@@ -42,6 +46,8 @@ export async function getEntitlementForUser(userId?: string | null): Promise<Ent
       hasAccess: false,
       isTrialActive: false,
       trialEndsAt: null,
+      isBeta: false,
+      betaExpiresAt: null,
       stripe_customer_id: null,
       stripe_subscription_id: null,
     }
@@ -50,13 +56,18 @@ export async function getEntitlementForUser(userId?: string | null): Promise<Ent
   const status = profile.subscription_status ?? null
   const trialEndsAt = profile.trial_ends_at ?? null
   const trialActive = isTrialActive(trialEndsAt)
-  
+  const betaFlag = profile.is_beta ?? false
+  const betaExpiresAt = profile.beta_expires_at ?? null
+
+  // Beta check takes priority — if active beta, grant access regardless of subscription
   return {
     userId,
     status,
-    hasAccess: hasAccess(status, trialEndsAt),
+    hasAccess: hasAccess(status, trialEndsAt, betaFlag, betaExpiresAt),
     isTrialActive: trialActive,
     trialEndsAt,
+    isBeta: betaFlag,
+    betaExpiresAt,
     stripe_customer_id: profile.stripe_customer_id ?? null,
     stripe_subscription_id: profile.stripe_subscription_id ?? null,
   }

@@ -1,6 +1,7 @@
 'use client'
 
 import { AppShell } from '@/components/layout/AppShell'
+import BetaWelcomeBanner from '@/components/layout/BetaWelcomeBanner'
 
 export default function AppRouteLayout({
   children,
@@ -9,6 +10,7 @@ export default function AppRouteLayout({
 }) {
   return (
     <AppShell variant="app">
+      <BetaWelcomeBanner />
       {children}
     </AppShell>
   )

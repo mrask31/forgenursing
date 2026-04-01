@@ -5,9 +5,10 @@ import { ArrowRight, Mic } from 'lucide-react'
 
 interface HeroProps {
   user: any
+  betaFull?: boolean
 }
 
-export default function Hero({ user }: HeroProps) {
+export default function Hero({ user, betaFull = false }: HeroProps) {
   return (
     <>
       {/* Hero Section */}
@@ -43,6 +44,22 @@ export default function Hero({ user }: HeroProps) {
                     Go to Tutor
                     <ArrowRight className="w-4 h-4" />
                   </Link>
+                ) : betaFull ? (
+                  <>
+                    <Link
+                      href="/checkout"
+                      className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
+                    >
+                      Start 7-Day Free Trial
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                    <a
+                      href="#how-forge-thinks"
+                      className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-[#0B2545]/30 text-[#0B2545] rounded-lg text-sm font-semibold hover:border-[#0D8F9C] hover:text-[#0D8F9C] transition-colors"
+                    >
+                      See how Forge thinks →
+                    </a>
+                  </>
                 ) : (
                   <>
                     <Link
@@ -63,7 +80,9 @@ export default function Hero({ user }: HeroProps) {
               </div>
 
               <p className="text-xs text-[#1E2D3D]/50">
-                Free access for beta testers · No credit card required
+                {betaFull
+                  ? '7-day free trial · No credit card required'
+                  : 'Free access for beta testers · No credit card required'}
               </p>
             </div>
 
