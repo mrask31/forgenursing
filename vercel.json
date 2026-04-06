@@ -7,6 +7,10 @@
     {
       "path": "/api/emails/process-trial-expiration",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/emails/process-beta-sequence",
+      "schedule": "0 13 * * *"
     }
   ]
 }
