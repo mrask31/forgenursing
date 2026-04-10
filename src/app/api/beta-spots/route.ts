@@ -12,31 +12,20 @@ export async function GET() {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // Try RPC first
-    const { data: betaCount, error: rpcError } = await supabase.rpc('get_beta_user_count')
-
-    if (!rpcError && typeof betaCount === 'number') {
-      const spotsRemaining = Math.max(0, BETA_CAP - betaCount)
-      return NextResponse.json({ spotsRemaining, isFull: spotsRemaining === 0 })
-    }
-
-    if (rpcError) {
-      console.error('[Beta Spots] RPC error, falling back to direct query:', rpcError)
-    }
-
-    // Fallback: direct count query
-    const { count, error: countError } = await supabase
+    const { count, error } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
       .eq('is_beta', true)
 
-    if (countError) {
-      console.error('[Beta Spots] Error counting beta users:', countError)
+    if (error) {
+      console.error('[Beta Spots] Error counting beta users:', error)
       return NextResponse.json({ spotsRemaining: BETA_CAP, isFull: false })
     }
 
-    const total = count ?? 0
-    const spotsRemaining = Math.max(0, BETA_CAP - total)
+    const betaCount = count ?? 0
+    const spotsRemaining = Math.max(0, BETA_CAP - betaCount)
+
+    console.log(`[Beta Spots] count=${betaCount}, spotsRemaining=${spotsRemaining}`)
 
     return NextResponse.json({ spotsRemaining, isFull: spotsRemaining === 0 })
   } catch (err: any) {
