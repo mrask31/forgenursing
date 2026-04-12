@@ -15,6 +15,9 @@ function jsonResponse(data: { spotsRemaining: number; isFull: boolean }) {
 
 export async function GET() {
   try {
+    console.log('[Beta Spots] SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'MISSING')
+    console.log('[Beta Spots] SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET (length: ' + process.env.SUPABASE_SERVICE_ROLE_KEY.length + ')' : 'MISSING')
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -27,6 +30,8 @@ export async function GET() {
       .from('profiles')
       .select('*', { count: 'exact', head: true })
       .eq('is_beta', true)
+
+    console.log('[Beta Spots] count result:', count, 'error:', error)
 
     if (error) {
       console.error('[Beta Spots] Error fetching beta count:', error)
