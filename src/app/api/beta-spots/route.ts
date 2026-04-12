@@ -1,52 +1,36 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const BETA_CAP = 20
-
 export const dynamic = 'force-dynamic'
 
-function jsonResponse(data: { spotsRemaining: number; isFull: boolean }) {
-  return NextResponse.json(data, {
-    headers: {
-      'Cache-Control': 'no-store, no-cache, must-revalidate',
-    },
-  })
-}
+const BETA_CAP = 20
 
 export async function GET() {
-  try {
-    console.log('[Beta Spots] SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'MISSING')
-    console.log('[Beta Spots] SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET (length: ' + process.env.SUPABASE_SERVICE_ROLE_KEY.length + ')' : 'MISSING')
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+  console.log('[Beta Spots] URL:', supabaseUrl ? 'SET' : 'MISSING')
+  console.log('[Beta Spots] KEY:', serviceRoleKey ? `SET (${serviceRoleKey.length} chars)` : 'MISSING')
 
-    // Use a direct count query as the source of truth instead of the RPC,
-    // which may return stale results if the STABLE→VOLATILE migration
-    // has not been applied yet.
-    const { count, error } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_beta', true)
-
-    console.log('[Beta Spots] count result:', count, 'error:', error)
-
-    if (error) {
-      console.error('[Beta Spots] Error fetching beta count:', error)
-      return jsonResponse({ spotsRemaining: 0, isFull: true })
-    }
-
-    const betaCount = count ?? 0
-    const spotsRemaining = Math.max(0, BETA_CAP - betaCount)
-    const isFull = spotsRemaining === 0
-
-    console.log(`[Beta Spots] betaCount=${betaCount}, BETA_CAP=${BETA_CAP}, spotsRemaining=${spotsRemaining}, isFull=${isFull}`)
-
-    return jsonResponse({ spotsRemaining, isFull })
-  } catch (err: any) {
-    console.error('[Beta Spots] Unexpected error:', err)
-    return jsonResponse({ spotsRemaining: 0, isFull: true })
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error('[Beta Spots] Missing env vars')
+    return NextResponse.json({ spotsRemaining: 0, isFull: true })
   }
+
+  const supabase = createClient(supabaseUrl, serviceRoleKey)
+
+  const { count, error } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+    .eq('is_beta', true)
+
+  console.log('[Beta Spots] count:', count, 'error:', error)
+
+  const betaCount = count ?? 0
+  const spotsRemaining = Math.max(0, BETA_CAP - betaCount)
+
+  return NextResponse.json(
+    { spotsRemaining, isFull: spotsRemaining === 0 },
+    { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } }
+  )
 }
