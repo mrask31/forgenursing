@@ -18,15 +18,16 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
   // Fetch beta spots for the banner
   useEffect(() => {
-    fetch('/api/beta-spots')
+    fetch('/api/beta-spots', { cache: 'no-store' })
       .then((r) => r.json())
       .then(({ spotsRemaining, isFull }) => {
         setSpotsRemaining(spotsRemaining)
         setBetaFull(isFull)
       })
       .catch(() => {
-        setSpotsRemaining(null)
-        setBetaFull(false)
+        // Fail safe: assume beta is full when fetch fails
+        setSpotsRemaining(0)
+        setBetaFull(true)
       })
   }, [])
 

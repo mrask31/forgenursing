@@ -5,6 +5,14 @@ const BETA_CAP = 20
 
 export const dynamic = 'force-dynamic'
 
+function jsonResponse(data: { spotsRemaining: number; isFull: boolean }) {
+  return NextResponse.json(data, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+    },
+  })
+}
+
 export async function GET() {
   try {
     const supabase = createClient(
@@ -16,16 +24,18 @@ export async function GET() {
 
     if (error) {
       console.error('[Beta Spots] Error fetching beta count:', error)
-      return NextResponse.json({ spotsRemaining: BETA_CAP, isFull: false })
+      // Fail safe: assume beta is full when we can't read the DB
+      return jsonResponse({ spotsRemaining: 0, isFull: true })
     }
 
     const count = typeof betaCount === 'number' ? betaCount : 0
     const spotsRemaining = Math.max(0, BETA_CAP - count)
     const isFull = spotsRemaining === 0
 
-    return NextResponse.json({ spotsRemaining, isFull })
+    return jsonResponse({ spotsRemaining, isFull })
   } catch (err: any) {
     console.error('[Beta Spots] Unexpected error:', err)
-    return NextResponse.json({ spotsRemaining: BETA_CAP, isFull: false })
+    // Fail safe: assume beta is full on unexpected errors
+    return jsonResponse({ spotsRemaining: 0, isFull: true })
   }
 }
