@@ -41,11 +41,9 @@ export async function POST(request: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // Check beta user count — direct query to avoid stale RPC cache
-    const { count: betaCount, error: countError } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_beta', true)
+    // Check beta user count via SECURITY DEFINER RPC (bypasses RLS)
+    const { data: betaCount, error: countError } = await supabase
+      .rpc('get_beta_spot_data')
 
     if (!countError && typeof betaCount === 'number' && betaCount < BETA_CAP) {
       // Beta slot available — grant 90-day free access

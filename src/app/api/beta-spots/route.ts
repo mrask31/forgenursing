@@ -13,36 +13,31 @@ function jsonResponse(data: { spotsRemaining: number; isFull: boolean }) {
 
 export async function GET() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  console.log('[Beta Spots] URL:', supabaseUrl || 'MISSING')
-  console.log('[Beta Spots] KEY:', serviceRoleKey ? `SET (${serviceRoleKey.length} chars)` : 'MISSING')
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.error('[Beta Spots] Missing env vars')
+  if (!supabaseUrl || !anonKey) {
+    console.error('[Beta Spots] Missing SUPABASE_URL or ANON_KEY')
     return jsonResponse({ spotsRemaining: 0, isFull: true })
   }
 
   try {
-    const supabase = createClient(supabaseUrl, serviceRoleKey)
+    // Use anon key — the RPC is SECURITY DEFINER so it bypasses RLS
+    const supabase = createClient(supabaseUrl, anonKey)
 
-    const { count, error, status, statusText } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_beta', true)
+    const { data: betaCount, error } = await supabase.rpc('get_beta_spot_data')
 
-    console.log(`[Beta Spots] Raw response: count=${count}, type=${typeof count}, error=${JSON.stringify(error)}, status=${status} ${statusText}`)
+    console.log(`[Beta Spots] rpc result: data=${betaCount}, type=${typeof betaCount}, error=${JSON.stringify(error)}`)
 
     if (error) {
-      console.error('[Beta Spots] Query error:', error)
+      console.error('[Beta Spots] RPC error:', error)
       return jsonResponse({ spotsRemaining: 0, isFull: true })
     }
 
-    const betaCount = count ?? 0
-    const spotsRemaining = Math.max(0, BETA_CAP - betaCount)
+    const count = typeof betaCount === 'number' ? betaCount : 0
+    const spotsRemaining = Math.max(0, BETA_CAP - count)
     const isFull = spotsRemaining === 0
 
-    console.log(`[Beta Spots] Result: betaCount=${betaCount}, BETA_CAP=${BETA_CAP}, spotsRemaining=${spotsRemaining}, isFull=${isFull}`)
+    console.log(`[Beta Spots] betaCount=${count}, spotsRemaining=${spotsRemaining}, isFull=${isFull}`)
 
     return jsonResponse({ spotsRemaining, isFull })
   } catch (err: any) {
