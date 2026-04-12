@@ -20,22 +20,28 @@ export async function GET() {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    const { data: betaCount, error } = await supabase.rpc('get_beta_user_count')
+    // Use a direct count query as the source of truth instead of the RPC,
+    // which may return stale results if the STABLE→VOLATILE migration
+    // has not been applied yet.
+    const { count, error } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_beta', true)
 
     if (error) {
       console.error('[Beta Spots] Error fetching beta count:', error)
-      // Fail safe: assume beta is full when we can't read the DB
       return jsonResponse({ spotsRemaining: 0, isFull: true })
     }
 
-    const count = typeof betaCount === 'number' ? betaCount : 0
-    const spotsRemaining = Math.max(0, BETA_CAP - count)
+    const betaCount = count ?? 0
+    const spotsRemaining = Math.max(0, BETA_CAP - betaCount)
     const isFull = spotsRemaining === 0
+
+    console.log(`[Beta Spots] betaCount=${betaCount}, BETA_CAP=${BETA_CAP}, spotsRemaining=${spotsRemaining}, isFull=${isFull}`)
 
     return jsonResponse({ spotsRemaining, isFull })
   } catch (err: any) {
     console.error('[Beta Spots] Unexpected error:', err)
-    // Fail safe: assume beta is full on unexpected errors
     return jsonResponse({ spotsRemaining: 0, isFull: true })
   }
 }
