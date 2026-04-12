@@ -40,10 +40,10 @@ export default function BeliefValidation() {
         </div>
 
         <div className="bg-[#0B2545] rounded-2xl p-6 sm:p-8 md:p-10 text-center text-white">
-          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 hidden sm:block">
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 hidden sm:block text-white">
             Not generic answers. Your actual course content.
           </h3>
-          <h3 className="text-xl font-bold mb-3 sm:hidden">
+          <h3 className="text-xl font-bold mb-3 sm:hidden text-white">
             Your course content
           </h3>
           <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-white/80 leading-relaxed hidden sm:block">
