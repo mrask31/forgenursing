@@ -5,32 +5,48 @@ export const dynamic = 'force-dynamic'
 
 const BETA_CAP = 20
 
+function jsonResponse(data: { spotsRemaining: number; isFull: boolean }) {
+  return NextResponse.json(data, {
+    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+  })
+}
+
 export async function GET() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  console.log('[Beta Spots] URL:', supabaseUrl ? 'SET' : 'MISSING')
+  console.log('[Beta Spots] URL:', supabaseUrl || 'MISSING')
   console.log('[Beta Spots] KEY:', serviceRoleKey ? `SET (${serviceRoleKey.length} chars)` : 'MISSING')
 
   if (!supabaseUrl || !serviceRoleKey) {
     console.error('[Beta Spots] Missing env vars')
-    return NextResponse.json({ spotsRemaining: 0, isFull: true })
+    return jsonResponse({ spotsRemaining: 0, isFull: true })
   }
 
-  const supabase = createClient(supabaseUrl, serviceRoleKey)
+  try {
+    const supabase = createClient(supabaseUrl, serviceRoleKey)
 
-  const { count, error } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true })
-    .eq('is_beta', true)
+    const { count, error, status, statusText } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_beta', true)
 
-  console.log('[Beta Spots] count:', count, 'error:', error)
+    console.log(`[Beta Spots] Raw response: count=${count}, type=${typeof count}, error=${JSON.stringify(error)}, status=${status} ${statusText}`)
 
-  const betaCount = count ?? 0
-  const spotsRemaining = Math.max(0, BETA_CAP - betaCount)
+    if (error) {
+      console.error('[Beta Spots] Query error:', error)
+      return jsonResponse({ spotsRemaining: 0, isFull: true })
+    }
 
-  return NextResponse.json(
-    { spotsRemaining, isFull: spotsRemaining === 0 },
-    { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } }
-  )
+    const betaCount = count ?? 0
+    const spotsRemaining = Math.max(0, BETA_CAP - betaCount)
+    const isFull = spotsRemaining === 0
+
+    console.log(`[Beta Spots] Result: betaCount=${betaCount}, BETA_CAP=${BETA_CAP}, spotsRemaining=${spotsRemaining}, isFull=${isFull}`)
+
+    return jsonResponse({ spotsRemaining, isFull })
+  } catch (err: any) {
+    console.error('[Beta Spots] Unexpected error:', err)
+    return jsonResponse({ spotsRemaining: 0, isFull: true })
+  }
 }
