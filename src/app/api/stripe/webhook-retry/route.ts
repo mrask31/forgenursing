@@ -126,8 +126,12 @@ export async function POST(req: Request) {
     // Verify authorization (use a secret token)
     const authHeader = req.headers.get('authorization')
     const expectedToken = process.env.WEBHOOK_RETRY_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY
+    const cronSecret = process.env.CRON_SECRET
     
-    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+    if (!authHeader || (
+      authHeader !== `Bearer ${expectedToken}` &&
+      (!cronSecret || authHeader !== `Bearer ${cronSecret}`)
+    )) {
       console.error('[Webhook Retry] Unauthorized request')
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -271,8 +275,12 @@ export async function GET(req: Request) {
     // Verify authorization
     const authHeader = req.headers.get('authorization')
     const expectedToken = process.env.WEBHOOK_RETRY_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY
+    const cronSecret = process.env.CRON_SECRET
     
-    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+    if (!authHeader || (
+      authHeader !== `Bearer ${expectedToken}` &&
+      (!cronSecret || authHeader !== `Bearer ${cronSecret}`)
+    )) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
