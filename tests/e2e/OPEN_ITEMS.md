@@ -22,6 +22,21 @@ Living document for bugs, deferred fixes, and known landmines the test suite wat
 - **Fix priority:** DEFERRED — will be fixed after 15 paying users or immediately if regression test fires, whichever comes first.
 - **Related:** Any PR touching `login/page.tsx`, signup flow, Stripe webhook handlers, or beta profile fields MUST run the full E2E suite including `@regression` tag.
 
+### L-002: Stripe webhook retry cron is authentication-failing silently
+- **Discovered:** April 13, 2026 during welcome cron diagnostic (Vercel log inspection)
+- **Severity:** Unknown — depends on how often Stripe webhooks fail in the first place
+- **Evidence:** Vercel logs show `/api/stripe/webhook-retry` firing every 5 minutes (`*/5 * * * *`) and returning HTTP 401 on every single invocation, going back at least as far as log retention allows. The route's `CRON_SECRET` check is rejecting Vercel's own cron requests.
+- **Business impact:** If a real Stripe webhook fails (network blip, 500 error, transient issue), this retry mechanism is supposed to catch it and re-process. Because the retry cron is 401-ing, no retries are actually happening. Any failed Stripe webhook is permanently lost. This affects:
+  - Subscription state sync (trialing → active → cancelled)
+  - Payment success events
+  - Failed payment notifications
+  - Any other Stripe event the app depends on
+- **Why welcome cron works but this one doesn't:** The welcome cron (R-001 fix) was wired up tonight with a working auth pattern. The Stripe retry cron predates tonight's work and uses a different or broken configuration.
+- **Root cause (unconfirmed):** Either (a) the route's expected `CRON_SECRET` env var is not set in Vercel production env vars, (b) the value was set but doesn't match what the route code expects, or (c) the auth check in the route is reading the header incorrectly.
+- **Fix priority:** DEFERRED — investigate next session. Not tonight. Not a silent user-facing fire the way R-001 was; this is an infrastructure fault with uncertain business impact.
+- **Next session action:** Diagnose whether `CRON_SECRET` is set in Vercel → Settings → Environment Variables (production scope). Compare to what `/api/stripe/webhook-retry` route handler expects. Fix the mismatch or add the env var. Verify via manual Run button + log check (same technique that verified R-001 tonight).
+- **Related:** While investigating, also verify every OTHER cron in the Vercel Cron Jobs list is returning 200, not 401. Possible other crons are silently broken the same way. Full list from tonight's audit: `/api/cron/process-emails`, `/api/emails/process-beta-reengagement`, `/api/emails/process-beta-sequence`, `/api/emails/process-onboarding-sequence`, `/api/emails/process-trial-expiration`, `/api/emails/process-welcome-queue` (verified ✅), `/api/stripe/webhook-retry`.
+
 ---
 
 ## ⚠️ DEFERRED FEATURES (not bugs — missing functionality)
@@ -70,3 +85,4 @@ Living document for bugs, deferred fixes, and known landmines the test suite wat
 - **Root cause:** `/api/emails/process-welcome-queue` route existed and worked, but had no cron entry in `vercel.json`. It only ran when triggered manually. The hourly `/api/cron/process-emails` route called a separate Supabase edge function `fn-send-emails` which either doesn't exist or doesn't touch `welcome_email_queue`.
 - **Fix:** Commit `61f7fda` added GET export and `CRON_SECRET` auth check to the processor route, and added `{ "path": "/api/emails/process-welcome-queue", "schedule": "15 * * * *" }` to `vercel.json`. Runs hourly at :15 past the hour.
 - **Users affected before fix:** Unknown exact count. Queue showed 30 total rows, only 2 marked `sent` (both from a manual trigger on April 6). Estimate: ~20+ real beta users received no automated welcome, though all 24 current beta users were manually emailed so they're covered.
+- **Verified:** April 13, 2026 ~20:50 UTC. Manual Run triggered via Vercel Cron Jobs dashboard. Route returned HTTP 200 in 1.39s, user-agent `vercel-cron/1.0`, confirmed downstream POSTs to Supabase (200) and Resend (200). Both pending rows from today flipped to `status = sent` with valid Resend message IDs (`8b531ddc...`, `b9d77dbc...`). Cron is live on `15 * * * *` schedule going forward.
