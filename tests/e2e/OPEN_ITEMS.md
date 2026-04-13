@@ -47,8 +47,26 @@ Living document for bugs, deferred fixes, and known landmines the test suite wat
 - **Impact:** Unknown — no funnel analytics currently measure drop-off at these gates.
 - **Action:** Revisit after 15 paying users. Consider instrumenting with an event when users dismiss each modal, and whether bounce rate at these gates justifies a different flow.
 
+### I-003: Two overlapping email systems coexist in the codebase
+- **Discovered:** April 13, 2026 during welcome email pipeline diagnostic
+- **Description:** The repo has two separate email subsystems that overlap on some lifecycle days and gap on others:
+  - **System 1 (pre-existing):** `process-welcome-queue` (Day 0), `process-beta-sequence` (Day 3, 30, 76), `process-trial-expiration` (Day 6, 7). Uses tables `welcome_email_queue`, `beta_email_sequence`, `trial_expiration_emails`.
+  - **System 2 (added later):** `process-onboarding-sequence` (Day 0, 3, 6), `process-beta-reengagement` (Day 7). Uses unified `email_queue` table. Called via `/api/cron/process-emails` → `fn-send-emails` edge function (source not in repo).
+- **Gaps vs intended spec:**
+  - Full 6-email beta sequence over 90 days: NOT BUILT (System 1 has 3 of 6, System 2 has 1 of 6)
+  - Full 5-email trial sequence over 7 days: NOT BUILT (System 1 has 2, System 2 has 3)
+- **Risk:** Duplicate sends on overlapping days, missing sends on gap days, template drift between systems, confusion when adding new emails.
+- **Status:** DEFERRED. Welcome (Day 0) is now wired via R-001 fix. Beta and trial sequences are partial but not actively broken.
+- **Revisit when:** Post-15-paying-users, before any major marketing push that expects a full drip sequence. At that point do a consolidation audit — pick one system, migrate the other, delete the loser.
+- **Do NOT:** Add more emails to either system before consolidation. Adding now makes the eventual cleanup harder.
+
 ---
 
 ## ✅ RESOLVED
 
-_(empty — move items here when fixed, with date and commit SHA)_
+### R-001: Welcome email queue was not wired to any cron
+- **Discovered:** April 13, 2026 during E2E welcome email test validation
+- **Severity:** Active fire — every new signup was silently skipping their welcome email
+- **Root cause:** `/api/emails/process-welcome-queue` route existed and worked, but had no cron entry in `vercel.json`. It only ran when triggered manually. The hourly `/api/cron/process-emails` route called a separate Supabase edge function `fn-send-emails` which either doesn't exist or doesn't touch `welcome_email_queue`.
+- **Fix:** Commit `61f7fda` added GET export and `CRON_SECRET` auth check to the processor route, and added `{ "path": "/api/emails/process-welcome-queue", "schedule": "15 * * * *" }` to `vercel.json`. Runs hourly at :15 past the hour.
+- **Users affected before fix:** Unknown exact count. Queue showed 30 total rows, only 2 marked `sent` (both from a manual trigger on April 6). Estimate: ~20+ real beta users received no automated welcome, though all 24 current beta users were manually emailed so they're covered.
