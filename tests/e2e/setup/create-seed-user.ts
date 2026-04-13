@@ -36,13 +36,15 @@ async function main() {
     .update({
       is_beta: true,
       beta_expires_at: farFuture.toISOString(),
-      subscription_status: null,
-      trial_ends_at: null,
+      subscription_status: 'active',
+      phi_acknowledged_at: new Date().toISOString(),
+      program_level: 'BSN',
     })
     .eq('id', user.id);
 
   if (updateError) throw updateError;
   console.log(`✓ Seed user beta status confirmed (expires ${farFuture.toISOString().split('T')[0]})`);
+  console.log(`✓ phi_acknowledged_at and program_level (BSN) set — no post-login modals`);
   console.log(`\nAdd these to .env.test:`);
   console.log(`SEED_USER_EMAIL=${SEED_EMAIL}`);
   console.log(`SEED_USER_PASSWORD=${SEED_PASSWORD}`);
