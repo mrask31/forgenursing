@@ -11,6 +11,14 @@
     {
       "path": "/api/emails/process-beta-sequence",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/emails/process-onboarding-sequence",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/emails/process-beta-reengagement",
+      "schedule": "0 15 * * *"
     }
   ]
 }
