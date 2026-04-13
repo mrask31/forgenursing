@@ -22,6 +22,43 @@ Living document for bugs, deferred fixes, and known landmines the test suite wat
 - **Fix priority:** DEFERRED — will be fixed after 15 paying users or immediately if regression test fires, whichever comes first.
 - **Related:** Any PR touching `login/page.tsx`, signup flow, Stripe webhook handlers, or beta profile fields MUST run the full E2E suite including `@regression` tag.
 
+### L-003: Trial expiry paywall does not enforce trial_ends_at — 2 users actively leaking
+- **Discovered:** April 13, 2026 during Stripe trial E2E test work (session follow-up to R-001 and R-002)
+- **Severity:** ACTIVE — 2 non-beta users currently have expired trials AND `/tutor` access
+- **Status:** Partial fix in-progress, stashed locally, NOT committed to main
+- **Exposure counts (as of April 13, 2026):**
+  - `actively_leaking` (non-beta, trialing, trial_ends_at < NOW): **2**
+  - `legitimate_trial_users` (non-beta, trialing, trial_ends_at >= NOW): 4
+  - `beta_users_in_trialing_state`: 23 (safe — beta path handled separately)
+- **Root cause:** `hasSubscriptionAccess(status)` historically treated `'trialing'` as unconditionally valid, regardless of `trial_ends_at`. The `isTrialActive()` function existed but was never called by the main access check because `hasAccess()` used OR short-circuiting: `hasSubscriptionAccess(status) || isTrialActive(trialEndsAt) || isBetaActive(...)` — and `hasSubscriptionAccess('trialing')` returned true before the date check ever evaluated.
+- **Callers of the broken logic (11 total, verified by diagnostic):**
+  1. `src/app/(public)/login/page.tsx` — direct `hasSubscriptionAccess()` call at Priority 2
+  2. `src/app/auth/callback/route.ts` — direct `hasSubscriptionAccess()` call
+  3. `src/components/layout/PublicLayout.tsx` — direct `hasSubscriptionAccess()` call for nav UI state
+  4. `middleware.ts:195` — `hasAccess(status, trialEndsAt)` (2-arg, beta flags omitted)
+  5. `middleware.ts:277` — `hasAccess(status, trialEndsAt)` (2-arg, beta flags omitted)
+  6. `src/lib/entitlement.ts:66` — `hasAccess(...)` (shared helper, feeds 7/8/9)
+  7. `src/app/api/chat/route.ts:364` — via entitlement
+  8. `src/app/api/process/route.ts:68` — via entitlement
+  9. `src/app/actions/binder.ts:21,73` — via entitlement
+  10. `src/hooks/useUser.ts:84` — custom inline `isSubscribed || isTrialActive`
+  11. `src/app/api/subscription/status/route.ts:130` — custom inline `HAS_ACCESS_STATUSES` constant
+- **What's been fixed (stashed, NOT committed):**
+  - `src/lib/subscription-access.ts` — `hasSubscriptionAccess` narrowed to `status === 'active'`. `hasAccess` rewritten with explicit branches: paid → (trialing AND isTrialActive) → (isBetaActive) → false.
+  - `middleware.ts` — both access-check blocks expanded to select `is_beta, beta_expires_at`; both `hasAccess()` calls pass all 4 args.
+  - `src/components/layout/PublicLayout.tsx` — profile select expanded to include `trial_ends_at`; boolean check updated.
+  - `src/hooks/useUser.ts` — migrated from inline logic to shared `hasAccess()` and `isTrialActive()`; profile select expanded.
+  - `tests/e2e/12-trial-expiry-regression.spec.ts` — new `@regression` test asserting expired-trial user cannot reach `/tutor`.
+- **What's NOT fixed (still pending when resumed):**
+  - **`src/app/(public)/login/page.tsx`** — Priority 2 (`hasSubscriptionAccess()` at ~line 258) will now return false for trialing users, routing legitimate trial users to `/checkout`. Needs expanded profile select + trial/beta check. Priority 1 (`if (hasStripeSubscription)` block) is an independent pre-existing issue granting lifetime access to anyone with a `stripe_subscription_id`.
+  - **`src/app/auth/callback/route.ts`** — direct `hasSubscriptionAccess()` call that inherits the same issue. Profile select doesn't pull `trial_ends_at`, `is_beta`, or `beta_expires_at`.
+  - **`src/app/api/subscription/status/route.ts`** — deferred as I-005.
+- **Open product design question for next session (MUST ANSWER FIRST):**
+  What should Priority 1 in the login page do? Current "any stripe_subscription_id = full access" is overscoped. Options: (a) narrow to valid status list, (b) narrow to recent creation, (c) remove entirely since `/api/stripe/sync-subscription` already handles webhook lag.
+- **Stashed state:** `git stash stash@{0}` — "WIP: trial expiry fix — login page + auth callback pending". Pop with `git stash pop`.
+- **Verification harness:** 5-gate pattern (smoke + L-001 regression + ADPIE + welcome email + 12-trial-expiry regression) against `http://localhost:3000`.
+- **Priority next session:** HIGH. 45-60 minutes estimated.
+
 ---
 
 ## ⚠️ DEFERRED FEATURES (not bugs — missing functionality)
@@ -66,6 +103,12 @@ Living document for bugs, deferred fixes, and known landmines the test suite wat
 - **Routes to audit:** `/api/cron/process-emails`, `/api/emails/process-beta-reengagement`, `/api/emails/process-beta-sequence`, `/api/emails/process-onboarding-sequence`, `/api/emails/process-trial-expiration`
 - **How to audit each:** (a) Read the route handler, confirm it accepts `CRON_SECRET` in the Authorization header. (b) Hit the Run button in the Vercel Cron Jobs dashboard. (c) Check the resulting log entry for HTTP 200. (d) If any route returns 401, apply the same fix pattern as R-002.
 - **Priority:** DEFERRED to next session. Not a fire tonight — no known user-facing impact. But worth 15-20 minutes of next-session audit time to ensure no other email or cron subsystem is silently broken.
+
+### I-005: subscription/status/route.ts has independent inline broken access logic
+- **Discovered:** April 13, 2026 during trial expiry audit
+- **Description:** `src/app/api/subscription/status/route.ts` defines its own `HAS_ACCESS_STATUSES = ['trialing', 'active']` constant and computes `hasAccess` inline without checking `trial_ends_at`. This is a debug/status endpoint, not an access gate, so it doesn't block users — but it returns incorrect `hasAccess: true` for expired-trial users in its JSON response.
+- **Impact:** Low. Any client consuming this endpoint's `hasAccess` field would get a false positive for expired trials. No known client currently gates on this field.
+- **Priority:** DEFERRED. Fix when the trial expiry fix (L-003) is committed — align this endpoint with the shared `hasAccess()` function.
 
 ---
 
