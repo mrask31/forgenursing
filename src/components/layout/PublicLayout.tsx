@@ -100,7 +100,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="w-full bg-[#0D8F9C] text-white text-center text-xs sm:text-sm py-2.5 px-4 relative flex-shrink-0 z-50">
           <span className="inline-flex items-center gap-2 flex-wrap justify-center">
             Free beta —{' '}
-            <strong>
+            <strong data-testid="beta-counter">
               {spotsRemaining !== null ? spotsRemaining : '...'} spot{spotsRemaining !== 1 ? 's' : ''} remaining
             </strong>
             . No credit card needed.

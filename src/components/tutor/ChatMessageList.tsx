@@ -39,26 +39,32 @@ const ADPIE_BLOCK_CONFIG = {
   ORIENT: {
     wrapperClass: 'bg-[#e8f4f4] rounded-lg px-4 py-3 mb-3',
     labelColor: 'text-[#1a8080]',
+    testId: 'adpie-block-orient',
   },
   'THE MAP': {
     wrapperClass: 'bg-gray-50 rounded-lg px-4 py-3 mb-3',
     labelColor: 'text-slate-900',
+    testId: 'adpie-block-map',
   },
   REASONING: {
     wrapperClass: 'bg-gray-50 rounded-lg px-4 py-3 mb-3',
     labelColor: 'text-slate-900',
+    testId: 'adpie-block-reasoning',
   },
   TRAP: {
-    wrapperClass: 'bg-[#fef9ec] border-l-4 border-[#e6a817] rounded-r-lg px-4 py-3 mb-3',
+    wrapperClass: 'bg-[#fef9ec] border-l-4 border-[#e6a817] rounded-r-lg px-4 py-3 mb-3 trap-block',
     labelColor: 'text-[#c47a0d]',
+    testId: 'adpie-block-trap',
   },
   'YOUR MATERIALS': {
     wrapperClass: 'bg-white rounded-lg px-4 py-3 mb-3 border border-[var(--gray-200)]',
     labelColor: 'text-[#0D8F9C]',
+    testId: 'adpie-block-materials',
   },
   CHECK: {
     wrapperClass: 'bg-[#eef4f7] rounded-lg px-4 py-3 mb-3',
     labelColor: 'text-[#3d6e82]',
+    testId: 'adpie-block-check',
   },
 } as const
 
@@ -474,7 +480,7 @@ export default function ChatMessageList({
                       },
                     }
                     return config ? (
-                      <div key={sectionIdx} className={config.wrapperClass}>
+                      <div key={sectionIdx} className={config.wrapperClass} data-testid={config.testId}>
                         <MessageWithMedicalTerms content={section.content} markdownComponents={components} />
                       </div>
                     ) : (

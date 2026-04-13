@@ -198,6 +198,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
               </Link>
               <button
                 onClick={handleLogout}
+                data-testid="logout-button"
                 className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors w-full text-left"
               >
                 <LogOut className="w-4 h-4" />
@@ -208,6 +209,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
 
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+            data-testid="user-menu"
             className="w-full flex items-center gap-3 px-1 py-1 rounded-lg hover:bg-white/5 transition-colors"
           >
             <div

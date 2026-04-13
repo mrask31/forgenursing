@@ -258,6 +258,7 @@ export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCo
               key={index}
               type="button"
               onClick={() => handleClick(prompt)}
+              data-testid="study-chip"
               className="inline-flex items-center rounded-full border border-[var(--tutor-border-subtle)] bg-[var(--tutor-surface)] px-3 h-7 text-xs font-medium text-[var(--tutor-text-main)] transition-all hover:bg-[var(--tutor-primary)]/5 hover:border-[var(--tutor-primary)]/30 hover:text-[var(--tutor-primary)] cursor-pointer whitespace-nowrap flex-shrink-0 shadow-sm"
             >
               {prompt}
@@ -277,6 +278,7 @@ export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCo
             key={index}
             type="button"
             onClick={() => handleClick(prompt)}
+            data-testid="study-chip"
             className="inline-flex items-center rounded-full border border-[var(--tutor-border-subtle)] bg-[var(--tutor-surface)] px-4 py-2 text-sm font-medium text-[var(--tutor-text-main)] transition-all hover:bg-[var(--tutor-primary)]/5 hover:border-[var(--tutor-primary)]/30 hover:text-[var(--tutor-primary)] cursor-pointer shadow-sm"
           >
             {prompt}

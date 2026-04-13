@@ -36,3 +36,10 @@ yarn-error.log*
 next-env.d.ts
 .claude/worktrees/
 .kiro/
+
+# E2E test env
+.env.test
+
+# Playwright
+/test-results/
+/playwright-report/

@@ -408,6 +408,7 @@ export default function SignupPage() {
                     <input
                       type="email"
                       placeholder="Email address"
+                      data-testid="signup-email"
                       className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={email}
                       onChange={(e) => {
@@ -423,6 +424,7 @@ export default function SignupPage() {
                     <input
                       type="password"
                       placeholder="Password (8+ characters)"
+                      data-testid="signup-password"
                       className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={password}
                       onChange={(e) => {
@@ -444,6 +446,7 @@ export default function SignupPage() {
                           ? 'border-red-300 focus:ring-red-600'
                           : 'border-slate-200 focus:ring-[#0D8F9C]'
                       }`}
+                      data-testid="signup-confirm-password"
                       value={confirmPassword}
                       onChange={(e) => {
                         setConfirmPassword(e.target.value)
@@ -501,6 +504,7 @@ export default function SignupPage() {
 
                 <button
                   type="submit"
+                  data-testid="signup-submit"
                   disabled={loading || !email || !password || !confirmPassword || password !== confirmPassword || !acceptedTerms}
                   className="w-full flex items-center justify-center gap-2 px-6 py-2.5 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0A7A85] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >

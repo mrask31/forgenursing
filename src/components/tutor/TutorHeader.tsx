@@ -122,6 +122,7 @@ export default function TutorHeader({
           <select
             value={selectedClassId ?? ""}
             onChange={(e) => onSelectClass?.(e.target.value || undefined)}
+            data-testid="course-switcher"
             className="rounded-lg border border-[var(--gray-200)] bg-white px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-[var(--gray-800)] focus:outline-none focus:ring-2 focus:ring-[var(--teal)]/30 focus:border-[var(--teal)] w-[120px] sm:w-[160px] transition-colors"
           >
             <option value="">General Tutor</option>

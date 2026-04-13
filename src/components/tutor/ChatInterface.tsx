@@ -351,7 +351,7 @@ export default function ChatInterface({
 
       {/* Image Thumbnails */}
       {pendingImages.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto px-2 mb-2">
+        <div data-testid="image-preview" className="flex gap-2 overflow-x-auto px-2 mb-2">
           {pendingImages.map((img) => (
             <div key={img.id} className="relative flex-shrink-0 group">
               <img src={img.preview} alt={img.file.name} className="w-16 h-16 object-cover rounded-lg border border-[var(--gray-200)]" />
@@ -408,6 +408,7 @@ export default function ChatInterface({
         {/* Textarea */}
         <textarea
           ref={inputRef}
+          data-testid="chat-input"
           className="flex-1 max-h-32 min-h-[44px] resize-none bg-white rounded-xl border border-[var(--gray-200)] px-3 py-2 text-sm text-[var(--gray-800)] placeholder:text-[var(--gray-400)] focus:outline-none focus:ring-2 focus:ring-[var(--teal)] focus:border-[var(--teal)]"
           placeholder={getPlaceholderText()}
           value={inputValue}
@@ -420,6 +421,7 @@ export default function ChatInterface({
         {/* Send Button */}
         <button
           type="submit"
+          data-testid="chat-send"
           disabled={isLoading || (!inputValue.trim() && pendingImages.length === 0)}
           className="rounded-lg bg-[var(--teal)] p-2.5 text-white shadow-lg hover:bg-[#0A7A85] transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           aria-label="Send message"

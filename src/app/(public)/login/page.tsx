@@ -393,6 +393,7 @@ export default function LoginPage() {
                     <input
                       type="email"
                       placeholder="Enter your email"
+                      data-testid="login-email"
                       className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -404,6 +405,7 @@ export default function LoginPage() {
                     <input
                       type="password"
                       placeholder="Enter your password"
+                      data-testid="login-password"
                       className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -424,6 +426,7 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
+                  data-testid="login-submit"
                   disabled={loading || !email || !password}
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 sm:py-3.5 bg-[#0D8F9C] text-white rounded-xl text-base font-medium hover:bg-[#0A7A85] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl min-h-[44px]"
                 >

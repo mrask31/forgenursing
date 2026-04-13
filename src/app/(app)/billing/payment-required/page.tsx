@@ -50,7 +50,7 @@ export default function PaymentRequiredPage() {
   return (
     <div className="min-h-[calc(100dvh-4rem)] bg-slate-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-lg text-center">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-lg text-center" data-testid="paywall">
           <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <CreditCard className="w-10 h-10 text-indigo-600" />
           </div>
