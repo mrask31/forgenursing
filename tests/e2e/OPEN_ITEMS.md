@@ -22,21 +22,6 @@ Living document for bugs, deferred fixes, and known landmines the test suite wat
 - **Fix priority:** DEFERRED — will be fixed after 15 paying users or immediately if regression test fires, whichever comes first.
 - **Related:** Any PR touching `login/page.tsx`, signup flow, Stripe webhook handlers, or beta profile fields MUST run the full E2E suite including `@regression` tag.
 
-### L-002: Stripe webhook retry cron is authentication-failing silently
-- **Discovered:** April 13, 2026 during welcome cron diagnostic (Vercel log inspection)
-- **Severity:** Unknown — depends on how often Stripe webhooks fail in the first place
-- **Evidence:** Vercel logs show `/api/stripe/webhook-retry` firing every 5 minutes (`*/5 * * * *`) and returning HTTP 401 on every single invocation, going back at least as far as log retention allows. The route's `CRON_SECRET` check is rejecting Vercel's own cron requests.
-- **Business impact:** If a real Stripe webhook fails (network blip, 500 error, transient issue), this retry mechanism is supposed to catch it and re-process. Because the retry cron is 401-ing, no retries are actually happening. Any failed Stripe webhook is permanently lost. This affects:
-  - Subscription state sync (trialing → active → cancelled)
-  - Payment success events
-  - Failed payment notifications
-  - Any other Stripe event the app depends on
-- **Why welcome cron works but this one doesn't:** The welcome cron (R-001 fix) was wired up tonight with a working auth pattern. The Stripe retry cron predates tonight's work and uses a different or broken configuration.
-- **Root cause (unconfirmed):** Either (a) the route's expected `CRON_SECRET` env var is not set in Vercel production env vars, (b) the value was set but doesn't match what the route code expects, or (c) the auth check in the route is reading the header incorrectly.
-- **Fix priority:** DEFERRED — investigate next session. Not tonight. Not a silent user-facing fire the way R-001 was; this is an infrastructure fault with uncertain business impact.
-- **Next session action:** Diagnose whether `CRON_SECRET` is set in Vercel → Settings → Environment Variables (production scope). Compare to what `/api/stripe/webhook-retry` route handler expects. Fix the mismatch or add the env var. Verify via manual Run button + log check (same technique that verified R-001 tonight).
-- **Related:** While investigating, also verify every OTHER cron in the Vercel Cron Jobs list is returning 200, not 401. Possible other crons are silently broken the same way. Full list from tonight's audit: `/api/cron/process-emails`, `/api/emails/process-beta-reengagement`, `/api/emails/process-beta-sequence`, `/api/emails/process-onboarding-sequence`, `/api/emails/process-trial-expiration`, `/api/emails/process-welcome-queue` (verified ✅), `/api/stripe/webhook-retry`.
-
 ---
 
 ## ⚠️ DEFERRED FEATURES (not bugs — missing functionality)
@@ -75,6 +60,13 @@ Living document for bugs, deferred fixes, and known landmines the test suite wat
 - **Revisit when:** Post-15-paying-users, before any major marketing push that expects a full drip sequence. At that point do a consolidation audit — pick one system, migrate the other, delete the loser.
 - **Do NOT:** Add more emails to either system before consolidation. Adding now makes the eventual cleanup harder.
 
+### I-004: Audit all cron routes for CRON_SECRET auth consistency
+- **Discovered:** April 13, 2026 during L-002 resolution
+- **Description:** Two cron routes tonight had different auth patterns — one accepted `CRON_SECRET` (welcome queue, working), one didn't (Stripe webhook retry, broken, fixed in R-002). Other cron routes in the repo have not been audited and may silently share the same failure mode.
+- **Routes to audit:** `/api/cron/process-emails`, `/api/emails/process-beta-reengagement`, `/api/emails/process-beta-sequence`, `/api/emails/process-onboarding-sequence`, `/api/emails/process-trial-expiration`
+- **How to audit each:** (a) Read the route handler, confirm it accepts `CRON_SECRET` in the Authorization header. (b) Hit the Run button in the Vercel Cron Jobs dashboard. (c) Check the resulting log entry for HTTP 200. (d) If any route returns 401, apply the same fix pattern as R-002.
+- **Priority:** DEFERRED to next session. Not a fire tonight — no known user-facing impact. But worth 15-20 minutes of next-session audit time to ensure no other email or cron subsystem is silently broken.
+
 ---
 
 ## ✅ RESOLVED
@@ -86,3 +78,12 @@ Living document for bugs, deferred fixes, and known landmines the test suite wat
 - **Fix:** Commit `61f7fda` added GET export and `CRON_SECRET` auth check to the processor route, and added `{ "path": "/api/emails/process-welcome-queue", "schedule": "15 * * * *" }` to `vercel.json`. Runs hourly at :15 past the hour.
 - **Users affected before fix:** Unknown exact count. Queue showed 30 total rows, only 2 marked `sent` (both from a manual trigger on April 6). Estimate: ~20+ real beta users received no automated welcome, though all 24 current beta users were manually emailed so they're covered.
 - **Verified:** April 13, 2026 ~20:50 UTC. Manual Run triggered via Vercel Cron Jobs dashboard. Route returned HTTP 200 in 1.39s, user-agent `vercel-cron/1.0`, confirmed downstream POSTs to Supabase (200) and Resend (200). Both pending rows from today flipped to `status = sent` with valid Resend message IDs (`8b531ddc...`, `b9d77dbc...`). Cron is live on `15 * * * *` schedule going forward.
+
+### R-002: Stripe webhook retry cron was authentication-failing silently (was L-002)
+- **Discovered:** April 13, 2026 during welcome cron diagnostic (Vercel log inspection)
+- **Resolved:** April 13, 2026 in commit `2fa8838`
+- **Root cause:** The route at `src/app/api/stripe/webhook-retry/route.ts` only checked `WEBHOOK_RETRY_SECRET` with fallback to `SUPABASE_SERVICE_ROLE_KEY`. Vercel's cron runner sends `Authorization: Bearer ${CRON_SECRET}`, which was not in the accepted list. Every scheduled invocation on the `*/5 * * * *` schedule returned HTTP 401 and did nothing.
+- **Fix:** Added `CRON_SECRET` to the accepted auth tokens in both the GET and POST handlers. Preserved backward compatibility with `WEBHOOK_RETRY_SECRET` and `SUPABASE_SERVICE_ROLE_KEY`. Added null-safety so that if `CRON_SECRET` is unset, the accept path is skipped (no `Bearer undefined` vulnerability).
+- **Verified:** April 13, 2026 ~16:00 UTC (CDT). Manual Run triggered via Vercel Cron Jobs dashboard. Route returned HTTP 200 twice in sequence at 16:00:13 and 16:00:25. No internal errors. Pre-fix entries (15:35-15:50) all show 401 for contrast.
+- **Business impact before fix:** Any failed Stripe webhook (subscription updates, payment events, failed payment notifications) had no working retry mechanism. The impact was minimal given current low paying-user count but would have scaled with business growth. No known real users affected.
+- **Related hardening opportunity (DEFERRED):** While investigating L-002, tonight's audit revealed that other cron routes may have inconsistent auth patterns. The working welcome queue route checks both `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`. Other cron routes in the repo (`/api/cron/process-emails`, `/api/emails/process-beta-reengagement`, `/api/emails/process-beta-sequence`, `/api/emails/process-onboarding-sequence`, `/api/emails/process-trial-expiration`) should be audited for the same class of issue. Filed as I-004 below.
