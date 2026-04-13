@@ -11,6 +11,15 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 // 3. External cron service
 
 export async function POST(request: Request) {
+  return processWelcomeQueue(request)
+}
+
+// Vercel cron invokes routes via GET with Authorization: Bearer $CRON_SECRET
+export async function GET(request: Request) {
+  return processWelcomeQueue(request)
+}
+
+async function processWelcomeQueue(request: Request) {
   try {
     // Verify authorization (can be cron secret or service role key)
     const authHeader = request.headers.get('authorization')
@@ -18,6 +27,7 @@ export async function POST(request: Request) {
     
     const isAuthorized = 
       authHeader === `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` ||
+      authHeader === `Bearer ${process.env.CRON_SECRET}` ||
       cronSecret === process.env.CRON_SECRET
 
     if (!isAuthorized) {
