@@ -6,58 +6,7 @@ Living document for bugs, deferred fixes, and known landmines the test suite wat
 
 ## 🔴 LANDMINES (dormant bugs under active regression coverage)
 
-### L-001: Beta login redirect ignores isBetaActive()
-- **Discovered:** April 2026 during ADPIE E2E test setup
-- **Severity:** Dormant — 0/24 real beta users currently affected
-- **File:** `src/app/(public)/login/page.tsx` (redirect logic around lines 240-265)
-- **Description:** Login page redirect only checks `hasSubscriptionAccess()`. Beta users with `subscription_status = null` would be incorrectly routed to `/checkout` instead of `/tutor`, locking them out of free beta access.
-- **Why it's dormant:** Current signup flow sets `subscription_status` for every user, including beta. All 24 existing beta users have 'trialing' or 'active' — none have NULL.
-- **Waking conditions (any of these could trigger real user impact):**
-  - Stripe webhook nulls `subscription_status` on a beta user row
-  - Signup flow changes to leave `subscription_status` unset for beta users
-  - Beta-to-paid conversion transition has a bug
-  - A future DB migration resets `subscription_status` on any beta row
-- **Regression guard:** `tests/e2e/11-beta-login-regression.spec.ts` — runs under `@regression` tag. Uses the `qa-beta-clone@forgenursing.test` user which permanently mirrors the vulnerable state.
-- **Fix when prioritized:** In the login redirect, call `hasAccess(subscriptionStatus, trial_ends_at, is_beta, beta_expires_at)` instead of `hasSubscriptionAccess(subscriptionStatus)`. Requires adding `is_beta`, `beta_expires_at`, `trial_ends_at` to the profile query on the login page.
-- **Fix priority:** DEFERRED — will be fixed after 15 paying users or immediately if regression test fires, whichever comes first.
-- **Related:** Any PR touching `login/page.tsx`, signup flow, Stripe webhook handlers, or beta profile fields MUST run the full E2E suite including `@regression` tag.
-
-### L-003: Trial expiry paywall does not enforce trial_ends_at — 2 users actively leaking
-- **Discovered:** April 13, 2026 during Stripe trial E2E test work (session follow-up to R-001 and R-002)
-- **Severity:** ACTIVE — 2 non-beta users currently have expired trials AND `/tutor` access
-- **Status:** Partial fix in-progress, stashed locally, NOT committed to main
-- **Exposure counts (as of April 13, 2026):**
-  - `actively_leaking` (non-beta, trialing, trial_ends_at < NOW): **2**
-  - `legitimate_trial_users` (non-beta, trialing, trial_ends_at >= NOW): 4
-  - `beta_users_in_trialing_state`: 23 (safe — beta path handled separately)
-- **Root cause:** `hasSubscriptionAccess(status)` historically treated `'trialing'` as unconditionally valid, regardless of `trial_ends_at`. The `isTrialActive()` function existed but was never called by the main access check because `hasAccess()` used OR short-circuiting: `hasSubscriptionAccess(status) || isTrialActive(trialEndsAt) || isBetaActive(...)` — and `hasSubscriptionAccess('trialing')` returned true before the date check ever evaluated.
-- **Callers of the broken logic (11 total, verified by diagnostic):**
-  1. `src/app/(public)/login/page.tsx` — direct `hasSubscriptionAccess()` call at Priority 2
-  2. `src/app/auth/callback/route.ts` — direct `hasSubscriptionAccess()` call
-  3. `src/components/layout/PublicLayout.tsx` — direct `hasSubscriptionAccess()` call for nav UI state
-  4. `middleware.ts:195` — `hasAccess(status, trialEndsAt)` (2-arg, beta flags omitted)
-  5. `middleware.ts:277` — `hasAccess(status, trialEndsAt)` (2-arg, beta flags omitted)
-  6. `src/lib/entitlement.ts:66` — `hasAccess(...)` (shared helper, feeds 7/8/9)
-  7. `src/app/api/chat/route.ts:364` — via entitlement
-  8. `src/app/api/process/route.ts:68` — via entitlement
-  9. `src/app/actions/binder.ts:21,73` — via entitlement
-  10. `src/hooks/useUser.ts:84` — custom inline `isSubscribed || isTrialActive`
-  11. `src/app/api/subscription/status/route.ts:130` — custom inline `HAS_ACCESS_STATUSES` constant
-- **What's been fixed (stashed, NOT committed):**
-  - `src/lib/subscription-access.ts` — `hasSubscriptionAccess` narrowed to `status === 'active'`. `hasAccess` rewritten with explicit branches: paid → (trialing AND isTrialActive) → (isBetaActive) → false.
-  - `middleware.ts` — both access-check blocks expanded to select `is_beta, beta_expires_at`; both `hasAccess()` calls pass all 4 args.
-  - `src/components/layout/PublicLayout.tsx` — profile select expanded to include `trial_ends_at`; boolean check updated.
-  - `src/hooks/useUser.ts` — migrated from inline logic to shared `hasAccess()` and `isTrialActive()`; profile select expanded.
-  - `tests/e2e/12-trial-expiry-regression.spec.ts` — new `@regression` test asserting expired-trial user cannot reach `/tutor`.
-- **What's NOT fixed (still pending when resumed):**
-  - **`src/app/(public)/login/page.tsx`** — Priority 2 (`hasSubscriptionAccess()` at ~line 258) will now return false for trialing users, routing legitimate trial users to `/checkout`. Needs expanded profile select + trial/beta check. Priority 1 (`if (hasStripeSubscription)` block) is an independent pre-existing issue granting lifetime access to anyone with a `stripe_subscription_id`.
-  - **`src/app/auth/callback/route.ts`** — direct `hasSubscriptionAccess()` call that inherits the same issue. Profile select doesn't pull `trial_ends_at`, `is_beta`, or `beta_expires_at`.
-  - **`src/app/api/subscription/status/route.ts`** — deferred as I-005.
-- **Open product design question for next session (MUST ANSWER FIRST):**
-  What should Priority 1 in the login page do? Current "any stripe_subscription_id = full access" is overscoped. Options: (a) narrow to valid status list, (b) narrow to recent creation, (c) remove entirely since `/api/stripe/sync-subscription` already handles webhook lag.
-- **Stashed state:** `git stash stash@{0}` — "WIP: trial expiry fix — login page + auth callback pending". Pop with `git stash pop`.
-- **Verification harness:** 5-gate pattern (smoke + L-001 regression + ADPIE + welcome email + 12-trial-expiry regression) against `http://localhost:3000`.
-- **Priority next session:** HIGH. 45-60 minutes estimated.
+_(No active landmines — L-001 and L-003 resolved in commit 0cd47f5)_
 
 ---
 
@@ -128,6 +77,22 @@ The three SQL files exist in the repo root (`supabase_email_queue.sql`, `supabas
 
 Related open items: I-003 (two overlapping email systems), I-006 (trigger architecture investigation).
 
+### I-006: OPEN — System 2 email architecture decision deferred
+- **Discovered:** April 14, 2026
+- **Description:** `supabase_email_queue.sql` migration NOT yet applied. Trigger investigation required before applying. See I-004 for full context.
+
+### I-008: OPEN — welcome_emails_sent table has "type" column mismatch
+- **Discovered:** April 14, 2026
+- **Description:** Upsert silently fails due to column mismatch. Non-blocking for now.
+
+### I-009: OPEN — 7 pure trial users receive zero emails until Day 6
+- **Discovered:** April 14, 2026
+- **Description:** Trial Day 1/3/5 sequence not built. `is_beta=false` users get no emails between signup and Day 6 warning.
+
+### I-010: OPEN — Welcome emails failing for new signups since April 11
+- **Discovered:** April 14, 2026
+- **Description:** `welcome_emails_sent` has 10+ `status='failed'` rows with "schema 'net' does not exist" trigger errors. Belongs in I-006 investigation.
+
 ### I-005: subscription/status/route.ts has independent inline broken access logic
 - **Discovered:** April 13, 2026 during trial expiry audit
 - **Description:** `src/app/api/subscription/status/route.ts` defines its own `HAS_ACCESS_STATUSES = ['trialing', 'active']` constant and computes `hasAccess` inline without checking `trial_ends_at`. This is a debug/status endpoint, not an access gate, so it doesn't block users — but it returns incorrect `hasAccess: true` for expired-trial users in its JSON response.
@@ -154,3 +119,17 @@ Related open items: I-003 (two overlapping email systems), I-006 (trigger archit
 - **Verified:** April 13, 2026 ~16:00 UTC (CDT). Manual Run triggered via Vercel Cron Jobs dashboard. Route returned HTTP 200 twice in sequence at 16:00:13 and 16:00:25. No internal errors. Pre-fix entries (15:35-15:50) all show 401 for contrast.
 - **Business impact before fix:** Any failed Stripe webhook (subscription updates, payment events, failed payment notifications) had no working retry mechanism. The impact was minimal given current low paying-user count but would have scaled with business growth. No known real users affected.
 - **Related hardening opportunity (DEFERRED):** While investigating L-002, tonight's audit revealed that other cron routes may have inconsistent auth patterns. The working welcome queue route checks both `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`. Other cron routes in the repo (`/api/cron/process-emails`, `/api/emails/process-beta-reengagement`, `/api/emails/process-beta-sequence`, `/api/emails/process-onboarding-sequence`, `/api/emails/process-trial-expiration`) should be audited for the same class of issue. Filed as I-004 below.
+
+### R-003: Beta login redirect now checks isBetaActive (was L-001)
+- **Resolved:** April 14, 2026 in commit `0cd47f5` (side effect of L-003 fix)
+- **Root cause:** Login page and middleware only checked `hasSubscriptionAccess()`, not beta status. Beta users with `subscription_status = null` were redirected to `/checkout`.
+- **Fix:** Login page now uses `hasAccess()` with all 4 params (status, trial_ends_at, is_beta, beta_expires_at). Middleware expanded to select and pass beta columns. PRIORITY 1 shortcut removed entirely.
+- **Regression guard:** `tests/e2e/11-beta-login-regression.spec.ts` — now passes against local dev server.
+
+### R-004: Trial expiry paywall enforced — 2 leaking users paywalled (was L-003)
+- **Resolved:** April 14, 2026 in commit `0cd47f5`
+- **Root cause:** `hasSubscriptionAccess('trialing')` returned true regardless of `trial_ends_at`. The `isTrialActive()` function existed but was never evaluated due to OR short-circuiting.
+- **Fix:** `hasSubscriptionAccess` narrowed to only `'active'`. `hasAccess` rewritten: active → allow, trialing+not expired → allow, beta active → allow, else → block. Login page PRIORITY 1 shortcut (any `stripe_subscription_id` = full access) removed. Auth callback updated to use `hasAccess` with full profile context.
+- **Exposure before fix:** 2 non-beta users with expired trials had active `/tutor` access.
+- **Regression guard:** `tests/e2e/12-trial-expiry-regression.spec.ts`
+- **Verified locally:** smoke (3 pass, 1 skip) + L-001 beta regression (pass) + trial expiry regression (pass)
