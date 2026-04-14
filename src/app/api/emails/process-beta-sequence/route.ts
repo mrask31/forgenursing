@@ -245,6 +245,10 @@ function generateDay3Email(): string {
             <td style="padding: 40px 30px;">
 
               <p style="margin: 0 0 20px 0; color: #334155; font-size: 16px; line-height: 1.7;">
+                I'm Michael — Navy Corpsman turned developer — I built Forge because I know there is a difference between memorizing material and then knowing the material. In health care, you must know the material.
+              </p>
+
+              <p style="margin: 0 0 20px 0; color: #334155; font-size: 16px; line-height: 1.7;">
                 Just wanted to pop in and see how things are going. You signed up for the ForgeNursing beta a few days ago — have you had a chance to try asking a clinical question yet?
               </p>
 
@@ -270,7 +274,7 @@ function generateDay3Email(): string {
 
               <p style="margin: 24px 0 0 0; color: #64748b; font-size: 15px; line-height: 1.7;">
                 Talk soon,<br>
-                The ForgeNursing Team
+                Michael
               </p>
 
             </td>
@@ -345,16 +349,16 @@ function generateDay30Email(): string {
               </div>
 
               <p style="margin: 0 0 20px 0; color: #334155; font-size: 16px; line-height: 1.7;">
-                There's no survey or form — just reply to this email. Even one sentence helps. We read every response and it directly influences what we prioritize next.
+                There's no survey or form — just reply to this email. Even one sentence helps. I read every response and it directly influences what I prioritize next.
               </p>
 
               <p style="margin: 0 0 20px 0; color: #334155; font-size: 16px; line-height: 1.7;">
-                Your beta access is still going strong, so keep using Forge as much as you want. We're shipping improvements every week based on feedback from testers like you.
+                Your beta access is still going strong, so keep using Forge as much as you want. I'm shipping improvements every week based on feedback from testers like you.
               </p>
 
               <p style="margin: 24px 0 0 0; color: #64748b; font-size: 15px; line-height: 1.7;">
                 Grateful you're here,<br>
-                The ForgeNursing Team
+                Michael
               </p>
 
             </td>
@@ -422,7 +426,7 @@ function generateDay76Email(): string {
                   What's changing
                 </h2>
                 <p style="margin: 0; color: #7f1d1d; font-size: 15px; line-height: 1.7;">
-                  Once your beta period ends, your account will move to read-only. You'll still be able to log in, but you won't be able to start new quizzes or ask clinical questions until you subscribe.
+                  Once your beta period ends, your account will move to read-only. You'll still be able to log in, but you won't be able to start new clinical conversations until you subscribe.
                 </p>
               </div>
 
@@ -431,13 +435,18 @@ function generateDay76Email(): string {
                 <h2 style="margin: 0 0 12px 0; color: #1e293b; font-size: 18px; font-weight: 700;">
                   Pricing after launch
                 </h2>
-                <p style="margin: 0; color: #334155; font-size: 15px; line-height: 1.7;">
-                  Plans start at <strong>$89/semester</strong> — full access to everything you've been using during the beta, plus everything we ship between now and then.
+                <p style="margin: 0 0 12px 0; color: #334155; font-size: 15px; line-height: 1.7;">
+                  Three options, pick whatever fits:
                 </p>
+                <ul style="margin: 0; padding-left: 20px; color: #334155; font-size: 15px; line-height: 1.8;">
+                  <li><strong>$24.99/month</strong> — month-to-month, cancel anytime</li>
+                  <li><strong>$89/semester</strong> — 4 months, most popular with students</li>
+                  <li><strong>$199/year</strong> — best value, about $16.58/month</li>
+                </ul>
               </div>
 
               <p style="margin: 0 0 20px 0; color: #334155; font-size: 16px; line-height: 1.7;">
-                All your progress, answered questions, and performance data will be saved. Subscribe before your beta expires and you'll pick up right where you left off with zero interruption.
+                All your progress and conversation history will be saved. Subscribe before your beta expires and you'll pick up right where you left off with zero interruption.
               </p>
 
               <!-- CTA -->
@@ -453,8 +462,8 @@ function generateDay76Email(): string {
               </table>
 
               <p style="margin: 24px 0 0 0; color: #64748b; font-size: 15px; line-height: 1.7;">
-                Thanks for helping us build this,<br>
-                The ForgeNursing Team
+                Thanks for helping me build this,<br>
+                Michael
               </p>
 
             </td>
