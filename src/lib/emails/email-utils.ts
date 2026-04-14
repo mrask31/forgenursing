@@ -15,8 +15,9 @@ export function createServiceRoleClient(): SupabaseClient {
 
 /**
  * Verifies that the incoming request is authorized via either:
- * - `x-cron-secret` header matching CRON_SECRET env var
- * - `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>` header
+ *  - `x-cron-secret` header matching CRON_SECRET env var
+ *  - `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>` header
+ *  - `Authorization: Bearer <CRON_SECRET>` header (used by Vercel cron)
  */
 export function verifyAuthorization(request: Request): boolean {
   const authHeader = request.headers.get('authorization')
@@ -24,6 +25,7 @@ export function verifyAuthorization(request: Request): boolean {
 
   return (
     authHeader === `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` ||
+    authHeader === `Bearer ${process.env.CRON_SECRET}` ||
     cronSecret === process.env.CRON_SECRET
   )
 }
