@@ -179,6 +179,9 @@ export async function POST(request: Request) {
   }
 }
 
+// Vercel cron invokes routes via GET with Authorization: Bearer $CRON_SECRET
+export const GET = POST
+
 // Day 6 Email Template (24h before expiration)
 function generateDay6Email(dayOfWeek: string, questionsAnswered: number): string {
   return `

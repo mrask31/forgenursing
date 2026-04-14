@@ -68,3 +68,6 @@ export async function POST(request: Request) {
     )
   }
 }
+
+// Vercel cron invokes routes via GET with Authorization: Bearer $CRON_SECRET
+export const GET = POST
