@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { hasSubscriptionAccess } from '@/lib/subscription-access'
+import { hasAccess } from '@/lib/subscription-access'
 
 function getStripeClient(): Stripe | null {
   if (!process.env.STRIPE_SECRET_KEY) return null
@@ -57,6 +57,9 @@ export async function GET(request: Request) {
       // Ensure profile exists with correct subscription status
       const { data: { user } } = await supabase.auth.getUser()
       let subscriptionStatus = 'pending_payment'
+      let trialEndsAt: string | null = null
+      let isBeta: boolean = false
+      let betaExpiresAt: string | null = null
       let onboardingCompleted = false
       
       if (user) {
@@ -76,7 +79,7 @@ export async function GET(request: Request) {
         // Check if profile exists, create/update if needed
         const { data: profile, error: profileError } = await profileClient
           .from('profiles')
-          .select('id, subscription_status, stripe_customer_id, onboarding_completed')
+          .select('id, subscription_status, stripe_customer_id, onboarding_completed, trial_ends_at, is_beta, beta_expires_at')
           .eq('id', user.id)
           .single()
 
@@ -98,6 +101,9 @@ export async function GET(request: Request) {
           onboardingCompleted = false
         } else {
           subscriptionStatus = profile.subscription_status || 'pending_payment'
+          trialEndsAt = profile.trial_ends_at || null
+          isBeta = profile.is_beta || false
+          betaExpiresAt = profile.beta_expires_at || null
           onboardingCompleted = profile.onboarding_completed || false
           
           if (!profile.subscription_status) {
@@ -149,8 +155,8 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${appUrl}/checkout?plan=${plan}`)
       }
       
-      // Access = trialing | active (no payment/invoice required). Otherwise redirect to checkout.
-      if (!hasSubscriptionAccess(subscriptionStatus)) {
+      // Check access: active, trialing+not expired, or beta active
+      if (!hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)) {
         return NextResponse.redirect(`${appUrl}/checkout`)
       }
       return NextResponse.redirect(`${appUrl}${next}`)

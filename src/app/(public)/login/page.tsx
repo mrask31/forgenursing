@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { clearSupabaseStorage, isSessionError, debugAuthLog, resetSession } from '@/lib/auth-utils'
-import { hasSubscriptionAccess } from '@/lib/subscription-access'
+import { hasAccess } from '@/lib/subscription-access'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -206,10 +206,10 @@ export default function LoginPage() {
         // Sync is best-effort; continue with profile check
       }
 
-      // Check subscription status — access = trialing | active (no payment/invoice required)
+      // Check subscription status
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('subscription_status, stripe_subscription_id')
+        .select('subscription_status, trial_ends_at, is_beta, beta_expires_at')
         .eq('id', data.user.id)
         .single()
 
@@ -226,41 +226,21 @@ export default function LoginPage() {
         return // Exit early, redirecting so don't set loading to false
       }
 
-      // Get subscription status - handle null/undefined cases
-      const subscriptionStatus = profile?.subscription_status
-      const hasStripeSubscription = !!profile?.stripe_subscription_id
-      
-      // Log everything for debugging
-      
-      // PRIORITY 1: If user has ANY Stripe subscription ID, they've completed checkout
-      // Allow them in regardless of status (webhook might be delayed)
-      if (hasStripeSubscription) {
-        
-        // If status is not trialing or active, update it
-        if (subscriptionStatus !== 'trialing' && subscriptionStatus !== 'active') {
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ subscription_status: 'trialing' })
-            .eq('id', data.user.id)
-          
-          if (updateError) {
-            console.error('[Login] Error updating status to trialing:', updateError)
-            // Still allow access even if update fails
-          } else {
-          }
-        }
-        
+      // Check access using the shared hasAccess function
+      // active → allow, trialing + not expired → allow, beta active → allow
+      const userHasAccess = hasAccess(
+        profile?.subscription_status,
+        profile?.trial_ends_at,
+        profile?.is_beta,
+        profile?.beta_expires_at
+      )
+
+      if (userHasAccess) {
         window.location.replace(redirect)
         return
       }
       
-      // PRIORITY 2: Access = trialing | active (no payment/invoice required)
-      if (hasSubscriptionAccess(subscriptionStatus)) {
-        window.location.replace(redirect)
-        return
-      }
-      
-      // PRIORITY 3: No access — redirect to checkout
+      // No access — redirect to checkout
       window.location.replace('/checkout')
       // Note: We don't set loading to false on success because we're redirecting
     } catch (err) {

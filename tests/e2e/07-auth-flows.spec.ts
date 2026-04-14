@@ -25,6 +25,7 @@ test.describe('Auth flows @smoke', () => {
           phi_acknowledged_at: new Date().toISOString(),
           program_level: 'BSN',
           subscription_status: 'trialing',
+          trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         }, { onConflict: 'id' });
     }
   });

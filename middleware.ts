@@ -144,6 +144,8 @@ export async function middleware(request: NextRequest) {
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
         let subscriptionStatus: string | undefined
         let trialEndsAt: string | undefined
+        let isBeta: boolean | undefined
+        let betaExpiresAt: string | undefined
         let profileError: any = null
         
         if (serviceRoleKey) {
@@ -154,7 +156,7 @@ export async function middleware(request: NextRequest) {
           )
           const { data: profile, error } = await adminClient
             .from('profiles')
-            .select('subscription_status, trial_ends_at')
+            .select('subscription_status, trial_ends_at, is_beta, beta_expires_at')
             .eq('id', user.id)
             .single()
           
@@ -164,12 +166,14 @@ export async function middleware(request: NextRequest) {
           } else {
             subscriptionStatus = profile?.subscription_status
             trialEndsAt = profile?.trial_ends_at
+            isBeta = profile?.is_beta ?? false
+            betaExpiresAt = profile?.beta_expires_at
           }
         } else {
           // Fallback to anon key (may be blocked by RLS)
           const { data: profile, error } = await supabase
             .from('profiles')
-            .select('subscription_status, trial_ends_at')
+            .select('subscription_status, trial_ends_at, is_beta, beta_expires_at')
             .eq('id', user.id)
             .single()
           
@@ -179,6 +183,8 @@ export async function middleware(request: NextRequest) {
           } else {
             subscriptionStatus = profile?.subscription_status
             trialEndsAt = profile?.trial_ends_at
+            isBeta = profile?.is_beta ?? false
+            betaExpiresAt = profile?.beta_expires_at
           }
         }
 
@@ -192,7 +198,7 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
         }
 
-        const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt)
+        const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
 
         if (userHasAccess) {
           return NextResponse.redirect(new URL('/tutor', request.url))
@@ -226,6 +232,8 @@ export async function middleware(request: NextRequest) {
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
         let subscriptionStatus: string | undefined
         let trialEndsAt: string | undefined
+        let isBeta: boolean | undefined
+        let betaExpiresAt: string | undefined
         let profileError: any = null
         
         if (serviceRoleKey) {
@@ -236,7 +244,7 @@ export async function middleware(request: NextRequest) {
           )
           const { data: profile, error } = await adminClient
             .from('profiles')
-            .select('subscription_status, trial_ends_at')
+            .select('subscription_status, trial_ends_at, is_beta, beta_expires_at')
             .eq('id', user.id)
             .single()
           
@@ -246,12 +254,14 @@ export async function middleware(request: NextRequest) {
           } else {
             subscriptionStatus = profile?.subscription_status
             trialEndsAt = profile?.trial_ends_at
+            isBeta = profile?.is_beta ?? false
+            betaExpiresAt = profile?.beta_expires_at
           }
         } else {
           // Fallback to anon key (may be blocked by RLS)
           const { data: profile, error } = await supabase
             .from('profiles')
-            .select('subscription_status, trial_ends_at')
+            .select('subscription_status, trial_ends_at, is_beta, beta_expires_at')
             .eq('id', user.id)
             .single()
           
@@ -261,6 +271,8 @@ export async function middleware(request: NextRequest) {
           } else {
             subscriptionStatus = profile?.subscription_status
             trialEndsAt = profile?.trial_ends_at
+            isBeta = profile?.is_beta ?? false
+            betaExpiresAt = profile?.beta_expires_at
           }
         }
 
@@ -274,7 +286,7 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
         }
 
-        const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt)
+        const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
 
         console.log('[Middleware] Protected route access check', {
           userId: user.id,

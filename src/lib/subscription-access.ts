@@ -1,11 +1,13 @@
 /**
- * Subscription access rule: trialing and active grant access.
- * Do NOT require payment or paid invoice — subscription status only.
+ * Subscription access rule: only 'active' (paying) grants unconditional access.
+ * 'trialing' requires a separate isTrialActive() check against trial_ends_at.
+ * @deprecated HAS_ACCESS_STATUSES — kept for backward compatibility with external importers.
+ * New code should use hasAccess() which correctly evaluates trial expiry.
  */
 export const HAS_ACCESS_STATUSES = ['trialing', 'active'] as const
 
 export function hasSubscriptionAccess(status: string | null | undefined): boolean {
-  return status != null && HAS_ACCESS_STATUSES.includes(status as (typeof HAS_ACCESS_STATUSES)[number])
+  return status === 'active'
 }
 
 /**
@@ -49,5 +51,14 @@ export function hasAccess(
   isBeta?: boolean | null,
   betaExpiresAt?: string | Date | null
 ): boolean {
-  return hasSubscriptionAccess(status) || isTrialActive(trialEndsAt) || isBetaActive(isBeta, betaExpiresAt)
+  // Paying subscriber
+  if (hasSubscriptionAccess(status)) return true
+
+  // Active trial (trialing status AND not expired)
+  if (status === 'trialing' && isTrialActive(trialEndsAt)) return true
+
+  // Active beta
+  if (isBetaActive(isBeta, betaExpiresAt)) return true
+
+  return false
 }

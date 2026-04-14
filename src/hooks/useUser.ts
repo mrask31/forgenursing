@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getBrowserClient } from '@/lib/supabase/client'
+import { hasAccess as hasAccessCheck, isTrialActive as checkTrialActive } from '@/lib/subscription-access'
 import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 interface UserProfile {
@@ -9,6 +10,8 @@ interface UserProfile {
   trial_ends_at: string | null
   stripe_customer_id: string | null
   stripe_subscription_id: string | null
+  is_beta: boolean | null
+  beta_expires_at: string | null
 }
 
 interface UseUserReturn {
@@ -38,7 +41,7 @@ export function useUser(): UseUserReturn {
         if (authUser) {
           const { data: profileData } = await supabase
             .from('profiles')
-            .select('subscription_status, trial_ends_at, stripe_customer_id, stripe_subscription_id')
+            .select('subscription_status, trial_ends_at, stripe_customer_id, stripe_subscription_id, is_beta, beta_expires_at')
             .eq('id', authUser.id)
             .single()
 
@@ -60,7 +63,7 @@ export function useUser(): UseUserReturn {
       if (session?.user) {
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('subscription_status, trial_ends_at, stripe_customer_id, stripe_subscription_id')
+          .select('subscription_status, trial_ends_at, stripe_customer_id, stripe_subscription_id, is_beta, beta_expires_at')
           .eq('id', session.user.id)
           .single()
 
@@ -79,9 +82,14 @@ export function useUser(): UseUserReturn {
   const now = new Date()
   const trialEndDate = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null
   
-  const isTrialActive = !!(trialEndDate && now < trialEndDate)
-  const isSubscribed = profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing'
-  const hasAccess = isSubscribed || isTrialActive
+  const isTrialActive = checkTrialActive(profile?.trial_ends_at)
+  const isSubscribed = profile?.subscription_status === 'active'
+  const hasAccess = hasAccessCheck(
+    profile?.subscription_status,
+    profile?.trial_ends_at,
+    profile?.is_beta,
+    profile?.beta_expires_at
+  )
   
   const trialDaysRemaining = trialEndDate 
     ? Math.max(0, Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))

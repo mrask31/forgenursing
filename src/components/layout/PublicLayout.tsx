@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { hasSubscriptionAccess, isBetaActive } from '@/lib/subscription-access'
+import { hasSubscriptionAccess, isBetaActive, isTrialActive } from '@/lib/subscription-access'
 import { usePathname } from 'next/navigation'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
@@ -53,15 +53,18 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status, is_beta, beta_expires_at')
+          .select('subscription_status, is_beta, beta_expires_at, trial_ends_at')
           .eq('id', user.id)
           .single()
 
         const subscriptionStatus = profile?.subscription_status
         const betaFlag = profile?.is_beta ?? false
         const betaExp = profile?.beta_expires_at ?? null
+        const trialEndsAt = profile?.trial_ends_at ?? null
         setHasActiveSubscription(
-          hasSubscriptionAccess(subscriptionStatus) || isBetaActive(betaFlag, betaExp)
+          hasSubscriptionAccess(subscriptionStatus) ||
+          (subscriptionStatus === 'trialing' && isTrialActive(trialEndsAt)) ||
+          isBetaActive(betaFlag, betaExp)
         )
       } else {
         setHasActiveSubscription(false)
@@ -76,14 +79,17 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       if (session?.user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status, is_beta, beta_expires_at')
+          .select('subscription_status, is_beta, beta_expires_at, trial_ends_at')
           .eq('id', session.user.id)
           .single()
 
         const betaFlag = profile?.is_beta ?? false
         const betaExp = profile?.beta_expires_at ?? null
+        const trialEndsAt = profile?.trial_ends_at ?? null
         setHasActiveSubscription(
-          hasSubscriptionAccess(profile?.subscription_status) || isBetaActive(betaFlag, betaExp)
+          hasSubscriptionAccess(profile?.subscription_status) ||
+          (profile?.subscription_status === 'trialing' && isTrialActive(trialEndsAt)) ||
+          isBetaActive(betaFlag, betaExp)
         )
       } else {
         setHasActiveSubscription(false)
