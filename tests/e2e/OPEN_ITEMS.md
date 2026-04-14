@@ -97,12 +97,36 @@ Living document for bugs, deferred fixes, and known landmines the test suite wat
 - **Revisit when:** Post-15-paying-users, before any major marketing push that expects a full drip sequence. At that point do a consolidation audit — pick one system, migrate the other, delete the loser.
 - **Do NOT:** Add more emails to either system before consolidation. Adding now makes the eventual cleanup harder.
 
-### I-004: Audit all cron routes for CRON_SECRET auth consistency
-- **Discovered:** April 13, 2026 during L-002 resolution
-- **Description:** Two cron routes tonight had different auth patterns — one accepted `CRON_SECRET` (welcome queue, working), one didn't (Stripe webhook retry, broken, fixed in R-002). Other cron routes in the repo have not been audited and may silently share the same failure mode.
-- **Routes to audit:** `/api/cron/process-emails`, `/api/emails/process-beta-reengagement`, `/api/emails/process-beta-sequence`, `/api/emails/process-onboarding-sequence`, `/api/emails/process-trial-expiration`
-- **How to audit each:** (a) Read the route handler, confirm it accepts `CRON_SECRET` in the Authorization header. (b) Hit the Run button in the Vercel Cron Jobs dashboard. (c) Check the resulting log entry for HTTP 200. (d) If any route returns 401, apply the same fix pattern as R-002.
-- **Priority:** DEFERRED to next session. Not a fire tonight — no known user-facing impact. But worth 15-20 minutes of next-session audit time to ensure no other email or cron subsystem is silently broken.
+### I-004 (System 1 resolved, System 2 deferred): Email cron routes
+
+**System 1 routes — RESOLVED tonight (April 14, 2026, ~22:30 CDT):**
+- `/api/emails/process-trial-expiration` — was 401ing because inline auth check only accepted `Bearer SUPABASE_SERVICE_ROLE_KEY` and `x-cron-secret` header, not `Bearer CRON_SECRET` which is what Vercel cron sends. Added the missing accept branch. DB functions all exist. Should now work end-to-end.
+- `/api/emails/process-beta-sequence` — same auth bug as trial-expiration, PLUS called 3 nonexistent DB functions (`queue_beta_sequence_email`, `get_pending_beta_sequence_emails`, `mark_beta_sequence_email_sent`) that should have been named `beta_lifecycle_*`. Fixed the auth check, renamed the three function calls to their lifecycle equivalents, and reshaped the `mark_*_sent` arguments to match the lifecycle signature (`p_queue_id` vs `p_email_id`, `p_error_msg` vs `p_error_message`).
+
+**Why both routes were failing for months/weeks:**
+1. Inline auth checks in older routes were written before `CRON_SECRET` was added to Vercel env vars. They were originally invoked via `Bearer SUPABASE_SERVICE_ROLE_KEY` (probably during local testing). When the actual Vercel cron schedule started hitting them, auth always failed.
+2. `process-beta-sequence` additionally had a function-name/table-name mismatch. Someone renamed the backend from `beta_sequence` to `beta_lifecycle` in a migration but didn't update the route code to match.
+
+**System 2 routes — STILL BROKEN, deferred to a separate session:**
+- `/api/emails/process-beta-reengagement`
+- `/api/emails/process-onboarding-sequence`
+
+**Root cause for System 2:** These routes were added in commit `44bad14` (April 13, 2026) and depend on database objects that were never migrated to production:
+- Missing table: `public.email_queue`
+- Missing functions: `get_beta_day7_eligible_users`, `get_day3_eligible_users`, `get_day6_eligible_users`
+- Missing trigger: `queue_onboarding_day_0` on `profiles`
+
+The three SQL files exist in the repo root (`supabase_email_queue.sql`, `supabase_email_eligibility_functions.sql`, `supabase_email_queue_day0_trigger.sql`) but were never applied via `supabase db push` or via the SQL Editor.
+
+**Why we didn't apply them tonight:** The day-0 trigger would become a fourth trigger firing on `profiles` INSERT/UPDATE, on top of three existing triggers (`on_user_signup_start_trial`, `on_profile_trial_started`, `on_profile_trial_queue_email`). Two of the existing triggers already call different welcome-email functions (`send_welcome_email` and `queue_welcome_email`). Adding a fourth trigger without understanding how those existing triggers interact risks spamming beta users with multiple welcome/onboarding emails per signup.
+
+**What needs to happen before applying the System 2 migration (documented here as I-006):**
+1. Read the source of `send_welcome_email()` and `queue_welcome_email()` functions in the database
+2. Determine which actually sends emails vs which is a no-op
+3. Decide whether to consolidate on System 1 (delete System 2 routes), consolidate on System 2 (migrate System 1 functions to the new schema), or run both in parallel with deduplication
+4. Apply the System 2 SQL files only after that decision is made
+
+Related open items: I-003 (two overlapping email systems), I-006 (trigger architecture investigation).
 
 ### I-005: subscription/status/route.ts has independent inline broken access logic
 - **Discovered:** April 13, 2026 during trial expiry audit

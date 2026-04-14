@@ -15,6 +15,7 @@ export async function POST(request: Request) {
     
     const isAuthorized = 
       authHeader === `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` ||
+      authHeader === `Bearer ${process.env.CRON_SECRET}` ||
       cronSecret === process.env.CRON_SECRET
 
     if (!isAuthorized) {

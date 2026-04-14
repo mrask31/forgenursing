@@ -15,6 +15,7 @@ export async function POST(request: Request) {
 
     const isAuthorized =
       authHeader === `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` ||
+      authHeader === `Bearer ${process.env.CRON_SECRET}` ||
       cronSecret === process.env.CRON_SECRET
 
     if (!isAuthorized) {
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
       console.error('[Beta Sequence] Error fetching Day 3 users:', day3Error)
     } else if (day3Users && day3Users.length > 0) {
       for (const user of day3Users) {
-        await supabase.rpc('queue_beta_sequence_email', {
+        await supabase.rpc('queue_beta_lifecycle_email', {
           p_user_id: user.user_id,
           p_email: user.email,
           p_email_type: 'day_3',
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
       console.error('[Beta Sequence] Error fetching Day 30 users:', day30Error)
     } else if (day30Users && day30Users.length > 0) {
       for (const user of day30Users) {
-        await supabase.rpc('queue_beta_sequence_email', {
+        await supabase.rpc('queue_beta_lifecycle_email', {
           p_user_id: user.user_id,
           p_email: user.email,
           p_email_type: 'day_30',
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
       console.error('[Beta Sequence] Error fetching Day 76 users:', day76Error)
     } else if (day76Users && day76Users.length > 0) {
       for (const user of day76Users) {
-        await supabase.rpc('queue_beta_sequence_email', {
+        await supabase.rpc('queue_beta_lifecycle_email', {
           p_user_id: user.user_id,
           p_email: user.email,
           p_email_type: 'day_76',
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
 
     // Step 4: Process pending emails from queue
     const { data: pendingEmails, error: queueError } = await supabase
-      .rpc('get_pending_beta_sequence_emails', { batch_size: 50 })
+      .rpc('get_pending_beta_lifecycle_emails', { batch_size: 50 })
 
     if (queueError) {
       console.error('[Beta Sequence] Error fetching queue:', queueError)
@@ -150,11 +151,11 @@ export async function POST(request: Request) {
         }
 
         // Mark as sent in beta_email_sequence
-        await supabase.rpc('mark_beta_sequence_email_sent', {
-          p_email_id: item.id,
-          p_resend_email_id: emailData?.id || null,
+        await supabase.rpc('mark_beta_lifecycle_email_sent', {
+          p_queue_id: item.id,
           p_success: true,
-          p_error_message: null,
+          p_email_id: emailData?.id || null,
+          p_error_msg: null,
         })
 
         // Log to welcome_emails_sent
@@ -172,11 +173,11 @@ export async function POST(request: Request) {
 
         results.sent++
       } catch (error: any) {
-        await supabase.rpc('mark_beta_sequence_email_sent', {
-          p_email_id: item.id,
-          p_resend_email_id: null,
+        await supabase.rpc('mark_beta_lifecycle_email_sent', {
+          p_queue_id: item.id,
           p_success: false,
-          p_error_message: error.message || 'Unknown error',
+          p_email_id: null,
+          p_error_msg: error.message || 'Unknown error',
         })
 
         results.failed++
