@@ -94,7 +94,7 @@ async function processWelcomeQueue(request: Request) {
         const { data: emailData, error: emailError } = await resend.emails.send({
           from: 'ForgeNursing <welcome@forgenursing.com>',
           to: item.email,
-          subject: 'My fault — you never actually got this',
+          subject: 'You\'re in — here\'s where to start',
           html: generateWelcomeEmailHTML(trialEndDate),
         })
 
@@ -148,34 +148,15 @@ async function processWelcomeQueue(request: Request) {
 // Helper function to generate email HTML
 function generateWelcomeEmailHTML(trialEndDate: string): string {
   return `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
-
   <p>Michael here, founder of ForgeNursing.</p>
-
-  <p>I owe you a straight answer: a technical issue on my end meant most beta users never received a welcome email. You signed up, got nothing, and probably assumed it wasn't worth going back to. That's on me, not you.</p>
-
-  <p>Here's what you actually signed up for — and why it's different from everything else you've tried.</p>
-
-  <p>ForgeNursing doesn't quiz you. It doesn't give you answers. It teaches you to <em>think</em> the way NCLEX expects you to think — through clinical reasoning, not memorization. That's why students who study hard still fail. They know the facts. They can't reason through the scenario under pressure.</p>
-
-  <p>I want you to try one thing right now. Log in and tap this:</p>
-
-  <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-weight: bold;">
-    → "Walk me through an NCLEX-style priority question"
-  </p>
-
+  <p>I'm a Navy veteran and former Hospital Corpsman.</p>
+  <p>ForgeNursing doesn't quiz you. It doesn't give you answers. It teaches you to <em>think</em> the way NCLEX expects you to think — through clinical reasoning, not memorization.</p>
+  <p>Try one thing right now. Log in and tap this:</p>
+  <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-weight: bold;">→ "Walk me through an NCLEX-style priority question"</p>
   <p>That's it. One prompt. See what happens.</p>
-
-  <p>If it doesn't click for you, reply and tell me why. I read every response personally.</p>
-
-  <p>
-    — Michael<br>
-    Founder, ForgeNursing<br>
-    Former Navy Hospital Corpsman
-  </p>
-
-  <a href="https://forgenursing.com" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-    Log In and Try It →
-  </a>
-
+  <p>You have 7 days of free access — no credit card required. If ForgeNursing clicks for you, plans start at $24.99/month.</p>
+  <p>Reply directly to this email anytime. I read every one personally.</p>
+  <p>— Michael<br>Founder, ForgeNursing<br>Former Navy Hospital Corpsman</p>
+  <a href="https://forgenursing.com" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Log In and Try It →</a>
 </div>`
 }
