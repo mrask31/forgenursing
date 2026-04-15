@@ -21,6 +21,10 @@
       "schedule": "0 15 * * *"
     },
     {
+      "path": "/api/emails/process-trial-engagement",
+      "schedule": "0 15 * * *"
+    },
+    {
       "path": "/api/cron/process-emails",
       "schedule": "0 * * * *"
     },
