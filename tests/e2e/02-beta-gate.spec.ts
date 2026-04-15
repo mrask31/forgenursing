@@ -14,8 +14,12 @@ test.describe('Beta gate logic', () => {
     await page.getByTestId('signup-password').fill(TEST_PASSWORD);
     await page.getByTestId('signup-confirm-password').fill(TEST_PASSWORD);
     await page.getByRole('checkbox').check();
+
+    // Anti-bot: signup form rejects submissions faster than 3 seconds
+    await page.waitForTimeout(3_500);
+
     await page.getByTestId('signup-submit').click();
-    await page.waitForURL(/\/(tutor|onboarding|dashboard|app|trial|checkout)/, { timeout: 15_000 });
+    await page.waitForURL(/\/(tutor|onboarding|dashboard|app|trial|checkout)/, { timeout: 30_000 });
 
     const result = await getProfileByEmail(email);
     expect(result).not.toBeNull();

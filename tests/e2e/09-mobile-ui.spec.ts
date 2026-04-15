@@ -1,12 +1,11 @@
 import { test, expect } from '@playwright/test';
 
-test.skip(({ browserName }, testInfo) => testInfo.project.name !== 'mobile-safari',
-  'Mobile-only suite');
-
 const ROUTES = ['/', '/signup', '/login', '/pricing', '/tutor'];
 
 for (const route of ROUTES) {
-  test(`mobile: ${route} renders without horizontal overflow`, async ({ page }) => {
+  test(`mobile: ${route} renders without horizontal overflow`, async ({ page, browserName }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile-safari', 'Mobile-only suite');
+
     await page.goto(route);
     await page.waitForLoadState('networkidle');
 
