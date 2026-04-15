@@ -98,11 +98,10 @@ test.describe('Auth flows @smoke', () => {
     await expect(page).toHaveURL(/\/(login|signup|$)/, { timeout: 15_000 });
   });
 
-  // NOTE: Skipped — no dedicated /reset-password page exists in the app
-  test.skip('password reset request submits successfully', async ({ page }) => {
-    await page.goto('/reset-password');
-    await page.getByTestId('reset-email').fill(email);
-    await page.getByTestId('reset-submit').click();
-    await expect(page.getByText(/check your (email|inbox)/i)).toBeVisible();
+  test('password reset request submits successfully', async ({ page }) => {
+    await page.goto('/forgot-password');
+    await page.getByTestId('forgot-email').fill(email);
+    await page.getByTestId('forgot-submit').click();
+    await expect(page.getByText(/check your email/i)).toBeVisible({ timeout: 10_000 });
   });
 });
