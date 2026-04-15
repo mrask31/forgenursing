@@ -94,7 +94,7 @@ async function processWelcomeQueue(request: Request) {
         const { data: emailData, error: emailError } = await resend.emails.send({
           from: 'ForgeNursing <welcome@forgenursing.com>',
           to: item.email,
-          subject: 'You\'re in! Your 7-day ForgeNursing trial starts now 🩺',
+          subject: 'My fault — you never actually got this',
           html: generateWelcomeEmailHTML(trialEndDate),
         })
 
@@ -147,97 +147,35 @@ async function processWelcomeQueue(request: Request) {
 
 // Helper function to generate email HTML
 function generateWelcomeEmailHTML(trialEndDate: string): string {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to ForgeNursing</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; line-height: 1.6;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
-          
-          <!-- Header -->
-          <tr>
-            <td style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 40px 30px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
-                Welcome to the future of NCLEX Prep.
-              </h1>
-            </td>
-          </tr>
+  return `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
 
-          <!-- Main content -->
-          <tr>
-            <td style="padding: 40px 30px;">
-              
-              <!-- The 7-Day Promise -->
-              <div style="margin-bottom: 32px;">
-                <h2 style="margin: 0 0 16px 0; color: #1e293b; font-size: 20px; font-weight: 700;">
-                  The 7-Day Promise
-                </h2>
-                <p style="margin: 0; color: #334155; font-size: 16px; line-height: 1.6;">
-                  You now have full, unlimited access to ForgeNursing for the next 7 days. No credit card required, no strings attached.
-                </p>
-              </div>
+  <p>Michael here, founder of ForgeNursing.</p>
 
-              <!-- The 2026 Edge -->
-              <div style="margin-bottom: 32px; padding: 24px; background-color: #f1f5f9; border-radius: 12px; border-left: 4px solid #4f46e5;">
-                <h2 style="margin: 0 0 12px 0; color: #1e293b; font-size: 18px; font-weight: 700;">
-                  The 2026 Edge
-                </h2>
-                <p style="margin: 0; color: #334155; font-size: 15px; line-height: 1.6;">
-                  Our platform is fully updated for the April 2026 NCLEX Test Plan, focusing on the clinical judgment scenarios you'll see on exam day.
-                </p>
-              </div>
+  <p>I owe you a straight answer: a technical issue on my end meant most beta users never received a welcome email. You signed up, got nothing, and probably assumed it wasn't worth going back to. That's on me, not you.</p>
 
-              <!-- The Quick Win CTA -->
-              <div style="margin-bottom: 32px;">
-                <h2 style="margin: 0 0 20px 0; color: #1e293b; font-size: 20px; font-weight: 700;">
-                  The 'Quick Win' CTA
-                </h2>
-                <table role="presentation" style="width: 100%;">
-                  <tr>
-                    <td align="center">
-                      <a href="https://forgenursing.com/tutor?action=start-quiz" 
-                         style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff; text-decoration: none; padding: 18px 40px; border-radius: 12px; font-weight: 600; font-size: 18px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);">
-                        Take Your First 10-Question Quiz
-                      </a>
-                    </td>
-                  </tr>
-                </table>
-              </div>
+  <p>Here's what you actually signed up for — and why it's different from everything else you've tried.</p>
 
-              <!-- Trial Expiration Notice -->
-              <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #e2e8f0;">
-                <p style="margin: 0; color: #64748b; font-size: 14px; text-align: center; line-height: 1.6;">
-                  Your trial expires on <strong style="color: #1e293b;">${trialEndDate}</strong>.<br>
-                  We'll save all your progress, so you can pick up right where you left off when you're ready to subscribe.
-                </p>
-              </div>
+  <p>ForgeNursing doesn't quiz you. It doesn't give you answers. It teaches you to <em>think</em> the way NCLEX expects you to think — through clinical reasoning, not memorization. That's why students who study hard still fail. They know the facts. They can't reason through the scenario under pressure.</p>
 
-            </td>
-          </tr>
+  <p>I want you to try one thing right now. Log in and tap this:</p>
 
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0 0 8px 0; color: #64748b; font-size: 14px;">
-                ForgeNursing - Your AI-powered NCLEX prep partner
-              </p>
-              <p style="margin: 0; color: #94a3b8; font-size: 12px;">
-                You're receiving this because you signed up for ForgeNursing
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `
+  <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-weight: bold;">
+    → "Walk me through an NCLEX-style priority question"
+  </p>
+
+  <p>That's it. One prompt. See what happens.</p>
+
+  <p>If it doesn't click for you, reply and tell me why. I read every response personally.</p>
+
+  <p>
+    — Michael<br>
+    Founder, ForgeNursing<br>
+    Former Navy Hospital Corpsman
+  </p>
+
+  <a href="https://forgenursing.com" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+    Log In and Try It →
+  </a>
+
+</div>`
 }
