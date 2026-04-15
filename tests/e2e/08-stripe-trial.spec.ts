@@ -19,7 +19,7 @@ test('User 21+ hits paywall after trial expiry', async ({ page }) => {
   await page.getByTestId('login-submit').click();
 
   await expect(page.getByTestId('paywall')).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText(/\$24\.99|\$89|\$199/)).toBeVisible();
+  await expect(page.getByText(/\$24\.99|\$89|\$199/).first()).toBeVisible();
 
   await admin.auth.admin.deleteUser(created.user!.id);
 });
