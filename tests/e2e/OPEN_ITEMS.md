@@ -12,11 +12,10 @@ _(No active landmines — L-001 and L-003 resolved in commit 0cd47f5)_
 
 ## ⚠️ DEFERRED FEATURES (not bugs — missing functionality)
 
-### D-001: Password reset page
+### D-001: Password reset page — CLOSED
 - **Discovered:** April 2026 during auth flows test setup
-- **Description:** `/reset-password` route does not exist. The Playwright test for password reset is correctly skipped via `test.skip()`.
-- **Impact:** Users who forget their password have no self-service recovery. Must email support@forgenursing.com.
-- **Priority:** Post-15-paying-users. Trust/security flow worth adding before major marketing push.
+- **Resolved:** Forgot password + reset password pages live as of commit `ae11183`.
+- **Description:** `/reset-password` route did not exist. Now implemented.
 
 ---
 
@@ -81,23 +80,27 @@ Related open items: I-003 (two overlapping email systems), I-006 (trigger archit
 - **Discovered:** April 14, 2026
 - **Description:** `supabase_email_queue.sql` migration NOT yet applied. Trigger investigation required before applying. See I-004 for full context.
 
-### I-008: OPEN — welcome_emails_sent table has "type" column mismatch
+### I-008: welcome_emails_sent column mismatch — CLOSED
 - **Discovered:** April 14, 2026
-- **Description:** Upsert silently fails due to column mismatch. Non-blocking for now.
+- **Resolved:** Column mismatch resolved as side effect of I-010 fix (DB migration).
 
-### I-009: OPEN — 7 pure trial users receive zero emails until Day 6
+### I-009: Trial Day 1/3/5 engagement sequence — CLOSED
 - **Discovered:** April 14, 2026
-- **Description:** Trial Day 1/3/5 sequence not built. `is_beta=false` users get no emails between signup and Day 6 warning.
+- **Resolved:** Trial Day 1/3/5 engagement sequence live as of commit `9bb9fa5`.
 
-### I-010: OPEN — Welcome emails failing for new signups since April 11
+### I-010: Welcome email pg_net failures — CLOSED
 - **Discovered:** April 14, 2026
-- **Description:** `welcome_emails_sent` has 10+ `status='failed'` rows with "schema 'net' does not exist" trigger errors. Belongs in I-006 investigation.
+- **Resolved:** Welcome email pg_net failures resolved via DB migration.
 
-### I-005: subscription/status/route.ts has independent inline broken access logic
+### I-011: OPEN — 06-image-upload mobile-safari flaky fail
+- **Discovered:** April 15, 2026 during full Playwright suite run
+- **Description:** `/tutor` → `/tutor?sessionId=...` redirect race on mobile WebKit causes `page.goto` to throw "Navigation interrupted by another navigation". Desktop passes consistently. `waitUntil: 'networkidle'` did not resolve it.
+- **Impact:** Low — not a product bug, purely a test timing issue on mobile WebKit.
+- **Action:** Revisit when tutor session redirect logic is refactored.
+
+### I-005: subscription/status/route.ts — CLOSED
 - **Discovered:** April 13, 2026 during trial expiry audit
-- **Description:** `src/app/api/subscription/status/route.ts` defines its own `HAS_ACCESS_STATUSES = ['trialing', 'active']` constant and computes `hasAccess` inline without checking `trial_ends_at`. This is a debug/status endpoint, not an access gate, so it doesn't block users — but it returns incorrect `hasAccess: true` for expired-trial users in its JSON response.
-- **Impact:** Low. Any client consuming this endpoint's `hasAccess` field would get a false positive for expired trials. No known client currently gates on this field.
-- **Priority:** DEFERRED. Fix when the trial expiry fix (L-003) is committed — align this endpoint with the shared `hasAccess()` function.
+- **Resolved:** Aligned with shared `hasAccess()` function as of commit `1c5d287`.
 
 ---
 
