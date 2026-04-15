@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server'
+import { hasAccess } from '@/lib/subscription-access'
 
 const HAS_ACCESS_STATUSES = ['trialing', 'active']
 
@@ -43,7 +44,7 @@ export async function GET(req: Request) {
     // Use same route-handler client for profile read (session cookie is set)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('subscription_status, stripe_subscription_id')
+      .select('subscription_status, stripe_subscription_id, trial_ends_at, is_beta, beta_expires_at')
       .eq('id', user.id)
       .single()
 
@@ -127,7 +128,7 @@ export async function GET(req: Request) {
       }
     }
 
-    const hasAccess = subscriptionStatus != null && HAS_ACCESS_STATUSES.includes(subscriptionStatus)
+    const userHasAccess = hasAccess(profile?.subscription_status, profile?.trial_ends_at, profile?.is_beta, profile?.beta_expires_at)
     const trial_end_display =
       subscriptionStatus === 'trialing' && trial_end
         ? new Date(trial_end * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -136,7 +137,7 @@ export async function GET(req: Request) {
       status: subscriptionStatus,
       trial_end,
       current_period_end,
-      hasAccess,
+      hasAccess: userHasAccess,
       trial_end_display,
       cancel_at_period_end,
       stripe_subscription_id,
