@@ -8,6 +8,13 @@ const PRICE_IDS: Record<Plan, string> = {
   annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL!,
 }
 
+// Founder / discounted price IDs — server-side only (no NEXT_PUBLIC_ prefix)
+export const FOUNDER_PRICE_IDS: Record<Plan, string> = {
+  monthly: process.env.STRIPE_PRICE_MONTHLY_FOUNDER!,
+  semester: process.env.STRIPE_PRICE_SEMESTER_FOUNDER!,
+  annual: process.env.STRIPE_PRICE_ANNUAL_FOUNDER!,
+}
+
 export async function startStripeCheckout(plan: Plan) {
   const priceId = PRICE_IDS[plan]
 

@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { headers } from 'next/headers'
 import type { Database } from '@/types/database'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Lazy initialization function for Stripe client
 function getStripeClient(): Stripe {
@@ -170,13 +173,41 @@ async function processWebhookEvent(
 
         if (updateError) {
           console.error('[Webhook] Error updating profile:', updateError)
-          return { 
-            success: false, 
-            error: `Failed to update profile: ${updateError.message}` 
+          return {
+            success: false,
+            error: `Failed to update profile: ${updateError.message}`
           }
         }
 
-        
+        // Send subscription confirmation email
+        const customerEmail = session.customer_details?.email || session.customer_email
+        if (customerEmail) {
+          try {
+            await resend.emails.send({
+              from: 'ForgeNursing <welcome@forgenursing.com>',
+              to: customerEmail,
+              subject: "You're now subscribed to ForgeNursing",
+              html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
+  <p>You're in — and this time it's official.</p>
+  <p>Your ForgeNursing subscription is active. Everything you had access to during your trial is still there, and it's not going anywhere.</p>
+  <p>If you haven't already, try this right now:</p>
+  <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-weight: bold;">→ "Walk me through an NCLEX-style priority question"</p>
+  <p>That's where it clicks for most people.</p>
+  <p>Reply to this email anytime — I read every one personally.</p>
+  <p>
+    — Michael<br>
+    Founder, ForgeNursing<br>
+    Former Navy Hospital Corpsman, FMF
+  </p>
+  <a href="https://forgenursing.com" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Log In and Get Started →</a>
+</div>`,
+            })
+          } catch (emailError) {
+            console.error('[Webhook] Failed to send subscription confirmation email:', emailError)
+            // Non-fatal — don't fail the webhook
+          }
+        }
+
         return { success: true }
       }
 
