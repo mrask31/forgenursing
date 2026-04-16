@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// This endpoint processes trial engagement emails (Day 1, Day 3, Day 5)
+// This endpoint processes trial engagement emails (Day 3, Day 5)
 // Should be called daily via cron job
 
 export async function POST(request: Request) {
@@ -39,84 +39,46 @@ export async function POST(request: Request) {
     )
 
     const results = {
-      sent: { day1: 0, day3: 0, day5: 0 },
+      sent: { day3: 0, day5: 0 },
       errors: [] as any[],
     }
 
     const days = [
       {
-        key: 'day1' as const,
-        rpcName: 'get_trial_day1_eligible_users',
-        emailType: 'trial_day_1',
-        subject: "You're in — here's what to do first",
-        body: [
-          'Hey,',
-          '',
-          "Welcome to ForgeNursing. I'm Michael — I built this because I spent 8 years as a Navy Hospital Corpsman watching smart people fail NCLEX not because they didn't study, but because they studied the wrong way.",
-          '',
-          "ForgeNursing doesn't quiz you. It teaches you to think through patient scenarios the way NCLEX expects — step by step, the way a great clinical instructor would.",
-          '',
-          "Here's what I'd do on Day 1:",
-          '',
-          'Go to the tutor and type: "Walk me through a patient with heart failure who is getting worse."',
-          '',
-          "Don't look up the answer first. Just start. See what happens.",
-          '',
-          "That's the whole point.",
-          '',
-          '— Michael',
-          'Founder, ForgeNursing',
-          '',
-          "P.S. Your trial runs for 7 days. You don't need all 7 to know if this clicks. Most people know by the end of the first real scenario.",
-        ].join('\n'),
-      },
-      {
         key: 'day3' as const,
         rpcName: 'get_trial_day3_eligible_users',
         emailType: 'trial_day_3',
-        subject: 'Have you tried a clinical question yet?',
-        body: [
-          'Hey,',
-          '',
-          'Quick check-in — have you had a chance to work through a clinical scenario yet?',
-          '',
-          "If not, no pressure. But here's what I'm seeing from students who use ForgeNursing: the ones who try a real patient scenario in the first 3 days are the ones who get it. The ones who keep meaning to start often run out of trial before they do.",
-          '',
-          "You've got 4 days left. That's enough time.",
-          '',
-          'Try this one: "My patient just came back from surgery and their BP dropped to 88/52. What do I do first?"',
-          '',
-          "Don't Google it. Type it into ForgeNursing and work through it. See how differently you think by the end.",
-          '',
-          '— Michael',
-          '',
-          "P.S. If you've already been using it and have questions or feedback — just reply to this email. I read every one.",
-        ].join('\n'),
+        subject: 'Have you tried it yet?',
+        html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
+  <p>Hey — Michael here.</p>
+  <p>You've had ForgeNursing for three days. I wanted to check in and make sure you actually had a chance to try it — not just sign up and move on.</p>
+  <p>If you haven't logged in yet, here's the simplest way to start:</p>
+  <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-style: italic;">→ "Walk me through an NCLEX-style priority question"</p>
+  <p>Copy that, paste it into the chat, and see what happens. That's it. Two minutes.</p>
+  <p>If you're currently in a nursing course and NCLEX feels far away, try this instead:</p>
+  <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-style: italic;">→ "I'm studying [your current topic]. Teach me this the way NCLEX would test it."</p>
+  <p>You have 4 days left on your trial. No pressure — but the best time to try something new is before you talk yourself out of it.</p>
+  <p>— Michael<br>Founder, ForgeNursing<br>Former Navy Hospital Corpsman, FMF</p>
+  <a href="https://forgenursing.com" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Log In and Try It →</a>
+</div>`,
       },
       {
         key: 'day5' as const,
         rpcName: 'get_trial_day5_eligible_users',
         emailType: 'trial_day_5',
-        subject: "2 days left — don't leave without trying this",
-        body: [
-          'Hey,',
-          '',
-          'Your trial ends in 2 days.',
-          '',
-          "If you've been using ForgeNursing, I hope it's clicking. If you haven't had a chance yet — today's the day.",
-          '',
-          "The students who pass NCLEX aren't the ones who memorized the most. They're the ones who learned to slow down on a question, identify what the patient actually needs right now, and think through priorities before acting.",
-          '',
-          "That's what ForgeNursing trains. Not trivia. Reasoning.",
-          '',
-          'If you want to keep going after your trial: forgenursing.com/pricing',
-          '',
-          "Monthly is $24.99. Semester is $89 — that's most popular for students mid-program.",
-          '',
-          'Either way — thank you for giving it a shot. It means a lot that you trusted it with your NCLEX prep.',
-          '',
-          '— Michael',
-        ].join('\n'),
+        subject: '2 days left — here\'s what happens next',
+        html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
+  <p>Hey — Michael here.</p>
+  <p>Your free trial ends in 2 days. I want to be upfront with you about what that means and what your options are.</p>
+  <p>If ForgeNursing has clicked for you — if you've had even one moment where the clinical reasoning made something clearer than it's ever been — that's not a coincidence. That's the difference between memorizing facts and learning to think like a nurse.</p>
+  <p>If you want to keep going after your trial ends, here's what's available:</p>
+  <p><strong>Monthly:</strong> $24.99/month<br><strong>Semester:</strong> $89 every 4 months<br><strong>Annual:</strong> $199/year</p>
+  <p>If you haven't had a chance to really try it yet, there's still time. Log in and type this right now:</p>
+  <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-style: italic;">→ "Walk me through an NCLEX-style priority question"</p>
+  <p>Give it 10 minutes. If it doesn't click, no hard feelings — reply and tell me why. I read every response personally.</p>
+  <p>— Michael<br>Founder, ForgeNursing<br>Former Navy Hospital Corpsman, FMF</p>
+  <a href="https://forgenursing.com/pricing" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Choose a Plan →</a>
+</div>`,
       },
     ]
 
@@ -147,7 +109,7 @@ export async function POST(request: Request) {
             from: 'ForgeNursing <trial@forgenursing.com>',
             to: user.email,
             subject: day.subject,
-            text: day.body,
+            html: day.html,
           })
 
           if (emailError) throw emailError

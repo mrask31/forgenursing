@@ -116,14 +116,11 @@ export async function POST(request: Request) {
         let html: string
 
         if (item.email_type === 'day_6_reminder') {
-          // Day 6: 24 hours before expiration
-          const dayOfWeek = new Date(item.trial_ends_at).toLocaleDateString('en-US', { weekday: 'long' })
-          subject = '⏳ 24 Hours Left: Your NCLEX progress is on the line'
-          html = generateDay6Email(dayOfWeek, item.questions_answered)
+          subject = 'Your trial ends tomorrow'
+          html = generateDay6Email()
         } else {
-          // Day 7: Trial expired
-          subject = 'Your trial has expired. Your data is safe.'
-          html = generateDay7Email(item.questions_answered)
+          subject = 'Your trial has ended'
+          html = generateDay7Email()
         }
 
         const { data: emailData, error: emailError } = await resend.emails.send({
@@ -184,233 +181,31 @@ export async function POST(request: Request) {
 export const GET = POST
 
 // Day 6 Email Template (24h before expiration)
-function generateDay6Email(dayOfWeek: string, questionsAnswered: number): string {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>24 Hours Left in Your Trial</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; line-height: 1.6;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
-          
-          <!-- Header with urgency -->
-          <tr>
-            <td style="background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%); padding: 40px 30px; text-align: center;">
-              <div style="font-size: 48px; margin-bottom: 12px;">⏳</div>
-              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
-                24 Hours Left
-              </h1>
-              <p style="margin: 12px 0 0 0; color: #fef2f2; font-size: 16px;">
-                Your NCLEX progress is on the line
-              </p>
-            </td>
-          </tr>
-
-          <!-- Main content -->
-          <tr>
-            <td style="padding: 40px 30px;">
-              
-              <!-- The Deadline -->
-              <div style="margin-bottom: 32px; padding: 20px; background-color: #fef2f2; border-radius: 12px; border-left: 4px solid #dc2626;">
-                <h2 style="margin: 0 0 12px 0; color: #991b1b; font-size: 18px; font-weight: 700;">
-                  The Deadline
-                </h2>
-                <p style="margin: 0; color: #7f1d1d; font-size: 16px; line-height: 1.6;">
-                  Your 7-day access to ForgeNursing Pro expires tomorrow, <strong>${dayOfWeek}</strong>.
-                </p>
-              </div>
-
-              <!-- The Value Reinforcement -->
-              <div style="margin-bottom: 32px;">
-                <h2 style="margin: 0 0 16px 0; color: #1e293b; font-size: 20px; font-weight: 700;">
-                  Don't Lose Your Momentum
-                </h2>
-                <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px; line-height: 1.6;">
-                  You've already completed <strong style="color: #4f46e5;">${questionsAnswered} practice questions</strong>. Don't lose your streak—the 2026 NCLEX Blueprint waits for no one.
-                </p>
-                <p style="margin: 0; color: #334155; font-size: 16px; line-height: 1.6;">
-                  Your performance data, incorrect answers, and custom study plan will be locked unless you upgrade today.
-                </p>
-              </div>
-
-              <!-- CTA -->
-              <table role="presentation" style="width: 100%; margin: 32px 0;">
-                <tr>
-                  <td align="center">
-                    <a href="https://forgenursing.com/checkout?source=day6" 
-                       style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff; text-decoration: none; padding: 18px 40px; border-radius: 12px; font-weight: 600; font-size: 18px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);">
-                      Upgrade to Pro & Keep My Progress
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- What You'll Keep -->
-              <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #e2e8f0;">
-                <h3 style="margin: 0 0 16px 0; color: #1e293b; font-size: 18px; font-weight: 700;">
-                  What you'll keep with Pro:
-                </h3>
-                <div style="margin-bottom: 8px;">
-                  <span style="color: #22c55e; font-size: 18px; margin-right: 8px;">✓</span>
-                  <span style="color: #334155; font-size: 15px;">All ${questionsAnswered} questions you've answered</span>
-                </div>
-                <div style="margin-bottom: 8px;">
-                  <span style="color: #22c55e; font-size: 18px; margin-right: 8px;">✓</span>
-                  <span style="color: #334155; font-size: 15px;">Your performance analytics and weak areas</span>
-                </div>
-                <div style="margin-bottom: 8px;">
-                  <span style="color: #22c55e; font-size: 18px; margin-right: 8px;">✓</span>
-                  <span style="color: #334155; font-size: 15px;">Custom study plan based on your progress</span>
-                </div>
-                <div>
-                  <span style="color: #22c55e; font-size: 18px; margin-right: 8px;">✓</span>
-                  <span style="color: #334155; font-size: 15px;">Unlimited access to 2026 NCLEX content</span>
-                </div>
-              </div>
-
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0 0 8px 0; color: #64748b; font-size: 14px;">
-                ForgeNursing - Your AI-powered NCLEX prep partner
-              </p>
-              <p style="margin: 0; color: #94a3b8; font-size: 12px;">
-                Questions? Reply to this email anytime.
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `
+function generateDay6Email(): string {
+  return `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
+  <p>Hey — Michael here.</p>
+  <p>Your ForgeNursing trial ends tomorrow. I'll keep this short.</p>
+  <p>If something clicked for you over the past 6 days — if you found yourself actually thinking through a patient scenario instead of just trying to remember the right answer — that's what ForgeNursing is built to do.</p>
+  <p>Tomorrow that access goes away unless you choose to continue.</p>
+  <p><strong>Monthly:</strong> $24.99/month<br><strong>Semester:</strong> $89 every 4 months<br><strong>Annual:</strong> $199/year</p>
+  <p>If you have questions about which plan makes sense for where you are in your nursing journey, reply to this email. I'll help you figure it out personally.</p>
+  <p>If it's not the right time, no hard feelings. I'd still love to know what wasn't working — reply and tell me.</p>
+  <p>— Michael<br>Founder, ForgeNursing<br>Former Navy Hospital Corpsman, FMF</p>
+  <a href="https://forgenursing.com/pricing" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Continue with ForgeNursing →</a>
+</div>`
 }
 
 // Day 7 Email Template (Trial expired)
-function generateDay7Email(questionsAnswered: number): string {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Trial Has Expired</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; line-height: 1.6;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
-          
-          <!-- Header -->
-          <tr>
-            <td style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); padding: 40px 30px; text-align: center;">
-              <div style="font-size: 48px; margin-bottom: 12px;">🔒</div>
-              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
-                Your trial has expired
-              </h1>
-              <p style="margin: 12px 0 0 0; color: #e2e8f0; font-size: 16px;">
-                Your data is safe.
-              </p>
-            </td>
-          </tr>
-
-          <!-- Main content -->
-          <tr>
-            <td style="padding: 40px 30px;">
-              
-              <!-- The Status -->
-              <div style="margin-bottom: 32px;">
-                <h2 style="margin: 0 0 16px 0; color: #1e293b; font-size: 20px; font-weight: 700;">
-                  Your Account Status
-                </h2>
-                <p style="margin: 0; color: #334155; font-size: 16px; line-height: 1.6;">
-                  Your trial has ended, and your account has been moved to read-only. Your ${questionsAnswered} answered questions and performance data are safely stored.
-                </p>
-              </div>
-
-              <!-- The 2026 Promise -->
-              <div style="margin-bottom: 32px; padding: 24px; background-color: #f1f5f9; border-radius: 12px; border-left: 4px solid #4f46e5;">
-                <h2 style="margin: 0 0 12px 0; color: #1e293b; font-size: 18px; font-weight: 700;">
-                  Continue Your NCLEX Journey
-                </h2>
-                <p style="margin: 0; color: #334155; font-size: 15px; line-height: 1.6;">
-                  To continue practicing clinical judgment scenarios and high-yield 2026 safety topics, simply pick a plan below.
-                </p>
-              </div>
-
-              <!-- The Reassurance -->
-              <div style="margin-bottom: 32px; padding: 20px; background-color: #ecfdf5; border-radius: 12px; border-left: 4px solid #10b981;">
-                <p style="margin: 0; color: #065f46; font-size: 15px; line-height: 1.6;">
-                  <strong>We've saved your performance analytics and incorrect answers</strong> so you can pick up right where you left off.
-                </p>
-              </div>
-
-              <!-- CTA -->
-              <table role="presentation" style="width: 100%; margin: 32px 0;">
-                <tr>
-                  <td align="center">
-                    <a href="https://forgenursing.com/checkout?source=day7" 
-                       style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff; text-decoration: none; padding: 18px 40px; border-radius: 12px; font-weight: 600; font-size: 18px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);">
-                      Choose a Plan & Unlock Now
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- What's Waiting -->
-              <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #e2e8f0;">
-                <h3 style="margin: 0 0 16px 0; color: #1e293b; font-size: 18px; font-weight: 700;">
-                  What's waiting for you:
-                </h3>
-                <div style="margin-bottom: 8px;">
-                  <span style="color: #4f46e5; font-size: 18px; margin-right: 8px;">→</span>
-                  <span style="color: #334155; font-size: 15px;">Your ${questionsAnswered} answered questions with detailed explanations</span>
-                </div>
-                <div style="margin-bottom: 8px;">
-                  <span style="color: #4f46e5; font-size: 18px; margin-right: 8px;">→</span>
-                  <span style="color: #334155; font-size: 15px;">Performance analytics showing your strengths and weaknesses</span>
-                </div>
-                <div style="margin-bottom: 8px;">
-                  <span style="color: #4f46e5; font-size: 18px; margin-right: 8px;">→</span>
-                  <span style="color: #334155; font-size: 15px;">Personalized study plan based on your progress</span>
-                </div>
-                <div>
-                  <span style="color: #4f46e5; font-size: 18px; margin-right: 8px;">→</span>
-                  <span style="color: #334155; font-size: 15px;">Full access to 2026 NCLEX clinical judgment scenarios</span>
-                </div>
-              </div>
-
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0 0 8px 0; color: #64748b; font-size: 14px;">
-                ForgeNursing - Your AI-powered NCLEX prep partner
-              </p>
-              <p style="margin: 0; color: #94a3b8; font-size: 12px;">
-                Questions? Reply to this email anytime.
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `
+function generateDay7Email(): string {
+  return `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
+  <p>Hey — Michael here.</p>
+  <p>Your ForgeNursing trial ended today. Your account is still there — nothing has been deleted — but your access is paused until you choose a plan.</p>
+  <p>If you're ready to continue:</p>
+  <p><strong>Monthly:</strong> $24.99/month<br><strong>Semester:</strong> $89 every 4 months<br><strong>Annual:</strong> $199/year</p>
+  <a href="https://forgenursing.com/pricing" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Unlock My Account →</a>
+  <p>If you're not ready right now, I get it. Timing matters.</p>
+  <p>But if ForgeNursing didn't click for you at all — if something felt off, confusing, or just not useful — I'd genuinely like to know. Reply to this email and tell me what was missing. That feedback goes directly into what I build next.</p>
+  <p>Either way, thank you for trying it.</p>
+  <p>— Michael<br>Founder, ForgeNursing<br>Former Navy Hospital Corpsman, FMF</p>
+</div>`
 }
