@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { getBrowserClient } from '@/lib/supabase/client'
+import { isDisposableEmailDomain } from '@/lib/disposable-email-domains'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
@@ -108,6 +109,13 @@ export default function SignupPage() {
     // 5. Password strength check
     if (password.length < 8) {
       setMessage({ text: 'Password must be at least 8 characters long.', type: 'error' })
+      setLoading(false)
+      return
+    }
+
+    // 6. Disposable email check
+    if (isDisposableEmailDomain(email)) {
+      setMessage({ text: 'Please use a permanent email address to sign up.', type: 'error' })
       setLoading(false)
       return
     }
