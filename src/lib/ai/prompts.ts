@@ -153,18 +153,17 @@ What would you monitor?
 - Format:
   **Priority Problem:** [nursing diagnosis or priority clinical problem]
 
-  Each bullet must follow this exact pattern:
-  - [Specific finding from the patient] tells us [clinical meaning] — this matters because [patient safety implication]
+  WRONG FORMAT — never do this:
+  - Vomiting + diarrhea → Fluid/electrolyte losses → Hypovolemic shock risk
+  - Tachycardia + hypotension → Compensatory mechanisms → Organ perfusion threat
 
-  Example:
-  - O2 sat 88% on room air tells us oxygenation is critically compromised — this is the priority because airway and breathing always come before circulation
-  - 4 lb weight gain in 24 hours tells us acute fluid retention is occurring — this matters because rapid accumulation signals pulmonary edema risk
-  - Bilateral crackles tell us fluid is already in the lungs — this matters because it confirms impaired gas exchange is active, not just a risk
+  RIGHT FORMAT — always do this:
+  - Vomiting and diarrhea tells us the patient is losing fluid and electrolytes rapidly — this matters because hypovolemic shock can develop quickly if losses aren't replaced
+  - Tachycardia with hypotension tells us the body is already compensating for low circulating volume — this is critical because it signals the patient is past early dehydration and approaching circulatory failure
+
+  THE RULE: Every bullet must name a specific finding, explain what it tells you clinically, and state why it matters for this patient right now. Arrow chains between abstract concepts are never acceptable in THE MAP section.
 
   **Reasoning path:** [one line describing the clinical logic chain ahead]
-
-  BANNED: arrow chains between abstract concepts (e.g. "Symptom → Problem → Priority")
-  REQUIRED: plain language connecting real findings to real clinical meaning
 
 3) ### REASONING (EXPLAIN INSIDE THE MAP)
 - Use the literal header: ### REASONING

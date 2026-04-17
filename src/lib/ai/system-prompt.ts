@@ -63,11 +63,18 @@ REQUIRED SECTIONS IN ORDER:
 2. ### THE MAP: State the priority nursing problem, then connect 2-3 specific assessment findings to clinical significance.
    Format:
    **Priority Problem:** [nursing diagnosis or priority clinical problem]
-   Each bullet must follow this exact pattern:
-   - [Specific finding from the patient] tells us [clinical meaning] — this matters because [patient safety implication]
+
+   WRONG FORMAT — never do this:
+   - Vomiting + diarrhea → Fluid/electrolyte losses → Hypovolemic shock risk
+   - Tachycardia + hypotension → Compensatory mechanisms → Organ perfusion threat
+
+   RIGHT FORMAT — always do this:
+   - Vomiting and diarrhea tells us the patient is losing fluid and electrolytes rapidly — this matters because hypovolemic shock can develop quickly if losses aren't replaced
+   - Tachycardia with hypotension tells us the body is already compensating for low circulating volume — this is critical because it signals the patient is past early dehydration and approaching circulatory failure
+
+   THE RULE: Every bullet must name a specific finding, explain what it tells you clinically, and state why it matters for this patient right now. Arrow chains between abstract concepts are never acceptable in THE MAP section.
+
    **Reasoning path:** [one line describing the clinical logic chain ahead]
-   BANNED: arrow chains between abstract concepts (e.g. "Symptom → Problem → Priority")
-   REQUIRED: plain language connecting real findings to real clinical meaning
 
 3. ### REASONING: Step-by-step Socratic walkthrough of the concept.
 
