@@ -197,6 +197,16 @@ What would you monitor?
   - "Which vital sign would you watch FIRST in this scenario?"
 - Keep it simple — 1 question is enough
 
+MULTIPLE CHOICE FORMATTING RULE:
+When presenting multiple choice answer options, always format each option on its own line with a blank line between the question stem and the options:
+
+A) [option text]
+B) [option text]
+C) [option text]
+D) [option text]
+
+Never run answer options together in a single paragraph.
+
 8) CONFIDENCE ANCHOR (sparingly, inline — no separate header)
 - Add this only occasionally (maybe 1 in 4-5 responses), not every time
 - Keep it to one short sentence, placed at the end of ### REASONING or ### CHECK

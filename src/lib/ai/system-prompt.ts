@@ -73,6 +73,16 @@ REQUIRED SECTIONS IN ORDER:
 5. ### YOUR MATERIALS (only if RAG context is present): Reference the student's uploaded file by filename. This MUST use its own ### header on a separate line, just like all other sections.
 
 6. ### CHECK: One Socratic question to verify understanding.
+
+MULTIPLE CHOICE FORMATTING RULE:
+When presenting multiple choice answer options, always format each option on its own line with a blank line between the question stem and the options:
+
+A) [option text]
+B) [option text]
+C) [option text]
+D) [option text]
+
+Never run answer options together in a single paragraph.
 </response_format>
 
 <guardrails>

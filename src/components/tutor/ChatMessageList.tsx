@@ -405,7 +405,24 @@ export default function ChatMessageList({
                     const config = section.blockType ? ADPIE_BLOCK_CONFIG[section.blockType] : null
                     const labelColor = config?.labelColor ?? 'text-slate-900'
                     const components = {
-                      p: ({children}: {children: React.ReactNode}) => <p className="mb-3 last:mb-0 text-sm sm:text-base text-slate-700 leading-relaxed">{children}</p>,
+                      p: ({children}: {children: React.ReactNode}) => {
+                        const text = typeof children === 'string' ? children :
+                          Array.isArray(children) ? children.map(c => typeof c === 'string' ? c : '').join('') : ''
+                        const mcPattern = /[A-D]\)\s/g
+                        if (mcPattern.test(text)) {
+                          const stacked = text
+                            .replace(/\s+([A-D]\))/g, '\n$1')
+                            .trim()
+                          return (
+                            <p className="mb-3 last:mb-0 text-sm sm:text-base text-slate-700 leading-relaxed">
+                              {stacked.split('\n').map((line, i) => (
+                                <span key={i} className="block">{line}</span>
+                              ))}
+                            </p>
+                          )
+                        }
+                        return <p className="mb-3 last:mb-0 text-sm sm:text-base text-slate-700 leading-relaxed">{children}</p>
+                      },
                       ul: ({children}: {children: React.ReactNode}) => <ul className="list-disc pl-5 space-y-1">{children}</ul>,
                       ol: ({children}: {children: React.ReactNode}) => <ol className="list-decimal pl-5 space-y-1">{children}</ol>,
                       li: ({children}: {children: React.ReactNode}) => <li className="my-1 text-slate-700">{children}</li>,
