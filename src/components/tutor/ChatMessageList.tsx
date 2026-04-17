@@ -56,11 +56,6 @@ const ADPIE_BLOCK_CONFIG = {
     labelColor: 'text-[#c47a0d]',
     testId: 'adpie-block-trap',
   },
-  'YOUR MATERIALS': {
-    wrapperClass: 'bg-white rounded-lg px-4 py-3 mb-3 border border-[var(--gray-200)]',
-    labelColor: 'text-[#0D8F9C]',
-    testId: 'adpie-block-materials',
-  },
   CHECK: {
     wrapperClass: 'bg-[#eef4f7] rounded-lg px-4 py-3 mb-3',
     labelColor: 'text-[#3d6e82]',
@@ -75,7 +70,7 @@ interface AdpieSection {
   content: string
 }
 
-const ADPIE_HEADERS_PATTERN = /(?:ORIENT|THE MAP|REASONING|TRAP|YOUR MATERIALS|CHECK)/
+const ADPIE_HEADERS_PATTERN = /(?:ORIENT|THE MAP|REASONING|TRAP|CHECK)/
 
 function splitIntoAdpieSections(content: string): AdpieSection[] {
   const hasAdpieHeaders = new RegExp('^#{1,3}\\s+' + ADPIE_HEADERS_PATTERN.source, 'm').test(content)
@@ -95,27 +90,7 @@ function splitIntoAdpieSections(content: string): AdpieSection[] {
       }
     })
 
-  // Post-process: split out inline YOUR MATERIALS that got absorbed into another block
-  // Catches patterns like "**Your Materials:**" or "Your Materials:" without a ### header
-  const result: AdpieSection[] = []
-  for (const section of sections) {
-    const inlineMatch = section.content.match(/^([\s\S]*?)(\n\s*\*{0,2}(?:Your Materials|YOUR MATERIALS)\s*:?\*{0,2}\s*\n)([\s\S]*)$/i)
-    if (inlineMatch && section.blockType !== 'YOUR MATERIALS') {
-      const before = inlineMatch[1].trim()
-      const after = (inlineMatch[2] + inlineMatch[3]).trim()
-      if (before) {
-        result.push({ blockType: section.blockType, content: before })
-      }
-      if (after) {
-        // Normalize to ### header format for consistent rendering
-        const normalized = after.replace(/^\s*\*{0,2}(?:Your Materials|YOUR MATERIALS)\s*:?\*{0,2}/i, '### YOUR MATERIALS')
-        result.push({ blockType: 'YOUR MATERIALS', content: normalized })
-      }
-    } else {
-      result.push(section)
-    }
-  }
-  return result
+  return sections
 }
 
 // Helper to detect if message likely used binder context
@@ -444,7 +419,7 @@ export default function ChatMessageList({
                       h2: ({children}: {children: React.ReactNode}) => <h2 className="text-xl font-semibold tracking-tight text-slate-900 mb-2 mt-5 first:mt-0">{children}</h2>,
                       h3: ({children, ...props}: { children: React.ReactNode; [key: string]: any }) => {
                         const text = typeof children === 'string' ? children.trim() : ''
-                        const isAdpieLabel = ['ORIENT', 'THE MAP', 'REASONING', 'TRAP', 'YOUR MATERIALS', 'CHECK'].includes(text)
+                        const isAdpieLabel = ['ORIENT', 'THE MAP', 'REASONING', 'TRAP', 'CHECK'].includes(text)
                         const isSnapshot = text === 'Snapshot'
                         return (
                           <h3
