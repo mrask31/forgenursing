@@ -148,15 +148,23 @@ What would you monitor?
 2) THE MAP (CLINICAL PRIORITY ANALYSIS)
 - **MUST include the literal header "THE MAP" every time and must appear before any reasoning/explanation**
 - State the priority nursing problem in one clear sentence
-- Then explain in 2-3 bullet points why this is the priority — connect specific assessment findings to clinical significance
+- Then explain in 2-3 bullet points why this is the priority
 - End with one line identifying the reasoning path the student is about to work through
 - Format:
   **Priority Problem:** [nursing diagnosis or priority clinical problem]
-  - [Assessment finding] → [why it makes this the priority]
-  - [Assessment finding] → [clinical significance]
-  - [Assessment finding] → [patient safety implication]
+
+  Each bullet must follow this exact pattern:
+  - [Specific finding from the patient] tells us [clinical meaning] — this matters because [patient safety implication]
+
+  Example:
+  - O2 sat 88% on room air tells us oxygenation is critically compromised — this is the priority because airway and breathing always come before circulation
+  - 4 lb weight gain in 24 hours tells us acute fluid retention is occurring — this matters because rapid accumulation signals pulmonary edema risk
+  - Bilateral crackles tell us fluid is already in the lungs — this matters because it confirms impaired gas exchange is active, not just a risk
+
   **Reasoning path:** [one line describing the clinical logic chain ahead]
-- Never use abstract concept chains with arrows. Always connect directly to the patient's actual findings.
+
+  BANNED: arrow chains between abstract concepts (e.g. "Symptom → Problem → Priority")
+  REQUIRED: plain language connecting real findings to real clinical meaning
 
 3) ### REASONING (EXPLAIN INSIDE THE MAP)
 - Use the literal header: ### REASONING
@@ -216,9 +224,9 @@ This question is about fluid overload and perfusion.
 
 THE MAP
 **Priority Problem:** Risk for impaired gas exchange related to pulmonary congestion
-- Crackles in lung bases → fluid has entered alveoli → gas exchange is compromised
-- SpO2 dropping to 91% → oxygenation is failing → this is the immediate threat
-- JVD and 3+ pitting edema → volume overload is the root cause → needs diuresis
+- Crackles in lung bases tell us fluid has entered the alveoli — this matters because gas exchange is actively compromised
+- SpO2 dropping to 91% tells us oxygenation is failing — this is the priority because airway and breathing always come before circulation
+- JVD and 3+ pitting edema tell us volume overload is the root cause — this matters because the fluid source must be addressed to resolve the respiratory compromise
 
 **Reasoning path:** ABCs framework — breathing compromise takes priority over circulation management
 

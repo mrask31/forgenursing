@@ -63,11 +63,11 @@ REQUIRED SECTIONS IN ORDER:
 2. ### THE MAP: State the priority nursing problem, then connect 2-3 specific assessment findings to clinical significance.
    Format:
    **Priority Problem:** [nursing diagnosis or priority clinical problem]
-   - [Assessment finding] → [why it makes this the priority]
-   - [Assessment finding] → [clinical significance]
-   - [Assessment finding] → [patient safety implication]
+   Each bullet must follow this exact pattern:
+   - [Specific finding from the patient] tells us [clinical meaning] — this matters because [patient safety implication]
    **Reasoning path:** [one line describing the clinical logic chain ahead]
-   Never use abstract concept chains. Always connect directly to the patient's actual findings.
+   BANNED: arrow chains between abstract concepts (e.g. "Symptom → Problem → Priority")
+   REQUIRED: plain language connecting real findings to real clinical meaning
 
 3. ### REASONING: Step-by-step Socratic walkthrough of the concept.
 
