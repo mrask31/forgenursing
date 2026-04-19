@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { PHProvider } from "@/components/providers/posthog-provider";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -98,7 +99,9 @@ export default function RootLayout({
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
-        {children}
+        <PHProvider>
+          {children}
+        </PHProvider>
       </body>
     </html>
   );

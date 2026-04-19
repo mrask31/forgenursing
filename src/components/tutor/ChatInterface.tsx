@@ -5,6 +5,7 @@ import { ArrowUp, Paperclip, Calculator, ImagePlus, X, Loader2, FileText, Check,
 import SuggestedPrompts from '@/components/tutor/SuggestedPrompts'
 import { useTutorContext } from './TutorContext'
 import MedicalMathCalculator from './MedicalMathCalculator'
+import posthog from 'posthog-js'
 import * as pdfjsLib from 'pdfjs-dist'
 import mammoth from 'mammoth'
 
@@ -64,6 +65,23 @@ export default function ChatInterface({
   const uploadFileInputRef = useRef<HTMLInputElement>(null)
   const tutorContext = useTutorContext()
   const hasMessages = !!sessionId || (messages && messages.length > 0)
+  const stallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const sessionStartedRef = useRef(false)
+
+  // Stall detection: fire event if no input for 90 seconds after last assistant message
+  useEffect(() => {
+    const lastMsg = messages[messages.length - 1]
+    if (lastMsg?.role === 'assistant') {
+      // Reset and start stall timer
+      if (stallTimerRef.current) clearTimeout(stallTimerRef.current)
+      stallTimerRef.current = setTimeout(() => {
+        posthog.capture('socratic_stall', { time_spent_seconds: 90 })
+      }, 90_000)
+    }
+    return () => {
+      if (stallTimerRef.current) clearTimeout(stallTimerRef.current)
+    }
+  }, [messages])
 
   // Upload modal state
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
@@ -148,6 +166,18 @@ export default function ChatInterface({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if ((!inputValue.trim() && pendingImages.length === 0) || isLoading) return
+
+    // Reset stall timer on user input
+    if (stallTimerRef.current) clearTimeout(stallTimerRef.current)
+
+    // Track tutor session start on first message
+    if (!sessionStartedRef.current) {
+      sessionStartedRef.current = true
+      posthog.capture('nclex_tutor_started', {
+        topic: tutorContext.selectedTopicId || 'general',
+      })
+    }
+
     const message = inputValue.trim() || (pendingImages.length > 0 ? 'Please analyze this clinical image.' : '')
     const imagePayload = pendingImages.length > 0
       ? pendingImages.map(img => ({ base64: img.base64, mimeType: img.mimeType }))
@@ -170,7 +200,10 @@ export default function ChatInterface({
     setTimeout(() => { inputRef.current?.focus() }, 100)
   }
 
-  const handleSuggestionClick = async (prompt: string) => { await onSend(prompt) }
+  const handleSuggestionClick = async (prompt: string) => {
+    posthog.capture('socratic_hint_requested')
+    await onSend(prompt)
+  }
 
   // === Upload modal logic ===
 
