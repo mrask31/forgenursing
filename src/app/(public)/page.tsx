@@ -303,7 +303,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
               {/* Monthly */}
               <a
-                href="/checkout?plan=monthly"
+                href="/signup"
                 className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl p-6 hover:border-[#0D8F9C] transition-colors text-left group"
               >
                 <h3 className="font-bold text-[#0B2545] mb-1">Monthly</h3>
@@ -319,7 +319,7 @@ export default function HomePage() {
 
               {/* Semester — highlighted */}
               <a
-                href="/checkout?plan=semester"
+                href="/signup"
                 className="bg-[#E0F4F6] border-2 border-[#0D8F9C] rounded-2xl p-6 hover:bg-[#d0ecef] transition-colors text-left relative group"
               >
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0D8F9C] text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold">
@@ -338,7 +338,7 @@ export default function HomePage() {
 
               {/* Annual */}
               <a
-                href="/checkout?plan=annual"
+                href="/signup"
                 className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl p-6 hover:border-[#0D8F9C] transition-colors text-left group"
               >
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0B2545] text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold hidden">

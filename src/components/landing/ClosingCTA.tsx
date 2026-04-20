@@ -19,7 +19,7 @@ export default function ClosingCTA({ betaFull = false }: ClosingCTAProps) {
         </p>
         {betaFull ? (
           <Link
-            href="/checkout"
+            href="/signup"
             className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 sm:px-10 py-4 bg-[#0D8F9C] text-white rounded-lg text-base sm:text-lg font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm min-h-[52px]"
           >
             Start 7-Day Free Trial →

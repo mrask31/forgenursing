@@ -47,7 +47,7 @@ export default function Hero({ user, betaFull = false }: HeroProps) {
                 ) : betaFull ? (
                   <>
                     <Link
-                      href="/checkout"
+                      href="/signup"
                       className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
                     >
                       Start 7-Day Free Trial

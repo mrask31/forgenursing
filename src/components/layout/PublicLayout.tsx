@@ -172,7 +172,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               {/* Join Free Beta / Start Trial CTA */}
               {pathname === '/' && (!user || !hasActiveSubscription) && (
                 <Link
-                  href={betaFull ? '/checkout' : '/signup?plan=monthly'}
+                  href="/signup"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#0D8F9C] text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-[#0a7d88] transition-colors min-h-[40px] sm:min-h-[44px] flex items-center shadow-sm"
                 >
                   {betaFull ? 'Start Free Trial' : 'Join Free Beta'}
