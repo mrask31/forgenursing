@@ -90,7 +90,7 @@ async function processWebhookEvent(
         } else if (subscription.status === 'active') {
           status = 'active'
         } else {
-          status = 'canceled'
+          status = 'expired'
         }
 
         const { error: updateError } = await supabase

@@ -184,22 +184,21 @@ async function processWebhookEvent(
         if (customerEmail) {
           try {
             await resend.emails.send({
-              from: 'ForgeNursing <welcome@forgenursing.com>',
+              from: 'ForgeNursing <support@forgenursing.com>',
               to: customerEmail,
+              replyTo: 'support@forgenursing.com',
               subject: "You're now subscribed to ForgeNursing",
-              html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
+              html: `<div style="font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
   <p>You're in — and this time it's official.</p>
   <p>Your ForgeNursing subscription is active. Everything you had access to during your trial is still there, and it's not going anywhere.</p>
   <p>If you haven't already, try this right now:</p>
-  <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-weight: bold;">→ "Walk me through an NCLEX-style priority question"</p>
+  <p style="background: #E0F4F6; border-left: 4px solid #0D8F9C; padding: 12px 16px; font-weight: bold;">→ "Walk me through an NCLEX-style priority question"</p>
   <p>That's where it clicks for most people.</p>
   <p>Reply to this email anytime — I read every one personally.</p>
   <p>
-    — Michael<br>
-    Founder, ForgeNursing<br>
-    Former Navy Hospital Corpsman, FMF
+    Michael
   </p>
-  <a href="https://forgenursing.com" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Log In and Get Started →</a>
+  <a href="https://forgenursing.com/tutor" style="background: linear-gradient(135deg, #0B2545 0%, #0D8F9C 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 10px; display: inline-block; font-weight: 600;">Log In and Get Started →</a>
 </div>`,
             })
           } catch (emailError) {
@@ -238,11 +237,11 @@ async function processWebhookEvent(
         } else if (subscription.status === 'active') {
           status = 'active'
         } else if (subscription.status === 'past_due' || subscription.status === 'unpaid') {
-          status = 'canceled'
+          status = 'past_due'
         } else if (subscription.status === 'canceled' || subscription.status === 'incomplete_expired') {
-          status = 'canceled'
+          status = 'expired'
         } else {
-          status = 'canceled'
+          status = 'expired'
         }
 
         // Update profile
