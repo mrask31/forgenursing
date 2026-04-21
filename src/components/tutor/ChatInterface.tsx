@@ -67,15 +67,36 @@ export default function ChatInterface({
   const hasMessages = !!sessionId || (messages && messages.length > 0)
   const stallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const sessionStartedRef = useRef(false)
+  const [stallNudge, setStallNudge] = useState<string | null>(null)
+  const inputFocusedRef = useRef(false)
+  const stallNudgeFiredRef = useRef(false)
 
-  // Stall detection: fire event if no input for 90 seconds after last assistant message
+  const STALL_NUDGE_HINTS = [
+    "Still thinking? Try starting with the airway.",
+    "What system would you assess first given these symptoms?",
+    "Think about ABCs — what's the most immediate threat?",
+    "What vital sign change concerns you most here?",
+    "Consider: is this patient stable or unstable right now?",
+  ]
+
+  // Stall detection: fire event + show nudge if no input for 90 seconds after last assistant message
   useEffect(() => {
     const lastMsg = messages[messages.length - 1]
     if (lastMsg?.role === 'assistant') {
-      // Reset and start stall timer
+      // Reset stall state on new assistant message
       if (stallTimerRef.current) clearTimeout(stallTimerRef.current)
+      setStallNudge(null)
+      stallNudgeFiredRef.current = false
+
       stallTimerRef.current = setTimeout(() => {
         posthog.capture('socratic_stall', { time_spent_seconds: 90 })
+        // Only show nudge if input is not focused (user is not typing)
+        if (!inputFocusedRef.current && !stallNudgeFiredRef.current) {
+          stallNudgeFiredRef.current = true
+          const hint = STALL_NUDGE_HINTS[Date.now() % STALL_NUDGE_HINTS.length]
+          setStallNudge(hint)
+          posthog.capture('socratic_stall_nudge_shown')
+        }
       }, 90_000)
     }
     return () => {
@@ -169,6 +190,8 @@ export default function ChatInterface({
 
     // Reset stall timer on user input
     if (stallTimerRef.current) clearTimeout(stallTimerRef.current)
+    setStallNudge(null)
+    stallNudgeFiredRef.current = false
 
     // Track tutor session start on first message
     if (!sessionStartedRef.current) {
@@ -414,6 +437,15 @@ export default function ChatInterface({
         </button>
       </div>
 
+      {/* Stall Nudge */}
+      {stallNudge && (
+        <div className="mx-auto max-w-2xl px-2 mb-2">
+          <div className="rounded-lg bg-slate-50 border border-slate-200 px-4 py-2.5 text-sm text-slate-500 italic">
+            {stallNudge}
+          </div>
+        </div>
+      )}
+
       {/* Chat Input Dock */}
       <form onSubmit={handleSubmit} className="rounded-xl bg-white shadow-lg border border-[var(--gray-200)] px-4 py-2 flex items-center gap-3">
         {/* Paperclip — opens upload modal */}
@@ -445,7 +477,16 @@ export default function ChatInterface({
           className="flex-1 max-h-32 min-h-[44px] resize-none bg-white rounded-xl border border-[var(--gray-200)] px-3 py-2 text-sm text-[var(--gray-800)] placeholder:text-[var(--gray-400)] focus:outline-none focus:ring-2 focus:ring-[var(--teal)] focus:border-[var(--teal)]"
           placeholder={getPlaceholderText()}
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onChange={(e) => {
+            setInputValue(e.target.value)
+            // Clear stall nudge when user starts typing
+            if (stallNudge) {
+              setStallNudge(null)
+              stallNudgeFiredRef.current = false
+            }
+          }}
+          onFocus={() => { inputFocusedRef.current = true }}
+          onBlur={() => { inputFocusedRef.current = false }}
           disabled={isLoading}
           rows={1}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e) } }}

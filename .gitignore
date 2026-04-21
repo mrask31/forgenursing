@@ -35,6 +35,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .claude/worktrees/
+.claude/settings.json
 .kiro/
 
 # E2E test env
@@ -43,3 +44,5 @@ next-env.d.ts
 # Playwright
 /test-results/
 /playwright-report/
+
+.vercel

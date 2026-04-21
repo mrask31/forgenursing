@@ -11,6 +11,7 @@ import { useTutorContext } from '@/components/tutor/TutorContext'
 import { listNotebookTopics } from '@/lib/api/notebook'
 import { NotebookTopic } from '@/lib/types'
 import { getBrowserClient } from '@/lib/supabase/client'
+import posthog from 'posthog-js'
 
 type Mode = 'tutor'
 
@@ -72,6 +73,64 @@ export default function TutorSession({
       shouldAutoScrollRef.current = true
     }
   }, [propSessionId])
+
+  // Zero-click onboarding: auto-inject a starter scenario on first-ever session
+  const STARTER_SCENARIOS = [
+    "You have a 72-year-old patient with heart failure presenting with SOB and bilateral crackles. Where do you start?",
+    "Your patient is a 45-year-old diabetic admitted with blood glucose of 580 mg/dL, fruity breath, and Kussmaul respirations. What's your priority?",
+    "A 28-year-old post-op patient suddenly becomes restless, tachycardic at 120, and their surgical dressing is saturated. What do you assess first?",
+    "You're caring for a 65-year-old on IV heparin whose aPTT comes back at 95 seconds (therapeutic range 60-80). What's your next action?",
+    "A 3-month-old infant is brought to the ED with a temperature of 102.5°F, poor feeding, and a bulging fontanelle. What are your priority assessments?",
+  ]
+  const onboardingTriggeredRef = useRef(false)
+
+  useEffect(() => {
+    if (onboardingTriggeredRef.current) return
+    if (!localSessionId) return
+    // Only trigger if no messages yet in this session
+    if (messages.length > 0) return
+    // Check if onboarding was already completed
+    if (typeof window === 'undefined') return
+    if (localStorage.getItem('forge-onboarding-completed')) return
+
+    // Check if user has any prior sessions
+    const checkAndTrigger = async () => {
+      try {
+        const res = await fetch('/api/chats/list', { credentials: 'include' })
+        if (!res.ok) return
+        const data = await res.json()
+        const chats = data.chats || []
+        // Filter to only tutor chats (not reflections)
+        const tutorChats = chats.filter((c: any) =>
+          !c.session_type || c.session_type === 'general' || c.session_type === 'question' || c.session_type === 'snapshot'
+        )
+        // If more than 1 chat exists (current one + others), user is not new
+        if (tutorChats.length > 1) {
+          localStorage.setItem('forge-onboarding-completed', 'true')
+          return
+        }
+
+        // This is the user's first session — auto-inject a starter scenario
+        onboardingTriggeredRef.current = true
+        const scenarioIndex = Date.now() % 5
+        const scenario = STARTER_SCENARIOS[scenarioIndex]
+
+        posthog.capture('zero_click_onboarding_triggered')
+
+        // Small delay to let ClinicalTutorWorkspace initialize
+        setTimeout(() => {
+          handleSend(scenario)
+        }, 800)
+      } catch (err) {
+        console.error('[TutorSession] Onboarding check failed:', err)
+      }
+    }
+
+    // Delay the check to let the session fully initialize
+    const timer = setTimeout(checkAndTrigger, 1200)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localSessionId, messages.length])
   
   // Hide file banner when topic or exam context is active
   const hasStructuredContext = !!(tutorContext.selectedTopicId || tutorContext.activeExamId)
@@ -377,6 +436,11 @@ export default function TutorSession({
   const handleSend = async (message: string, imageData?: Array<{ base64: string; mimeType: string }>) => {
     if (!message.trim() && (!imageData || imageData.length === 0)) return
 
+    // Mark onboarding as completed after user's first real message
+    if (typeof window !== 'undefined' && !localStorage.getItem('forge-onboarding-completed')) {
+      localStorage.setItem('forge-onboarding-completed', 'true')
+    }
+
     let effectiveSessionId = sessionId
 
     // Create session if it doesn't exist
@@ -627,7 +691,15 @@ export default function TutorSession({
       {/* Scrollable messages OR landing */}
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto pr-1 min-h-0">
         {hasMessages ? (
-          <ClinicalTutorWorkspace 
+          <>
+            {onboardingTriggeredRef.current && messages.length <= 2 && (
+              <div className="mx-auto max-w-2xl px-4 pt-4 pb-1">
+                <p className="text-xs text-slate-400 italic text-center">
+                  Forge started a scenario for you — respond to begin
+                </p>
+              </div>
+            )}
+            <ClinicalTutorWorkspace 
             key={sessionId}
             chatId={sessionId} 
             filterMode="mixed"
@@ -648,6 +720,7 @@ export default function TutorSession({
               }
             }}
           />
+          </>
         ) : mode === 'tutor' && activeChunkCount === 0 && !sessionId && !tutorContext.selectedClassId ? (
           // Only show empty state if there's no active session, no files, AND no class selected
           // If a class is selected, the landing page will show the welcome message instead
