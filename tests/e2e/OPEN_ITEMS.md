@@ -138,10 +138,7 @@ Related open items: I-003 (two overlapping email systems), I-006 (trigger archit
 - **Verified locally:** smoke (3 pass, 1 skip) + L-001 beta regression (pass) + trial expiry regression (pass)
 
 
-### I-012: OPEN — Email sequence day schedule requires DB function updates
+### I-012: Email sequence day schedule requires DB function updates — CLOSED
 - **Discovered:** During email sequence + trial expiry cron implementation
-- **Description:** The desired email day schedules have changed:
-  - **Beta sequence:** New schedule is Day 0, 2, 5, 10, 85, 91. Current DB functions query for Day 3, 30, 76 (plus week_1, day_45, day_60, day_90). The route at `src/app/api/emails/process-beta-sequence/route.ts` calls these DB RPCs — updating the schedule requires creating/modifying Supabase DB functions (`get_beta_users_for_day_X`), not code changes.
-  - **Trial sequence:** New schedule is Day 0, 1, 3, 6, 8. Current DB functions query for Day 6 and Day 7. The route at `src/app/api/emails/process-trial-expiration/route.ts` calls `get_users_for_day_6_reminder` and `get_users_for_day_7_expiration`. Updating requires new DB functions.
-- **Action required:** Write and apply new Supabase SQL migrations to create the missing `get_beta_users_for_day_X` and `get_users_for_day_X` functions, then update the route code to call them. Cannot be done from application code alone.
-- **Priority:** Medium — current sequences still fire on existing days, just not on the new desired schedule.
+- **Resolved:** Built unified `process-email-sequences` Vercel API route that bypasses the old DB RPC approach entirely. Instead of per-day DB functions, the route queries all profiles + auth.users, calculates `days_since_signup` in JS, and dispatches the correct email template. Deduplicates via `welcome_emails_sent` table. Covers all 11 emails across both tracks (beta: Day 0/2/5/10/85/91, trial: Day 0/1/3/6/8). Wired to vercel.json cron at `15 6 * * *`.
+- **Commit:** `e26d7d5`
