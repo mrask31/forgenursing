@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { startStripeCheckout } from '@/lib/stripeClient'
+import { getBrowserClient } from '@/lib/supabase/client'
 import { Loader2, ArrowRight, Check } from 'lucide-react'
 
 function CheckoutContent() {
@@ -11,16 +12,34 @@ function CheckoutContent() {
   const urlPlan = searchParams.get('plan') as 'monthly' | 'semester' | 'annual' | null
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'semester' | 'annual' | null>(urlPlan || null)
   const [isStartingCheckout, setIsStartingCheckout] = useState(false)
+  const [isExpired, setIsExpired] = useState(false)
 
   useEffect(() => {
     // Clean up localStorage
     localStorage.removeItem('forgenursing-pending-plan')
-    
+
     // If a plan is provided in URL and valid, set it as selected (but still show UI)
     if (urlPlan && (urlPlan === 'monthly' || urlPlan === 'semester' || urlPlan === 'annual')) {
       setSelectedPlan(urlPlan)
     }
   }, [urlPlan])
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      const supabase = getBrowserClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
+      if (profile?.subscription_status === 'expired') {
+        setIsExpired(true)
+      }
+    }
+    checkSubscription()
+  }, [])
 
   const handleStartCheckout = async () => {
     if (!selectedPlan) return
@@ -45,7 +64,9 @@ function CheckoutContent() {
             Choose Your Plan
           </h1>
           <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto">
-            Select the plan that best fits your learning journey. All plans include a 7-day free trial.
+            {isExpired
+              ? 'Select a plan to restore your access. Your content and progress are saved.'
+              : 'Select the plan that best fits your learning journey. All plans include a 7-day free trial.'}
           </p>
         </div>
 
@@ -83,7 +104,7 @@ function CheckoutContent() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>7-day free trial included</span>
+                  <span>{isExpired ? 'Subscribe to continue' : '7-day free trial included'}</span>
                 </li>
               </ul>
               {selectedPlan === 'monthly' && (
@@ -134,7 +155,7 @@ function CheckoutContent() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>7-day free trial included</span>
+                  <span>{isExpired ? 'Subscribe to continue' : '7-day free trial included'}</span>
                 </li>
               </ul>
               {selectedPlan === 'semester' && (
@@ -185,7 +206,7 @@ function CheckoutContent() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>7-day free trial included</span>
+                  <span>{isExpired ? 'Subscribe to continue' : '7-day free trial included'}</span>
                 </li>
               </ul>
               {selectedPlan === 'annual' && (
@@ -217,7 +238,7 @@ function CheckoutContent() {
             )}
           </button>
           <p className="text-xs text-slate-500 mt-3">
-            All plans include a 7-day free trial. Cancel anytime.
+            {isExpired ? 'Subscribe to continue. Cancel anytime.' : 'All plans include a 7-day free trial. Cancel anytime.'}
           </p>
         </div>
       </div>

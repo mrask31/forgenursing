@@ -11,6 +11,7 @@ export default function PaymentRequiredPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [plan, setPlan] = useState<'monthly' | 'semester' | 'annual' | null>(null)
+  const [isExpired, setIsExpired] = useState(false)
 
   useEffect(() => {
   const supabase = getBrowserClient()
@@ -18,6 +19,16 @@ export default function PaymentRequiredPage() {
     const loadUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_status')
+          .eq('id', user.id)
+          .single()
+        if (profile?.subscription_status === 'expired') {
+          setIsExpired(true)
+        }
+      }
       setLoading(false)
     }
 
@@ -60,7 +71,9 @@ export default function PaymentRequiredPage() {
           </h1>
           
           <p className="text-slate-600 mb-6 leading-relaxed">
-            To access ForgeNursing, please complete your subscription setup. Start your 7-day free trial by adding your payment information.
+            {isExpired
+              ? 'Your trial has ended. Subscribe to restore full access to ForgeNursing.'
+              : 'To access ForgeNursing, please complete your subscription setup. Start your 7-day free trial by adding your payment information.'}
           </p>
 
           <div className="space-y-3">
@@ -68,7 +81,7 @@ export default function PaymentRequiredPage() {
               onClick={handleStartCheckout}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-base font-medium hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl"
             >
-              Start Your Free Trial
+              {isExpired ? 'Subscribe Now' : 'Start Your Free Trial'}
               <ArrowRight className="w-5 h-5" />
             </button>
             
