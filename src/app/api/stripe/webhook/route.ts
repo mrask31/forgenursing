@@ -19,6 +19,34 @@ function getStripeClient(): Stripe {
 
 export const dynamic = 'force-dynamic'
 
+// Map Stripe price ID to tier_type
+// Checks both regular and founder price IDs from environment variables
+function mapPriceIdToTierType(priceId: string): string | null {
+  if (!priceId) return null
+
+  const monthlyIds = [
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY,
+    process.env.STRIPE_PRICE_MONTHLY_FOUNDER,
+  ].filter(Boolean)
+
+  const semesterIds = [
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMESTER,
+    process.env.STRIPE_PRICE_SEMESTER_FOUNDER,
+  ].filter(Boolean)
+
+  const annualIds = [
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL,
+    process.env.STRIPE_PRICE_ANNUAL_FOUNDER,
+  ].filter(Boolean)
+
+  if (monthlyIds.includes(priceId)) return 'monthly'
+  if (semesterIds.includes(priceId)) return 'semester'
+  if (annualIds.includes(priceId)) return 'annual'
+
+  console.warn(`[Webhook] Unknown price ID: ${priceId} — tier_type not set`)
+  return null
+}
+
 // Helper function to extract metadata from event
 function extractEventMetadata(event: Stripe.Event) {
   let userId: string | null = null
@@ -158,16 +186,24 @@ async function processWebhookEvent(
         // Get subscription details
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
         const status = subscription.status === 'trialing' ? 'trialing' : 'active'
-        
+
+        // Determine tier_type from the Stripe price ID
+        const priceId = subscription.items?.data?.[0]?.price?.id || ''
+        const tierType = mapPriceIdToTierType(priceId)
 
         // Update profile
+        const profileUpdate: Record<string, any> = {
+          subscription_status: status,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscriptionId,
+        }
+        if (tierType) {
+          profileUpdate.tier_type = tierType
+        }
+
         const { data: updatedProfile, error: updateError } = await supabase
           .from('profiles')
-          .update({
-            subscription_status: status,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId,
-          })
+          .update(profileUpdate)
           .eq('id', userId)
           .select()
 
