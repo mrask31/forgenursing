@@ -39,7 +39,7 @@ async function main() {
     return;
   }
 
-  const distinctStatuses = [...new Set((statuses || []).map((r: any) => r.status))];
+  const distinctStatuses = Array.from(new Set((statuses || []).map((r: any) => r.status)));
   console.log(`  Distinct status values: ${distinctStatuses.length > 0 ? distinctStatuses.join(', ') : '(none — table empty)'}`);
 
   // Count rows
