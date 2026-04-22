@@ -415,9 +415,11 @@ export default function SignupPage() {
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       type="email"
+                      inputMode="email"
+                      autoComplete="email"
                       placeholder="Email address"
                       data-testid="signup-email"
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value)
@@ -431,9 +433,10 @@ export default function SignupPage() {
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       type="password"
+                      autoComplete="new-password"
                       placeholder="Password (8+ characters)"
                       data-testid="signup-password"
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value)
@@ -448,8 +451,9 @@ export default function SignupPage() {
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       type="password"
+                      autoComplete="new-password"
                       placeholder="Confirm password"
-                      className={`w-full pl-10 pr-3 py-2.5 bg-slate-50 border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+                      className={`w-full pl-10 pr-3 py-2.5 bg-slate-50 border rounded-lg text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
                         confirmPassword && password !== confirmPassword
                           ? 'border-red-300 focus:ring-red-600'
                           : 'border-slate-200 focus:ring-[#0D8F9C]'
@@ -514,7 +518,7 @@ export default function SignupPage() {
                   type="submit"
                   data-testid="signup-submit"
                   disabled={loading || !email || !password || !confirmPassword || password !== confirmPassword || !acceptedTerms}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-2.5 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0A7A85] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-2.5 min-h-[44px] bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0A7A85] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {loading ? (
                     <>
@@ -528,6 +532,9 @@ export default function SignupPage() {
                     </>
                   )}
                 </button>
+                <p className="text-sm text-gray-500 text-center">
+                  No credit card required • Cancel anytime • 2-minute setup
+                </p>
               </form>
 
               {/* Toggle */}
