@@ -84,6 +84,31 @@ export async function POST(req: Request) {
     const uploadDate = new Date().toISOString().split('T')[0] // YYYY-MM-DD
     const fileKey = `${user.id}:${filename}:${uploadDate}`
 
+    // 4b. Deduplication: delete existing chunks for the same filename + class_id
+    // This handles re-uploads cleanly — old chunks are removed before new ones are inserted
+    try {
+      let deleteQuery = supabase
+        .from('documents')
+        .delete()
+        .eq('user_id', user.id)
+        .filter('metadata->>filename', 'eq', filename)
+
+      if (class_id) {
+        deleteQuery = deleteQuery.filter('metadata->>class_id', 'eq', class_id)
+      }
+
+      const { error: deleteError, count: deletedCount } = await deleteQuery
+
+      if (deleteError) {
+        console.warn(`[API] Non-fatal: failed to delete existing chunks for ${filename}:`, deleteError)
+      } else if (deletedCount && deletedCount > 0) {
+        console.log(`[API] Dedup: deleted ${deletedCount} existing chunks for ${filename} (class: ${class_id || 'none'})`)
+      }
+    } catch (dedupeError) {
+      console.warn('[API] Non-fatal dedup error:', dedupeError)
+      // Continue with insert — dedup failure is non-fatal
+    }
+
     // 5. Embed & Save
     // We process in batches to avoid rate limits
     const batchSize = 5;
