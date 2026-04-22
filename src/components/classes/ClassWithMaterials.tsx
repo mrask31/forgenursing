@@ -13,6 +13,7 @@ import {
   Calendar,
   FileText,
   UploadCloud,
+  Check,
   CheckCircle,
   MessageSquare,
   Plus,
@@ -60,6 +61,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
   const [uploadDocumentType, setUploadDocumentType] = useState<'syllabus' | 'textbook' | null>(null)
   const [isCreatingChat, setIsCreatingChat] = useState(false)
   const [showSessions, setShowSessions] = useState(false) // Collapsible sessions
+  const [showPulse, setShowPulse] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -76,6 +78,15 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
       return () => clearInterval(interval)
     }
   }, [isUploading])
+
+  // Pulse the type buttons for 3s when the upload panel first opens
+  useEffect(() => {
+    if (showUpload) {
+      setShowPulse(true)
+      const timer = setTimeout(() => setShowPulse(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showUpload])
 
   const loadMaterials = async () => {
     try {
@@ -397,27 +408,32 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
           {/* Inline Upload UI */}
           {showUpload && (
             <div className="mt-3 p-4 bg-white rounded-xl border border-[var(--gray-200)]">
+              <p className="text-sm font-medium mb-2" style={{ color: '#0D8F9C' }}>
+                Select a document type to upload:
+              </p>
               <div className="flex items-center gap-3 mb-3">
                 <button
                   type="button"
                   onClick={() => setUploadDocumentType('syllabus')}
-                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 ${
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${
                     uploadDocumentType === 'syllabus'
-                      ? 'bg-[var(--teal)] text-white'
-                      : 'bg-white text-[var(--gray-800)] border border-[var(--gray-200)] hover:border-[var(--teal)]'
+                      ? 'border-2 border-[#0D8F9C] bg-[#E0F4F6] text-[#0D8F9C]'
+                      : `border border-[var(--gray-200)] bg-white text-[var(--gray-400)] hover:border-[var(--teal)] ${showPulse ? 'animate-pulse' : ''}`
                   }`}
                 >
+                  {uploadDocumentType === 'syllabus' && <Check className="w-3.5 h-3.5" />}
                   Syllabus
                 </button>
                 <button
                   type="button"
                   onClick={() => setUploadDocumentType('textbook')}
-                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 ${
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${
                     uploadDocumentType === 'textbook'
-                      ? 'bg-[var(--teal)] text-white'
-                      : 'bg-white text-[var(--gray-800)] border border-[var(--gray-200)] hover:border-[var(--teal)]'
+                      ? 'border-2 border-[#0D8F9C] bg-[#E0F4F6] text-[#0D8F9C]'
+                      : `border border-[var(--gray-200)] bg-white text-[var(--gray-400)] hover:border-[var(--teal)] ${showPulse ? 'animate-pulse' : ''}`
                   }`}
                 >
+                  {uploadDocumentType === 'textbook' && <Check className="w-3.5 h-3.5" />}
                   Textbook/PDF
                 </button>
               </div>
@@ -475,10 +491,10 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                 ) : (
                   <>
                     <UploadCloud className="text-[var(--teal)] w-8 h-8 mx-auto mb-2" />
-                    <p className="text-sm text-[var(--gray-800)] font-medium mb-1">
+                    <p className={`mb-1 ${uploadDocumentType ? 'text-sm text-[var(--gray-800)] font-medium' : 'text-base font-semibold text-[var(--gray-700)]'}`}>
                       {uploadDocumentType
                         ? 'Click to upload or drag and drop'
-                        : 'Select document type above'}
+                        : '← Choose a type above to start your upload'}
                     </p>
                     <p className="text-xs text-[var(--gray-400)]">PDF or DOCX · Max 20MB</p>
                   </>
