@@ -238,15 +238,18 @@ export async function POST(request: Request) {
         }
 
         // Mark as sent in beta_email_sequence
-        await supabase.rpc('mark_beta_lifecycle_email_sent', {
+        const { error: markError } = await supabase.rpc('mark_beta_lifecycle_email_sent', {
           p_queue_id: item.id,
           p_success: true,
           p_email_id: emailData?.id || null,
           p_error_msg: null,
         })
+        if (markError) {
+          console.error(`[Beta Sequence] Failed to mark email as sent for ${item.email} (${item.email_type}):`, markError)
+        }
 
         // Log to welcome_emails_sent
-        await supabase.from('welcome_emails_sent').upsert(
+        const { error: upsertError } = await supabase.from('welcome_emails_sent').upsert(
           {
             user_id: item.user_id,
             email: item.email,
@@ -257,15 +260,21 @@ export async function POST(request: Request) {
           },
           { onConflict: 'user_id,type' }
         )
+        if (upsertError) {
+          console.error(`[Beta Sequence] Failed to log to welcome_emails_sent for ${item.email} (${item.email_type}):`, upsertError)
+        }
 
         results.sent++
       } catch (error: any) {
-        await supabase.rpc('mark_beta_lifecycle_email_sent', {
+        const { error: markError } = await supabase.rpc('mark_beta_lifecycle_email_sent', {
           p_queue_id: item.id,
           p_success: false,
           p_email_id: null,
           p_error_msg: error.message || 'Unknown error',
         })
+        if (markError) {
+          console.error(`[Beta Sequence] Failed to mark email as failed for ${item.email} (${item.email_type}):`, markError)
+        }
 
         results.failed++
         results.errors.push({

@@ -134,21 +134,27 @@ export async function POST(request: Request) {
           throw emailError
         }
 
-        await supabase.rpc('mark_trial_expiration_email_sent', {
+        const { error: markError } = await supabase.rpc('mark_trial_expiration_email_sent', {
           p_email_id: item.id,
           p_resend_email_id: emailData?.id || null,
           p_success: true,
           p_error_message: null,
         })
+        if (markError) {
+          console.error(`[Trial Expiration] Failed to mark email as sent for ${item.email}:`, markError)
+        }
 
         results.sent++
       } catch (error: any) {
-        await supabase.rpc('mark_trial_expiration_email_sent', {
+        const { error: markError } = await supabase.rpc('mark_trial_expiration_email_sent', {
           p_email_id: item.id,
           p_resend_email_id: null,
           p_success: false,
           p_error_message: error.message || 'Unknown error',
         })
+        if (markError) {
+          console.error(`[Trial Expiration] Failed to mark email as failed for ${item.email}:`, markError)
+        }
 
         results.failed++
         results.errors.push({

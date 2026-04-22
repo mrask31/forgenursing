@@ -103,22 +103,28 @@ async function processWelcomeQueue(request: Request) {
         }
 
         // Mark as sent in database
-        await supabase.rpc('mark_welcome_email_sent', {
+        const { error: markError } = await supabase.rpc('mark_welcome_email_sent', {
           p_queue_id: item.id,
           p_email_id: emailData?.id || null,
           p_success: true,
           p_error_message: null,
         })
+        if (markError) {
+          console.error(`[Welcome Queue] Failed to mark email as sent for ${item.email}:`, markError)
+        }
 
         results.sent++
       } catch (error: any) {
         // Mark as failed in database
-        await supabase.rpc('mark_welcome_email_sent', {
+        const { error: markError } = await supabase.rpc('mark_welcome_email_sent', {
           p_queue_id: item.id,
           p_email_id: null,
           p_success: false,
           p_error_message: error.message || 'Unknown error',
         })
+        if (markError) {
+          console.error(`[Welcome Queue] Failed to mark email as failed for ${item.email}:`, markError)
+        }
 
         results.failed++
         results.errors.push({

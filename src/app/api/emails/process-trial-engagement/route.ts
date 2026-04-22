@@ -105,6 +105,10 @@ export async function POST(request: Request) {
 
           emailId = Array.isArray(queueData) ? (queueData[0]?.id ?? null) : (queueData?.id ?? null)
 
+          if (!emailId) {
+            throw new Error(`queue_trial_expiration_email returned no ID for ${user.email} (${day.emailType}) — skipping send to avoid untracked duplicate`)
+          }
+
           const { data: emailData, error: emailError } = await resend.emails.send({
             from: 'ForgeNursing <trial@forgenursing.com>',
             to: user.email,
@@ -114,24 +118,28 @@ export async function POST(request: Request) {
 
           if (emailError) throw emailError
 
-          if (emailId) {
-            await supabase.rpc('mark_trial_expiration_email_sent', {
-              p_email_id: emailId,
-              p_resend_email_id: emailData?.id || null,
-              p_success: true,
-              p_error_message: null,
-            })
+          const { error: markError } = await supabase.rpc('mark_trial_expiration_email_sent', {
+            p_email_id: emailId,
+            p_resend_email_id: emailData?.id || null,
+            p_success: true,
+            p_error_message: null,
+          })
+          if (markError) {
+            console.error(`[Trial Engagement] Failed to mark email as sent for ${user.email} (${day.emailType}):`, markError)
           }
 
           results.sent[day.key]++
         } catch (error: any) {
           if (emailId) {
-            await supabase.rpc('mark_trial_expiration_email_sent', {
+            const { error: markError } = await supabase.rpc('mark_trial_expiration_email_sent', {
               p_email_id: emailId,
               p_resend_email_id: null,
               p_success: false,
               p_error_message: error.message || 'Unknown error',
             })
+            if (markError) {
+              console.error(`[Trial Engagement] Failed to mark email as failed for ${user.email} (${day.emailType}):`, markError)
+            }
           }
 
           results.errors.push({

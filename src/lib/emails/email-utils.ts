@@ -84,7 +84,7 @@ export async function processPendingEmails(
       }
 
       // Mark as sent
-      await supabase
+      const { error: updateError } = await supabase
         .from('email_queue')
         .update({
           status: 'sent',
@@ -92,6 +92,9 @@ export async function processPendingEmails(
           resend_email_id: emailData?.id || null,
         })
         .eq('id', item.id)
+      if (updateError) {
+        console.error(`[Email Utils] Failed to mark ${item.email_type} as sent for ${item.email}:`, updateError)
+      }
 
       result.sent++
     } catch (error: any) {
@@ -107,10 +110,13 @@ export async function processPendingEmails(
         updateData.status = 'failed'
       }
 
-      await supabase
+      const { error: updateError } = await supabase
         .from('email_queue')
         .update(updateData)
         .eq('id', item.id)
+      if (updateError) {
+        console.error(`[Email Utils] Failed to update failure state for ${item.email_type} / ${item.email}:`, updateError)
+      }
 
       result.failed++
       result.errors.push({
