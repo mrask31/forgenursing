@@ -361,7 +361,7 @@ export default function SignupPage() {
                     <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                       2
                     </div>
-                    <p><strong className="text-slate-900">Try the AI tutor</strong> — Upload notes & ask questions</p>
+                    <p><strong className="text-slate-900">Upload your study guide</strong> — Forge builds NCLEX practice from your exact material</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
