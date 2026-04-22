@@ -74,7 +74,6 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
 
   const clinicalTools = [
     { label: 'Med Dictionary', href: '/dictionary', icon: BookOpen },
-    { label: 'Readiness Score', href: '/readiness', icon: Activity },
   ]
 
   const isActive = (href: string, label: string) => {
