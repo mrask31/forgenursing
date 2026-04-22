@@ -9,7 +9,9 @@ import { useDensity } from '@/contexts/DensityContext'
 import { getDensityTokens } from '@/lib/density-tokens'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { getBrowserClient } from '@/lib/supabase/client'
 import type { ChatMessage } from '@/components/tutor/ChatMessageList'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
@@ -32,7 +34,8 @@ function TutorPageContent() {
   const [attachedFiles, setAttachedFiles] = useState<{ id: string, name: string, document_type: string | null }[]>([])
   const [isLoadingAttachedFiles, setIsLoadingAttachedFiles] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  
+  const [showUploadBanner, setShowUploadBanner] = useState(false)
+
   // Refs
   const prevTopicIdRef = useRef<string | undefined>(undefined)
   const prevExamIdRef = useRef<string | undefined>(undefined)
@@ -614,6 +617,25 @@ function TutorPageContent() {
     }
   }, [resolvedChatId, isResolving])
 
+  useEffect(() => {
+    const checkUploadBanner = async () => {
+      if (typeof window !== 'undefined' && localStorage.getItem('forge_upload_banner_dismissed') === 'true') {
+        return
+      }
+      const supabase = getBrowserClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { count } = await supabase
+        .from('documents')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+      if (count === 0) {
+        setShowUploadBanner(true)
+      }
+    }
+    checkUploadBanner()
+  }, [])
+
   // ============================================
   // SINGLE RETURN - Conditional rendering only
   // ============================================
@@ -695,6 +717,33 @@ function TutorPageContent() {
 
         {/* Chat area with scrollable messages and fixed input */}
         <div className="flex-1 flex flex-col min-h-0 mt-2 sm:mt-4 overflow-hidden">
+          {/* Upload nudge banner — shown when user has zero documents */}
+          {showUploadBanner && (
+            <div className="flex-shrink-0 mb-2">
+              <div
+                style={{ background: '#E0F4F6', borderLeft: '4px solid #0D8F9C', color: '#0B2545' }}
+                className="flex items-start justify-between gap-3 rounded-lg px-4 py-3"
+              >
+                <p className="text-sm leading-snug flex-1">
+                  💡 Get more from Forge — upload your study guide in{' '}
+                  <Link href="/classes" className="font-semibold underline" style={{ color: '#0D8F9C' }}>
+                    My Courses
+                  </Link>{' '}
+                  and I&apos;ll quiz you on your exact exam material.
+                </p>
+                <button
+                  onClick={() => {
+                    localStorage.setItem('forge_upload_banner_dismissed', 'true')
+                    setShowUploadBanner(false)
+                  }}
+                  className="flex-shrink-0 text-xl leading-none hover:opacity-60 transition-opacity"
+                  aria-label="Dismiss banner"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
           {showLanding ? (
             <>
               <div className="flex-1 overflow-y-auto">
