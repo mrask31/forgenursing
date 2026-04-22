@@ -26,12 +26,12 @@ export default function Hero({ user, betaFull = false }: HeroProps) {
 
               {/* Headline */}
               <h1 className="font-display text-4xl sm:text-5xl md:text-[3.25rem] leading-tight text-[#0B2545] mb-5">
-                Meet Forge. The AI clinical preceptor built for nursing students.
+                Upload your study guide. Get NCLEX-style practice built from your professor's exact material.
               </h1>
 
               {/* Subheadline */}
               <p className="text-base sm:text-lg text-[#1E2D3D]/80 mb-6 leading-relaxed">
-                Forge teaches you to think like a nurse — using your own textbooks, your own notes, and the ADPIE framework your professors actually test. Voice included.
+                Forge coaches you through clinical reasoning using your own notes, textbooks, and the ADPIE framework your professors actually test. Built for BSN, ADN, LPN, and MSN students.
               </p>
 
               {/* CTAs */}
