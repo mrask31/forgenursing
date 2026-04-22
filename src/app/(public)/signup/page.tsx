@@ -10,7 +10,6 @@ import Link from 'next/link'
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null)
@@ -99,14 +98,7 @@ export default function SignupPage() {
       return
     }
 
-    // 4. Password match check
-    if (password !== confirmPassword) {
-      setMessage({ text: 'Passwords do not match. Please try again.', type: 'error' })
-      setLoading(false)
-      return
-    }
-
-    // 5. Password strength check
+    // 4. Password strength check
     if (password.length < 8) {
       setMessage({ text: 'Password must be at least 8 characters long.', type: 'error' })
       setLoading(false)
@@ -447,28 +439,6 @@ export default function SignupPage() {
                       minLength={8}
                     />
                   </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <input
-                      type="password"
-                      autoComplete="new-password"
-                      placeholder="Confirm password"
-                      className={`w-full pl-10 pr-3 py-2.5 bg-slate-50 border rounded-lg text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
-                        confirmPassword && password !== confirmPassword
-                          ? 'border-red-300 focus:ring-red-600'
-                          : 'border-slate-200 focus:ring-[#0D8F9C]'
-                      }`}
-                      data-testid="signup-confirm-password"
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value)
-                        formInteractedRef.current = true
-                      }}
-                      onFocus={() => formInteractedRef.current = true}
-                      required
-                      minLength={8}
-                    />
-                  </div>
                 </div>
 
                 {message && (
@@ -517,7 +487,7 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   data-testid="signup-submit"
-                  disabled={loading || !email || !password || !confirmPassword || password !== confirmPassword || !acceptedTerms}
+                  disabled={loading || !email || !password || !acceptedTerms}
                   className="w-full flex items-center justify-center gap-2 px-6 py-2.5 min-h-[44px] bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0A7A85] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {loading ? (
