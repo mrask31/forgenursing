@@ -9,6 +9,10 @@
       "schedule": "0 12 * * *"
     },
     {
+      "path": "/api/emails/process-trial-engagement",
+      "schedule": "0 15 * * *"
+    },
+    {
       "path": "/api/emails/process-welcome-queue",
       "schedule": "15 * * * *"
     },
