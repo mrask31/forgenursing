@@ -92,6 +92,7 @@ export async function GET(request: Request) {
               subscription_status: 'pending_payment',
               onboarding_completed: false,
               onboarding_step: 0,
+              quiz_first_enabled: true,
             })
           
           if (insertError) {
