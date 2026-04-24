@@ -20,7 +20,7 @@ ALTER TABLE public.profiles
 CREATE TABLE IF NOT EXISTS public.quiz_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  class_id UUID REFERENCES public.classes(id) ON DELETE SET NULL,
+  class_id UUID REFERENCES public.student_classes(id) ON DELETE SET NULL,
   source_type TEXT NOT NULL DEFAULT 'generic'
     CHECK (source_type IN ('document', 'generic', 'mixed')),
   nclex_category TEXT,
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS public.quiz_questions (
   rationale_incorrect JSONB NOT NULL,
   nclex_category TEXT,
   difficulty INTEGER NOT NULL DEFAULT 3 CHECK (difficulty BETWEEN 1 AND 5),
-  source_doc_id UUID REFERENCES public.documents(id) ON DELETE SET NULL,
+  source_doc_id TEXT,  -- stores documents.id (bigint cast to uuid by match_documents RPC); no FK to avoid type mismatch
   source_chunk_text TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   answered_at TIMESTAMPTZ,
