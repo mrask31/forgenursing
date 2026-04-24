@@ -5,40 +5,12 @@
       "schedule": "*/5 * * * *"
     },
     {
-      "path": "/api/emails/process-trial-expiration",
-      "schedule": "0 12 * * *"
-    },
-    {
-      "path": "/api/emails/process-beta-sequence",
-      "schedule": "0 13 * * *"
-    },
-    {
-      "path": "/api/emails/process-onboarding-sequence",
-      "schedule": "0 14 * * *"
-    },
-    {
-      "path": "/api/emails/process-beta-reengagement",
-      "schedule": "0 15 * * *"
-    },
-    {
-      "path": "/api/emails/process-trial-engagement",
-      "schedule": "0 15 * * *"
-    },
-    {
-      "path": "/api/cron/process-emails",
-      "schedule": "0 * * * *"
-    },
-    {
       "path": "/api/emails/process-welcome-queue",
       "schedule": "15 * * * *"
     },
     {
       "path": "/api/cron/expire-trials",
       "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/emails/process-email-sequences",
-      "schedule": "15 6 * * *"
     }
   ]
 }
