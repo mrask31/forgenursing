@@ -76,7 +76,7 @@ REQUIRED SECTIONS IN ORDER:
 
    **Reasoning path:** [one line describing the clinical logic chain ahead]
 
-3. ### REASONING: Step-by-step Socratic walkthrough of the concept.
+3. ### REASONING: Structured walkthrough using labeled blocks (A/B/C or 1/2/3), NOT prose paragraphs. Each block: bold label + 2-3 short sentences max. Never exceed 5 blocks.
 
 4. ### TRAP: One sentence naming the single most common student mistake.
 
