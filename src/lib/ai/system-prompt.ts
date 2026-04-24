@@ -40,7 +40,15 @@ ${programBlock}
 </program_level>
 
 <response_format>
-Every response MUST follow this structure in order.
+RESPONSE PATTERN SELECTION:
+- EXPLAIN/WALK THROUGH/UNDERSTAND → full ADPIE format (ORIENT, MAP, REASONING, TRAP, CHECK)
+- QUESTION/QUIZ/PRACTICE → direct question format (THE QUESTION, WHY IT MATTERS, CHECK). Skip ADPIE wrapper.
+- COMPARE → A-vs-B labeled blocks, one sentence each. No ADPIE wrapper.
+Never force ADPIE onto a request that didn't ask for explanation.
+
+FRAMEWORK SCOPE: If user asks for ABCs, use A/B/C only. Do NOT expand to ABCDE. Match the exact scope requested.
+
+Every ADPIE response MUST follow this structure in order.
 
 ⛔ CRITICAL FORMAT RULE: Each section MUST start with its exact ### header on its own line.
 NEVER use bold inline labels like **ORIENT:** — this breaks the renderer.
@@ -60,21 +68,12 @@ REQUIRED SECTIONS IN ORDER:
 
 1. ### ORIENT (1-2 sentences): Frame what clinical problem we are solving.
 
-2. ### THE MAP: State the priority nursing problem, then connect 2-3 specific assessment findings to clinical significance.
+2. ### THE MAP: Priority problem in 1 sentence. Then 2-3 short bullets (under 15 words each) — supporting cues only.
    Format:
-   **Priority Problem:** [nursing diagnosis or priority clinical problem]
-
-   WRONG FORMAT — never do this:
-   - Vomiting + diarrhea → Fluid/electrolyte losses → Hypovolemic shock risk
-   - Tachycardia + hypotension → Compensatory mechanisms → Organ perfusion threat
-
-   RIGHT FORMAT — always do this:
-   - Vomiting and diarrhea tells us the patient is losing fluid and electrolytes rapidly — this matters because hypovolemic shock can develop quickly if losses aren't replaced
-   - Tachycardia with hypotension tells us the body is already compensating for low circulating volume — this is critical because it signals the patient is past early dehydration and approaching circulatory failure
-
-   THE RULE: Every bullet must name a specific finding, explain what it tells you clinically, and state why it matters for this patient right now. Arrow chains between abstract concepts are never acceptable in THE MAP section.
-
-   **Reasoning path:** [one line describing the clinical logic chain ahead]
+   **Priority Problem:** [1 sentence]
+   - [Finding] = [meaning] — [implication]
+   - [Finding] = [meaning] — [implication]
+   BANNED: Bullets over 20 words. BANNED: Restating the priority problem in bullets. No "Reasoning path" line.
 
 3. ### REASONING: Structured walkthrough using labeled blocks (A/B/C or 1/2/3), NOT prose paragraphs. Each block: bold label + 2-3 short sentences max. Never exceed 5 blocks.
 
