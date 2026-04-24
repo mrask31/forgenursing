@@ -1,0 +1,109 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { getEntitlementForUser } from '@/lib/entitlement';
+
+export async function POST(req: NextRequest) {
+  try {
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const entitlement = await getEntitlementForUser(user.id);
+    if (!entitlement.hasAccess) {
+      return NextResponse.json({ error: 'Payment required' }, { status: 402 });
+    }
+
+    const body = await req.json();
+    const { questionId, userAnswer } = body;
+
+    if (!questionId || !userAnswer) {
+      return NextResponse.json({ error: 'Missing required fields: questionId, userAnswer' }, { status: 400 });
+    }
+
+    if (!['A', 'B', 'C', 'D'].includes(userAnswer)) {
+      return NextResponse.json({ error: 'Invalid answer. Must be A, B, C, or D.' }, { status: 400 });
+    }
+
+    // Fetch the question (RLS ensures user owns it via session)
+    const { data: question, error: fetchError } = await supabase
+      .from('quiz_questions')
+      .select('*, quiz_sessions!inner(user_id, id, status, score, current_question_index, total_questions)')
+      .eq('id', questionId)
+      .single();
+
+    if (fetchError || !question) {
+      return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+    }
+
+    // Idempotent: if already answered, return existing result
+    if (question.answered_at) {
+      return NextResponse.json({
+        correct_answer: question.correct_answer,
+        rationale_correct: question.rationale_correct,
+        rationale_incorrect: question.rationale_incorrect,
+        is_correct: question.is_correct,
+        user_answer: question.user_answer,
+      });
+    }
+
+    const isCorrect = userAnswer === question.correct_answer;
+    const now = new Date().toISOString();
+
+    // Update the question with user's answer
+    const { error: updateError } = await supabase
+      .from('quiz_questions')
+      .update({
+        user_answer: userAnswer,
+        is_correct: isCorrect,
+        answered_at: now,
+      })
+      .eq('id', questionId);
+
+    if (updateError) {
+      console.error('[Quiz Answer] Update question error:', updateError);
+      return NextResponse.json({ error: 'Failed to save answer' }, { status: 500 });
+    }
+
+    // Update session: increment score if correct, advance question index
+    const session = question.quiz_sessions;
+    const newScore = (session.score || 0) + (isCorrect ? 1 : 0);
+    const newIndex = (session.current_question_index || 0) + 1;
+    const isComplete = newIndex >= session.total_questions;
+
+    const sessionUpdate: any = {
+      score: newScore,
+      current_question_index: newIndex,
+    };
+
+    if (isComplete) {
+      sessionUpdate.status = 'completed';
+      sessionUpdate.completed_at = now;
+    }
+
+    const { error: sessionUpdateError } = await supabase
+      .from('quiz_sessions')
+      .update(sessionUpdate)
+      .eq('id', session.id);
+
+    if (sessionUpdateError) {
+      console.error('[Quiz Answer] Update session error:', sessionUpdateError);
+      // Non-fatal: answer was saved, session update failed
+    }
+
+    return NextResponse.json({
+      correct_answer: question.correct_answer,
+      rationale_correct: question.rationale_correct,
+      rationale_incorrect: question.rationale_incorrect,
+      is_correct: isCorrect,
+      user_answer: userAnswer,
+      session_complete: isComplete,
+      score: newScore,
+      total_answered: newIndex,
+    });
+  } catch (error) {
+    console.error('[Quiz Answer] POST error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

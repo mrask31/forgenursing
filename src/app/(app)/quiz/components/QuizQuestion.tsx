@@ -1,0 +1,52 @@
+'use client'
+
+interface QuizQuestionProps {
+  stem: string
+  options: { label: string; text: string }[]
+  selectedAnswer: string | null
+  onSelect: (label: string) => void
+  onSubmit: () => void
+  submitting: boolean
+}
+
+export default function QuizQuestion({
+  stem, options, selectedAnswer, onSelect, onSubmit, submitting,
+}: QuizQuestionProps) {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-gray-200 p-4">
+        <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>{stem}</p>
+      </div>
+
+      <div className="space-y-2">
+        {options.map((opt) => {
+          const isSelected = selectedAnswer === opt.label
+          return (
+            <button
+              key={opt.label}
+              onClick={() => onSelect(opt.label)}
+              className="w-full rounded-lg border-2 p-3 text-left text-sm transition-all"
+              style={{
+                borderColor: isSelected ? '#0D8F9C' : '#E5E7EB',
+                backgroundColor: isSelected ? '#E0F4F6' : 'white',
+                minHeight: '56px',
+                color: '#0B2545',
+              }}
+            >
+              <span className="font-semibold">{opt.label})</span> {opt.text}
+            </button>
+          )
+        })}
+      </div>
+
+      <button
+        onClick={onSubmit}
+        disabled={!selectedAnswer || submitting}
+        className="w-full rounded-lg text-white font-semibold text-base transition-all disabled:opacity-40"
+        style={{ backgroundColor: selectedAnswer ? '#0D8F9C' : '#9CA3AF', minHeight: '56px' }}
+      >
+        {submitting ? 'Submitting...' : 'Submit Answer'}
+      </button>
+    </div>
+  )
+}

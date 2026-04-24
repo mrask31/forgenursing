@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { MessageSquare, BarChart3, GraduationCap, BookOpen, Activity, Settings, LogOut, ChevronUp } from 'lucide-react'
+import { MessageSquare, BarChart3, GraduationCap, BookOpen, Activity, Settings, LogOut, ChevronUp, ClipboardList } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import HistoryButton from './HistoryButton'
 
@@ -18,6 +18,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   const [programTrack, setProgramTrack] = useState<string | null>(null)
   const [graduationDate, setGraduationDate] = useState<string | null>(null)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const [quizFirstEnabled, setQuizFirstEnabled] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('preferred_name, program_track, graduation_date')
+          .select('preferred_name, program_track, graduation_date, quiz_first_enabled')
           .eq('id', user.id)
           .single()
 
@@ -37,6 +38,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
           setPreferredName(profile.preferred_name || null)
           setProgramTrack(profile.program_track || null)
           setGraduationDate(profile.graduation_date || null)
+          setQuizFirstEnabled(profile.quiz_first_enabled ?? false)
         }
       } catch (error) {
         console.error('[Sidebar] Error loading profile:', error)
@@ -68,6 +70,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
 
   const mainNav = [
     { label: 'Clinical Tutor', href: '/tutor', icon: MessageSquare },
+    ...(quizFirstEnabled ? [{ label: 'Practice Questions', href: '/quiz', icon: ClipboardList }] : []),
     { label: 'My Chart', href: '/readiness', icon: BarChart3, badge: true },
     { label: 'My Courses', href: '/classes', icon: GraduationCap },
   ]
@@ -81,6 +84,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
     if (href === '/classes' && pathname.startsWith('/classes')) return true
     if (href === '/dictionary' && pathname.startsWith('/dictionary')) return true
     if (href === '/readiness' && pathname.startsWith('/readiness') && label === 'My Chart') return true
+    if (href === '/quiz' && pathname.startsWith('/quiz')) return true
     return false
   }
 

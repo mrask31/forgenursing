@@ -130,7 +130,7 @@ export async function middleware(request: NextRequest) {
     const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/auth/')
 
     // Protected routes that require authentication AND active subscription
-    const protectedRoutes = ['/clinical-desk', '/tutor', '/binder', '/readiness', '/settings', '/classes', '/help', '/onboarding']
+    const protectedRoutes = ['/clinical-desk', '/tutor', '/binder', '/readiness', '/settings', '/classes', '/help', '/onboarding', '/entry', '/quiz']
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
 
     // CRITICAL: For login/signup pages, only redirect if we have a VALID authenticated user
@@ -148,6 +148,9 @@ export async function middleware(request: NextRequest) {
         let betaExpiresAt: string | undefined
         let profileError: any = null
         
+        let quizFirstEnabled: boolean | undefined
+        let defaultEntryPath: string | null | undefined
+
         if (serviceRoleKey) {
           // Use service role key to bypass RLS
           const adminClient = createClient(
@@ -156,7 +159,7 @@ export async function middleware(request: NextRequest) {
           )
           const { data: profile, error } = await adminClient
             .from('profiles')
-            .select('subscription_status, trial_ends_at, is_beta, beta_expires_at')
+            .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
             .eq('id', user.id)
             .single()
           
@@ -168,12 +171,14 @@ export async function middleware(request: NextRequest) {
             trialEndsAt = profile?.trial_ends_at
             isBeta = profile?.is_beta ?? false
             betaExpiresAt = profile?.beta_expires_at
+            quizFirstEnabled = profile?.quiz_first_enabled ?? false
+            defaultEntryPath = profile?.default_entry_path ?? null
           }
         } else {
           // Fallback to anon key (may be blocked by RLS)
           const { data: profile, error } = await supabase
             .from('profiles')
-            .select('subscription_status, trial_ends_at, is_beta, beta_expires_at')
+            .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
             .eq('id', user.id)
             .single()
           
@@ -185,6 +190,8 @@ export async function middleware(request: NextRequest) {
             trialEndsAt = profile?.trial_ends_at
             isBeta = profile?.is_beta ?? false
             betaExpiresAt = profile?.beta_expires_at
+            quizFirstEnabled = profile?.quiz_first_enabled ?? false
+            defaultEntryPath = profile?.default_entry_path ?? null
           }
         }
 
@@ -201,6 +208,18 @@ export async function middleware(request: NextRequest) {
         const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
 
         if (userHasAccess) {
+          // Quiz-first routing: only when quiz_first_enabled = true
+          if (quizFirstEnabled === true) {
+            if (defaultEntryPath === 'quiz') {
+              return NextResponse.redirect(new URL('/quiz', request.url))
+            } else if (defaultEntryPath === 'tutor') {
+              return NextResponse.redirect(new URL('/tutor', request.url))
+            } else {
+              // No saved preference — show entry choice screen
+              return NextResponse.redirect(new URL('/entry', request.url))
+            }
+          }
+          // Default: quiz_first_enabled = false or not present → /tutor (existing behavior)
           return NextResponse.redirect(new URL('/tutor', request.url))
         } else {
           // No active subscription, redirect to payment required
