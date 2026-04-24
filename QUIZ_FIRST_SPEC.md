@@ -1,9 +1,9 @@
 # ForgeNursing Quiz-First Entry Path — Product Specification
 
-**Status:** DRAFT — For Review, No Implementation  
-**Date:** 2026-04-16  
+**Status:** APPROVED — Implementation Authorized (V1 Phase 1 only)  
+**Date:** 2026-04-24  
 **Author:** Engineering  
-**Version:** 1.0
+**Version:** 1.1 — Revisions applied, product decisions documented
 
 ---
 
@@ -535,21 +535,21 @@ DIFFICULTY: Rate 1-5 where:
 Respond with ONLY valid JSON. No markdown, no explanation, no preamble.
 
 {
-  "question_stem": "A 68-year-old patient with heart failure is admitted with complaints of increasing shortness of breath. The nurse notes bilateral crackles, 3+ pitting edema, and a weight gain of 4 kg over 3 days. Which action should the nurse take FIRST?",
+  "question_stem": "A nurse is caring for four postoperative patients. Which patient should the nurse assess FIRST?",
   "options": [
-    {"label": "A", "text": "Administer the prescribed furosemide IV push"},
-    {"label": "B", "text": "Elevate the head of the bed to high Fowler's position"},
-    {"label": "C", "text": "Restrict the patient's fluid intake to 1500 mL/day"},
-    {"label": "D", "text": "Obtain a daily weight and compare to baseline"}
+    {"label": "A", "text": "A patient 2 hours post-op from a total knee replacement reporting pain of 6/10"},
+    {"label": "B", "text": "A patient 4 hours post-op from a cholecystectomy with a temperature of 100.2°F"},
+    {"label": "C", "text": "A patient 1 hour post-op from a thyroidectomy reporting increasing neck tightness"},
+    {"label": "D", "text": "A patient 6 hours post-op from an appendectomy requesting to ambulate"}
   ],
-  "correct_answer": "B",
-  "rationale_correct": "Elevating the head of the bed to high Fowler's position is the priority first action because it immediately reduces preload by pooling blood in the lower extremities and improves diaphragmatic excursion. Using ABCs, breathing is the immediate threat — crackles indicate pulmonary congestion impairing gas exchange. Positioning is a nursing-independent action that provides immediate relief while awaiting medication effects.",
+  "correct_answer": "C",
+  "rationale_correct": "Post-thyroidectomy neck tightness suggests hematoma formation, which can compress the trachea and cause airway obstruction — a life-threatening emergency. Using ABCs, airway is always the highest priority. This patient needs immediate assessment for signs of respiratory compromise (stridor, dyspnea, swelling).",
   "rationale_incorrect": {
-    "A": "Furosemide is appropriate but requires a physician order verification and takes 5-15 minutes to take effect. Students often jump to medication first, but NCLEX prioritizes immediate nursing actions (positioning) before pharmacological interventions.",
-    "C": "Fluid restriction is a long-term management strategy, not a first action for acute respiratory distress. This addresses the root cause but does not relieve the immediate breathing difficulty.",
-    "D": "Daily weights are important for monitoring but the patient already has documented weight gain. Assessment data is already available — the nurse needs to ACT on it, not reassess what is already known."
+    "A": "Pain of 6/10 is expected 2 hours post-op from a total knee replacement and is not life-threatening. Students often prioritize pain because it feels urgent, but NCLEX ranks physiological threats (airway) above comfort.",
+    "B": "A low-grade fever of 100.2°F at 4 hours post-op is a common inflammatory response and does not indicate an emergency. Students may confuse this with infection, but infection-related fever typically presents 48-72 hours post-op.",
+    "D": "Requesting to ambulate 6 hours post-appendectomy is a positive sign of recovery. This patient is stable and can wait. Students sometimes worry about post-op mobility, but this is a routine request."
   },
-  "nclex_category": "Physiological Adaptation",
+  "nclex_category": "Priority Setting",
   "difficulty": 3
 }
 </output_format>
@@ -585,6 +585,8 @@ You are ForgeNursing Quiz Generator. You create single NCLEX-style multiple-choi
 Generate a question from the following NCLEX Client Needs category:
 
 Category: {{SELECTED_CATEGORY}}
+
+<!-- NCLEX Client Needs percentages sourced from: NCSBN NCLEX-RN Test Plan, Effective April 2023. Next update expected March 31, 2026. -->
 
 NCLEX Client Needs categories and their approximate exam weight:
 - Safe and Effective Care Environment
@@ -1120,7 +1122,7 @@ signup
 **Target conversion rates (Phase 1):**
 - entry_choice → first_quiz_started: >70% (of those who chose quiz)
 - first_quiz_started → first_quiz_completed: >60%
-- first_quiz_completed → D1_return: >30% (this is the advance criterion)
+- first_quiz_completed → D1_return: >15% (this is the advance criterion)
 
 ---
 
@@ -1147,9 +1149,11 @@ WHERE id = NEW.id;
 - Alert if error rate on `/api/quiz/generate` exceeds 5%
 
 **Advance criteria to Phase 2:**
-- D1 return rate ≥ 30% for quiz-first users (vs current ~6% baseline: 2/33)
+- D1 return rate ≥ 15% for quiz-first users (vs current ~6% baseline: 2/33)
 - Quiz completion rate ≥ 50%
 - No P0 bugs in quiz flow
+- Claude API cost within 2x of projected ($0.05/quiz)
+- Minimum 30 new signups have reached the entry screen
 - Claude API cost within 2x of projected ($0.05/quiz)
 
 ### Phase 2: Existing Trial Users (Opt-In)
@@ -1439,7 +1443,22 @@ UPDATE profiles SET quiz_first_enabled = false;
 2. Analyze generated questions: review 100 random questions for clinical accuracy, distractor quality, difficulty distribution.
 3. Iterate on prompts (Section 4) based on findings.
 4. If prompt iteration doesn't fix quality: consider licensing a question bank (Lippincott, Saunders) for V1 and using AI generation only for document-specific questions.
-5. Rollback to tutor-only if quality cannot be resolved within 2 weeks.
+5. Rollback to tutor-only if quality threshold is not met (see below).
+
+**Quality Acceptance Criteria (blocking for Phase 2 advancement):**
+
+Before advancing past Phase 1, founder manually reviews a sample of 30 randomly selected generated questions using this rubric (1-5 scale):
+
+| Dimension | Description | Threshold |
+|-----------|-------------|-----------|
+| Clinical accuracy | Is the correct answer actually correct? | ≥ 4.0/5 average |
+| Distractor plausibility | Are wrong answers reflective of real misconceptions? | ≥ 3.5/5 average |
+| NCLEX-style adherence | Does it read like an NCLEX question? | ≥ 3.5/5 average |
+| Difficulty calibration | Appropriate for the user's program level? | ≥ 3.5/5 average |
+
+If threshold is not met, pause Phase 2 rollout and iterate prompts before proceeding.
+
+**Reviewer:** Michael (founder) — former Navy Hospital Corpsman, FMF. Nursing clinical background adequate for clinical accuracy review.
 
 ---
 
@@ -1561,4 +1580,34 @@ These are genuinely open decisions that require product input before implementat
 
 ---
 
-*End of specification. This document is for review only. No implementation code has been written.*
+---
+
+## Appendix C: Product Owner Decisions
+
+The following decisions were made by Michael (founder) on April 24, 2026 and are authoritative for V1 implementation.
+
+**Q1: Quiz length** — Fixed 10 questions. No user selection. No adaptive length.
+
+**Q2: Free tier limits** — No free tier in V1. Quiz is available to trialing users (during 7-day trial) and paid subscribers only. Access gating uses the existing `hasAccess()` middleware — same rules as the tutor.
+
+**Q3: Tutor access during quiz** — Sequential only with "Dig Deeper" handoff as described in Section 1.5 of this spec. No split-screen. Quiz session is saved when user digs deeper; they return via "Back to Quiz" in tutor header.
+
+**Q4: Pricing** — Same tier. Quiz and tutor are both included in all plans (Monthly $24.99, Semester $89, Annual $149). No separate quiz SKU. No premium add-on.
+
+**Q5: Pre-generated question bank** — AI-only for V1. Every question is generated on-the-fly via Claude. No pre-seeded bank. Post-V1, consider building a bank organically from high-quality generated questions (identified by user performance data).
+
+**Q6: Spaced repetition** — Not implemented in V1. Missed questions are captured in `quiz_questions` table (source data for future SRS), but no resurface logic. V2 feature.
+
+**Q7: Leaderboard / gamification** — None for V1. No personal stats dashboard, no competitive features.
+
+**Q8: Study mode vs test mode** — Study mode only. Rationale displays immediately after each answer. No exam-simulation mode in V1.
+
+**Q9: Question deduplication** — Within-session only. Previous question stems in the current session are passed to the generation prompt to prevent repeats. Cross-session deduplication deferred to V2.
+
+**Q10: Mobile app considerations** — No native app planned. Current API-first architecture is sufficient. No additional work for V1.
+
+— Michael | April 24, 2026
+
+---
+
+*End of specification. Implementation authorized per Part D of the revision prompt. Feature flag `quiz_first_enabled` remains `false` on all production profiles until explicit Phase 1 activation.*
