@@ -5,6 +5,10 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/emails/process-trial-expiration",
+      "schedule": "0 12 * * *"
+    },
+    {
       "path": "/api/emails/process-welcome-queue",
       "schedule": "15 * * * *"
     },

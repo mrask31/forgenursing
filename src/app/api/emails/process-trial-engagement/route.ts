@@ -93,22 +93,8 @@ export async function POST(request: Request) {
       if (!users || users.length === 0) continue
 
       for (const user of users) {
-        let emailId: string | null = null
         try {
-          const { data: queueData } = await supabase.rpc('queue_trial_expiration_email', {
-            p_user_id: user.user_id,
-            p_email: user.email,
-            p_email_type: day.emailType,
-            p_trial_ends_at: user.trial_ends_at,
-            p_questions_answered: 0,
-          })
-
-          emailId = Array.isArray(queueData) ? (queueData[0]?.id ?? null) : (queueData?.id ?? null)
-
-          if (!emailId) {
-            throw new Error(`queue_trial_expiration_email returned no ID for ${user.email} (${day.emailType}) — skipping send to avoid untracked duplicate`)
-          }
-
+          // Send the email directly — do NOT queue into trial_expiration_emails
           const { data: emailData, error: emailError } = await resend.emails.send({
             from: 'ForgeNursing <trial@forgenursing.com>',
             to: user.email,
@@ -118,30 +104,21 @@ export async function POST(request: Request) {
 
           if (emailError) throw emailError
 
-          const { error: markError } = await supabase.rpc('mark_trial_expiration_email_sent', {
-            p_email_id: emailId,
-            p_resend_email_id: emailData?.id || null,
-            p_success: true,
-            p_error_message: null,
-          })
-          if (markError) {
-            console.error(`[Trial Engagement] Failed to mark email as sent for ${user.email} (${day.emailType}):`, markError)
-          }
+          // Track in welcome_emails_sent (NOT trial_expiration_emails)
+          await supabase.from('welcome_emails_sent').upsert(
+            {
+              user_id: user.user_id,
+              email: user.email,
+              type: day.emailType,
+              sent_at: new Date().toISOString(),
+              email_id: emailData?.id || null,
+              status: 'sent',
+            },
+            { onConflict: 'user_id,type' }
+          )
 
           results.sent[day.key]++
         } catch (error: any) {
-          if (emailId) {
-            const { error: markError } = await supabase.rpc('mark_trial_expiration_email_sent', {
-              p_email_id: emailId,
-              p_resend_email_id: null,
-              p_success: false,
-              p_error_message: error.message || 'Unknown error',
-            })
-            if (markError) {
-              console.error(`[Trial Engagement] Failed to mark email as failed for ${user.email} (${day.emailType}):`, markError)
-            }
-          }
-
           results.errors.push({
             email: user.email,
             type: day.emailType,

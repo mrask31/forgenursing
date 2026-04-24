@@ -109,18 +109,44 @@ export async function POST(request: Request) {
     }
 
 
-    // Step 4: Send each email
+    // Step 4: Send each email — ONLY process valid email_type values
+    const VALID_TYPES = ['day_6_reminder', 'day_7_expiration']
+
     for (const item of pendingEmails) {
+      // Reject invalid email_type — do NOT send, mark as invalid
+      if (!VALID_TYPES.includes(item.email_type)) {
+        console.error(`[Trial Expiration] INVALID email_type '${item.email_type}' for ${item.email} — skipping send, marking invalid`)
+        await supabase.rpc('mark_trial_expiration_email_sent', {
+          p_email_id: item.id,
+          p_resend_email_id: null,
+          p_success: false,
+          p_error_message: `Invalid email_type: ${item.email_type}. Only day_6_reminder and day_7_expiration are valid.`,
+        })
+        results.failed++
+        results.errors.push({
+          email: item.email,
+          type: item.email_type,
+          error: `Invalid email_type: ${item.email_type}`,
+        })
+        continue
+      }
+
       try {
         let subject: string
         let html: string
 
-        if (item.email_type === 'day_6_reminder') {
-          subject = 'Your trial ends tomorrow'
-          html = generateDay6Email()
-        } else {
-          subject = 'Your trial has ended'
-          html = generateDay7Email()
+        switch (item.email_type) {
+          case 'day_6_reminder':
+            subject = 'Your trial ends tomorrow'
+            html = generateDay6Email()
+            break
+          case 'day_7_expiration':
+            subject = 'Your trial has ended'
+            html = generateDay7Email()
+            break
+          default:
+            // Should never reach here due to VALID_TYPES check above
+            throw new Error(`Unexpected email_type: ${item.email_type}`)
         }
 
         const { data: emailData, error: emailError } = await resend.emails.send({
