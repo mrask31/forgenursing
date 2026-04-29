@@ -93,6 +93,13 @@ export default function TutorSession({
     if (typeof window === 'undefined') return
     if (localStorage.getItem('forge-onboarding-completed')) return
 
+    // If the tutor opened with an explicit sessionId, such as quiz Dig Deeper,
+    // do not inject a canned starter scenario into that existing session.
+    const hasExplicitSession = Boolean(propSessionId) || new URLSearchParams(window.location.search).has('sessionId')
+    if (hasExplicitSession) {
+      return
+    }
+
     // Check if user has any prior sessions
     const checkAndTrigger = async () => {
       try {
@@ -780,4 +787,3 @@ export default function TutorSession({
     </div>
   )
 }
-
