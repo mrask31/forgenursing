@@ -214,11 +214,11 @@ export default function QuizResultsClient() {
             Start New Quiz
           </button>
           <button
-            onClick={() => router.push('/tutor')}
+            onClick={() => router.push('/entry')}
             className="w-full rounded-lg font-semibold text-base border-2"
             style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '56px' }}
           >
-            Back to Home
+            Back to Study Options
           </button>
         </div>
       </div>
