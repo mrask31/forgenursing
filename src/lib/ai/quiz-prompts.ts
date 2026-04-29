@@ -174,6 +174,12 @@ Generate a question from the following NCLEX Client Needs category:
 
 Category: ${category}
 
+STRICT CATEGORY LOCK:
+- The question must test ${category}.
+- The returned JSON field nclex_category must be exactly "${category}".
+- Do not drift into another category even if the clinical scenario overlaps with prioritization, safety, labs, or physiology.
+- If the selected category is Pharmacological Therapies, the core decision must involve medication administration, adverse effects, contraindications, expected outcomes, drug toxicity, or medication safety.
+
 NCLEX Client Needs categories and their approximate exam weight:
 - Safe and Effective Care Environment
   - Management of Care (15-21%): delegation, prioritization, ethical/legal, advocacy, case management
