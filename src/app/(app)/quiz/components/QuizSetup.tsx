@@ -84,7 +84,12 @@ export default function QuizSetup({
         </select>
       </div>
 
-      <p className="text-sm text-gray-400">10 questions · ~8 minutes</p>
+      <div className="space-y-1">
+        <p className="text-sm text-gray-400">10 questions · ~8 minutes</p>
+        <p className="text-[11px] leading-snug text-gray-400">
+          AI-generated NCLEX-style practice questions for educational study and clinical reasoning. Results do not guarantee exam performance.
+        </p>
+      </div>
 
       <button
         onClick={onStart}
