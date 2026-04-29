@@ -74,12 +74,30 @@ export async function POST(req: NextRequest) {
       programLevel = profile.program_level as 'LPN' | 'ADN' | 'BSN' | 'MSN';
     }
 
-    // Get previous question stems for deduplication
+    // Get previous question stems for deduplication.
+    // Include current session stems plus recent user-level stems so question 1 of a new quiz
+    // does not repeatedly generate the same high-probability NCLEX scenario.
     const { data: prevQuestions } = await supabase
       .from('quiz_questions')
       .select('question_stem')
       .eq('session_id', sessionId);
-    const previousStems = (prevQuestions ?? []).map((q: any) => q.question_stem);
+
+    const { data: recentUserQuestions } = await supabase
+      .from('quiz_questions')
+      .select('question_stem, created_at, quiz_sessions!inner(user_id)')
+      .eq('quiz_sessions.user_id', user.id)
+      .neq('session_id', sessionId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    const dedupeStemSet = new Set<string>();
+    for (const question of [...(prevQuestions ?? []), ...(recentUserQuestions ?? [])]) {
+      const stem = (question as any)?.question_stem;
+      if (typeof stem === 'string' && stem.trim().length > 0) {
+        dedupeStemSet.add(stem.trim());
+      }
+    }
+    const previousStems = Array.from(dedupeStemSet).slice(0, 50);
 
     let prompt: string;
     let sourceChunkText: string | null = null;
