@@ -131,6 +131,10 @@ export default function QuizRationale({
         <span>{'●'.repeat(difficulty)}{'○'.repeat(5 - difficulty)}</span>
       </div>
 
+      <p className="text-center text-[10px] leading-snug text-gray-400">
+        AI-generated rationale • Educational use only
+      </p>
+
       {digDeeperError && (
         <p className="text-xs text-red-600">{digDeeperError}</p>
       )}
