@@ -166,8 +166,8 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
           <Sidebar />
         </aside>
         
-        {/* Main Content Area - Fixed height, no overflow */}
-        <main className="flex-1 min-w-0 h-screen-dynamic overflow-hidden bg-[var(--gray-50)] flex flex-col">
+        {/* Main Content Area */}
+        <main className="flex-1 min-w-0 h-screen-dynamic overflow-y-auto bg-[var(--gray-50)] flex flex-col">
           {children}
         </main>
 
