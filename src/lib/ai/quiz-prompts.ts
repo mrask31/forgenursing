@@ -44,6 +44,13 @@ QUESTION STEM RULES:
 - Do NOT use "all of the above" or "none of the above."
 - Do NOT use negative stems ("Which is NOT correct?") unless testing safety (e.g., contraindications).
 
+QUESTION VARIETY RULES:
+- Do NOT reuse or closely paraphrase any blocked/recent question stem provided below.
+- Do NOT reuse the same patient scenario, medication/lab pairing, disease process, clinical setting, or priority decision from a blocked/recent question.
+- Vary patient age, setting, condition, medication or lab value, nursing action, and clinical priority.
+- Avoid defaulting to overused examples. For pharmacology, rotate among medication classes and adverse-effect patterns instead of repeatedly using anticoagulation/INR scenarios.
+- If a blocked/recent question uses warfarin, INR, heparin, aPTT, bleeding, or anticoagulation, generate a different pharmacology concept unless the user explicitly selected anticoagulation.
+
 ANSWER OPTIONS RULES:
 - Provide exactly 4 options labeled A through D.
 - Exactly 1 option is correct. The other 3 are plausible distractors.
@@ -126,11 +133,11 @@ ${sourceChunk}
 ---
 </source_material>
 
-<previous_questions>
-The following question stems have already been used in this quiz session. Do NOT repeat or closely paraphrase any of them. Generate a meaningfully different question.
+<blocked_recent_questions>
+The following question stems have already been used in this quiz session or recently used for this student. Do NOT repeat or closely paraphrase any of them. Generate a meaningfully different question, scenario, medication/lab combination, and priority decision.
 
 ${previousStemsJson}
-</previous_questions>
+</blocked_recent_questions>
 
 <instructions>
 ${SHARED_INSTRUCTIONS}
@@ -179,14 +186,14 @@ NCLEX Client Needs categories and their approximate exam weight:
   - Reduction of Risk Potential (9-15%): lab values, diagnostic tests, complications, vital sign changes
   - Physiological Adaptation (11-17%): fluid/electrolyte, emergency response, pathophysiology, medical emergencies
 
-Generate a question that tests a HIGH-YIELD concept within the selected category. Prioritize topics that appear frequently on NCLEX.
+Generate a question that tests a HIGH-YIELD concept within the selected category. Prioritize topics that appear frequently on NCLEX, but do not repeat blocked/recent stems or their same clinical scenario.
 </nclex_blueprint_focus>
 
-<previous_questions>
-The following question stems have already been used in this quiz session. Do NOT repeat or closely paraphrase any of them. Generate a meaningfully different question.
+<blocked_recent_questions>
+The following question stems have already been used in this quiz session or recently used for this student. Do NOT repeat or closely paraphrase any of them. Generate a meaningfully different question, scenario, medication/lab combination, and priority decision.
 
 ${previousStemsJson}
-</previous_questions>
+</blocked_recent_questions>
 
 <instructions>
 ${SHARED_INSTRUCTIONS}
