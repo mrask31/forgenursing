@@ -91,8 +91,7 @@ export default function QuizRationale({
   }
 
   return (
-    <div className="space-y-4 pb-28 sm:pb-8">
-      {/* Result banner */}
+    <div className="space-y-4 pb-40 sm:pb-8">
       <div
         className="rounded-lg p-4 text-white"
         style={{ backgroundColor: isCorrect ? '#22C55E' : '#EF4444' }}
@@ -111,7 +110,6 @@ export default function QuizRationale({
         )}
       </div>
 
-      {/* Correct rationale */}
       <div>
         <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#0B2545' }}>
           Why {correctAnswer} is correct
@@ -119,7 +117,6 @@ export default function QuizRationale({
         <p className="text-sm text-gray-700 leading-relaxed">{rationaleCorrect}</p>
       </div>
 
-      {/* Incorrect rationale (only show user's wrong answer explanation) */}
       {!isCorrect && rationaleIncorrect[userAnswer] && (
         <div>
           <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#EF4444' }}>
@@ -129,40 +126,37 @@ export default function QuizRationale({
         </div>
       )}
 
-      {/* Category & difficulty */}
       <div className="flex items-center gap-3 text-xs text-gray-400">
         <span className="px-2 py-1 rounded bg-gray-100">{nclexCategory}</span>
         <span>{'●'.repeat(difficulty)}{'○'.repeat(5 - difficulty)}</span>
       </div>
 
-      <div className="space-y-3 pt-2">
-        {/* Dig Deeper (only on wrong answers) */}
-        {!isCorrect && (
-          <div className="rounded-lg border border-gray-200 p-3 space-y-2">
-            <p className="text-sm text-gray-600">🧠 Want to understand deeper?</p>
-            {digDeeperError && (
-              <p className="text-xs text-red-600">{digDeeperError}</p>
-            )}
+      {digDeeperError && (
+        <p className="text-xs text-red-600">{digDeeperError}</p>
+      )}
+
+      <div className="sticky bottom-0 z-20 bg-white px-1 pt-3 pb-6 sm:static sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-2">
+        <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-3 sm:border-0 sm:p-0">
+          <button
+            onClick={onNext}
+            className="w-full rounded-lg text-white font-semibold text-base transition-all shadow-sm"
+            style={{ backgroundColor: '#0D8F9C', minHeight: '52px' }}
+          >
+            {isLast ? 'See Results' : 'Next Question →'}
+          </button>
+
+          {!isCorrect && (
             <button
               type="button"
               onClick={handleDigDeeper}
               disabled={isDiggingDeeper}
-              className="block w-full rounded-lg text-center text-white font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
+              className="block w-full rounded-lg border text-center font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}
             >
               {isDiggingDeeper ? 'Opening Tutor…' : 'Dig Deeper with Tutor →'}
             </button>
-          </div>
-        )}
-
-        {/* Next button */}
-        <button
-          onClick={onNext}
-          className="w-full rounded-lg text-white font-semibold text-base transition-all shadow-sm"
-          style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}
-        >
-          {isLast ? 'See Results' : 'Next Question →'}
-        </button>
+          )}
+        </div>
       </div>
     </div>
   )
