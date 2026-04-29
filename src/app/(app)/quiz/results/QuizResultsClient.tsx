@@ -130,6 +130,9 @@ export default function QuizResultsClient() {
             />
           </div>
           <p className="text-sm text-gray-500">{pct}%</p>
+          <p className="text-[11px] leading-snug text-gray-400">
+            Scores reflect AI-generated practice questions for study only and do not predict exam performance.
+          </p>
         </div>
 
         {/* Category breakdown */}
