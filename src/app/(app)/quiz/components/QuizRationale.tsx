@@ -91,7 +91,7 @@ export default function QuizRationale({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-28 sm:pb-8">
       {/* Result banner */}
       <div
         className="rounded-lg p-4 text-white"
@@ -135,33 +135,35 @@ export default function QuizRationale({
         <span>{'●'.repeat(difficulty)}{'○'.repeat(5 - difficulty)}</span>
       </div>
 
-      {/* Dig Deeper (only on wrong answers) */}
-      {!isCorrect && (
-        <div className="border-t border-b border-gray-200 py-3 space-y-2">
-          <p className="text-sm text-gray-600">🧠 Want to understand deeper?</p>
-          {digDeeperError && (
-            <p className="text-xs text-red-600">{digDeeperError}</p>
-          )}
-          <button
-            type="button"
-            onClick={handleDigDeeper}
-            disabled={isDiggingDeeper}
-            className="block w-full rounded-lg text-center text-white font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
-          >
-            {isDiggingDeeper ? 'Opening Tutor…' : 'Dig Deeper with Tutor →'}
-          </button>
-        </div>
-      )}
+      <div className="space-y-3 pt-2">
+        {/* Dig Deeper (only on wrong answers) */}
+        {!isCorrect && (
+          <div className="rounded-lg border border-gray-200 p-3 space-y-2">
+            <p className="text-sm text-gray-600">🧠 Want to understand deeper?</p>
+            {digDeeperError && (
+              <p className="text-xs text-red-600">{digDeeperError}</p>
+            )}
+            <button
+              type="button"
+              onClick={handleDigDeeper}
+              disabled={isDiggingDeeper}
+              className="block w-full rounded-lg text-center text-white font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
+            >
+              {isDiggingDeeper ? 'Opening Tutor…' : 'Dig Deeper with Tutor →'}
+            </button>
+          </div>
+        )}
 
-      {/* Next button */}
-      <button
-        onClick={onNext}
-        className="w-full rounded-lg text-white font-semibold text-base transition-all"
-        style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}
-      >
-        {isLast ? 'See Results' : 'Next Question →'}
-      </button>
+        {/* Next button */}
+        <button
+          onClick={onNext}
+          className="w-full rounded-lg text-white font-semibold text-base transition-all shadow-sm"
+          style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}
+        >
+          {isLast ? 'See Results' : 'Next Question →'}
+        </button>
+      </div>
     </div>
   )
 }
