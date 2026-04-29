@@ -39,6 +39,10 @@ export default function QuizQuestion({
         })}
       </div>
 
+      <p className="text-center text-[10px] leading-snug text-gray-400">
+        AI-generated NCLEX-style practice • Educational use only
+      </p>
+
       <div className="h-28 sm:hidden" aria-hidden="true" />
 
       <div className="sticky bottom-0 z-20 bg-white px-1 pt-3 pb-6 sm:static sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-0">
