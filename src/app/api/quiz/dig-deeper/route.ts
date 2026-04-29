@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
 
+function compactSentence(value: string | null | undefined, maxLength = 170): string {
+  if (!value) return '';
+  const firstSentence = value.trim().split(/(?<=[.!?])\s+/)[0] || value.trim();
+  if (firstSentence.length <= maxLength) return firstSentence;
+  return `${firstSentence.slice(0, maxLength).trim()}…`;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = createClient();
@@ -59,17 +66,17 @@ export async function POST(req: NextRequest) {
         ? (question.rationale_incorrect as Record<string, string>)[selectedAnswer]
         : undefined;
 
+    const keyCue = compactSentence(question.rationale_correct, 160);
+    const trap = compactSentence(selectedRationale, 140);
+
     const seededContent = [
-      'Let’s fix the reasoning on the question you missed.',
-      '',
+      'Let’s fix this missed question.',
       `You chose **${selectedAnswer}${selectedOptionText ? `: ${selectedOptionText}` : ''}**.`,
-      `The better answer was **${question.correct_answer}${correctOptionText ? `: ${correctOptionText}` : ''}**.`,
-      '',
-      `The key clinical cue was: ${question.rationale_correct}`,
-      selectedRationale ? `Why your answer was tempting but unsafe: ${selectedRationale}` : null,
-      '',
-      'Now let’s make this stick: what cue in the question should have changed your priority?'
-    ].filter(Boolean).join('\n');
+      `Better answer: **${question.correct_answer}${correctOptionText ? `: ${correctOptionText}` : ''}**.`,
+      keyCue ? `Key cue: ${keyCue}` : null,
+      trap ? `Trap: ${trap}` : null,
+      'Your move: what cue should have changed your priority?'
+    ].filter(Boolean).join('\n\n');
 
     const { data: chat, error: chatError } = await supabase
       .from('chats')
