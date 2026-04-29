@@ -177,6 +177,12 @@
   box-shadow: 0 4px 12px rgba(11, 37, 69, 0.08);
 }
 
+@media (max-width: 640px) {
+  .tutor-card:last-child {
+    margin-bottom: 9rem;
+  }
+}
+
 pre, code {
   white-space: pre-wrap !important;
   word-break: break-word !important;
