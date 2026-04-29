@@ -111,8 +111,8 @@ export default function QuizResultsClient() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-6 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div className="space-y-6">
+    <div className="min-h-screen px-4 py-6 pb-40 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      <div className="space-y-6 pb-24">
         {/* Header */}
         <h1 className="text-2xl font-bold text-center" style={{ color: '#0B2545' }}>
           Quiz Complete! 🎉
