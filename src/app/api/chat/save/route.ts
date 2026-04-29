@@ -9,6 +9,19 @@ const isValidUUID = (str: string): boolean => {
   return uuidRegex.test(str);
 };
 
+const looksLikeStaleTutorAutoSend = (content: string): boolean => {
+  const normalized = content.trim().toLowerCase();
+
+  return (
+    normalized.startsWith("you're caring for") ||
+    normalized.startsWith('you are caring for') ||
+    normalized.startsWith('a nurse is caring for') ||
+    normalized.startsWith('a client') ||
+    normalized.includes("what's your next action") ||
+    normalized.includes('what do you assess first')
+  );
+};
+
 export async function POST(req: Request) {
   try {
     const { chatId, role, content } = await req.json();
@@ -69,13 +82,30 @@ export async function POST(req: Request) {
 
     const title = (String(content) || 'New Chat').slice(0, 50);
 
-    // Get existing chat to preserve mode and selected_note_ids
+    // Get existing chat to preserve mode, selected_note_ids, and metadata
     const { data: existingChat } = await supabase
       .from('chats')
-      .select('mode, selected_note_ids')
+      .select('mode, selected_note_ids, metadata')
       .eq('id', chatId)
       .eq('user_id', user.id)
       .single();
+
+    if (
+      existingChat?.metadata?.source === 'quiz_dig_deeper' &&
+      role === 'user' &&
+      looksLikeStaleTutorAutoSend(String(content))
+    ) {
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('chat_id', chatId)
+        .eq('role', 'user');
+
+      if ((count || 0) === 0) {
+        console.warn('[SAVE] Blocked stale tutor auto-send in quiz dig deeper chat:', { chatId });
+        return NextResponse.json({ ignored: true, reason: 'stale_autosend_blocked' });
+      }
+    }
 
     // Construct payload explicitly with user_id for RLS
     // CRITICAL: user_id MUST be included and match authenticated user for RLS policies
@@ -86,6 +116,7 @@ export async function POST(req: Request) {
       updated_at: new Date().toISOString(),
       mode: existingChat?.mode || 'tutor', // Preserve mode
       selected_note_ids: existingChat?.selected_note_ids || null, // Preserve selected notes
+      metadata: existingChat?.metadata || {}, // Preserve quiz dig deeper metadata and other context
     };
 
     // Verify payload has user_id before upsert
