@@ -237,16 +237,16 @@ export default function SignupPage() {
       
       // Try router.push first, fallback to window.location if it fails
       try {
-        router.push('/tutor')
+        router.push('/entry')
         // If router.push doesn't redirect within 1 second, use window.location
         setTimeout(() => {
           if (window.location.pathname === '/signup') {
-            window.location.href = '/tutor'
+            window.location.href = '/entry'
           }
         }, 1000)
       } catch (error) {
         console.error('[Signup] Router.push error:', error)
-        window.location.href = '/tutor'
+        window.location.href = '/entry'
       }
       return
 
