@@ -1,6 +1,7 @@
 'use client'
 
-import Link from 'next/link'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface QuizRationaleProps {
   isCorrect: boolean
@@ -23,21 +24,60 @@ export default function QuizRationale({
   rationaleIncorrect, nclexCategory, difficulty, sessionId, questionId,
   questionIndex, onNext, isLast,
 }: QuizRationaleProps) {
+  const router = useRouter()
+  const [isDiggingDeeper, setIsDiggingDeeper] = useState(false)
+  const [digDeeperError, setDigDeeperError] = useState<string | null>(null)
   const correctOptionText = options.find(o => o.label === correctAnswer)?.text ?? ''
 
-  const handleDigDeeper = () => {
+  const handleDigDeeper = async () => {
+    if (isDiggingDeeper) return
+
+    setIsDiggingDeeper(true)
+    setDigDeeperError(null)
+
     try {
-      const posthog = require('posthog-js').default
-      posthog.capture('dig_deeper_clicked', {
-        session_id: sessionId,
-        question_id: questionId,
-        question_index: questionIndex,
-        nclex_category: nclexCategory,
-        source: 'rationale_screen',
-        user_answer: userAnswer,
-        correct_answer: correctAnswer,
+      try {
+        const posthog = require('posthog-js').default
+        posthog.capture('dig_deeper_clicked', {
+          session_id: sessionId,
+          question_id: questionId,
+          question_index: questionIndex,
+          nclex_category: nclexCategory,
+          source: 'rationale_screen',
+          user_answer: userAnswer,
+          correct_answer: correctAnswer,
+        })
+      } catch {}
+
+      const response = await fetch('/api/quiz/dig-deeper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          quizSessionId: sessionId,
+          questionId,
+        }),
       })
-    } catch {}
+
+      if (!response.ok) {
+        console.error('[QuizRationale] Dig deeper handoff failed:', await response.text())
+        setDigDeeperError('Could not open tutor. Please try again.')
+        return
+      }
+
+      const data = await response.json()
+      if (!data.chatId) {
+        setDigDeeperError('Could not open tutor. Please try again.')
+        return
+      }
+
+      router.push(`/tutor?sessionId=${data.chatId}`)
+    } catch (error) {
+      console.error('[QuizRationale] Dig deeper error:', error)
+      setDigDeeperError('Could not open tutor. Please try again.')
+    } finally {
+      setIsDiggingDeeper(false)
+    }
   }
 
   return (
@@ -89,14 +129,18 @@ export default function QuizRationale({
       {!isCorrect && (
         <div className="border-t border-b border-gray-200 py-3 space-y-2">
           <p className="text-sm text-gray-600">🧠 Want to understand deeper?</p>
-          <Link
-            href={`/tutor?intent=dig-deeper:${sessionId}:${questionId}`}
+          {digDeeperError && (
+            <p className="text-xs text-red-600">{digDeeperError}</p>
+          )}
+          <button
+            type="button"
             onClick={handleDigDeeper}
-            className="block w-full rounded-lg text-center text-white font-semibold text-sm py-3 transition-all"
+            disabled={isDiggingDeeper}
+            className="block w-full rounded-lg text-center text-white font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
           >
-            Dig Deeper with Tutor →
-          </Link>
+            {isDiggingDeeper ? 'Opening Tutor…' : 'Dig Deeper with Tutor →'}
+          </button>
         </div>
       )}
 
