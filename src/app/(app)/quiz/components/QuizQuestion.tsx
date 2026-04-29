@@ -13,7 +13,7 @@ export default function QuizQuestion({
   stem, options, selectedAnswer, onSelect, onSubmit, submitting,
 }: QuizQuestionProps) {
   return (
-    <div className="space-y-4 pb-32 sm:pb-8">
+    <div className="space-y-4 pb-56 sm:pb-8">
       <div className="rounded-lg border border-gray-200 p-4">
         <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>{stem}</p>
       </div>
@@ -38,6 +38,8 @@ export default function QuizQuestion({
           )
         })}
       </div>
+
+      <div className="h-28 sm:hidden" aria-hidden="true" />
 
       <div className="sticky bottom-0 z-20 bg-white px-1 pt-3 pb-6 sm:static sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-0">
         <button
