@@ -52,30 +52,23 @@ export async function POST(req: NextRequest) {
     const title = `Review Missed Question — ${category}`;
     const options = Array.isArray(question.options) ? question.options : [];
     const selectedAnswer = question.user_answer || 'Not answered';
+    const selectedOptionText = options.find((option: any) => option.label === selectedAnswer)?.text;
+    const correctOptionText = options.find((option: any) => option.label === question.correct_answer)?.text;
     const selectedRationale =
       question.rationale_incorrect && typeof question.rationale_incorrect === 'object'
         ? (question.rationale_incorrect as Record<string, string>)[selectedAnswer]
         : undefined;
 
-    const optionsText = options
-      .map((option: any) => `${option.label}) ${option.text}`)
-      .join('\n');
-
     const seededContent = [
-      'Let’s break down the missed quiz question using clinical judgment and ADPIE.',
+      'Let’s fix the reasoning on the question you missed.',
       '',
-      `Question: ${question.question_stem}`,
+      `You chose **${selectedAnswer}${selectedOptionText ? `: ${selectedOptionText}` : ''}**.`,
+      `The better answer was **${question.correct_answer}${correctOptionText ? `: ${correctOptionText}` : ''}**.`,
       '',
-      'Answer choices:',
-      optionsText || 'No answer choices were saved for this question.',
+      `The key clinical cue was: ${question.rationale_correct}`,
+      selectedRationale ? `Why your answer was tempting but unsafe: ${selectedRationale}` : null,
       '',
-      `You chose: ${selectedAnswer}`,
-      `Correct answer: ${question.correct_answer}`,
-      '',
-      `Why ${question.correct_answer} is correct: ${question.rationale_correct}`,
-      selectedRationale ? `Why ${selectedAnswer} is wrong: ${selectedRationale}` : null,
-      '',
-      'Focus the explanation on priority-setting, safety, and what clinical cue should have changed the decision.'
+      'Now let’s make this stick: what cue in the question should have changed your priority?'
     ].filter(Boolean).join('\n');
 
     const { data: chat, error: chatError } = await supabase
@@ -91,6 +84,12 @@ export async function POST(req: NextRequest) {
           questionId,
           questionIndex: question.question_index,
           nclexCategory: category,
+          questionStem: question.question_stem,
+          options,
+          selectedAnswer,
+          correctAnswer: question.correct_answer,
+          rationaleCorrect: question.rationale_correct,
+          rationaleForSelectedAnswer: selectedRationale || null,
         },
       })
       .select('id, title, session_type, mode')
