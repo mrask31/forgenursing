@@ -90,7 +90,7 @@ export default function QuizRationale({
         <div className="border-t border-b border-gray-200 py-3 space-y-2">
           <p className="text-sm text-gray-600">🧠 Want to understand deeper?</p>
           <Link
-            href={`/tutor?intent=dig-deeper&quizSessionId=${sessionId}&questionId=${questionId}`}
+            href={`/tutor?intent=dig-deeper:${sessionId}:${questionId}`}
             onClick={handleDigDeeper}
             className="block w-full rounded-lg text-center text-white font-semibold text-sm py-3 transition-all"
             style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
