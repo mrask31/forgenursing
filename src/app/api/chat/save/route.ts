@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 // Helper to validate UUID format
 const isValidUUID = (str: string): boolean => {
   const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(str);
 };
 
@@ -103,7 +103,10 @@ export async function POST(req: Request) {
 
       if ((count || 0) === 0) {
         console.warn('[SAVE] Blocked stale tutor auto-send in quiz dig deeper chat:', { chatId });
-        return NextResponse.json({ ignored: true, reason: 'stale_autosend_blocked' });
+        return NextResponse.json(
+          { error: 'Blocked stale auto-send prompt', reason: 'stale_autosend_blocked' },
+          { status: 409 }
+        );
       }
     }
 
