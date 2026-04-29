@@ -66,6 +66,30 @@ export async function POST(req: NextRequest) {
     const selectedCategory = category || session.nclex_category || null;
     const lockedCategory = getCategoryForIndex(questionIndex, selectedCategory);
 
+    // Resume/idempotency guard: if this question already exists and is unanswered,
+    // return it instead of trying to generate and insert a duplicate question_index.
+    const { data: existingQuestion } = await supabase
+      .from('quiz_questions')
+      .select('id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer')
+      .eq('session_id', sessionId)
+      .eq('question_index', questionIndex)
+      .maybeSingle();
+
+    if (existingQuestion && !existingQuestion.answered_at && !existingQuestion.user_answer) {
+      return NextResponse.json({
+        question: {
+          id: existingQuestion.id,
+          session_id: existingQuestion.session_id,
+          question_index: existingQuestion.question_index,
+          question_stem: existingQuestion.question_stem,
+          options: existingQuestion.options,
+          nclex_category: existingQuestion.nclex_category,
+          difficulty: existingQuestion.difficulty,
+        },
+        resumed: true,
+      });
+    }
+
     // Get user's program level
     let programLevel: 'LPN' | 'ADN' | 'BSN' | 'MSN' = 'ADN';
     const { data: profile } = await supabase
