@@ -55,6 +55,7 @@ export default function QuizPageClient() {
   const [resumeSession, setResumeSession] = useState<any>(null)
 
   const initRef = useRef(false)
+  const prefetchingIndexesRef = useRef<Set<string>>(new Set())
 
   // Check for documents and in-progress sessions on mount
   useEffect(() => {
@@ -88,6 +89,48 @@ export default function QuizPageClient() {
     init()
   }, [])
 
+  const prefetchQuestions = useCallback((sessId: string, startIndex: number, count = 2) => {
+    for (let offset = 0; offset < count; offset++) {
+      const targetIndex = startIndex + offset
+      if (targetIndex < 0 || targetIndex >= totalQuestions) continue
+
+      const prefetchKey = `${sessId}:${targetIndex}`
+      if (prefetchingIndexesRef.current.has(prefetchKey)) continue
+      prefetchingIndexesRef.current.add(prefetchKey)
+
+      fetch('/api/quiz/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: sessId,
+          questionIndex: targetIndex,
+          sourceType,
+          category: category === 'All Categories' ? null : category,
+        }),
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}))
+            console.warn('[Quiz Prefetch] Failed:', {
+              sessionId: sessId,
+              questionIndex: targetIndex,
+              error: data.error || res.statusText,
+            })
+          }
+        })
+        .catch((err) => {
+          console.warn('[Quiz Prefetch] Error:', {
+            sessionId: sessId,
+            questionIndex: targetIndex,
+            error: err?.message || err,
+          })
+        })
+        .finally(() => {
+          prefetchingIndexesRef.current.delete(prefetchKey)
+        })
+    }
+  }, [sourceType, category, totalQuestions])
+
   const generateQuestion = useCallback(async (sessId: string, index: number) => {
     setPhase('loading')
     setError(null)
@@ -116,11 +159,14 @@ export default function QuizPageClient() {
       setCurrentIndex(index)
       setQuestionStartTime(Date.now())
       setPhase('question')
+
+      // Best-effort background prefetch so the next questions are usually ready instantly.
+      prefetchQuestions(sessId, index + 1, 2)
     } catch (err: any) {
       setError(err.message || 'Failed to generate question. Please try again.')
       setPhase('setup')
     }
-  }, [sourceType, category])
+  }, [sourceType, category, prefetchQuestions])
 
   const handleStart = useCallback(async () => {
     setLoading(true)
@@ -196,6 +242,9 @@ export default function QuizPageClient() {
       setAnswerResult(result)
       setPhase('rationale')
 
+      // Keep the next questions warm while the student reviews the rationale.
+      prefetchQuestions(sessionId, currentIndex + 1, 2)
+
       // PostHog
       try {
         const timeSpent = Math.round((Date.now() - questionStartTime) / 1000)
@@ -218,7 +267,7 @@ export default function QuizPageClient() {
     } finally {
       setLoading(false)
     }
-  }, [currentQuestion, selectedAnswer, sessionId, currentIndex, questionStartTime, sourceType])
+  }, [currentQuestion, selectedAnswer, sessionId, currentIndex, questionStartTime, sourceType, prefetchQuestions])
 
   const handleNext = useCallback(async () => {
     if (!sessionId) return
