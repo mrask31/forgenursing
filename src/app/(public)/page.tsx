@@ -285,6 +285,9 @@ export default function HomePage() {
               Beta access is free. Pricing starts at $89/semester after launch.
             </p>
           )}
+          <p className="max-w-2xl mx-auto text-center text-xs text-[#1E2D3D]/45 mt-6 leading-relaxed">
+            ForgeNursing is a study aid. Subscription purchase does not guarantee passing any course, exam, NCLEX®, licensing exam, or certification.
+          </p>
         </div>
       </section>
 
@@ -294,9 +297,9 @@ export default function HomePage() {
       {/* Disclaimer */}
       <section className="bg-[#F7F9FB] py-8 sm:py-10" aria-label="Disclaimer">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xs text-[#1E2D3D]/50">
-            <span className="hidden sm:inline">ForgeNursing supports clinical reasoning and supplements your nursing education. It does not replace instruction, clinical training, or licensed NCLEX prep resources.</span>
-            <span className="sm:hidden">Supplemental study tool — not a replacement for instruction or clinical training.</span>
+          <p className="text-xs text-[#1E2D3D]/50 leading-relaxed">
+            <span className="hidden sm:inline">ForgeNursing provides AI-generated NCLEX-style study tools for educational practice and clinical reasoning. It supplements, but does not replace, instruction, clinical training, official licensure preparation materials, or faculty guidance. NCLEX® is a registered trademark of the National Council of State Boards of Nursing, Inc. ForgeNursing is not affiliated with, endorsed by, or sponsored by NCSBN.</span>
+            <span className="sm:hidden">AI-generated NCLEX-style study aid. Not affiliated with NCSBN. No exam outcome guaranteed.</span>
           </p>
         </div>
       </section>
