@@ -63,6 +63,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Session is not in progress' }, { status: 400 });
     }
 
+    const selectedCategory = category || session.nclex_category || null;
+    const lockedCategory = getCategoryForIndex(questionIndex, selectedCategory);
+
     // Get user's program level
     let programLevel: 'LPN' | 'ADN' | 'BSN' | 'MSN' = 'ADN';
     const { data: profile } = await supabase
@@ -135,17 +138,16 @@ export async function POST(req: NextRequest) {
         console.error('[Quiz Generate] RAG error, falling back to generic:', ragError);
       }
 
-      if (sourceChunkText) {
+      if (sourceChunkText && !selectedCategory) {
         prompt = buildQuizPrompt(programLevel, sourceChunkText, previousStems);
       } else {
-        // Fallback to generic if RAG fails
-        const cat = getCategoryForIndex(questionIndex, category);
-        prompt = buildGenericQuizPrompt(programLevel, cat, previousStems);
+        // Fallback to generic if RAG fails or a specific category was selected.
+        // Category-selected quizzes must stay locked to that category.
+        prompt = buildGenericQuizPrompt(programLevel, lockedCategory, previousStems);
       }
     } else {
       // Generic quiz
-      const cat = getCategoryForIndex(questionIndex, category || session.nclex_category);
-      prompt = buildGenericQuizPrompt(programLevel, cat, previousStems);
+      prompt = buildGenericQuizPrompt(programLevel, lockedCategory, previousStems);
     }
 
     // Call Claude Sonnet via generateText (NOT streamText — need complete JSON)
@@ -173,6 +175,7 @@ export async function POST(req: NextRequest) {
         cleaned = cleaned.trim();
 
         questionData = QuizQuestionSchema.parse(JSON.parse(cleaned));
+        questionData.nclex_category = lockedCategory;
         break;
       } catch (parseError) {
         retries++;
@@ -194,7 +197,7 @@ export async function POST(req: NextRequest) {
         correct_answer: questionData!.correct_answer,
         rationale_correct: questionData!.rationale_correct,
         rationale_incorrect: questionData!.rationale_incorrect,
-        nclex_category: questionData!.nclex_category,
+        nclex_category: lockedCategory,
         difficulty: questionData!.difficulty,
         source_doc_id: sourceDocId,
         source_chunk_text: sourceChunkText,
