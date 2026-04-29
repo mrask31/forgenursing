@@ -19,6 +19,14 @@ interface QuizRationaleProps {
   isLast: boolean
 }
 
+const clearTutorAutoSendState = () => {
+  if (typeof window === 'undefined') return
+
+  localStorage.removeItem('forgenursing-tutor-prefill')
+  localStorage.removeItem('forgenursing-tutor-auto-send')
+  localStorage.removeItem('forgenursing-tutor-has-images')
+}
+
 export default function QuizRationale({
   isCorrect, userAnswer, correctAnswer, options, rationaleCorrect,
   rationaleIncorrect, nclexCategory, difficulty, sessionId, questionId,
@@ -34,6 +42,7 @@ export default function QuizRationale({
 
     setIsDiggingDeeper(true)
     setDigDeeperError(null)
+    clearTutorAutoSendState()
 
     try {
       try {
@@ -71,6 +80,7 @@ export default function QuizRationale({
         return
       }
 
+      clearTutorAutoSendState()
       router.push(`/tutor?sessionId=${data.chatId}`)
     } catch (error) {
       console.error('[QuizRationale] Dig deeper error:', error)
