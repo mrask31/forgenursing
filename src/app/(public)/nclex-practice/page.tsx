@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import NclexPracticePage from './NclexPracticeClient'
 
 export const metadata: Metadata = {
-  title: 'NCLEX Practice Questions From Your Nursing Notes | ForgeNursing',
+  title: 'NCLEX Practice Questions From Your Nursing Notes',
   description:
     'ForgeNursing turns nursing notes into NCLEX-style practice questions, rationales, and missed-answer explanations using clinical judgment.',
   openGraph: {
