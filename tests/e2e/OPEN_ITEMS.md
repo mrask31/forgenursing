@@ -12,6 +12,11 @@ _(No active landmines — L-001 and L-003 resolved in commit 0cd47f5)_
 
 ## ⚠️ DEFERRED FEATURES (not bugs — missing functionality)
 
+### D-002: 01-signup.spec.ts expects /tutor as valid post-signup destination — STALE
+- **Discovered:** May 2, 2026 during quiz-first routing audit
+- **Description:** `01-signup.spec.ts` accepts `/tutor` as a valid destination after signup (`toHaveURL(/\/(tutor|checkout|onboarding|dashboard|app)/)`). Under Phase 1 quiz-first, new signups should land on `/entry` instead. The test also references a `signup-confirm-password` testid that no longer exists in the signup form.
+- **Action:** Update the test to accept `/entry` as the primary post-signup destination for quiz-first users, or split into two tests (quiz-first vs legacy). Low priority — the new `quiz-first-routing.spec.ts` covers the critical routing assertion.
+
 ### D-001: Password reset page — CLOSED
 - **Discovered:** April 2026 during auth flows test setup
 - **Resolved:** Forgot password + reset password pages live as of commit `ae11183`.
