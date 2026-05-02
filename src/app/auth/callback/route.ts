@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { hasAccess } from '@/lib/subscription-access'
+import { resolveEntryPath } from '@/lib/resolve-entry-path'
 
 function getStripeClient(): Stripe | null {
   if (!process.env.STRIPE_SECRET_KEY) return null
@@ -14,7 +15,6 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const plan = searchParams.get('plan')
-  const next = searchParams.get('next') ?? '/tutor'
   
   // Confirm redirectTo / callbackUrl matches production domain
   // Use NEXT_PUBLIC_APP_URL if available, otherwise use request origin
@@ -61,6 +61,8 @@ export async function GET(request: Request) {
       let isBeta: boolean = false
       let betaExpiresAt: string | null = null
       let onboardingCompleted = false
+      let quizFirstEnabled: boolean = true  // default true for new users
+      let defaultEntryPath: string | null = null
       
       if (user) {
         // Use service role key to bypass RLS for profile operations
@@ -79,7 +81,7 @@ export async function GET(request: Request) {
         // Check if profile exists, create/update if needed
         const { data: profile, error: profileError } = await profileClient
           .from('profiles')
-          .select('id, subscription_status, stripe_customer_id, onboarding_completed, trial_ends_at, is_beta, beta_expires_at')
+          .select('id, subscription_status, stripe_customer_id, onboarding_completed, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
           .eq('id', user.id)
           .single()
 
@@ -106,6 +108,8 @@ export async function GET(request: Request) {
           isBeta = profile.is_beta || false
           betaExpiresAt = profile.beta_expires_at || null
           onboardingCompleted = profile.onboarding_completed || false
+          quizFirstEnabled = profile.quiz_first_enabled ?? false
+          defaultEntryPath = profile.default_entry_path ?? null
           
           if (!profile.subscription_status) {
             const { error: updateError } = await profileClient
@@ -160,7 +164,8 @@ export async function GET(request: Request) {
       if (!hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)) {
         return NextResponse.redirect(`${appUrl}/checkout`)
       }
-      return NextResponse.redirect(`${appUrl}${next}`)
+      const entryPath = resolveEntryPath({ quiz_first_enabled: quizFirstEnabled, default_entry_path: defaultEntryPath })
+      return NextResponse.redirect(`${appUrl}${entryPath}`)
     }
   }
 

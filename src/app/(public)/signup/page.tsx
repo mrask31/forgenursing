@@ -6,6 +6,7 @@ import { isDisposableEmailDomain } from '@/lib/disposable-email-domains'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import { resolveEntryPath } from '@/lib/resolve-entry-path'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -34,8 +35,13 @@ export default function SignupPage() {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (user) {
-        // User is already signed in, redirect to tutor
-        router.push('/tutor')
+        // User is already signed in, resolve entry path from profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('quiz_first_enabled, default_entry_path')
+          .eq('id', user.id)
+          .single()
+        router.push(resolveEntryPath(profile))
       }
     }
     

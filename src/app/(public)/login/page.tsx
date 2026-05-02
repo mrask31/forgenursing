@@ -7,13 +7,14 @@ import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield } from
 import Link from 'next/link'
 import { clearSupabaseStorage, isSessionError, debugAuthLog, resetSession } from '@/lib/auth-utils'
 import { hasAccess } from '@/lib/subscription-access'
+import { resolveEntryPath } from '@/lib/resolve-entry-path'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
-  const [redirect, setRedirect] = useState('/tutor')
+  const [redirect, setRedirect] = useState('/tutor') // kept for URL ?redirect= param compatibility
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false)
   
   const router = useRouter()
@@ -209,7 +210,7 @@ export default function LoginPage() {
       // Check subscription status
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('subscription_status, trial_ends_at, is_beta, beta_expires_at')
+        .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
         .eq('id', data.user.id)
         .single()
 
@@ -236,7 +237,8 @@ export default function LoginPage() {
       )
 
       if (userHasAccess) {
-        window.location.replace(redirect)
+        const entryPath = resolveEntryPath(profile)
+        window.location.replace(entryPath)
         return
       }
       
