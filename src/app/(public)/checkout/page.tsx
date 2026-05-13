@@ -65,7 +65,7 @@ function CheckoutContent() {
           </h1>
           <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto">
             {isExpired
-              ? 'Select a plan to restore your access. Your content and progress are saved.'
+              ? 'Choose a plan to continue. Cancel anytime.'
               : 'Start free, then choose the plan that fits. Cancel anytime.'}
           </p>
         </div>
@@ -108,7 +108,7 @@ function CheckoutContent() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>{isExpired ? 'Subscribe to continue' : '7-day free trial included'}</span>
+                  <span>{isExpired ? 'Immediate access after subscribing' : '7-day free trial included'}</span>
                 </li>
               </ul>
               {selectedPlan === 'monthly' && (
@@ -159,7 +159,7 @@ function CheckoutContent() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>{isExpired ? 'Subscribe to continue' : '7-day free trial included'}</span>
+                  <span>{isExpired ? 'Immediate access after subscribing' : '7-day free trial included'}</span>
                 </li>
               </ul>
               {selectedPlan === 'annual' && (
