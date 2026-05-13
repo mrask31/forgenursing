@@ -93,22 +93,21 @@ export async function POST(req: Request) {
     }
     
     
-    // 4. Create Stripe Checkout Session with 7-day free trial
-    // Note: Stripe will start a 7-day trial and only charge after the trial ends
+    // 4. Create Stripe Checkout Session
+    // Note: No trial_period_days — the free trial is handled by the Supabase app layer
+    // (7-day no-card trial via /api/auth/set-trial). When users reach checkout,
+    // their app trial has expired and they should be charged immediately.
     // payment_method_collection: 'always' ensures users must provide payment info upfront
     // allow_promotion_codes: true enables coupon/promo code entry in the checkout form
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [
         {
-          price: priceId, // e.g. monthly / semester / annual price ID from Stripe
+          price: priceId, // e.g. monthly / annual price ID from Stripe
           quantity: 1,
         },
       ],
-      subscription_data: {
-        trial_period_days: 7,
-      },
-      payment_method_collection: 'always', // Require payment method even during trial
+      payment_method_collection: 'always', // Require payment method
       allow_promotion_codes: true, // Enable coupon/promo code entry field
       success_url: `${appUrl}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/billing/cancel`,
