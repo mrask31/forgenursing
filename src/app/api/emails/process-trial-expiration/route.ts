@@ -219,7 +219,7 @@ function generateDay6Email(): string {
   <p>Your ForgeNursing trial ends tomorrow. I'll keep this short.</p>
   <p>If something clicked for you over the past 6 days — if you found yourself actually thinking through a patient scenario instead of just trying to remember the right answer — that's what ForgeNursing is built to do.</p>
   <p>Tomorrow that access goes away unless you choose to continue.</p>
-  <p><strong>Monthly:</strong> $24.99/month<br><strong>Semester:</strong> $89 every 4 months<br><strong>Annual:</strong> $199/year</p>
+  <p><strong>Monthly:</strong> $9.99/month<br><strong>Annual:</strong> $79/year</p>
   <p>If you have questions about which plan makes sense for where you are in your nursing journey, reply to this email. I'll help you figure it out personally.</p>
   <p>If it's not the right time, no hard feelings. I'd still love to know what wasn't working — reply and tell me.</p>
   <p>— Michael<br>Founder, ForgeNursing<br>Former Navy Hospital Corpsman, FMF</p>
@@ -233,7 +233,7 @@ function generateDay7Email(): string {
   <p>Hey — Michael here.</p>
   <p>Your ForgeNursing trial ended today. Your account is still there — nothing has been deleted — but your access is paused until you choose a plan.</p>
   <p>If you're ready to continue:</p>
-  <p><strong>Monthly:</strong> $24.99/month<br><strong>Semester:</strong> $89 every 4 months<br><strong>Annual:</strong> $199/year</p>
+  <p><strong>Monthly:</strong> $9.99/month<br><strong>Annual:</strong> $79/year</p>
   <a href="https://forgenursing.com/pricing" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Unlock My Account →</a>
   <p>If you're not ready right now, I get it. Timing matters.</p>
   <p>But if ForgeNursing didn't click for you at all — if something felt off, confusing, or just not useful — I'd genuinely like to know. Reply to this email and tell me what was missing. That feedback goes directly into what I build next.</p>

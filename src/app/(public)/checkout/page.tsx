@@ -61,17 +61,17 @@ function CheckoutContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="paywall">
         <div className="text-center mb-10 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-4">
-            Choose Your Plan
+            Founding Student Plan
           </h1>
           <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto">
             {isExpired
               ? 'Select a plan to restore your access. Your content and progress are saved.'
-              : 'Select the plan that best fits your learning journey. All plans include a 7-day free trial.'}
+              : 'Start free, then choose the plan that fits. Cancel anytime.'}
           </p>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto mb-8">
+        {/* Pricing Cards — Monthly + Annual only */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto mb-8">
             {/* Monthly Plan */}
             <div 
               onClick={() => setSelectedPlan('monthly')}
@@ -81,9 +81,9 @@ function CheckoutContent() {
                   : 'border-slate-200/60 hover:border-indigo-300'
               }`}
             >
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Monthly Access</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Monthly</h3>
               <div className="mb-4">
-                <span className="text-4xl font-bold text-slate-900">$24.99</span>
+                <span className="text-4xl font-bold text-slate-900">$9.99</span>
                 <span className="text-lg text-slate-600"> / month</span>
               </div>
               <p className="text-sm text-slate-600 mb-4">
@@ -92,11 +92,15 @@ function CheckoutContent() {
               <ul className="space-y-2.5 mb-6 text-sm text-slate-700">
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>Unlimited access to ForgeNursing</span>
+                  <span>Unlimited NCLEX practice questions</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>Billed monthly</span>
+                  <span>AI clinical reasoning tutor</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-indigo-600 mt-0.5">•</span>
+                  <span>Upload your own study materials</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
@@ -108,57 +112,6 @@ function CheckoutContent() {
                 </li>
               </ul>
               {selectedPlan === 'monthly' && (
-                <div className="flex items-center justify-center gap-2 text-indigo-600 font-semibold mb-4">
-                  <Check className="w-5 h-5" />
-                  <span>Selected</span>
-                </div>
-              )}
-            </div>
-
-            {/* Semester Plan - Most Popular */}
-            <div 
-              onClick={() => setSelectedPlan('semester')}
-              className={`bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-indigo-50/80 backdrop-blur-sm border-2 rounded-2xl p-6 sm:p-8 shadow-xl relative cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
-                selectedPlan === 'semester' 
-                  ? 'border-indigo-500 shadow-2xl shadow-indigo-500/40' 
-                  : 'border-indigo-400/60'
-              }`}
-            >
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-indigo-600 text-white text-[10px] px-2.5 py-0.5 rounded-full font-semibold shadow-lg">
-                  Most Popular
-                </span>
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2 mt-2">Semester Access</h3>
-              <div className="mb-1">
-                <span className="text-4xl font-bold text-slate-900">$89</span>
-              </div>
-              <p className="text-xs text-slate-600 mb-1">One-Time Payment • 4 Months</p>
-              <p className="text-sm text-indigo-700 mb-4 font-semibold">
-                Save $11 vs monthly
-              </p>
-              <p className="text-sm text-slate-700 mb-4 font-medium">
-                Designed for a single term or NCLEX prep cycle.
-              </p>
-              <ul className="space-y-2.5 mb-6 text-sm text-slate-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>4 full months of access</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>No contracts</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>No surprise renewals</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>{isExpired ? 'Subscribe to continue' : '7-day free trial included'}</span>
-                </li>
-              </ul>
-              {selectedPlan === 'semester' && (
                 <div className="flex items-center justify-center gap-2 text-indigo-600 font-semibold mb-4">
                   <Check className="w-5 h-5" />
                   <span>Selected</span>
@@ -180,16 +133,16 @@ function CheckoutContent() {
                   Best Value
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2 mt-2">Annual Access</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-2 mt-2">Annual</h3>
               <div className="mb-1">
-                <span className="text-4xl font-bold text-slate-900">$199</span>
+                <span className="text-4xl font-bold text-slate-900">$79</span>
                 <span className="text-lg text-slate-600"> / year</span>
               </div>
               <p className="text-sm text-indigo-700 mb-4 font-semibold">
                 Save 34% vs monthly
               </p>
               <p className="text-sm text-slate-700 mb-4 font-medium">
-                For students committed to mastery and peace of mind.
+                For students committed to mastery.
               </p>
               <ul className="space-y-2.5 mb-6 text-sm text-slate-700">
                 <li className="flex items-start gap-2">
@@ -238,7 +191,7 @@ function CheckoutContent() {
             )}
           </button>
           <p className="text-xs text-slate-500 mt-3">
-            {isExpired ? 'Subscribe to continue. Cancel anytime.' : 'All plans include a 7-day free trial. Cancel anytime.'}
+            {isExpired ? 'Subscribe to continue. Cancel anytime.' : 'Start free, then $9.99/month. Cancel anytime.'}
           </p>
         </div>
       </div>

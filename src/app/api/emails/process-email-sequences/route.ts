@@ -165,7 +165,7 @@ function betaDay85(name: string): { subject: string; html: string } {
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">You've had 85 days of free access to ForgeNursing as one of our earliest beta users. That means a lot — you helped shape what this product became.</p>
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your beta access ends in 5 days. After that, you'll need a subscription to keep using Forge.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">The semester plan is <strong>$89</strong> — that's about $22/month for an AI clinical preceptor available 24/7, on any topic, at your pace.</p>
+      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">The monthly plan is <strong>$9.99/month</strong> — cancel anytime. Or save with the annual plan at <strong>$79/year</strong>.</p>
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">If Forge has helped you think through clinical scenarios more clearly, now's the time to lock it in.</p>
       ${ctaButton('Subscribe Before Beta Ends', 'https://forgenursing.com/checkout')}
       ${signoff()}
@@ -180,7 +180,7 @@ function betaDay91(name: string): { subject: string; html: string } {
     html: emailShell("Beta Access Ended", `
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your 90-day beta period ended yesterday. Your account and all your session history are still there — nothing has been deleted.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">To pick up where you left off, subscribe below. The semester plan is $89.</p>
+      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">To pick up where you left off, subscribe below. Plans start at $9.99/month.</p>
       ${ctaButton('Subscribe Now', 'https://forgenursing.com/checkout')}
       ${signoff()}
     `),
@@ -250,7 +250,7 @@ function trialDay6(name: string): { subject: string; html: string } {
         <li style="margin-bottom: 8px;">Upload your own class materials for Socratic teaching</li>
         <li style="margin-bottom: 8px;">24/7 AI preceptor on any nursing topic</li>
       </ul>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">The semester plan is <strong>$89</strong> — about $22/month for the rest of your program.</p>
+      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Plans start at <strong>$9.99/month</strong> — cancel anytime. Or save with the annual plan at $79/year.</p>
       ${ctaButton('Subscribe Now', 'https://forgenursing.com/checkout')}
       ${signoff()}
     `),
@@ -264,7 +264,7 @@ function trialDay8(name: string): { subject: string; html: string } {
     html: emailShell("Trial Ended", `
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your 7-day free trial has ended. Your account and session history are still there — nothing has been deleted.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">To continue using Forge, subscribe below. The semester plan is $89.</p>
+      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">To continue using Forge, subscribe below. Plans start at $9.99/month.</p>
       ${ctaButton('Subscribe to Continue', 'https://forgenursing.com/checkout')}
       ${signoff()}
     `),

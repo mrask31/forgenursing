@@ -72,7 +72,7 @@ export async function POST(request: Request) {
   <p>Your free trial ends in 2 days. I want to be upfront with you about what that means and what your options are.</p>
   <p>If ForgeNursing has clicked for you — if you've had even one moment where the clinical reasoning made something clearer than it's ever been — that's not a coincidence. That's the difference between memorizing facts and learning to think like a nurse.</p>
   <p>If you want to keep going after your trial ends, here's what's available:</p>
-  <p><strong>Monthly:</strong> $24.99/month<br><strong>Semester:</strong> $89 every 4 months<br><strong>Annual:</strong> $199/year</p>
+  <p><strong>Monthly:</strong> $9.99/month<br><strong>Annual:</strong> $79/year</p>
   <p>If you haven't had a chance to really try it yet, there's still time. Log in and type this right now:</p>
   <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-style: italic;">→ "Walk me through an NCLEX-style priority question"</p>
   <p>Give it 10 minutes. If it doesn't click, no hard feelings — reply and tell me why. I read every response personally.</p>
