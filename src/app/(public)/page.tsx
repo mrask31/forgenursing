@@ -38,20 +38,22 @@ export default function HomePage() {
       operatingSystem: 'Web',
       offers: {
         '@type': 'Offer',
-        price: '24.99',
+        price: '9.99',
         priceCurrency: 'USD',
         priceValidUntil: '2026-12-31',
         availability: 'https://schema.org/InStock',
         url: `${baseUrl}/signup`
       },
-      description: 'AI clinical preceptor that teaches nursing students to think in ADPIE using their own textbooks and course materials. Includes NP voice.',
+      description: 'AI clinical preceptor that helps nursing students turn their own course materials into NCLEX-style practice and clinical reasoning support.',
       featureList: [
         'ADPIE clinical reasoning framework',
         'Upload your own textbooks and notes',
-        'NP voice for audio learning',
-        'Gemini Vision for clinical images',
+        'NCLEX-style practice from your materials',
+        'AI tutor support for missed questions',
         'Session history and clinical pearls',
-        'Free beta access'
+        'BSN, ADN, LPN, MSN program support',
+        '7-day free trial',
+        'Founding Student pricing'
       ]
     }
 
@@ -80,15 +82,15 @@ export default function HomePage() {
           name: 'Do I need to upload my own materials?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. Forge works best when you upload your syllabus, textbooks, and lecture notes. This ensures Forge teaches from your specific program curriculum, not generic nursing content.'
+            text: 'Forge works best when you upload your syllabus, textbooks, and lecture notes. This helps Forge create practice and explanations from your specific program curriculum, not only generic nursing content.'
           }
         },
         {
           '@type': 'Question',
-          name: 'Is ForgeNursing free?',
+          name: 'Does ForgeNursing have a free trial?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. ForgeNursing is currently in free beta. No credit card required. Sign up and start studying immediately.'
+            text: 'Yes. ForgeNursing includes a 7-day free trial. After the trial, the Founding Student Plan is $9.99 per month or $79 per year. Cancel anytime.'
           }
         },
         {
@@ -96,7 +98,7 @@ export default function HomePage() {
           name: 'What makes Forge different from other NCLEX prep tools?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Forge is a clinical preceptor, not a question bank. It teaches you how to think using ADPIE — the framework your professors actually test — and grounds every explanation in your own course materials. It also includes a real NP voice so you can hear clinical reasoning explained out loud.'
+            text: 'Forge is a clinical preceptor, not just a question bank. It helps you practice from your own materials, then teaches the clinical reasoning behind missed answers using ADPIE.'
           }
         }
       ]
@@ -190,11 +192,14 @@ export default function HomePage() {
       <section className="bg-white py-14 sm:py-18 md:py-20" aria-labelledby="pricing-heading">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-12">
+            <p className="text-xs font-bold text-[#0D8F9C] uppercase tracking-widest mb-3">
+              Founding Student Plan
+            </p>
             <h2 id="pricing-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3">
-              One price. Full access. Cancel anytime.
+              Start free. Then $9.99/month.
             </h2>
             <p className="text-base sm:text-lg text-[#1E2D3D]/70">
-              Every plan includes the full Forge experience — no feature tiers.
+              Full ForgeNursing access — practice questions, AI tutor support, and uploaded-material study tools. Cancel anytime.
             </p>
           </div>
 
@@ -203,11 +208,11 @@ export default function HomePage() {
             <p className="text-xs font-bold text-[#0B2545] uppercase tracking-widest mb-4">All plans include</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {[
-                { included: true, text: 'Forge — AI clinical preceptor with NP voice' },
-                { included: true, text: 'ADPIE clinical reasoning on every response' },
+                { included: true, text: 'Forge — AI clinical reasoning tutor' },
+                { included: true, text: 'ADPIE clinical reasoning support' },
                 { included: true, text: 'Upload your textbooks and class notes' },
-                { included: true, text: 'Clinical image analysis (EKG, labs, wounds)' },
-                { included: true, text: 'Session history and clinical pearls saved' },
+                { included: true, text: 'NCLEX-style practice from your materials' },
+                { included: true, text: 'Missed-answer explanations' },
                 { included: true, text: 'BSN, ADN, LPN, MSN program support' },
                 { included: false, text: 'Clinical simulations (coming soon)' },
                 { included: false, text: 'Persistent course workspace (coming soon)' },
@@ -224,67 +229,43 @@ export default function HomePage() {
             </div>
           </div>
 
-          {betaFull ? (
-            /* Beta full: show pricing cards */
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
-              {/* Monthly */}
-              <a
-                href="/signup"
-                className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl p-6 hover:border-[#0D8F9C] transition-colors text-left group"
-              >
-                <h3 className="font-bold text-[#0B2545] mb-1">Monthly</h3>
-                <div className="mb-3">
-                  <span className="text-3xl font-bold text-[#0B2545]">$24.99</span>
-                  <span className="text-sm text-[#1E2D3D]/60"> / month</span>
-                </div>
-                <p className="text-xs text-[#1E2D3D]/60 mb-4">Flexible, cancel anytime</p>
-                <span className="text-xs font-semibold text-[#0D8F9C] group-hover:underline">
-                  Start 7-day free trial →
-                </span>
-              </a>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto">
+            {/* Monthly */}
+            <a
+              href="/signup?plan=monthly"
+              className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl p-6 hover:border-[#0D8F9C] transition-colors text-left group"
+            >
+              <h3 className="font-bold text-[#0B2545] mb-1">Monthly</h3>
+              <div className="mb-3">
+                <span className="text-3xl font-bold text-[#0B2545]">$9.99</span>
+                <span className="text-sm text-[#1E2D3D]/60"> / month</span>
+              </div>
+              <p className="text-xs text-[#1E2D3D]/60 mb-4">Flexible, cancel anytime</p>
+              <span className="text-xs font-semibold text-[#0D8F9C] group-hover:underline">
+                Start 7-day free trial →
+              </span>
+            </a>
 
-              {/* Semester — highlighted */}
-              <a
-                href="/signup"
-                className="bg-[#E0F4F6] border-2 border-[#0D8F9C] rounded-2xl p-6 hover:bg-[#d0ecef] transition-colors text-left relative group"
-              >
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0D8F9C] text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold">
-                  Most Popular
-                </span>
-                <h3 className="font-bold text-[#0B2545] mb-1 mt-2">Semester</h3>
-                <div className="mb-1">
-                  <span className="text-3xl font-bold text-[#0B2545]">$89</span>
-                </div>
-                <p className="text-xs text-[#0D8F9C] font-semibold mb-1">One-time · 4 months</p>
-                <p className="text-xs text-[#1E2D3D]/60 mb-4">Save $11 vs monthly</p>
-                <span className="text-xs font-semibold text-[#0D8F9C] group-hover:underline">
-                  Start 7-day free trial →
-                </span>
-              </a>
-
-              {/* Annual */}
-              <a
-                href="/signup"
-                className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl p-6 hover:border-[#0D8F9C] transition-colors text-left group"
-              >
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0B2545] text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold hidden">
-                  Best Value
-                </span>
-                <h3 className="font-bold text-[#0B2545] mb-1">Annual</h3>
-                <div className="mb-3">
-                  <span className="text-3xl font-bold text-[#0B2545]">$149</span>
-                </div>
-                <p className="text-xs text-[#1E2D3D]/60 mb-4">Best value for a full year</p>
-                <span className="text-xs font-semibold text-[#0D8F9C] group-hover:underline">
-                  Start 7-day free trial →
-                </span>
-              </a>
-            </div>
-          ) : (
-            <p className="text-sm text-[#1E2D3D]/50 text-center italic mt-8">
-              Beta access is free. Pricing starts at $89/semester after launch.
-            </p>
-          )}
+            {/* Annual */}
+            <a
+              href="/signup?plan=annual"
+              className="bg-[#E0F4F6] border-2 border-[#0D8F9C] rounded-2xl p-6 hover:bg-[#d0ecef] transition-colors text-left relative group"
+            >
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0D8F9C] text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold">
+                Best Value
+              </span>
+              <h3 className="font-bold text-[#0B2545] mb-1 mt-2">Annual</h3>
+              <div className="mb-1">
+                <span className="text-3xl font-bold text-[#0B2545]">$79</span>
+                <span className="text-sm text-[#1E2D3D]/60"> / year</span>
+              </div>
+              <p className="text-xs text-[#0D8F9C] font-semibold mb-1">Save 34% vs monthly</p>
+              <p className="text-xs text-[#1E2D3D]/60 mb-4">Best value for a full year</p>
+              <span className="text-xs font-semibold text-[#0D8F9C] group-hover:underline">
+                Start 7-day free trial →
+              </span>
+            </a>
+          </div>
           <p className="max-w-2xl mx-auto text-center text-xs text-[#1E2D3D]/45 mt-6 leading-relaxed">
             ForgeNursing is a study aid. Subscription purchase does not guarantee passing any course, exam, NCLEX®, licensing exam, or certification.
           </p>
