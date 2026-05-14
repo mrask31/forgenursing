@@ -48,7 +48,8 @@ export default function HomePage() {
       featureList: [
         'ADPIE clinical reasoning framework',
         'Upload your own textbooks and notes',
-        'NCLEX-style practice from your materials',
+        'NCLEX-style practice quizzes from your materials',
+        'General NCLEX practice questions',
         'AI tutor support for missed questions',
         'Session history and clinical pearls',
         'BSN, ADN, LPN, MSN program support',
@@ -199,7 +200,7 @@ export default function HomePage() {
               Start free. Then choose monthly or annual.
             </h2>
             <p className="text-base sm:text-lg text-[#1E2D3D]/70">
-              Full ForgeNursing access — practice questions, AI tutor support, and uploaded-material study tools. Cancel anytime.
+              Full ForgeNursing access — practice quizzes, AI tutor support, and uploaded-material study tools. Cancel anytime.
             </p>
           </div>
 
@@ -208,11 +209,11 @@ export default function HomePage() {
             <p className="text-xs font-bold text-[#0B2545] uppercase tracking-widest mb-4">All plans include</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {[
-                { included: true, text: 'Forge — AI clinical reasoning tutor' },
+                { included: true, text: 'NCLEX-style practice quizzes' },
+                { included: true, text: 'Questions from your uploaded materials' },
+                { included: true, text: 'General NCLEX practice when you need it' },
+                { included: true, text: 'AI tutor support for missed answers' },
                 { included: true, text: 'ADPIE clinical reasoning support' },
-                { included: true, text: 'Upload your textbooks and class notes' },
-                { included: true, text: 'NCLEX-style practice from your materials' },
-                { included: true, text: 'Missed-answer explanations' },
                 { included: true, text: 'BSN, ADN, LPN, MSN program support' },
                 { included: false, text: 'Clinical simulations (coming soon)' },
                 { included: false, text: 'Persistent course workspace (coming soon)' },
