@@ -196,7 +196,7 @@ export default function HomePage() {
               Founding Student Plan
             </p>
             <h2 id="pricing-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3">
-              Start free. Then $9.99/month.
+              Start free. Then choose monthly or annual.
             </h2>
             <p className="text-base sm:text-lg text-[#1E2D3D]/70">
               Full ForgeNursing access — practice questions, AI tutor support, and uploaded-material study tools. Cancel anytime.
