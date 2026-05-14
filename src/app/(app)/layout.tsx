@@ -9,6 +9,19 @@ import { useUser } from '@/hooks/useUser'
 // Routes within (app) that do NOT require active subscription
 const UNGUARDED_PATHS = ['/billing', '/onboarding']
 
+function AccessGateScreen({ message }: { message: string }) {
+  return (
+    <div className="min-h-dvh bg-slate-50 flex items-center justify-center px-4">
+      <div className="max-w-sm w-full rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+        <div className="mx-auto mb-4 h-10 w-10 animate-pulse rounded-full bg-teal-100" />
+        <p className="text-sm font-medium text-slate-700" aria-live="polite">
+          {message}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function AppRouteLayout({
   children,
 }: {
@@ -18,19 +31,34 @@ export default function AppRouteLayout({
   const router = useRouter()
   const { hasAccess, isLoading, user } = useUser()
 
+  const isUnguarded = UNGUARDED_PATHS.some(p => pathname.startsWith(p))
+  const shouldRedirectToCheckout = !isUnguarded && !isLoading && !!user && !hasAccess
+  const shouldRedirectToLogin = !isUnguarded && !isLoading && !user
+
   useEffect(() => {
-    // Don't redirect while loading or if user isn't authenticated
-    if (isLoading || !user) return
-
-    // Don't guard billing or onboarding pages
-    const isUnguarded = UNGUARDED_PATHS.some(p => pathname.startsWith(p))
-    if (isUnguarded) return
-
-    // If user doesn't have access, redirect to checkout
-    if (!hasAccess) {
+    if (shouldRedirectToCheckout) {
       router.replace('/checkout')
     }
-  }, [hasAccess, isLoading, user, pathname, router])
+
+    if (shouldRedirectToLogin) {
+      router.replace('/login')
+    }
+  }, [router, shouldRedirectToCheckout, shouldRedirectToLogin])
+
+  // Do not render protected route children while auth/access is unknown or denied.
+  // This prevents expired users from seeing /tutor, /quiz, or /entry UI during
+  // client-side navigation before router.replace('/checkout') completes.
+  if (!isUnguarded && isLoading) {
+    return <AccessGateScreen message="Checking your access…" />
+  }
+
+  if (shouldRedirectToCheckout) {
+    return <AccessGateScreen message="Redirecting to checkout…" />
+  }
+
+  if (shouldRedirectToLogin) {
+    return <AccessGateScreen message="Redirecting to login…" />
+  }
 
   return (
     <AppShell variant="app">
