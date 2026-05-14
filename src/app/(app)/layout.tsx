@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { AppShell } from '@/components/layout/AppShell'
 import BetaWelcomeBanner from '@/components/layout/BetaWelcomeBanner'
@@ -8,6 +8,7 @@ import { useUser } from '@/hooks/useUser'
 
 // Routes within (app) that do NOT require active subscription
 const UNGUARDED_PATHS = ['/billing', '/onboarding']
+const ACCESS_CHECK_TIMEOUT_MS = 2500
 
 function AccessGateScreen({ message }: { message: string }) {
   return (
@@ -30,10 +31,24 @@ export default function AppRouteLayout({
   const pathname = usePathname()
   const router = useRouter()
   const { hasAccess, isLoading, user } = useUser()
+  const [accessCheckTimedOut, setAccessCheckTimedOut] = useState(false)
 
   const isUnguarded = UNGUARDED_PATHS.some(p => pathname.startsWith(p))
-  const shouldRedirectToCheckout = !isUnguarded && !isLoading && !!user && !hasAccess
-  const shouldRedirectToLogin = !isUnguarded && !isLoading && !user
+  const authCheckComplete = !isLoading || accessCheckTimedOut
+  const shouldRedirectToCheckout = !isUnguarded && authCheckComplete && !!user && !hasAccess
+  const shouldRedirectToLogin = !isUnguarded && authCheckComplete && !user
+
+  useEffect(() => {
+    setAccessCheckTimedOut(false)
+
+    if (isUnguarded || !isLoading) return
+
+    const timeout = window.setTimeout(() => {
+      setAccessCheckTimedOut(true)
+    }, ACCESS_CHECK_TIMEOUT_MS)
+
+    return () => window.clearTimeout(timeout)
+  }, [isLoading, isUnguarded, pathname])
 
   useEffect(() => {
     if (shouldRedirectToCheckout) {
@@ -48,7 +63,8 @@ export default function AppRouteLayout({
   // Do not render protected route children while auth/access is unknown or denied.
   // This prevents expired users from seeing /tutor, /quiz, or /entry UI during
   // client-side navigation before router.replace('/checkout') completes.
-  if (!isUnguarded && isLoading) {
+  // If the access check hangs, fail closed and send the user to login/checkout.
+  if (!isUnguarded && isLoading && !accessCheckTimedOut) {
     return <AccessGateScreen message="Checking your access…" />
   }
 
