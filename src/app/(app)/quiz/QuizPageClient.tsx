@@ -18,6 +18,10 @@ interface QuestionData {
   options: { label: string; text: string }[]
   nclex_category: string
   difficulty: number
+  mistake_type?: string | null
+  reasoning_trap?: string | null
+  fix_instruction?: string | null
+  retest_focus?: string | null
 }
 
 interface AnswerResult {
@@ -29,6 +33,10 @@ interface AnswerResult {
   session_complete: boolean
   score: number
   total_answered: number
+  mistake_type?: string | null
+  reasoning_trap?: string | null
+  fix_instruction?: string | null
+  retest_focus?: string | null
 }
 
 export default function QuizPageClient() {
@@ -258,6 +266,8 @@ export default function QuizPageClient() {
           correct_answer: result.correct_answer,
           nclex_category: currentQuestion.nclex_category,
           difficulty: currentQuestion.difficulty,
+          mistake_type: result.mistake_type ?? currentQuestion.mistake_type ?? null,
+          retest_focus: result.retest_focus ?? currentQuestion.retest_focus ?? null,
           time_spent_seconds: timeSpent,
           source_type: sourceType,
         })
@@ -350,6 +360,10 @@ export default function QuizPageClient() {
             rationaleIncorrect={answerResult.rationale_incorrect}
             nclexCategory={currentQuestion.nclex_category}
             difficulty={currentQuestion.difficulty}
+            mistakeType={answerResult.mistake_type ?? currentQuestion.mistake_type}
+            reasoningTrap={answerResult.reasoning_trap ?? currentQuestion.reasoning_trap}
+            fixInstruction={answerResult.fix_instruction ?? currentQuestion.fix_instruction}
+            retestFocus={answerResult.retest_focus ?? currentQuestion.retest_focus}
             sessionId={sessionId!}
             questionId={currentQuestion.id}
             questionIndex={currentIndex}
