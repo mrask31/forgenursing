@@ -27,6 +27,18 @@ const CATEGORY_ROTATION: string[] = [
   'Psychosocial Integrity',
 ];
 
+export const MISTAKE_TYPES = [
+  'Priority-setting',
+  'Safety',
+  'Assessment-first',
+  'Therapeutic communication',
+  'Delegation',
+  'Medication reasoning',
+  'Pathophysiology / knowledge gap',
+  'Lab / diagnostic interpretation',
+  'Patient education',
+] as const;
+
 /**
  * Get the NCLEX category for a given question index in a generic quiz.
  * If user selected a specific category, all questions use that category.
@@ -62,6 +74,21 @@ ANSWER OPTIONS RULES:
 RATIONALE RULES:
 - rationale_correct: 2-3 sentences explaining WHY the correct answer is right. Reference the clinical reasoning (ABCs, Maslow, safety, assessment-before-intervention).
 - rationale_incorrect: For EACH wrong option, 1-2 sentences explaining WHY it's wrong AND what misconception it targets. Connect back to the correct reasoning.
+
+CLINICAL JUDGMENT MISTAKE METADATA:
+- mistake_type: Assign exactly one value from this list:
+  - Priority-setting
+  - Safety
+  - Assessment-first
+  - Therapeutic communication
+  - Delegation
+  - Medication reasoning
+  - Pathophysiology / knowledge gap
+  - Lab / diagnostic interpretation
+  - Patient education
+- reasoning_trap: One plain-language sentence explaining the tempting thinking error a student might make when choosing the most plausible wrong answer.
+- fix_instruction: One coaching sentence that teaches the reasoning move the student should use next time.
+- retest_focus: A short phrase describing what targeted weakness should be practiced next, e.g. "therapeutic communication with anxious clients" or "assessment-before-intervention in respiratory distress".
 
 CATEGORY: Assign exactly one NCLEX category from this list:
 - Management of Care
@@ -101,7 +128,11 @@ const OUTPUT_FORMAT = `Respond with ONLY valid JSON. No markdown, no explanation
     "D": "..."
   },
   "nclex_category": "...",
-  "difficulty": 3
+  "difficulty": 3,
+  "mistake_type": "Priority-setting",
+  "reasoning_trap": "The student may focus on a helpful later task instead of the action that protects the client first.",
+  "fix_instruction": "When two actions both seem appropriate, choose the one that addresses the most immediate safety or physiologic threat first.",
+  "retest_focus": "priority-setting with immediate safety cues"
 }`;
 
 /**
@@ -118,7 +149,7 @@ export function buildQuizPrompt(
     : '[]';
 
   return `<identity>
-You are ForgeNursing Quiz Generator. You create single NCLEX-style multiple-choice questions from nursing course materials. You are NOT a tutor — you are an exam item writer. Your questions must be clinically accurate, appropriately difficult, and follow NCLEX item-writing standards.
+You are ForgeNursing Quiz Generator. You create single NCLEX-style multiple-choice questions from nursing course materials. You are NOT a tutor — you are an exam item writer and clinical judgment pattern mapper. Your questions must be clinically accurate, appropriately difficult, and follow NCLEX item-writing standards.
 </identity>
 
 <program_level>
@@ -162,7 +193,7 @@ export function buildGenericQuizPrompt(
     : '[]';
 
   return `<identity>
-You are ForgeNursing Quiz Generator. You create single NCLEX-style multiple-choice questions targeting the NCLEX test blueprint. You are NOT a tutor — you are an exam item writer.
+You are ForgeNursing Quiz Generator. You create single NCLEX-style multiple-choice questions targeting the NCLEX test blueprint. You are NOT a tutor — you are an exam item writer and clinical judgment pattern mapper.
 </identity>
 
 <program_level>
@@ -223,6 +254,10 @@ export function buildDigDeeperContext(questionData: {
   rationale_for_user_answer: string;
   nclex_category: string;
   difficulty: number;
+  mistake_type?: string | null;
+  reasoning_trap?: string | null;
+  fix_instruction?: string | null;
+  retest_focus?: string | null;
   source_doc_id?: string | null;
   source_chunk_text?: string | null;
 }): string {
@@ -230,8 +265,12 @@ export function buildDigDeeperContext(questionData: {
     ? `\nSOURCE MATERIAL: This question was generated from the student's uploaded document. The relevant excerpt:\n---\n${questionData.source_chunk_text}\n---`
     : '';
 
+  const mistakeBlock = questionData.mistake_type
+    ? `\nMISTAKE TYPE: ${questionData.mistake_type}\nREASONING TRAP: ${questionData.reasoning_trap || 'Help the student identify the reasoning trap.'}\nFIX INSTRUCTION: ${questionData.fix_instruction || 'Coach the student toward the correct clinical judgment move.'}\nRETEST FOCUS: ${questionData.retest_focus || 'Practice the same clinical judgment weakness again.'}`
+    : '';
+
   return `<quiz_context>
-The student just answered an NCLEX-style practice question incorrectly. They clicked "Dig Deeper" to understand the reasoning. Use this context to guide a Socratic exploration of WHY the correct answer is right and WHERE their reasoning went wrong.
+The student just answered an NCLEX-style practice question incorrectly. They clicked "Fix this weakness" to understand the reasoning. Use this context to guide a focused exploration of WHY the correct answer is right and WHERE their clinical judgment went wrong.
 
 QUESTION:
 ${questionData.question_stem}
@@ -244,15 +283,17 @@ RATIONALE (student's choice): ${questionData.rationale_for_user_answer}
 
 NCLEX CATEGORY: ${questionData.nclex_category}
 DIFFICULTY: ${questionData.difficulty}/5
+${mistakeBlock}
 ${sourceBlock}
 </quiz_context>
 
 <instructions>
 1. Do NOT repeat the question or rationale verbatim — the student already saw it.
-2. Start by asking the student to explain their reasoning: "Walk me through why you chose ${questionData.user_answer}."
-3. Use the ADPIE framework to guide them to the correct reasoning.
-4. If source material is present, reference it: "Looking at your notes on [topic]..."
-5. Keep it to 2-3 exchanges max. This is a focused dig-in, not a full tutoring session.
-6. End with a CHECK question that tests whether they now understand the distinction.
+2. Start by naming the likely clinical judgment mistake in plain English.
+3. Ask the student to explain what made their selected answer feel right.
+4. Use the ADPIE framework to guide them to the correct reasoning.
+5. If source material is present, reference it: "Looking at your notes on [topic]..."
+6. Keep it to 2-3 exchanges max. This is a focused fix, not a full tutoring session.
+7. End with a CHECK question that tests whether they now understand the distinction.
 </instructions>`;
 }
