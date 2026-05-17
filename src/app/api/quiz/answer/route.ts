@@ -37,12 +37,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Question not found' }, { status: 404 });
     }
 
+    const baseResult = {
+      correct_answer: question.correct_answer,
+      rationale_correct: question.rationale_correct,
+      rationale_incorrect: question.rationale_incorrect,
+      mistake_type: question.mistake_type,
+      reasoning_trap: question.reasoning_trap,
+      fix_instruction: question.fix_instruction,
+      retest_focus: question.retest_focus,
+    };
+
     // Idempotent: if already answered, return existing result
     if (question.answered_at) {
       return NextResponse.json({
-        correct_answer: question.correct_answer,
-        rationale_correct: question.rationale_correct,
-        rationale_incorrect: question.rationale_incorrect,
+        ...baseResult,
         is_correct: question.is_correct,
         user_answer: question.user_answer,
       });
@@ -93,9 +101,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      correct_answer: question.correct_answer,
-      rationale_correct: question.rationale_correct,
-      rationale_incorrect: question.rationale_incorrect,
+      ...baseResult,
       is_correct: isCorrect,
       user_answer: userAnswer,
       session_complete: isComplete,
