@@ -9,6 +9,18 @@ function compactSentence(value: string | null | undefined, maxLength = 170): str
   return `${firstSentence.slice(0, maxLength).trim()}…`;
 }
 
+function fallbackMistakeType(category: string | null | undefined): string {
+  if (category === 'Psychosocial Integrity') return 'Therapeutic communication';
+  if (category === 'Pharmacological Therapies') return 'Medication reasoning';
+  if (category === 'Safety and Infection Control') return 'Safety';
+  if (category === 'Delegation') return 'Delegation';
+  if (category === 'Reduction of Risk Potential') return 'Lab / diagnostic interpretation';
+  if (category === 'Management of Care' || category === 'Priority Setting') return 'Priority-setting';
+  if (category === 'Health Promotion and Maintenance') return 'Patient education';
+  if (category === 'Physiological Adaptation') return 'Assessment-first';
+  return 'Clinical judgment';
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = createClient();
@@ -38,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     const { data: question, error: questionError } = await supabase
       .from('quiz_questions')
-      .select('id, session_id, question_index, question_stem, options, correct_answer, user_answer, is_correct, rationale_correct, rationale_incorrect, nclex_category, difficulty, quiz_sessions!inner(id, user_id, source_type, nclex_category)')
+      .select('id, session_id, question_index, question_stem, options, correct_answer, user_answer, is_correct, rationale_correct, rationale_incorrect, nclex_category, difficulty, mistake_type, reasoning_trap, fix_instruction, retest_focus, quiz_sessions!inner(id, user_id, source_type, nclex_category)')
       .eq('id', questionId)
       .eq('session_id', quizSessionId)
       .single();
@@ -56,7 +68,8 @@ export async function POST(req: NextRequest) {
     }
 
     const category = question.nclex_category || session.nclex_category || 'NCLEX Review';
-    const title = `Review Missed Question — ${category}`;
+    const mistakeType = question.mistake_type || fallbackMistakeType(category);
+    const title = `Fix Weakness — ${mistakeType}`;
     const options = Array.isArray(question.options) ? question.options : [];
     const selectedAnswer = question.user_answer || 'Not answered';
     const selectedOptionText = options.find((option: any) => option.label === selectedAnswer)?.text;
@@ -67,15 +80,20 @@ export async function POST(req: NextRequest) {
         : undefined;
 
     const keyCue = compactSentence(question.rationale_correct, 160);
-    const trap = compactSentence(selectedRationale, 140);
+    const trap = question.reasoning_trap || compactSentence(selectedRationale, 140);
+    const fixInstruction = question.fix_instruction || 'Let’s identify the cue that should have changed your priority.';
+    const retestFocus = question.retest_focus || `${mistakeType} practice`;
 
     const seededContent = [
       'Let’s fix this missed question.',
+      `**Mistake Type: ${mistakeType}**`,
+      trap ? `**The trap:** ${trap}` : null,
+      fixInstruction ? `**How to fix it:** ${fixInstruction}` : null,
       `You chose **${selectedAnswer}${selectedOptionText ? `: ${selectedOptionText}` : ''}**.`,
       `Better answer: **${question.correct_answer}${correctOptionText ? `: ${correctOptionText}` : ''}**.`,
       keyCue ? `Key cue: ${keyCue}` : null,
-      trap ? `Trap: ${trap}` : null,
-      'Your move: what cue should have changed your priority?'
+      `Next focus: ${retestFocus}.`,
+      'Your move: what made your answer feel right at first?'
     ].filter(Boolean).join('\n\n');
 
     const { data: chat, error: chatError } = await supabase
@@ -86,7 +104,7 @@ export async function POST(req: NextRequest) {
         session_type: 'question',
         title,
         metadata: {
-          source: 'quiz_dig_deeper',
+          source: 'quiz_fix_weakness',
           quizSessionId,
           questionId,
           questionIndex: question.question_index,
@@ -97,13 +115,17 @@ export async function POST(req: NextRequest) {
           correctAnswer: question.correct_answer,
           rationaleCorrect: question.rationale_correct,
           rationaleForSelectedAnswer: selectedRationale || null,
+          mistakeType,
+          reasoningTrap: trap,
+          fixInstruction,
+          retestFocus,
         },
       })
       .select('id, title, session_type, mode')
       .single();
 
     if (chatError || !chat) {
-      console.error('[Quiz Dig Deeper] Create chat error:', chatError);
+      console.error('[Quiz Fix Weakness] Create chat error:', chatError);
       return NextResponse.json({ error: 'Failed to create tutor session' }, { status: 500 });
     }
 
@@ -117,7 +139,7 @@ export async function POST(req: NextRequest) {
       });
 
     if (messageError) {
-      console.error('[Quiz Dig Deeper] Seed message error:', messageError);
+      console.error('[Quiz Fix Weakness] Seed message error:', messageError);
       return NextResponse.json({ error: 'Failed to seed tutor context' }, { status: 500 });
     }
 
@@ -128,7 +150,7 @@ export async function POST(req: NextRequest) {
       mode: chat.mode || 'tutor',
     });
   } catch (error) {
-    console.error('[Quiz Dig Deeper] POST error:', error);
+    console.error('[Quiz Fix Weakness] POST error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
