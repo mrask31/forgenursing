@@ -2,22 +2,22 @@ import type { Metadata } from 'next'
 import NclexPracticePage from './NclexPracticeClient'
 
 export const metadata: Metadata = {
-  title: 'NCLEX Practice Questions From Your Nursing Notes',
+  title: 'Stop Guessing Between Two Nursing Answers | ForgeNursing',
   description:
-    'ForgeNursing turns nursing notes into NCLEX-style practice questions, rationales, and missed-answer explanations using clinical judgment.',
+    'ForgeNursing helps nursing students find the clinical judgment mistake behind missed NCLEX-style questions, then practice the weakness again.',
   openGraph: {
-    title: 'NCLEX Practice Questions From Your Nursing Notes | ForgeNursing',
+    title: 'Stop Guessing Between Two Nursing Answers | ForgeNursing',
     description:
-      'ForgeNursing turns nursing notes into NCLEX-style practice questions, rationales, and missed-answer explanations using clinical judgment.',
+      'Miss a question, find the thinking error, fix the clinical judgment pattern, and practice again with ForgeNursing.',
     url: '/nclex-practice',
     siteName: 'ForgeNursing',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'NCLEX Practice Questions From Your Nursing Notes | ForgeNursing',
+    title: 'Stop Guessing Between Two Nursing Answers | ForgeNursing',
     description:
-      'Turn your nursing notes into NCLEX-style practice questions with rationales.',
+      'ForgeNursing shows the clinical judgment mistake behind missed NCLEX-style questions.',
   },
   alternates: {
     canonical: '/nclex-practice',
