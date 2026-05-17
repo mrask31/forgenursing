@@ -4,10 +4,10 @@ export default function HowItClicks() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 sm:mb-14">
           <h2 id="how-forge-thinks-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3 sm:mb-4">
-            How Forge teaches clinical reasoning
+            Miss → Map → Fix → Retest
           </h2>
           <p className="text-base sm:text-lg text-[#1E2D3D]/70 max-w-2xl mx-auto">
-            Not steps — a real conversation. Forge never hands you the answer. Forge teaches you to find it.
+            Most apps explain the answer. ForgeNursing helps you find the clinical judgment mistake that made you choose the wrong one.
           </p>
         </div>
 
@@ -21,90 +21,55 @@ export default function HowItClicks() {
             </div>
             <div>
               <div className="text-xs font-bold text-white">Forge</div>
-              <div className="text-[10px] text-[#0BBCD4]">Clinical Preceptor · NP</div>
+              <div className="text-[10px] text-[#0BBCD4]">Clinical Judgment Trainer</div>
             </div>
           </div>
 
           <div className="p-5 sm:p-6 space-y-4">
-            {/* Student question */}
-            <div className="flex justify-end">
-              <div className="bg-[#0B2545] text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-[85%] shadow-sm">
-                <p className="text-sm font-medium">What are the priority assessments for a patient with heart failure?</p>
+            {/* Miss */}
+            <div className="bg-white border border-[#DDE5EE] rounded-2xl px-5 py-4 shadow-sm space-y-3">
+              <div className="bg-red-50 border border-red-100 rounded-xl p-3.5">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[10px] font-bold text-red-700 uppercase tracking-widest">MISS</span>
+                  <span className="text-[10px] text-red-700/60">· You chose the tempting answer</span>
+                </div>
+                <p className="text-sm text-[#1E2D3D] leading-relaxed">
+                  You picked <strong>A: Give detailed information about the procedure.</strong> It sounds helpful — but the client is anxious right now.
+                </p>
               </div>
-            </div>
 
-            {/* Forge response */}
-            <div className="flex justify-start">
-              <div className="bg-white border border-[#DDE5EE] rounded-2xl rounded-tl-sm px-5 py-4 max-w-[100%] shadow-sm space-y-3 w-full">
-
-                {/* ORIENT */}
-                <div className="bg-[#E0F4F6] rounded-xl p-3.5">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-widest">ORIENT</span>
-                    <span className="text-[10px] text-[#0D8F9C]/70">· Building foundational understanding</span>
-                  </div>
-                  <p className="text-sm text-[#1E2D3D] leading-relaxed">
-                    Heart failure means the heart can't pump effectively. Blood backs up — into the lungs (left-sided) or the body (right-sided). Before we prioritize, we need to know which direction the failure is going.
-                  </p>
+              {/* Map */}
+              <div className="bg-[#0B2545] rounded-xl p-3.5 text-white">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">MAP</span>
+                  <span className="text-[10px] text-white/50">· Identify the mistake type</span>
                 </div>
+                <p className="text-sm font-bold mb-1">Mistake Type: Therapeutic communication</p>
+                <p className="text-sm text-white/85 leading-relaxed">
+                  The trap was educating before acknowledging fear. When emotion is the cue, the nurse first validates the client’s concern.
+                </p>
+              </div>
 
-                {/* THE MAP */}
-                <div className="bg-[#0B2545]/5 rounded-xl p-3.5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-bold text-[#0B2545] uppercase tracking-widest">THE MAP</span>
-                    <span className="text-[10px] text-[#0B2545]/50">· Priority ladder</span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {[
-                      { num: '1', label: 'Respiratory status', detail: 'O2 sat, lung sounds, RR, work of breathing' },
-                      { num: '2', label: 'Circulatory status', detail: 'BP, HR, skin perfusion, cap refill' },
-                      { num: '3', label: 'Fluid balance', detail: 'Edema, I&O, daily weight, JVD' },
-                      { num: '4', label: 'Mental status', detail: 'Confusion = decreased cerebral perfusion' },
-                    ].map((item) => (
-                      <div key={item.num} className="flex items-start gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-[#0B2545] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{item.num}</span>
-                        <div>
-                          <span className="text-xs font-bold text-[#0B2545]">{item.label}</span>
-                          <span className="text-xs text-[#1E2D3D]/70"> — {item.detail}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              {/* Fix */}
+              <div className="bg-[#E0F4F6] border border-[#0D8F9C]/20 rounded-xl p-3.5">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-widest">FIX</span>
+                  <span className="text-[10px] text-[#0D8F9C]/70">· Learn the reasoning move</span>
                 </div>
+                <p className="text-sm text-[#1E2D3D] leading-relaxed">
+                  Better answer: <strong>“Tell me what concerns you most about the procedure.”</strong> This opens assessment of fear before teaching.
+                </p>
+              </div>
 
-                {/* REASONING */}
-                <div className="bg-white border border-[#DDE5EE] rounded-xl p-3.5">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] font-bold text-[#0B2545] uppercase tracking-widest">REASONING</span>
-                    <span className="text-[10px] text-[#0B2545]/50">· Socratic guidance</span>
-                  </div>
-                  <p className="text-sm text-[#1E2D3D] leading-relaxed">
-                    Before I give you the full assessment checklist — what tells you this patient is in distress <em>right now</em>? Which system is most threatened when fluid overloads the pulmonary circulation?
-                  </p>
+              {/* Retest */}
+              <div className="bg-white border border-[#DDE5EE] rounded-xl p-3.5">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[10px] font-bold text-[#0B2545] uppercase tracking-widest">RETEST</span>
+                  <span className="text-[10px] text-[#0B2545]/50">· Practice the same weakness again</span>
                 </div>
-
-                {/* TRAP */}
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] font-bold text-amber-700 uppercase tracking-widest">TRAP</span>
-                    <span className="text-[10px] text-amber-600/70">· Common NCLEX mistake</span>
-                  </div>
-                  <p className="text-sm text-[#1E2D3D] leading-relaxed">
-                    Students often jump straight to administering diuretics. NCLEX will test whether you assess respiratory status <strong>before</strong> any intervention. Airway always comes first.
-                  </p>
-                </div>
-
-                {/* CHECK */}
-                <div className="bg-[#0D8F9C]/10 rounded-xl p-3.5">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-widest">CHECK</span>
-                    <span className="text-[10px] text-[#0D8F9C]/70">· Test your understanding</span>
-                  </div>
-                  <p className="text-sm text-[#1E2D3D] leading-relaxed">
-                    Which specific vital sign finding would prompt you to call a rapid response immediately for this patient?
-                  </p>
-                </div>
-
+                <p className="text-sm text-[#1E2D3D] leading-relaxed">
+                  Forge gives you another question targeting the same judgment pattern, so you do not just memorize one rationale — you fix the habit.
+                </p>
               </div>
             </div>
           </div>
@@ -112,7 +77,7 @@ export default function HowItClicks() {
 
         {/* Caption */}
         <p className="text-center text-sm text-[#1E2D3D]/60 mt-6 italic max-w-2xl mx-auto">
-          "Forge doesn't give you the answer. Forge teaches you to find it — the way a real preceptor does."
+          "The goal is not more questions. The goal is knowing why you picked the wrong answer."
         </p>
       </div>
     </section>
