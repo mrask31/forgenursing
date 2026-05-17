@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Upload, CheckCircle, BookOpen, AlertTriangle, HelpCircle, FileQuestion } from 'lucide-react'
+import { ArrowRight, Upload, CheckCircle, BookOpen, AlertTriangle, HelpCircle, FileQuestion, Target, RotateCcw } from 'lucide-react'
 
 function trackEvent(eventName: string) {
   try {
@@ -12,13 +12,6 @@ function trackEvent(eventName: string) {
 
 /* ── Product Preview Card ── */
 function QuizPreviewCard() {
-  const options = [
-    { label: 'A', text: 'Encourage oral fluids', correct: false },
-    { label: 'B', text: 'Raise the head of the bed and assess respiratory status', correct: true },
-    { label: 'C', text: 'Document the finding and reassess in one hour', correct: false },
-    { label: 'D', text: 'Teach incentive spirometer use', correct: false },
-  ]
-
   return (
     <div className="bg-white border border-[#DDE5EE] rounded-2xl shadow-xl shadow-[#0B2545]/8 overflow-hidden">
       {/* Chrome bar */}
@@ -29,7 +22,7 @@ function QuizPreviewCard() {
           <div className="w-2 h-2 rounded-full bg-white/20" />
         </div>
         <span className="flex-1 text-center text-white/50 text-[10px] font-medium">
-          NCLEX-style practice preview
+          Missed question review
         </span>
       </div>
 
@@ -38,63 +31,51 @@ function QuizPreviewCard() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-wide">
-              Sample Question
+              Two answers look right
             </span>
-            <span className="text-[10px] text-[#1E2D3D]/40">Priority Setting · Difficulty 3</span>
+            <span className="text-[10px] text-[#1E2D3D]/40">Therapeutic Communication</span>
           </div>
           <p className="text-sm text-[#0B2545] font-medium leading-relaxed">
-            A postoperative client reports shortness of breath and has an oxygen
-            saturation of 88%. What is the priority nursing action?
+            A client says, “I am scared something will go wrong during my cardiac catheterization.” What is the nurse’s best response?
           </p>
         </div>
 
-        {/* Options */}
-        <div className="space-y-2">
-          {options.map((opt) => (
-            <div
-              key={opt.label}
-              className={`flex items-start gap-2.5 rounded-lg border px-3 py-2.5 text-xs ${
-                opt.correct
-                  ? 'border-[#0D8F9C] bg-[#E0F4F6]/60'
-                  : 'border-[#DDE5EE] bg-[#F7F9FB]'
-              }`}
-            >
-              <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-px ${
-                  opt.correct
-                    ? 'bg-[#0D8F9C] text-white'
-                    : 'bg-[#DDE5EE] text-[#1E2D3D]/60'
-                }`}
-              >
-                {opt.label}
-              </span>
-              <span className={`leading-snug ${opt.correct ? 'text-[#0B2545] font-semibold' : 'text-[#1E2D3D]/70'}`}>
-                {opt.text}
-              </span>
-              {opt.correct && (
-                <CheckCircle className="w-4 h-4 text-[#0D8F9C] flex-shrink-0 ml-auto mt-px" />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Rationale */}
-        <div className="bg-[#E0F4F6]/40 border border-[#0D8F9C]/20 rounded-lg p-3">
-          <div className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-wide mb-1">
-            Rationale
+        {/* Missed choice */}
+        <div className="bg-red-50 border border-red-100 rounded-lg p-3">
+          <div className="text-[10px] font-bold text-red-700 uppercase tracking-wide mb-1">
+            You chose A
           </div>
           <p className="text-xs text-[#1E2D3D]/80 leading-relaxed">
-            Priority questions start with airway and breathing. This client has
-            acute oxygenation concerns, so the nurse should position the client
-            and assess respiratory status immediately.
+            Provide detailed information about the procedure and possible complications.
           </p>
         </div>
 
-        {/* Dig Deeper pill */}
+        {/* Better answer */}
+        <div className="bg-[#E0F4F6]/60 border border-[#0D8F9C]/30 rounded-lg p-3">
+          <div className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-wide mb-1">
+            Better answer: B
+          </div>
+          <p className="text-xs text-[#1E2D3D]/80 leading-relaxed">
+            Acknowledge the client’s feelings and ask what concerns them most.
+          </p>
+        </div>
+
+        {/* Mistake type */}
+        <div className="bg-[#0B2545] rounded-lg p-3 text-white">
+          <div className="text-[10px] font-bold uppercase tracking-wide mb-1 text-white/60">
+            Mistake Type
+          </div>
+          <p className="text-sm font-bold mb-1">Therapeutic communication</p>
+          <p className="text-xs text-white/85 leading-relaxed">
+            You tried to educate before reducing anxiety. Forge helps you spot the thinking error, not just memorize the answer.
+          </p>
+        </div>
+
+        {/* Fix weakness pill */}
         <div className="flex justify-end">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0B2545] text-white rounded-full text-[11px] font-semibold">
-            <BookOpen className="w-3 h-3" />
-            Dig Deeper with Tutor
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0D8F9C] text-white rounded-full text-[11px] font-semibold">
+            <Target className="w-3 h-3" />
+            Fix this weakness
           </span>
         </div>
       </div>
@@ -111,13 +92,14 @@ export default function NclexPracticePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left: Copy */}
             <div className="order-1">
+              <p className="text-xs font-bold text-[#0D8F9C] uppercase tracking-widest mb-3">
+                Clinical Judgment Trainer
+              </p>
               <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight text-[#0B2545] font-bold mb-4">
-                Turn Your Nursing Notes Into NCLEX-Style Practice Questions
+                Stop guessing between two nursing answers that both look right.
               </h1>
               <p className="text-base text-[#1E2D3D]/80 mb-6 leading-relaxed">
-                Upload your study guide or choose a nursing topic. ForgeNursing
-                creates practice questions, shows rationales, and helps you
-                understand every missed answer using clinical judgment.
+                ForgeNursing helps you practice from your notes, miss questions safely, and find the clinical judgment mistake behind each wrong answer — priority, safety, assessment, delegation, medication, or therapeutic communication.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -134,12 +116,12 @@ export default function NclexPracticePage() {
                   onClick={() => trackEvent('nclex_practice_secondary_cta_clicked')}
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-[#0B2545]/30 text-[#0B2545] rounded-lg text-sm font-semibold hover:border-[#0D8F9C] hover:text-[#0D8F9C] transition-colors"
                 >
-                  See How It Works
+                  See Miss → Map → Fix
                 </a>
               </div>
 
               <p className="text-xs text-[#1E2D3D]/50">
-                Free beta access · No credit card required · Built for ADN, BSN, LPN, and MSN students
+                7-day free trial · No credit card required · Built for ADN, BSN, LPN, and MSN students
               </p>
             </div>
 
@@ -155,18 +137,17 @@ export default function NclexPracticePage() {
       <section className="py-10 sm:py-14" aria-label="The problem">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] text-center mb-2">
-            More questions are not enough if you do not understand why you missed them.
+            Getting it wrong is not the problem. Not knowing why you picked it is.
           </h2>
           <p className="text-sm sm:text-base text-[#1E2D3D]/70 text-center mb-8 max-w-xl mx-auto">
-            Test banks can show you the answer. ForgeNursing helps you reason
-            through the question so you can recognize the pattern next time.
+            Most practice tools stop at rationales. ForgeNursing goes one step deeper by mapping the thinking error behind the miss.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { icon: AlertTriangle, text: 'I keep missing priority questions.' },
-              { icon: HelpCircle, text: 'The rationale still does not make sense.' },
-              { icon: FileQuestion, text: 'My class notes do not match generic question banks.' },
+              { icon: AlertTriangle, text: 'I narrow it down to two answers and still pick wrong.' },
+              { icon: HelpCircle, text: 'The rationale tells me the answer but not my mistake.' },
+              { icon: FileQuestion, text: 'I keep missing the same kind of question.' },
             ].map((card, i) => (
               <div
                 key={i}
@@ -184,7 +165,7 @@ export default function NclexPracticePage() {
       <section className="bg-white py-10 sm:py-14" aria-label="Solution">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] text-center mb-8">
-            Practice from your material. Learn from your mistakes.
+            Miss one. Find the thinking error. Fix the pattern.
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -192,17 +173,17 @@ export default function NclexPracticePage() {
               {
                 icon: Upload,
                 title: 'Practice from your notes',
-                body: 'Upload study guides, slides, or class material and generate NCLEX-style questions.',
+                body: 'Upload study guides, slides, or class material and generate NCLEX-style practice.',
               },
               {
-                icon: CheckCircle,
-                title: 'Get rationales immediately',
-                body: 'See why the correct answer is right and why the other options are wrong.',
+                icon: Target,
+                title: 'Map the mistake type',
+                body: 'See if you missed priority, safety, assessment, delegation, medication, knowledge, or communication.',
               },
               {
-                icon: BookOpen,
-                title: 'Dig deeper with the tutor',
-                body: 'When you miss one, ForgeNursing opens the question in the tutor so you can work through it step by step.',
+                icon: RotateCcw,
+                title: 'Retest the weakness',
+                body: 'Practice the same judgment pattern again so you can recognize it next time.',
               },
             ].map((card, i) => (
               <div key={i} className="text-center">
@@ -221,15 +202,15 @@ export default function NclexPracticePage() {
       <section id="how-it-works" className="py-10 sm:py-14" aria-label="How it works">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] text-center mb-8">
-            How ForgeNursing works
+            The ForgeNursing loop
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-3xl mx-auto">
             {[
-              { step: '1', text: 'Upload notes or pick a topic' },
-              { step: '2', text: 'Start a short practice quiz' },
-              { step: '3', text: 'Review rationales after each answer' },
-              { step: '4', text: 'Dig deeper on missed questions' },
+              { step: '1', text: 'Miss a question' },
+              { step: '2', text: 'Map the mistake type' },
+              { step: '3', text: 'Fix the reasoning' },
+              { step: '4', text: 'Retest the weakness' },
             ].map((item) => (
               <div key={item.step} className="flex flex-col items-center text-center gap-2 p-4">
                 <div className="w-9 h-9 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
@@ -253,7 +234,7 @@ export default function NclexPracticePage() {
 
           <div className="flex flex-wrap justify-center gap-2">
             {[
-              'NCLEX-style questions',
+              'Two-right-answer questions',
               'Priority and safety',
               'Delegation',
               'Med-surg',
@@ -277,11 +258,10 @@ export default function NclexPracticePage() {
       <section className="py-12 sm:py-16" aria-label="Get started">
         <div className="max-w-xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] mb-3">
-            Start with one free quiz.
+            Stop collecting rationales. Start fixing the mistake.
           </h2>
           <p className="text-sm sm:text-base text-[#1E2D3D]/70 mb-6">
-            Try ForgeNursing with your own notes or a nursing topic. No credit
-            card required.
+            Try ForgeNursing with your own notes or a nursing topic. No credit card required.
           </p>
           <Link
             href="/signup"
