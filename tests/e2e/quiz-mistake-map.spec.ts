@@ -13,6 +13,8 @@ import { uniqueTestEmail } from './helpers/users';
  * - Results page summarizes clinical judgment patterns and uses POST handoff
  */
 
+test.describe.configure({ mode: 'serial' });
+
 const TEST_EMAIL = uniqueTestEmail('mistake-map');
 const TEST_PASSWORD = process.env.TEST_USER_PASSWORD!;
 
