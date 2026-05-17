@@ -3,7 +3,7 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { generateText } from 'ai';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
-import { buildQuizPrompt, buildGenericQuizPrompt, getCategoryForIndex } from '@/lib/ai/quiz-prompts';
+import { buildQuizPrompt, buildGenericQuizPrompt, getCategoryForIndex, MISTAKE_TYPES } from '@/lib/ai/quiz-prompts';
 import { z } from 'zod';
 import OpenAI from 'openai';
 
@@ -12,6 +12,101 @@ export const maxDuration = 30;
 const openaiEmbeddings = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const MistakeTypeSchema = z.enum(MISTAKE_TYPES);
+
+type MistakeType = z.infer<typeof MistakeTypeSchema>;
+
+function fallbackMistakeType(category?: string | null): MistakeType {
+  switch (category) {
+    case 'Management of Care':
+    case 'Priority Setting':
+      return 'Priority-setting';
+    case 'Safety and Infection Control':
+      return 'Safety';
+    case 'Delegation':
+      return 'Delegation';
+    case 'Pharmacological Therapies':
+      return 'Medication reasoning';
+    case 'Reduction of Risk Potential':
+      return 'Lab / diagnostic interpretation';
+    case 'Psychosocial Integrity':
+      return 'Therapeutic communication';
+    case 'Health Promotion and Maintenance':
+      return 'Patient education';
+    case 'Physiological Adaptation':
+      return 'Assessment-first';
+    default:
+      return 'Pathophysiology / knowledge gap';
+  }
+}
+
+function defaultReasoningTrap(mistakeType: MistakeType): string {
+  switch (mistakeType) {
+    case 'Priority-setting':
+      return 'The tempting answer may help later, but it does not address the most immediate priority first.';
+    case 'Safety':
+      return 'The tempting answer may be reasonable, but it misses the action that protects the client from harm first.';
+    case 'Assessment-first':
+      return 'The tempting answer jumps to intervention before gathering the assessment data needed to act safely.';
+    case 'Therapeutic communication':
+      return 'The tempting answer gives information or reassurance before acknowledging the client’s concern.';
+    case 'Delegation':
+      return 'The tempting answer gives the wrong task to the wrong team member or misses RN accountability.';
+    case 'Medication reasoning':
+      return 'The tempting answer misses a medication safety cue, expected effect, contraindication, or adverse effect pattern.';
+    case 'Lab / diagnostic interpretation':
+      return 'The tempting answer misses the lab or diagnostic cue that changes the priority.';
+    case 'Patient education':
+      return 'The tempting answer misses what the patient must understand or do safely after teaching.';
+    default:
+      return 'The tempting answer reflects a knowledge gap that changes the clinical decision.';
+  }
+}
+
+function defaultFixInstruction(mistakeType: MistakeType): string {
+  switch (mistakeType) {
+    case 'Priority-setting':
+      return 'When two actions both seem appropriate, choose the one that addresses the most immediate threat first.';
+    case 'Safety':
+      return 'Before choosing an action, ask which option prevents harm or reduces risk right now.';
+    case 'Assessment-first':
+      return 'Use assessment-before-intervention unless the client is already in immediate danger.';
+    case 'Therapeutic communication':
+      return 'When emotion is the cue, acknowledge feelings before teaching, explaining, or reassuring.';
+    case 'Delegation':
+      return 'Match the task to scope of practice, stability of the client, and RN responsibility.';
+    case 'Medication reasoning':
+      return 'Before giving or evaluating a medication, check the safety cue, expected effect, and adverse-effect pattern.';
+    case 'Lab / diagnostic interpretation':
+      return 'Tie abnormal data to the clinical risk it creates, then choose the action that addresses that risk first.';
+    case 'Patient education':
+      return 'Focus teaching on the behavior that keeps the patient safe after discharge or self-care.';
+    default:
+      return 'Go back to the underlying concept, then connect it to the safest nursing action.';
+  }
+}
+
+function normalizeMistakeMetadata(questionData: any, lockedCategory: string) {
+  const parsedMistakeType = MistakeTypeSchema.safeParse(questionData?.mistake_type);
+  const mistakeType = parsedMistakeType.success ? parsedMistakeType.data : fallbackMistakeType(lockedCategory);
+
+  return {
+    mistake_type: mistakeType,
+    reasoning_trap:
+      typeof questionData?.reasoning_trap === 'string' && questionData.reasoning_trap.trim().length > 0
+        ? questionData.reasoning_trap.trim()
+        : defaultReasoningTrap(mistakeType),
+    fix_instruction:
+      typeof questionData?.fix_instruction === 'string' && questionData.fix_instruction.trim().length > 0
+        ? questionData.fix_instruction.trim()
+        : defaultFixInstruction(mistakeType),
+    retest_focus:
+      typeof questionData?.retest_focus === 'string' && questionData.retest_focus.trim().length > 0
+        ? questionData.retest_focus.trim()
+        : `${mistakeType.toLowerCase()} practice`,
+  };
+}
 
 // Zod schema for validating Claude's JSON response
 const QuizQuestionSchema = z.object({
@@ -25,6 +120,10 @@ const QuizQuestionSchema = z.object({
   rationale_incorrect: z.record(z.enum(['A', 'B', 'C', 'D']), z.string()),
   nclex_category: z.string(),
   difficulty: z.number().int().min(1).max(5),
+  mistake_type: MistakeTypeSchema.optional(),
+  reasoning_trap: z.string().min(10).optional(),
+  fix_instruction: z.string().min(10).optional(),
+  retest_focus: z.string().min(3).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -70,7 +169,7 @@ export async function POST(req: NextRequest) {
     // return it instead of trying to generate and insert a duplicate question_index.
     const { data: existingQuestion } = await supabase
       .from('quiz_questions')
-      .select('id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer')
+      .select('id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer, mistake_type, reasoning_trap, fix_instruction, retest_focus')
       .eq('session_id', sessionId)
       .eq('question_index', questionIndex)
       .maybeSingle();
@@ -85,6 +184,10 @@ export async function POST(req: NextRequest) {
           options: existingQuestion.options,
           nclex_category: existingQuestion.nclex_category,
           difficulty: existingQuestion.difficulty,
+          mistake_type: existingQuestion.mistake_type,
+          reasoning_trap: existingQuestion.reasoning_trap,
+          fix_instruction: existingQuestion.fix_instruction,
+          retest_focus: existingQuestion.retest_focus,
         },
         resumed: true,
       });
@@ -187,7 +290,7 @@ export async function POST(req: NextRequest) {
 
         const { text } = await generateText({
           model: anthropic('claude-sonnet-4-20250514') as any,
-          maxTokens: 1000,
+          maxTokens: 1200,
           prompt: prompt + retryHint,
         });
 
@@ -210,6 +313,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const mistakeMetadata = normalizeMistakeMetadata(questionData, lockedCategory);
+
     // Insert into quiz_questions table
     const { data: question, error: insertError } = await supabase
       .from('quiz_questions')
@@ -225,8 +330,9 @@ export async function POST(req: NextRequest) {
         difficulty: questionData!.difficulty,
         source_doc_id: sourceDocId,
         source_chunk_text: sourceChunkText,
+        ...mistakeMetadata,
       })
-      .select('id, session_id, question_index, question_stem, options, nclex_category, difficulty')
+      .select('id, session_id, question_index, question_stem, options, nclex_category, difficulty, mistake_type, reasoning_trap, fix_instruction, retest_focus')
       .single();
 
     if (insertError) {
