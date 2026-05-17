@@ -12,6 +12,10 @@ interface QuizRationaleProps {
   rationaleIncorrect: Record<string, string>
   nclexCategory: string
   difficulty: number
+  mistakeType?: string | null
+  reasoningTrap?: string | null
+  fixInstruction?: string | null
+  retestFocus?: string | null
   sessionId: string
   questionId: string
   questionIndex: number
@@ -27,17 +31,32 @@ const clearTutorAutoSendState = () => {
   localStorage.removeItem('forgenursing-tutor-has-images')
 }
 
+function fallbackMistakeType(category: string) {
+  if (category === 'Psychosocial Integrity') return 'Therapeutic communication'
+  if (category === 'Pharmacological Therapies') return 'Medication reasoning'
+  if (category === 'Safety and Infection Control') return 'Safety'
+  if (category === 'Delegation') return 'Delegation'
+  if (category === 'Reduction of Risk Potential') return 'Lab / diagnostic interpretation'
+  if (category === 'Management of Care' || category === 'Priority Setting') return 'Priority-setting'
+  if (category === 'Health Promotion and Maintenance') return 'Patient education'
+  if (category === 'Physiological Adaptation') return 'Assessment-first'
+  return 'Clinical judgment'
+}
+
 export default function QuizRationale({
   isCorrect, userAnswer, correctAnswer, options, rationaleCorrect,
-  rationaleIncorrect, nclexCategory, difficulty, sessionId, questionId,
-  questionIndex, onNext, isLast,
+  rationaleIncorrect, nclexCategory, difficulty, mistakeType, reasoningTrap,
+  fixInstruction, retestFocus, sessionId, questionId, questionIndex, onNext, isLast,
 }: QuizRationaleProps) {
   const router = useRouter()
   const [isDiggingDeeper, setIsDiggingDeeper] = useState(false)
   const [digDeeperError, setDigDeeperError] = useState<string | null>(null)
   const correctOptionText = options.find(o => o.label === correctAnswer)?.text ?? ''
+  const userOptionText = options.find(o => o.label === userAnswer)?.text ?? ''
+  const displayedMistakeType = mistakeType || fallbackMistakeType(nclexCategory)
+  const showMistakeMap = !isCorrect && displayedMistakeType
 
-  const handleDigDeeper = async () => {
+  const handleFixWeakness = async () => {
     if (isDiggingDeeper) return
 
     setIsDiggingDeeper(true)
@@ -47,6 +66,17 @@ export default function QuizRationale({
     try {
       try {
         const posthog = require('posthog-js').default
+        posthog.capture('fix_weakness_clicked', {
+          session_id: sessionId,
+          question_id: questionId,
+          question_index: questionIndex,
+          nclex_category: nclexCategory,
+          source: 'rationale_screen',
+          user_answer: userAnswer,
+          correct_answer: correctAnswer,
+          mistake_type: displayedMistakeType,
+          retest_focus: retestFocus ?? null,
+        })
         posthog.capture('dig_deeper_clicked', {
           session_id: sessionId,
           question_id: questionId,
@@ -55,6 +85,8 @@ export default function QuizRationale({
           source: 'rationale_screen',
           user_answer: userAnswer,
           correct_answer: correctAnswer,
+          mistake_type: displayedMistakeType,
+          retest_focus: retestFocus ?? null,
         })
       } catch {}
 
@@ -69,7 +101,7 @@ export default function QuizRationale({
       })
 
       if (!response.ok) {
-        console.error('[QuizRationale] Dig deeper handoff failed:', await response.text())
+        console.error('[QuizRationale] Fix weakness handoff failed:', await response.text())
         setDigDeeperError('Could not open tutor. Please try again.')
         return
       }
@@ -83,7 +115,7 @@ export default function QuizRationale({
       clearTutorAutoSendState()
       router.push(`/tutor?sessionId=${data.chatId}`)
     } catch (error) {
-      console.error('[QuizRationale] Dig deeper error:', error)
+      console.error('[QuizRationale] Fix weakness error:', error)
       setDigDeeperError('Could not open tutor. Please try again.')
     } finally {
       setIsDiggingDeeper(false)
@@ -93,16 +125,16 @@ export default function QuizRationale({
   return (
     <div className="space-y-4 pb-40 sm:pb-8">
       <div
-        className="rounded-lg p-4 text-white"
+        className="rounded-xl p-4 text-white"
         style={{ backgroundColor: isCorrect ? '#22C55E' : '#EF4444' }}
       >
         <p className="font-bold text-base">
-          {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+          {isCorrect ? '✓ Correct!' : '✗ Missed this one'}
         </p>
         {!isCorrect && (
-          <div className="mt-1 text-sm">
-            <p>You chose: {userAnswer}</p>
-            <p>Correct answer: {correctAnswer}</p>
+          <div className="mt-2 space-y-1 text-sm">
+            <p>You chose: <span className="font-semibold">{userAnswer}{userOptionText ? ` — ${userOptionText}` : ''}</span></p>
+            <p>Better answer: <span className="font-semibold">{correctAnswer}{correctOptionText ? ` — ${correctOptionText}` : ''}</span></p>
           </div>
         )}
         {isCorrect && (
@@ -110,9 +142,30 @@ export default function QuizRationale({
         )}
       </div>
 
+      {showMistakeMap && (
+        <div className="rounded-xl p-4 text-white" style={{ backgroundColor: '#0B2545' }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1">
+            You missed this because
+          </p>
+          <p className="text-lg font-bold mb-2">Mistake Type: {displayedMistakeType}</p>
+          {reasoningTrap && (
+            <div className="mb-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-1">The trap</p>
+              <p className="text-sm leading-relaxed text-white/90">{reasoningTrap}</p>
+            </div>
+          )}
+          {fixInstruction && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-1">How to fix it</p>
+              <p className="text-sm leading-relaxed text-white/90">{fixInstruction}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       <div>
         <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#0B2545' }}>
-          Why {correctAnswer} is correct
+          Why {correctAnswer} is better
         </p>
         <p className="text-sm text-gray-700 leading-relaxed">{rationaleCorrect}</p>
       </div>
@@ -120,9 +173,20 @@ export default function QuizRationale({
       {!isCorrect && rationaleIncorrect[userAnswer] && (
         <div>
           <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#EF4444' }}>
-            Why {userAnswer} is wrong
+            Why {userAnswer} pulled you in
           </p>
           <p className="text-sm text-gray-700 leading-relaxed">{rationaleIncorrect[userAnswer]}</p>
+        </div>
+      )}
+
+      {showMistakeMap && retestFocus && (
+        <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4">
+          <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#0D8F9C' }}>
+            Next move
+          </p>
+          <p className="text-sm text-gray-700 leading-relaxed">
+            Practice this weakness next: <span className="font-semibold" style={{ color: '#0B2545' }}>{retestFocus}</span>
+          </p>
         </div>
       )}
 
@@ -152,12 +216,12 @@ export default function QuizRationale({
           {!isCorrect && (
             <button
               type="button"
-              onClick={handleDigDeeper}
+              onClick={handleFixWeakness}
               disabled={isDiggingDeeper}
               className="block w-full rounded-lg border text-center font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}
             >
-              {isDiggingDeeper ? 'Opening Tutor…' : 'Dig Deeper with Tutor →'}
+              {isDiggingDeeper ? 'Opening Tutor…' : 'Fix this weakness →'}
             </button>
           )}
         </div>
