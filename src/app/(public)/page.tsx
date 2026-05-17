@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
-import { Check, Clock } from 'lucide-react'
+import { Check } from 'lucide-react'
 import Hero from '@/components/landing/Hero'
 import HowItClicks from '@/components/landing/HowItClicks'
 import ThreeFeatures from '@/components/landing/ThreeFeatures'
@@ -22,7 +22,7 @@ export default function HomePage() {
       name: 'ForgeNursing',
       url: baseUrl,
       logo: `${baseUrl}/logo.png`,
-      description: 'AI clinical preceptor for nursing students using ADPIE framework',
+      description: 'Clinical judgment trainer for nursing students using ADPIE framework',
       sameAs: [],
       contactPoint: {
         '@type': 'ContactPoint',
@@ -44,14 +44,14 @@ export default function HomePage() {
         availability: 'https://schema.org/InStock',
         url: `${baseUrl}/signup`
       },
-      description: 'AI clinical preceptor that helps nursing students turn their own course materials into NCLEX-style practice and clinical reasoning support.',
+      description: 'Clinical judgment trainer that helps nursing students practice from their materials, find the thinking error behind missed answers, and retest weak spots.',
       featureList: [
-        'ADPIE clinical reasoning framework',
-        'Upload your own textbooks and notes',
+        'Mistake-type feedback',
         'NCLEX-style practice quizzes from your materials',
         'General NCLEX practice questions',
-        'AI tutor support for missed questions',
-        'Session history and clinical pearls',
+        'AI tutor support for missed answers',
+        'ADPIE clinical reasoning support',
+        'Weakness-focused practice',
         'BSN, ADN, LPN, MSN program support',
         '7-day free trial',
         'Founding Student pricing'
@@ -67,15 +67,15 @@ export default function HomePage() {
           name: 'What is ForgeNursing?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'ForgeNursing is an AI clinical preceptor for nursing students. Forge teaches clinical reasoning using the ADPIE framework and your own uploaded course materials — textbooks, notes, and syllabi.'
+            text: 'ForgeNursing is a clinical judgment trainer for nursing students. It helps students practice NCLEX-style questions, understand why they missed an answer, and fix the reasoning pattern behind the mistake.'
           }
         },
         {
           '@type': 'Question',
-          name: 'How does Forge use ADPIE?',
+          name: 'What makes Forge different from other NCLEX prep tools?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Every response from Forge follows the ADPIE clinical reasoning structure: Orient (foundational understanding), The Map (priority framework), Reasoning (Socratic guidance), Trap (common NCLEX mistakes), and Check (follow-up question to test understanding).'
+            text: 'Most tools stop at rationales. ForgeNursing maps the thinking error behind a missed answer — such as priority, safety, assessment, delegation, medication, or therapeutic communication — then helps students practice that weakness again.'
           }
         },
         {
@@ -83,7 +83,7 @@ export default function HomePage() {
           name: 'Do I need to upload my own materials?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Forge works best when you upload your syllabus, textbooks, and lecture notes. This helps Forge create practice and explanations from your specific program curriculum, not only generic nursing content.'
+            text: 'Forge works best when you upload your syllabus, textbooks, lecture notes, or study guides. It can also provide general NCLEX-style practice when you do not have materials uploaded.'
           }
         },
         {
@@ -92,14 +92,6 @@ export default function HomePage() {
           acceptedAnswer: {
             '@type': 'Answer',
             text: 'Yes. ForgeNursing includes a 7-day free trial. After the trial, the Founding Student Plan is $9.99 per month or $79 per year. Cancel anytime.'
-          }
-        },
-        {
-          '@type': 'Question',
-          name: 'What makes Forge different from other NCLEX prep tools?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Forge is a clinical preceptor, not just a question bank. It helps you practice from your own materials, then teaches the clinical reasoning behind missed answers using ADPIE.'
           }
         }
       ]
@@ -200,7 +192,7 @@ export default function HomePage() {
               Start free. Then choose monthly or annual.
             </h2>
             <p className="text-base sm:text-lg text-[#1E2D3D]/70">
-              Full ForgeNursing access — practice quizzes, AI tutor support, and uploaded-material study tools. Cancel anytime.
+              Full ForgeNursing access — clinical judgment practice, mistake-type feedback, and tutor support for missed answers. Cancel anytime.
             </p>
           </div>
 
@@ -209,22 +201,18 @@ export default function HomePage() {
             <p className="text-xs font-bold text-[#0B2545] uppercase tracking-widest mb-4">All plans include</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {[
-                { included: true, text: 'NCLEX-style practice quizzes' },
-                { included: true, text: 'Questions from your uploaded materials' },
-                { included: true, text: 'General NCLEX practice when you need it' },
-                { included: true, text: 'AI tutor support for missed answers' },
-                { included: true, text: 'ADPIE clinical reasoning support' },
-                { included: true, text: 'BSN, ADN, LPN, MSN program support' },
-                { included: false, text: 'Clinical simulations (coming soon)' },
-                { included: false, text: 'Persistent course workspace (coming soon)' },
+                'NCLEX-style practice quizzes',
+                'Questions from your uploaded materials',
+                'General NCLEX practice when you need it',
+                'Mistake-type feedback',
+                'AI tutor support for missed answers',
+                'ADPIE clinical reasoning support',
+                'Weakness-focused practice',
+                'BSN, ADN, LPN, MSN program support',
               ].map((item) => (
-                <div key={item.text} className="flex items-start gap-2 text-sm text-[#1E2D3D]">
-                  {item.included ? (
-                    <Check className="w-4 h-4 text-[#0D8F9C] mt-0.5 flex-shrink-0" />
-                  ) : (
-                    <Clock className="w-4 h-4 text-[#94A3B8] mt-0.5 flex-shrink-0" />
-                  )}
-                  <span className="leading-snug">{item.text}</span>
+                <div key={item} className="flex items-start gap-2 text-sm text-[#1E2D3D]">
+                  <Check className="w-4 h-4 text-[#0D8F9C] mt-0.5 flex-shrink-0" />
+                  <span className="leading-snug">{item}</span>
                 </div>
               ))}
             </div>
