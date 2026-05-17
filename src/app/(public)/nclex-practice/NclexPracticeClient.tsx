@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Upload, CheckCircle, BookOpen, AlertTriangle, HelpCircle, FileQuestion, Target, RotateCcw } from 'lucide-react'
+import { ArrowRight, AlertTriangle, HelpCircle, FileQuestion, Target, RotateCcw } from 'lucide-react'
 
 function trackEvent(eventName: string) {
   try {
@@ -161,29 +161,29 @@ export default function NclexPracticePage() {
         </div>
       </section>
 
-      {/* ── Solution Section ── */}
-      <section className="bg-white py-10 sm:py-14" aria-label="Solution">
+      {/* ── Mistake Types Section ── */}
+      <section className="bg-white py-10 sm:py-14" aria-label="Mistake types">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] text-center mb-8">
-            Miss one. Find the thinking error. Fix the pattern.
+            What Forge helps you catch
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
               {
-                icon: Upload,
-                title: 'Practice from your notes',
-                body: 'Upload study guides, slides, or class material and generate NCLEX-style practice.',
+                icon: Target,
+                title: 'Priority traps',
+                body: 'When the question is really asking what matters first — airway, safety, assessment, or urgency.',
               },
               {
-                icon: Target,
-                title: 'Map the mistake type',
-                body: 'See if you missed priority, safety, assessment, delegation, medication, knowledge, or communication.',
+                icon: HelpCircle,
+                title: 'Communication traps',
+                body: 'When a therapeutic response beats teaching, explaining, reassuring, or giving more information.',
               },
               {
                 icon: RotateCcw,
-                title: 'Retest the weakness',
-                body: 'Practice the same judgment pattern again so you can recognize it next time.',
+                title: 'Pattern traps',
+                body: 'When you keep missing the same judgment move and need targeted practice, not another generic rationale.',
               },
             ].map((card, i) => (
               <div key={i} className="text-center">
@@ -205,14 +205,14 @@ export default function NclexPracticePage() {
             The ForgeNursing loop
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-3xl mx-auto">
+          <div className="max-w-xl mx-auto space-y-3">
             {[
-              { step: '1', text: 'Miss a question' },
-              { step: '2', text: 'Map the mistake type' },
-              { step: '3', text: 'Fix the reasoning' },
-              { step: '4', text: 'Retest the weakness' },
+              { step: '1', text: 'Miss a question in practice.' },
+              { step: '2', text: 'Map the mistake type.' },
+              { step: '3', text: 'Fix the reasoning move.' },
+              { step: '4', text: 'Retest the same weakness.' },
             ].map((item) => (
-              <div key={item.step} className="flex flex-col items-center text-center gap-2 p-4">
+              <div key={item.step} className="flex items-center gap-4 rounded-xl bg-white border border-[#DDE5EE] p-4">
                 <div className="w-9 h-9 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
                   {item.step}
                 </div>
