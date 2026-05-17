@@ -78,6 +78,8 @@ export default function QuizResultsClient() {
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [loading, setLoading] = useState(true)
   const [reviewingId, setReviewingId] = useState<string | null>(null)
+  const [fixingQuestionId, setFixingQuestionId] = useState<string | null>(null)
+  const [fixWeaknessError, setFixWeaknessError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!sessionId) return
@@ -126,7 +128,6 @@ export default function QuizResultsClient() {
   const pct = Math.round((score / total) * 100)
   const missed = questions.filter(q => !q.is_correct && q.user_answer)
 
-  // Category breakdown
   const catMap = new Map<string, { correct: number; total: number }>()
   questions.forEach(q => {
     if (!q.nclex_category) return
@@ -139,7 +140,6 @@ export default function QuizResultsClient() {
     ([category, { correct, total }]) => ({ category, correct, total })
   )
 
-  // Clinical judgment pattern breakdown from missed questions
   const mistakeMap = new Map<string, number>()
   missed.forEach(q => {
     const mistakeType = q.mistake_type || fallbackMistakeType(q.nclex_category)
@@ -150,44 +150,77 @@ export default function QuizResultsClient() {
     .sort((a, b) => b.missed - a.missed)
   const topMistake = mistakeBreakdown[0]
 
-  const handleDigDeeper = (q: QuizQuestion) => {
+  const handleFixWeakness = async (q: QuizQuestion) => {
+    if (!sessionId || fixingQuestionId) return
+    setFixWeaknessError(null)
+    setFixingQuestionId(q.id)
+
     try {
       const mistakeType = q.mistake_type || fallbackMistakeType(q.nclex_category)
-      const posthog = require('posthog-js').default
-      posthog.capture('fix_weakness_clicked', {
-        session_id: sessionId,
-        question_id: q.id,
-        question_index: q.question_index,
-        nclex_category: q.nclex_category,
-        source: 'results_screen',
-        user_answer: q.user_answer,
-        correct_answer: q.correct_answer,
-        mistake_type: mistakeType,
-        retest_focus: q.retest_focus ?? null,
+      try {
+        const posthog = require('posthog-js').default
+        posthog.capture('fix_weakness_clicked', {
+          session_id: sessionId,
+          question_id: q.id,
+          question_index: q.question_index,
+          nclex_category: q.nclex_category,
+          source: 'results_screen',
+          user_answer: q.user_answer,
+          correct_answer: q.correct_answer,
+          mistake_type: mistakeType,
+          retest_focus: q.retest_focus ?? null,
+        })
+        posthog.capture('dig_deeper_clicked', {
+          session_id: sessionId,
+          question_id: q.id,
+          question_index: q.question_index,
+          nclex_category: q.nclex_category,
+          source: 'results_screen',
+          user_answer: q.user_answer,
+          correct_answer: q.correct_answer,
+          mistake_type: mistakeType,
+          retest_focus: q.retest_focus ?? null,
+        })
+      } catch {}
+
+      const response = await fetch('/api/quiz/dig-deeper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          quizSessionId: sessionId,
+          questionId: q.id,
+        }),
       })
-      posthog.capture('dig_deeper_clicked', {
-        session_id: sessionId,
-        question_id: q.id,
-        question_index: q.question_index,
-        nclex_category: q.nclex_category,
-        source: 'results_screen',
-        user_answer: q.user_answer,
-        correct_answer: q.correct_answer,
-        mistake_type: mistakeType,
-        retest_focus: q.retest_focus ?? null,
-      })
-    } catch {}
+
+      if (!response.ok) {
+        console.error('[QuizResults] Fix weakness handoff failed:', await response.text())
+        setFixWeaknessError('Could not open tutor. Please try again.')
+        return
+      }
+
+      const data = await response.json()
+      if (!data.chatId) {
+        setFixWeaknessError('Could not open tutor. Please try again.')
+        return
+      }
+
+      router.push(`/tutor?sessionId=${data.chatId}`)
+    } catch (error) {
+      console.error('[QuizResults] Fix weakness error:', error)
+      setFixWeaknessError('Could not open tutor. Please try again.')
+    } finally {
+      setFixingQuestionId(null)
+    }
   }
 
   return (
     <div className="min-h-screen px-4 py-6 pb-40 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div className="space-y-6 pb-24">
-        {/* Header */}
         <h1 className="text-2xl font-bold text-center" style={{ color: '#0B2545' }}>
           Quiz Complete! 🎉
         </h1>
 
-        {/* Score */}
         <div className="rounded-xl border border-gray-200 p-5 text-center space-y-3">
           <p className="text-4xl font-bold" style={{ color: '#0D8F9C' }}>
             {score} / {total}
@@ -204,7 +237,6 @@ export default function QuizResultsClient() {
           </p>
         </div>
 
-        {/* Clinical judgment pattern */}
         {topMistake && (
           <div className="rounded-xl p-5 text-white space-y-3" style={{ backgroundColor: '#0B2545' }}>
             <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
@@ -223,7 +255,6 @@ export default function QuizResultsClient() {
           </div>
         )}
 
-        {/* Mistake breakdown */}
         {mistakeBreakdown.length > 0 && (
           <div className="space-y-3">
             <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Mistake Types to Fix</h2>
@@ -240,7 +271,6 @@ export default function QuizResultsClient() {
           </div>
         )}
 
-        {/* Category breakdown */}
         {categories.length > 0 && (
           <div className="space-y-3">
             <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Performance by Category</h2>
@@ -266,7 +296,10 @@ export default function QuizResultsClient() {
           </div>
         )}
 
-        {/* Missed questions */}
+        {fixWeaknessError && (
+          <p className="text-xs text-red-600">{fixWeaknessError}</p>
+        )}
+
         {missed.length > 0 && (
           <div className="space-y-3">
             <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Missed Questions to Fix</h2>
@@ -284,7 +317,6 @@ export default function QuizResultsClient() {
                       </p>
                     </div>
 
-                    {/* Review toggle */}
                     {reviewingId === q.id && (
                       <div className="rounded-lg p-3 text-sm space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
                         <p><span className="font-medium">Your answer:</span> {q.user_answer}</p>
@@ -303,14 +335,15 @@ export default function QuizResultsClient() {
                       >
                         {reviewingId === q.id ? 'Hide' : 'Review'}
                       </button>
-                      <Link
-                        href={`/tutor?intent=dig-deeper&quizSessionId=${sessionId}&questionId=${q.id}`}
-                        onClick={() => handleDigDeeper(q)}
-                        className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center"
+                      <button
+                        type="button"
+                        onClick={() => handleFixWeakness(q)}
+                        disabled={fixingQuestionId === q.id}
+                        className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center disabled:opacity-60 disabled:cursor-not-allowed"
                         style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
                       >
-                        Fix Weakness →
-                      </Link>
+                        {fixingQuestionId === q.id ? 'Opening…' : 'Fix Weakness →'}
+                      </button>
                     </div>
                   </div>
                 )
@@ -319,7 +352,6 @@ export default function QuizResultsClient() {
           </div>
         )}
 
-        {/* Actions */}
         <div className="space-y-3 pt-2">
           <button
             onClick={() => router.push('/quiz')}
