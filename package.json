@@ -17,7 +17,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
     "test:e2e:quiz-routing": "playwright test tests/e2e/quiz-first-routing.spec.ts --project=desktop-chromium",
-    "test:e2e:tutor-save": "playwright test tests/e2e/tutor-message-save.spec.ts --project=desktop-chromium"
+    "test:e2e:tutor-save": "playwright test tests/e2e/tutor-message-save.spec.ts --project=desktop-chromium",
+    "test:e2e:quiz-mistake-map": "playwright test tests/e2e/quiz-mistake-map.spec.ts --project=desktop-chromium"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
