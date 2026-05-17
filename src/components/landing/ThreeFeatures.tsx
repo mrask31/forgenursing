@@ -1,20 +1,20 @@
-import { BookOpen, Mic, Brain, Upload, FileText } from 'lucide-react'
+import { BookOpen, Brain, Upload, FileText, RotateCcw } from 'lucide-react'
 
 const features = [
   {
     icon: Brain,
-    title: 'Forge thinks in ADPIE',
-    body: 'Every response follows the same clinical reasoning framework your professors use. Orient → Map → Reasoning → Trap → Check. You don\'t just get an answer — you get a preceptor walking you through the thought process.',
+    title: 'Miss → Map → Fix → Retest',
+    body: 'ForgeNursing is built around the moment you get a question wrong. It helps map the mistake type, fix the reasoning, and practice that weakness again.',
   },
   {
     icon: BookOpen,
-    title: 'Forge knows your materials',
-    body: 'Upload your textbooks and class notes. Forge teaches from your curriculum, not generic content. The explanations match what your program teaches and how your professors test.',
+    title: 'See the thinking error',
+    body: 'Not just “right” or “wrong.” Forge shows whether you missed priority, safety, assessment, delegation, medication, knowledge, or therapeutic communication.',
   },
   {
-    icon: Mic,
-    title: 'Forge speaks to you',
-    body: 'Forge has a real NP voice. Toggle it on and hear your clinical preceptor explain concepts out loud while you study. Reinforce learning through listening — not just reading.',
+    icon: RotateCcw,
+    title: 'Practice the pattern again',
+    body: 'The goal is not to memorize one rationale. The goal is to recognize the pattern the next time a question tries to trick you.',
   },
 ]
 
@@ -25,12 +25,12 @@ const UploadCallout = () => (
       <div className="w-8 h-8 bg-[#E0F4F6] rounded-lg flex items-center justify-center">
         <Upload className="w-4 h-4 text-[#0D8F9C]" />
       </div>
-      <p className="text-xs text-[#1E2D3D]/60 text-center">Drop your textbook or class notes here (.pdf, .docx)</p>
+      <p className="text-xs text-[#1E2D3D]/60 text-center">Upload your study guide, slides, or class notes</p>
     </div>
     {/* File chips */}
     <div className="space-y-1.5">
       {[
-        'Fundamentals Ch. 4 — Fluid Balance.pdf',
+        'Med-Surg Exam 2 Study Guide.pdf',
         'Professor Kim — Pharm Notes Week 3.pdf',
       ].map((name) => (
         <div key={name} className="flex items-center gap-2 px-3 py-2 bg-[#E0F4F6] rounded-lg">
@@ -40,7 +40,7 @@ const UploadCallout = () => (
       ))}
     </div>
     <p className="text-xs text-[#1E2D3D]/60 leading-relaxed">
-      Forge teaches from your materials — not generic content.
+      Start from your material, then use missed answers to find the clinical judgment gap.
     </p>
   </div>
 )
@@ -53,10 +53,10 @@ export default function ThreeFeatures() {
         {/* Header */}
         <div className="text-center mb-12 sm:mb-16">
           <h2 id="introduce-forge-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3">
-            This is Forge.
+            Forge trains the judgment behind the answer.
           </h2>
-          <p className="text-lg sm:text-xl text-[#0B2545]/70 italic font-display">
-            Your AI Nurse Practitioner preceptor. Available 24/7.
+          <p className="text-lg sm:text-xl text-[#0B2545]/70 italic font-display max-w-3xl mx-auto">
+            Practice from your notes. Miss one. Find the mistake type. Fix the pattern.
           </p>
         </div>
 
@@ -73,7 +73,7 @@ export default function ThreeFeatures() {
                 </div>
                 <h3 className="text-lg font-bold text-[#0B2545] mb-3">{feat.title}</h3>
                 <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">{feat.body}</p>
-                {feat.title === 'Forge knows your materials' && <UploadCallout />}
+                {feat.title === 'Miss → Map → Fix → Retest' && <UploadCallout />}
               </div>
             )
           })}
@@ -87,7 +87,7 @@ export default function ThreeFeatures() {
           <div className="text-center">
             <div className="text-base font-bold text-[#0B2545]">Forge</div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#0D8F9C] rounded-full mt-1">
-              <span className="text-white text-xs font-semibold">NP · Clinical Preceptor</span>
+              <span className="text-white text-xs font-semibold">Clinical Judgment Trainer</span>
             </div>
           </div>
         </div>
