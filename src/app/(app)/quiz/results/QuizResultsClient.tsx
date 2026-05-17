@@ -17,12 +17,56 @@ interface QuizQuestion {
   rationale_incorrect: Record<string, string>
   nclex_category: string
   difficulty: number
+  mistake_type?: string | null
+  reasoning_trap?: string | null
+  fix_instruction?: string | null
+  retest_focus?: string | null
 }
 
 interface CategoryBreakdown {
   category: string
   correct: number
   total: number
+}
+
+interface MistakeBreakdown {
+  mistakeType: string
+  missed: number
+}
+
+function fallbackMistakeType(category: string | null | undefined) {
+  if (category === 'Psychosocial Integrity') return 'Therapeutic communication'
+  if (category === 'Pharmacological Therapies') return 'Medication reasoning'
+  if (category === 'Safety and Infection Control') return 'Safety'
+  if (category === 'Delegation') return 'Delegation'
+  if (category === 'Reduction of Risk Potential') return 'Lab / diagnostic interpretation'
+  if (category === 'Management of Care' || category === 'Priority Setting') return 'Priority-setting'
+  if (category === 'Health Promotion and Maintenance') return 'Patient education'
+  if (category === 'Physiological Adaptation') return 'Assessment-first'
+  return 'Clinical judgment'
+}
+
+function patternExplanation(mistakeType: string) {
+  switch (mistakeType) {
+    case 'Priority-setting':
+      return 'You may be choosing a reasonable action that helps later instead of the action that matters first.'
+    case 'Safety':
+      return 'You may be missing the choice that prevents harm or reduces immediate risk.'
+    case 'Assessment-first':
+      return 'You may be jumping to an intervention before gathering the data needed to act safely.'
+    case 'Therapeutic communication':
+      return 'You may be teaching, explaining, or reassuring before acknowledging the client’s concern.'
+    case 'Delegation':
+      return 'You may be missing scope of practice, client stability, or RN accountability cues.'
+    case 'Medication reasoning':
+      return 'You may be missing a medication safety cue, adverse effect, contraindication, or expected outcome.'
+    case 'Lab / diagnostic interpretation':
+      return 'You may be missing the abnormal data point that changes the priority.'
+    case 'Patient education':
+      return 'You may be missing the safest teaching priority for what the patient must do next.'
+    default:
+      return 'You missed a clinical judgment pattern worth reviewing before your next quiz.'
+  }
 }
 
 export default function QuizResultsClient() {
@@ -95,9 +139,32 @@ export default function QuizResultsClient() {
     ([category, { correct, total }]) => ({ category, correct, total })
   )
 
+  // Clinical judgment pattern breakdown from missed questions
+  const mistakeMap = new Map<string, number>()
+  missed.forEach(q => {
+    const mistakeType = q.mistake_type || fallbackMistakeType(q.nclex_category)
+    mistakeMap.set(mistakeType, (mistakeMap.get(mistakeType) ?? 0) + 1)
+  })
+  const mistakeBreakdown: MistakeBreakdown[] = Array.from(mistakeMap.entries())
+    .map(([mistakeType, missed]) => ({ mistakeType, missed }))
+    .sort((a, b) => b.missed - a.missed)
+  const topMistake = mistakeBreakdown[0]
+
   const handleDigDeeper = (q: QuizQuestion) => {
     try {
+      const mistakeType = q.mistake_type || fallbackMistakeType(q.nclex_category)
       const posthog = require('posthog-js').default
+      posthog.capture('fix_weakness_clicked', {
+        session_id: sessionId,
+        question_id: q.id,
+        question_index: q.question_index,
+        nclex_category: q.nclex_category,
+        source: 'results_screen',
+        user_answer: q.user_answer,
+        correct_answer: q.correct_answer,
+        mistake_type: mistakeType,
+        retest_focus: q.retest_focus ?? null,
+      })
       posthog.capture('dig_deeper_clicked', {
         session_id: sessionId,
         question_id: q.id,
@@ -106,6 +173,8 @@ export default function QuizResultsClient() {
         source: 'results_screen',
         user_answer: q.user_answer,
         correct_answer: q.correct_answer,
+        mistake_type: mistakeType,
+        retest_focus: q.retest_focus ?? null,
       })
     } catch {}
   }
@@ -134,6 +203,42 @@ export default function QuizResultsClient() {
             Scores reflect AI-generated practice questions for study only and do not predict exam performance.
           </p>
         </div>
+
+        {/* Clinical judgment pattern */}
+        {topMistake && (
+          <div className="rounded-xl p-5 text-white space-y-3" style={{ backgroundColor: '#0B2545' }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+              Your Clinical Judgment Pattern
+            </p>
+            <div>
+              <p className="text-sm text-white/70">Top missed pattern</p>
+              <p className="text-2xl font-bold">{topMistake.mistakeType}</p>
+            </div>
+            <p className="text-sm text-white/85 leading-relaxed">
+              {patternExplanation(topMistake.mistakeType)}
+            </p>
+            <p className="text-xs text-white/50">
+              Missed {topMistake.missed} question{topMistake.missed === 1 ? '' : 's'} in this pattern.
+            </p>
+          </div>
+        )}
+
+        {/* Mistake breakdown */}
+        {mistakeBreakdown.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Mistake Types to Fix</h2>
+            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
+              {mistakeBreakdown.map(item => (
+                <div key={item.mistakeType} className="flex items-center justify-between gap-3">
+                  <span className="text-sm" style={{ color: '#0B2545' }}>{item.mistakeType}</span>
+                  <span className="text-xs rounded-full px-2 py-1 bg-gray-100 text-gray-500">
+                    {item.missed} missed
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Category breakdown */}
         {categories.length > 0 && (
@@ -164,42 +269,52 @@ export default function QuizResultsClient() {
         {/* Missed questions */}
         {missed.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Questions You Missed</h2>
+            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Missed Questions to Fix</h2>
             <div className="rounded-xl border border-gray-200 divide-y divide-gray-100">
-              {missed.map(q => (
-                <div key={q.id} className="p-4 space-y-2">
-                  <p className="text-sm" style={{ color: '#0B2545' }}>
-                    <span className="font-medium">Q{q.question_index + 1}</span> · {q.question_stem.slice(0, 80)}...
-                  </p>
-
-                  {/* Review toggle */}
-                  {reviewingId === q.id && (
-                    <div className="rounded-lg p-3 text-sm space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
-                      <p><span className="font-medium">Your answer:</span> {q.user_answer}</p>
-                      <p><span className="font-medium">Correct:</span> {q.correct_answer}</p>
-                      <p className="text-gray-600">{q.rationale_correct}</p>
+              {missed.map(q => {
+                const mistakeType = q.mistake_type || fallbackMistakeType(q.nclex_category)
+                return (
+                  <div key={q.id} className="p-4 space-y-2">
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
+                        {mistakeType}
+                      </p>
+                      <p className="text-sm" style={{ color: '#0B2545' }}>
+                        <span className="font-medium">Q{q.question_index + 1}</span> · {q.question_stem.slice(0, 80)}...
+                      </p>
                     </div>
-                  )}
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setReviewingId(reviewingId === q.id ? null : q.id)}
-                      className="px-3 py-1.5 rounded text-sm font-medium border"
-                      style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}
-                    >
-                      {reviewingId === q.id ? 'Hide' : 'Review'}
-                    </button>
-                    <Link
-                      href={`/tutor?intent=dig-deeper&quizSessionId=${sessionId}&questionId=${q.id}`}
-                      onClick={() => handleDigDeeper(q)}
-                      className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center"
-                      style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
-                    >
-                      Dig Deeper →
-                    </Link>
+                    {/* Review toggle */}
+                    {reviewingId === q.id && (
+                      <div className="rounded-lg p-3 text-sm space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
+                        <p><span className="font-medium">Your answer:</span> {q.user_answer}</p>
+                        <p><span className="font-medium">Correct:</span> {q.correct_answer}</p>
+                        {q.reasoning_trap && <p><span className="font-medium">Trap:</span> {q.reasoning_trap}</p>}
+                        {q.fix_instruction && <p><span className="font-medium">Fix:</span> {q.fix_instruction}</p>}
+                        <p className="text-gray-600">{q.rationale_correct}</p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setReviewingId(reviewingId === q.id ? null : q.id)}
+                        className="px-3 py-1.5 rounded text-sm font-medium border"
+                        style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}
+                      >
+                        {reviewingId === q.id ? 'Hide' : 'Review'}
+                      </button>
+                      <Link
+                        href={`/tutor?intent=dig-deeper&quizSessionId=${sessionId}&questionId=${q.id}`}
+                        onClick={() => handleDigDeeper(q)}
+                        className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center"
+                        style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
+                      >
+                        Fix Weakness →
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
