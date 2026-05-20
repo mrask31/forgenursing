@@ -2,24 +2,37 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { getBrowserClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { clearSupabaseStorage, isSessionError, debugAuthLog, resetSession } from '@/lib/auth-utils'
 import { hasAccess } from '@/lib/subscription-access'
 import { resolveEntryPath } from '@/lib/resolve-entry-path'
 
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(label)), ms)
+    promise
+      .then((value) => resolve(value))
+      .catch((error) => reject(error))
+      .finally(() => clearTimeout(timer))
+  })
+}
+
 async function clearAuthSession() {
   clearSupabaseStorage()
 
   try {
-    await fetch('/api/auth/clear-session', {
-      method: 'POST',
-      credentials: 'include',
-      cache: 'no-store',
-    })
+    await withTimeout(
+      fetch('/api/auth/clear-session', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+      }),
+      3000,
+      'CLEAR_SESSION_TIMEOUT'
+    )
   } catch (error) {
-    debugAuthLog('Server-side auth cookie clear failed', error)
+    debugAuthLog('Server-side auth cookie clear failed or timed out', error)
   }
 
   clearSupabaseStorage()
@@ -30,22 +43,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
-  const [redirect, setRedirect] = useState('/tutor') // kept for URL ?redirect= param compatibility
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false)
-  
-  const router = useRouter()
 
   const supabase = useMemo(() => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (process.env.NODE_ENV === 'development') {
-      if (!supabaseUrl || !supabaseAnonKey) {
-        console.warn('⚠️ [Login] Supabase environment variables are missing!')
-        console.warn('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✓' : '✗')
-        console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✓' : '✗')
-      }
-    }
 
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error('Supabase configuration is missing. Please check your environment variables.')
@@ -58,23 +60,23 @@ export default function LoginPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const hasAuthError = params.get('error') === 'auth-code-error' || params.get('error') === 'session-error'
-      
+
       if (hasAuthError) {
         clearAuthSession()
       }
-      
+
       ;(window as any).resetSession = resetSession
-      
+
       const metaCacheControl = document.createElement('meta')
       metaCacheControl.httpEquiv = 'Cache-Control'
       metaCacheControl.content = 'no-store, no-cache, must-revalidate, proxy-revalidate'
       document.head.appendChild(metaCacheControl)
-      
+
       const metaPragma = document.createElement('meta')
       metaPragma.httpEquiv = 'Pragma'
       metaPragma.content = 'no-cache'
       document.head.appendChild(metaPragma)
-      
+
       const metaExpires = document.createElement('meta')
       metaExpires.httpEquiv = 'Expires'
       metaExpires.content = '0'
@@ -85,135 +87,101 @@ export default function LoginPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
-      const redirectParam = params.get('redirect')
-      if (redirectParam) {
-        setRedirect(redirectParam)
-      }
-      
       const verified = params.get('verified')
       const verifiedEmail = params.get('email')
+
       if (verified === 'true' && verifiedEmail) {
         setShowVerificationSuccess(true)
         setEmail(verifiedEmail)
-        setMessage({ 
-          text: `Thanks for verifying your email! Please sign in to continue.`, 
-          type: 'success' 
+        setMessage({
+          text: 'Thanks for verifying your email! Please sign in to continue.',
+          type: 'success',
         })
       }
 
       const hasAuthError = params.get('error') === 'auth-code-error' || params.get('error') === 'session-error'
       if (hasAuthError) {
-        const checkAndCleanSession = async () => {
-          try {
-            await new Promise(resolve => setTimeout(resolve, 100))
-            await supabase.auth.signOut().catch(() => null)
-            await clearAuthSession()
-          } catch (error) {
-            debugAuthLog('Cleanup signOut error (expected if no session)', error)
-          }
-        }
-        checkAndCleanSession()
+        clearAuthSession()
       }
     }
-  }, [supabase])
+  }, [])
 
   const handleLogin = async (e: React.FormEvent, retryCount = 0) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     setLoading(true)
     setMessage(null)
 
     debugAuthLog('Sign-in started', { email: email.trim(), retryCount })
 
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => {
-        reject(new Error('TIMEOUT'))
-      }, 30000)
-    })
-
     try {
-      const existingSessionResult = await supabase.auth.getUser()
-      const existingUser = existingSessionResult.data?.user
-      const existingError = existingSessionResult.error
-
-      if (existingError || existingUser) {
-        debugAuthLog('Existing or stale session found, clearing before sign-in', {
-          hasExistingUser: !!existingUser,
-          error: existingError?.message,
-        })
-        await supabase.auth.signOut().catch(() => null)
+      // Do not call supabase.auth.getUser() before login.
+      // A corrupted/stale auth cookie can cause that call to hang and leave the user stuck.
+      // Instead, do a short best-effort cleanup, then sign in directly.
+      if (retryCount === 0) {
         await clearAuthSession()
-        await new Promise(resolve => setTimeout(resolve, 250))
       }
 
-      const signInPromise = supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      })
-
-      const { data, error } = await Promise.race([
-        signInPromise,
-        timeoutPromise,
-      ])
+      const { data, error } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        }),
+        30000,
+        'TIMEOUT'
+      )
 
       debugAuthLog('Sign-in response received', { hasData: !!data, hasError: !!error, userId: data?.user?.id })
 
       if (error) {
         debugAuthLog('Sign-in error', { error: error.message, code: error.code })
-        
+
         if (isSessionError(error) && retryCount === 0) {
           debugAuthLog('Session error detected, clearing storage/cookies and retrying')
           await supabase.auth.signOut().catch(() => null)
           await clearAuthSession()
-          await new Promise(resolve => setTimeout(resolve, 250))
+          await new Promise((resolve) => setTimeout(resolve, 250))
           return handleLogin(e, 1)
         }
 
-        setMessage({ 
-          text: error.message || 'Login failed. Please check your email and password.', 
-          type: 'error' 
+        setMessage({
+          text: error.message || 'Login failed. Please check your email and password.',
+          type: 'error',
         })
         return
       }
 
-      if (!data || !data.user) {
-        debugAuthLog('No user data returned from sign-in')
-        setMessage({ 
-          text: 'Login failed: No user data returned. Please try again.', 
-          type: 'error' 
+      if (!data?.user) {
+        setMessage({
+          text: 'Login failed: No user data returned. Please try again.',
+          type: 'error',
         })
         return
       }
-
-      debugAuthLog('Sign-in successful, syncing subscription then checking access', { userId: data.user.id })
 
       try {
-        const syncRes = await Promise.race([
+        await withTimeout(
           fetch('/api/stripe/sync-subscription', { method: 'POST', credentials: 'include' }),
-          new Promise<Response>((_, reject) => setTimeout(() => reject(new Error('sync_timeout')), 5000)),
-        ])
-        if (syncRes.ok) {
-          debugAuthLog('Subscription synced from Stripe', { ok: true })
-        }
+          5000,
+          'SYNC_TIMEOUT'
+        )
       } catch (_) {
         // Sync is best-effort; continue with profile check
       }
 
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
-        .eq('id', data.user.id)
-        .single()
+      const { data: profile, error: profileError } = await withTimeout(
+        supabase
+          .from('profiles')
+          .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
+          .eq('id', data.user.id)
+          .single(),
+        10000,
+        'PROFILE_TIMEOUT'
+      )
 
       if (profileError) {
         console.error('[Login] Error checking subscription status:', profileError)
-        console.error('[Login] Profile error details:', {
-          message: profileError.message,
-          code: profileError.code,
-          details: profileError.details,
-          hint: profileError.hint
-        })
         window.location.replace('/checkout')
         return
       }
@@ -226,45 +194,46 @@ export default function LoginPage() {
       )
 
       if (userHasAccess) {
-        const entryPath = resolveEntryPath(profile)
-        window.location.replace(entryPath)
+        window.location.replace(resolveEntryPath(profile))
         return
       }
-      
+
       window.location.replace('/checkout')
     } catch (err) {
       debugAuthLog('Unexpected login error', { error: err })
-      
+
       if (err instanceof Error && err.message === 'TIMEOUT') {
-        debugAuthLog('Sign-in timed out after 30 seconds')
-        setMessage({ 
-          text: 'Login is taking longer than expected. Please check your connection and try again.', 
-          type: 'error' 
+        setMessage({
+          text: 'Login is taking longer than expected. Please check your connection and try again.',
+          type: 'error',
+        })
+        return
+      }
+
+      if (err instanceof Error && err.message === 'PROFILE_TIMEOUT') {
+        setMessage({
+          text: 'Login worked, but your profile took too long to load. Please refresh and try again.',
+          type: 'error',
         })
         return
       }
 
       if (isSessionError(err) && retryCount === 0) {
-        debugAuthLog('Session error in catch, clearing storage/cookies and retrying')
         await supabase.auth.signOut().catch(() => null)
         await clearAuthSession()
-        await new Promise(resolve => setTimeout(resolve, 250))
+        await new Promise((resolve) => setTimeout(resolve, 250))
         return handleLogin(e, 1)
       }
 
       console.error('[Login] Unexpected login error:', err)
-      const errorMessage = err instanceof Error 
-        ? err.message 
-        : 'Something went wrong. Please try again.'
-      setMessage({ 
-        text: errorMessage, 
-        type: 'error' 
+      setMessage({
+        text: err instanceof Error ? err.message : 'Something went wrong. Please try again.',
+        type: 'error',
       })
     } finally {
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
       if (currentPath === '/login') {
         setLoading(false)
-        debugAuthLog('Sign-in handler finished, loading state reset')
       }
     }
   }
@@ -382,8 +351,8 @@ export default function LoginPage() {
 
                 {message && (
                   <div className={`p-4 text-sm rounded-xl ${
-                    message.type === 'error' 
-                      ? 'bg-red-50 text-red-700 border border-red-200' 
+                    message.type === 'error'
+                      ? 'bg-red-50 text-red-700 border border-red-200'
                       : 'bg-green-50 text-green-700 border border-green-200'
                   }`}>
                     {message.text}
