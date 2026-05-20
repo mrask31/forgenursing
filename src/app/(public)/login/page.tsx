@@ -123,7 +123,7 @@ export default function LoginPage() {
         await clearAuthSession()
       }
 
-      const { data, error } = await withTimeout(
+      const signInResult: any = await withTimeout(
         supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
@@ -131,6 +131,7 @@ export default function LoginPage() {
         30000,
         'TIMEOUT'
       )
+      const { data, error } = signInResult
 
       debugAuthLog('Sign-in response received', { hasData: !!data, hasError: !!error, userId: data?.user?.id })
 
@@ -170,7 +171,7 @@ export default function LoginPage() {
         // Sync is best-effort; continue with profile check
       }
 
-      const { data: profile, error: profileError } = await withTimeout(
+      const profileResult: any = await withTimeout(
         supabase
           .from('profiles')
           .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
@@ -179,6 +180,7 @@ export default function LoginPage() {
         10000,
         'PROFILE_TIMEOUT'
       )
+      const { data: profile, error: profileError } = profileResult
 
       if (profileError) {
         console.error('[Login] Error checking subscription status:', profileError)
