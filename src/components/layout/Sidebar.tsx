@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { MessageSquare, BarChart3, GraduationCap, BookOpen, Activity, Settings, LogOut, ChevronUp, ClipboardList } from 'lucide-react'
+import { MessageSquare, BarChart3, GraduationCap, BookOpen, Settings, LogOut, ChevronUp, ClipboardList } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import HistoryButton from './HistoryButton'
 
@@ -24,7 +24,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-  const supabase = getBrowserClient()
+        const supabase = getBrowserClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
@@ -48,7 +48,6 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
     loadProfile()
   }, [])
 
-  // Close profile menu on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
@@ -71,7 +70,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   const mainNav = [
     { label: 'Clinical Tutor', href: '/tutor', icon: MessageSquare },
     ...(quizFirstEnabled ? [{ label: 'Practice Questions', href: '/quiz', icon: ClipboardList }] : []),
-    { label: 'My Chart', href: '/readiness', icon: BarChart3, badge: true },
+    { label: 'Judgment Map', href: '/readiness', icon: BarChart3, badge: true },
     { label: 'My Courses', href: '/classes', icon: GraduationCap },
   ]
 
@@ -83,7 +82,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
     if (pathname === href) return true
     if (href === '/classes' && pathname.startsWith('/classes')) return true
     if (href === '/dictionary' && pathname.startsWith('/dictionary')) return true
-    if (href === '/readiness' && pathname.startsWith('/readiness') && label === 'My Chart') return true
+    if (href === '/readiness' && pathname.startsWith('/readiness') && label === 'Judgment Map') return true
     if (href === '/quiz' && pathname.startsWith('/quiz')) return true
     return false
   }
@@ -98,7 +97,6 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   return (
     <aside className="flex w-full h-full flex-col text-[#94A3B8]" style={{ backgroundColor: '#0B2545' }}>
       <div className="flex h-full flex-col px-5 py-6">
-        {/* Logo */}
         <div className="mb-8 px-1">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#0D8F9C' }}>
@@ -116,7 +114,6 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
           </div>
         </div>
 
-        {/* Main Nav */}
         <nav className="flex-1 space-y-6">
           <div className="space-y-1">
             {mainNav.map((item) => {
@@ -145,7 +142,6 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
             })}
           </div>
 
-          {/* Clinical Tools Section */}
           <div>
             <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
               Clinical Tools
@@ -175,7 +171,6 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
             </div>
           </div>
 
-          {/* Session Section */}
           <div>
             <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
               Session
@@ -186,9 +181,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
           </div>
         </nav>
 
-        {/* User Card — clickable with dropdown */}
         <div className="mt-auto pt-5 border-t border-white/10 relative" ref={profileMenuRef}>
-          {/* Dropdown menu — renders above the profile card */}
           {isProfileMenuOpen && (
             <div className="absolute bottom-full left-0 right-0 mb-2 mx-1 rounded-lg overflow-hidden border border-white/10" style={{ backgroundColor: '#112D4E' }}>
               <Link
