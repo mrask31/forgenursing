@@ -13,6 +13,9 @@ const openaiEmbeddings = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const QUESTION_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer, mistake_type, reasoning_trap, fix_instruction, retest_focus';
+const QUESTION_PUBLIC_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, mistake_type, reasoning_trap, fix_instruction, retest_focus';
+
 const MistakeTypeSchema = z.enum(MISTAKE_TYPES);
 
 type MistakeType = z.infer<typeof MistakeTypeSchema>;
@@ -108,7 +111,6 @@ function normalizeMistakeMetadata(questionData: any, lockedCategory: string) {
   };
 }
 
-// Zod schema for validating Claude's JSON response
 const QuizQuestionSchema = z.object({
   question_stem: z.string().min(10),
   options: z.array(z.object({
@@ -126,6 +128,17 @@ const QuizQuestionSchema = z.object({
   retest_focus: z.string().min(3).optional(),
 });
 
+async function fetchExistingPublicQuestion(supabase: any, sessionId: string, questionIndex: number) {
+  const { data } = await supabase
+    .from('quiz_questions')
+    .select(QUESTION_PUBLIC_SELECT)
+    .eq('session_id', sessionId)
+    .eq('question_index', questionIndex)
+    .maybeSingle();
+
+  return data ?? null;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = createClient();
@@ -140,13 +153,12 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { sessionId, questionIndex, sourceType, classId, category } = body;
+    const { sessionId, questionIndex, sourceType, category } = body;
 
     if (!sessionId || questionIndex === undefined || !sourceType) {
       return NextResponse.json({ error: 'Missing required fields: sessionId, questionIndex, sourceType' }, { status: 400 });
     }
 
-    // Verify session belongs to user
     const { data: session, error: sessionError } = await supabase
       .from('quiz_sessions')
       .select('*')
@@ -165,11 +177,9 @@ export async function POST(req: NextRequest) {
     const selectedCategory = category || session.nclex_category || null;
     const lockedCategory = getCategoryForIndex(questionIndex, selectedCategory);
 
-    // Resume/idempotency guard: if this question already exists and is unanswered,
-    // return it instead of trying to generate and insert a duplicate question_index.
     const { data: existingQuestion } = await supabase
       .from('quiz_questions')
-      .select('id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer, mistake_type, reasoning_trap, fix_instruction, retest_focus')
+      .select(QUESTION_SELECT)
       .eq('session_id', sessionId)
       .eq('question_index', questionIndex)
       .maybeSingle();
@@ -193,7 +203,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Get user's program level
+    if (existingQuestion && existingQuestion.answered_at) {
+      return NextResponse.json({ error: 'Question already answered' }, { status: 409 });
+    }
+
     let programLevel: 'LPN' | 'ADN' | 'BSN' | 'MSN' = 'ADN';
     const { data: profile } = await supabase
       .from('profiles')
@@ -204,9 +217,6 @@ export async function POST(req: NextRequest) {
       programLevel = profile.program_level as 'LPN' | 'ADN' | 'BSN' | 'MSN';
     }
 
-    // Get previous question stems for deduplication.
-    // Include current session stems plus recent user-level stems so question 1 of a new quiz
-    // does not repeatedly generate the same high-probability NCLEX scenario.
     const { data: prevQuestions } = await supabase
       .from('quiz_questions')
       .select('question_stem')
@@ -234,7 +244,6 @@ export async function POST(req: NextRequest) {
     let sourceDocId: string | null = null;
 
     if (sourceType === 'document') {
-      // RAG: fetch a document chunk via embedding search
       const ragQuery = `NCLEX nursing question about clinical concepts`;
       try {
         const embeddingResponse = await openaiEmbeddings.embeddings.create({
@@ -254,7 +263,6 @@ export async function POST(req: NextRequest) {
           const { data: matchedChunks } = await supabase.rpc('match_documents', rpcParams);
 
           if (matchedChunks && matchedChunks.length > 0) {
-            // Pick a chunk based on question index to spread across document
             const chunkIndex = questionIndex % matchedChunks.length;
             const chunk = matchedChunks[chunkIndex];
             sourceChunkText = chunk.content || '';
@@ -268,16 +276,12 @@ export async function POST(req: NextRequest) {
       if (sourceChunkText && !selectedCategory) {
         prompt = buildQuizPrompt(programLevel, sourceChunkText, previousStems);
       } else {
-        // Fallback to generic if RAG fails or a specific category was selected.
-        // Category-selected quizzes must stay locked to that category.
         prompt = buildGenericQuizPrompt(programLevel, lockedCategory, previousStems);
       }
     } else {
-      // Generic quiz
       prompt = buildGenericQuizPrompt(programLevel, lockedCategory, previousStems);
     }
 
-    // Call Claude Sonnet via generateText (NOT streamText — need complete JSON)
     let questionData;
     let retries = 0;
     const maxRetries = 2;
@@ -294,7 +298,6 @@ export async function POST(req: NextRequest) {
           prompt: prompt + retryHint,
         });
 
-        // Strip markdown fences if present
         let cleaned = text.trim();
         if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
         if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
@@ -315,7 +318,6 @@ export async function POST(req: NextRequest) {
 
     const mistakeMetadata = normalizeMistakeMetadata(questionData, lockedCategory);
 
-    // Insert into quiz_questions table
     const { data: question, error: insertError } = await supabase
       .from('quiz_questions')
       .insert({
@@ -332,18 +334,20 @@ export async function POST(req: NextRequest) {
         source_chunk_text: sourceChunkText,
         ...mistakeMetadata,
       })
-      .select('id, session_id, question_index, question_stem, options, nclex_category, difficulty, mistake_type, reasoning_trap, fix_instruction, retest_focus')
+      .select(QUESTION_PUBLIC_SELECT)
       .single();
 
     if (insertError) {
-      console.error('[Quiz Generate] Insert error:', insertError);
+      console.warn('[Quiz Generate] Insert failed; checking for existing generated question', insertError);
+      const fallbackQuestion = await fetchExistingPublicQuestion(supabase, sessionId, questionIndex);
+      if (fallbackQuestion) {
+        return NextResponse.json({ question: fallbackQuestion, resumed: true, recovered: true });
+      }
       return NextResponse.json({ error: 'Failed to save question' }, { status: 500 });
     }
 
-    // Return question WITHOUT correct_answer or rationales (those come after answering)
     return NextResponse.json({ question });
   } catch (error: any) {
-    // Handle Anthropic rate limits
     if (error?.status === 429) {
       const retryAfter = error?.headers?.['retry-after'] || 5;
       return NextResponse.json(
