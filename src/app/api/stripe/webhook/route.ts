@@ -102,7 +102,6 @@ async function logWebhookEvent(
 
     if (dbError) {
       console.error('[Webhook] Error logging to database:', dbError)
-    } else {
     }
   } catch (error) {
     console.error('[Webhook] Error in logWebhookEvent:', error)
@@ -140,6 +139,19 @@ async function updateWebhookAttempt(
   }
 }
 
+function subscriptionConfirmationEmailHtml() {
+  return `<div style="font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
+  <p>You're in — and this time it's official.</p>
+  <p>Your ForgeNursing subscription is active. You now have full access to practice quizzes, mistake-type feedback, targeted retests, and the clinical reasoning tutor.</p>
+  <p>If you haven't already, try this first:</p>
+  <p style="background: #E0F4F6; border-left: 4px solid #0D8F9C; padding: 12px 16px; font-weight: bold;">Take a quick practice quiz. Miss one. Then use Forge to find the thinking mistake.</p>
+  <p>That's where ForgeNursing is different: it helps you see why you picked the wrong answer, then lets you fix and retest that weakness.</p>
+  <p>Reply to this email anytime — I read every one personally.</p>
+  <p>Michael</p>
+  <a href="https://forgenursing.com/entry" style="background: linear-gradient(135deg, #0B2545 0%, #0D8F9C 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 10px; display: inline-block; font-weight: 600;">Start Learning →</a>
+</div>`
+}
+
 // Main webhook processing logic (extracted for retry capability)
 async function processWebhookEvent(
   event: Stripe.Event,
@@ -150,7 +162,6 @@ async function processWebhookEvent(
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        
         
         // Get user ID from client_reference_id
         let userId = session.client_reference_id
@@ -196,16 +207,16 @@ async function processWebhookEvent(
           subscription_status: status,
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
+          quiz_first_enabled: true,
         }
         if (tierType) {
           profileUpdate.tier_type = tierType
         }
 
-        const { data: updatedProfile, error: updateError } = await supabase
+        const { error: updateError } = await supabase
           .from('profiles')
           .update(profileUpdate)
           .eq('id', userId)
-          .select()
 
         if (updateError) {
           console.error('[Webhook] Error updating profile:', updateError)
@@ -224,18 +235,7 @@ async function processWebhookEvent(
               to: customerEmail,
               replyTo: 'support@forgenursing.com',
               subject: "You're now subscribed to ForgeNursing",
-              html: `<div style="font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
-  <p>You're in — and this time it's official.</p>
-  <p>Your ForgeNursing subscription is active. Everything you had access to during your trial is still there, and it's not going anywhere.</p>
-  <p>If you haven't already, try this right now:</p>
-  <p style="background: #E0F4F6; border-left: 4px solid #0D8F9C; padding: 12px 16px; font-weight: bold;">→ "Walk me through an NCLEX-style priority question"</p>
-  <p>That's where it clicks for most people.</p>
-  <p>Reply to this email anytime — I read every one personally.</p>
-  <p>
-    Michael
-  </p>
-  <a href="https://forgenursing.com/tutor" style="background: linear-gradient(135deg, #0B2545 0%, #0D8F9C 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 10px; display: inline-block; font-weight: 600;">Log In and Get Started →</a>
-</div>`,
+              html: subscriptionConfirmationEmailHtml(),
             })
           } catch (emailError) {
             console.error('[Webhook] Failed to send subscription confirmation email:', emailError)
@@ -251,7 +251,6 @@ async function processWebhookEvent(
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
         const customerId = subscription.customer as string
-
 
         // Find user by Stripe customer ID
         const { data: profile } = await supabase
@@ -280,14 +279,20 @@ async function processWebhookEvent(
           status = 'expired'
         }
 
+        const updatePayload: Record<string, any> = {
+          subscription_status: status,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscription.id,
+        }
+
+        if (status === 'active' || status === 'trialing') {
+          updatePayload.quiz_first_enabled = true
+        }
+
         // Update profile
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({
-            subscription_status: status,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscription.id,
-          })
+          .update(updatePayload)
           .eq('id', profile.id)
 
         if (updateError) {
@@ -298,7 +303,6 @@ async function processWebhookEvent(
           }
         }
 
-        
         return { success: true }
       }
 
@@ -381,7 +385,6 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
-
 
     // Log event as pending
     await logWebhookEvent(supabase, event, 'pending')
