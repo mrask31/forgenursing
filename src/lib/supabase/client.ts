@@ -11,3 +11,7 @@ export function getBrowserClient() {
   }
   return browserClient
 }
+
+export function resetBrowserClient() {
+  browserClient = null
+}
