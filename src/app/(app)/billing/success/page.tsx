@@ -28,7 +28,6 @@ function BillingSuccessContent() {
         const shouldPoll = status === 'pending_payment' && Date.now() - start < 20000
 
         if (!shouldPoll) {
-          // Also check onboarding status
           try {
             const onboardingRes = await fetch('/api/onboarding/status')
             if (onboardingRes.ok) {
@@ -39,17 +38,15 @@ function BillingSuccessContent() {
                 setOnboardingCompleted(completed)
                 setLoading(false)
                 
-                // Auto-redirect to onboarding if not completed
                 if (!completed) {
                   setTimeout(() => {
                     window.location.href = '/onboarding'
-                  }, 1500) // Small delay to show success message
+                  }, 1500)
                 }
               }
             }
           } catch (e) {
             console.error('[Billing Success] Error checking onboarding status:', e)
-            // On error, assume not completed and redirect to onboarding
             if (isMounted) {
               setLoading(false)
               setTimeout(() => {
@@ -103,7 +100,7 @@ function BillingSuccessContent() {
           </h1>
           
           <p className="text-slate-600 mb-6 leading-relaxed">
-            Your subscription is now active. You have full access to all features, and your 7-day free trial has begun.
+            Your subscription is active. You have full access to ForgeNursing, including practice quizzes, mistake-type feedback, and the clinical reasoning tutor.
           </p>
 
           {sessionId && (
@@ -114,7 +111,7 @@ function BillingSuccessContent() {
 
           <div className="space-y-3">
             <Link
-              href={onboardingCompleted ? "/tutor" : "/onboarding"}
+              href={onboardingCompleted ? "/entry" : "/onboarding"}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-base font-medium hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl"
             >
               {onboardingCompleted ? "Start Learning" : "Get Started"}
@@ -122,10 +119,10 @@ function BillingSuccessContent() {
             </Link>
             
             <Link
-              href="/readiness"
+              href="/entry"
               className="block text-sm text-indigo-600 hover:text-indigo-700 transition-colors"
             >
-              Go to Dashboard
+              Go to Study Options
             </Link>
           </div>
 
@@ -157,4 +154,3 @@ export default function BillingSuccessPage() {
     </Suspense>
   )
 }
-
