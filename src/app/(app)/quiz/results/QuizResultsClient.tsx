@@ -277,6 +277,22 @@ export default function QuizResultsClient() {
           </p>
         </div>
 
+        <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
+            What Forge learned
+          </p>
+          <p className="text-sm text-gray-700 leading-relaxed">
+            This quiz updated your Clinical Judgment Map. Forge uses each answer to learn what pattern to train next.
+          </p>
+          <button
+            onClick={() => router.push('/readiness')}
+            className="w-full rounded-lg text-white font-semibold text-sm"
+            style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
+          >
+            View Judgment Map →
+          </button>
+        </div>
+
         {topMistake && (
           <div className="rounded-xl p-5 text-white space-y-3" style={{ backgroundColor: '#0B2545' }}>
             <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
@@ -401,9 +417,16 @@ export default function QuizResultsClient() {
             Start New Quiz
           </button>
           <button
-            onClick={() => router.push('/entry')}
+            onClick={() => router.push('/readiness')}
             className="w-full rounded-lg font-semibold text-base border-2"
             style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '56px' }}
+          >
+            View Judgment Map
+          </button>
+          <button
+            onClick={() => router.push('/entry')}
+            className="w-full rounded-lg font-semibold text-base border-2"
+            style={{ borderColor: '#DDE5EE', color: '#0B2545', minHeight: '56px' }}
           >
             Back to Study Options
           </button>
