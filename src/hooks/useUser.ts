@@ -24,64 +24,116 @@ interface UseUserReturn {
   trialDaysRemaining: number
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(label)), ms)
+    promise
+      .then(resolve)
+      .catch(reject)
+      .finally(() => clearTimeout(timer))
+  })
+}
+
+function makeServerUser(userId: string | null, email: string | null): User | null {
+  if (!userId) return null
+
+  return {
+    id: userId,
+    email: email ?? undefined,
+    app_metadata: {},
+    user_metadata: {},
+    aud: 'authenticated',
+    created_at: '',
+  } as User
+}
+
 export function useUser(): UseUserReturn {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const loadFromServerStatus = async () => {
+    const response = await withTimeout(
+      fetch('/api/subscription/status', {
+        credentials: 'include',
+        cache: 'no-store',
+      }),
+      5000,
+      'USER_STATUS_TIMEOUT'
+    )
+
+    if (!response.ok) {
+      setUser(null)
+      setProfile(null)
+      return
+    }
+
+    const data = await response.json().catch(() => null)
+    if (!data?.user_id) {
+      setUser(null)
+      setProfile(null)
+      return
+    }
+
+    setUser(makeServerUser(data.user_id, data.email))
+    setProfile(data.profile ?? null)
+  }
+
   useEffect(() => {
+    let cancelled = false
     const supabase = getBrowserClient()
 
-    // Initial load
     const loadUser = async () => {
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        setUser(authUser)
-
-        if (authUser) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('subscription_status, trial_ends_at, stripe_customer_id, stripe_subscription_id, is_beta, beta_expires_at')
-            .eq('id', authUser.id)
-            .single()
-
-          setProfile(profileData)
-        }
+        await loadFromServerStatus()
       } catch (error) {
-        console.error('[useUser] Error loading user:', error)
+        console.error('[useUser] Server status load failed:', error)
+        if (!cancelled) {
+          setUser(null)
+          setProfile(null)
+        }
       } finally {
-        setIsLoading(false)
+        if (!cancelled) setIsLoading(false)
       }
     }
 
     loadUser()
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-      setUser(session?.user ?? null)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, session: Session | null) => {
+      try {
+        if (!session?.user) {
+          await loadFromServerStatus()
+          return
+        }
 
-      if (session?.user) {
         const { data: profileData } = await supabase
           .from('profiles')
           .select('subscription_status, trial_ends_at, stripe_customer_id, stripe_subscription_id, is_beta, beta_expires_at')
           .eq('id', session.user.id)
           .single()
 
+        setUser(session.user)
         setProfile(profileData)
-      } else {
-        setProfile(null)
+      } catch (error) {
+        console.error('[useUser] Auth change reload failed:', error)
+        try {
+          await loadFromServerStatus()
+        } catch {
+          setUser(null)
+          setProfile(null)
+        }
       }
     })
 
     return () => {
+      cancelled = true
       subscription.unsubscribe()
     }
   }, [])
 
-  // Derived states
   const now = new Date()
   const trialEndDate = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null
-  
+
   const isTrialActive = checkTrialActive(profile?.trial_ends_at)
   const isSubscribed = profile?.subscription_status === 'active'
   const hasAccess = hasAccessCheck(
@@ -90,8 +142,8 @@ export function useUser(): UseUserReturn {
     profile?.is_beta,
     profile?.beta_expires_at
   )
-  
-  const trialDaysRemaining = trialEndDate 
+
+  const trialDaysRemaining = trialEndDate
     ? Math.max(0, Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
     : 0
 
