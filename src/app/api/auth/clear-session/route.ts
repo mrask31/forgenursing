@@ -41,13 +41,12 @@ function getCookieNamesToClear() {
 
 function expireCookie(response: NextResponse, name: string) {
   const commonOptions = {
-    value: '',
     expires: new Date(0),
     maxAge: 0,
     path: '/',
   }
 
-  response.cookies.set(name, commonOptions)
+  response.cookies.set(name, '', commonOptions)
 
   const appUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://forgenursing.com'
   const hostname = (() => {
@@ -67,7 +66,7 @@ function expireCookie(response: NextResponse, name: string) {
   ]))
 
   for (const domain of domains) {
-    response.cookies.set(name, {
+    response.cookies.set(name, '', {
       ...commonOptions,
       domain,
     })
