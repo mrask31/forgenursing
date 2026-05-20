@@ -20,6 +20,8 @@ interface QuizRationaleProps {
   questionId: string
   questionIndex: number
   onNext: () => void
+  onRetestWeakness?: () => void
+  isRetestingWeakness?: boolean
   isLast: boolean
 }
 
@@ -46,7 +48,8 @@ function fallbackMistakeType(category: string) {
 export default function QuizRationale({
   isCorrect, userAnswer, correctAnswer, options, rationaleCorrect,
   rationaleIncorrect, nclexCategory, difficulty, mistakeType, reasoningTrap,
-  fixInstruction, retestFocus, sessionId, questionId, questionIndex, onNext, isLast,
+  fixInstruction, retestFocus, sessionId, questionId, questionIndex, onNext,
+  onRetestWeakness, isRetestingWeakness = false, isLast,
 }: QuizRationaleProps) {
   const router = useRouter()
   const [isDiggingDeeper, setIsDiggingDeeper] = useState(false)
@@ -123,7 +126,7 @@ export default function QuizRationale({
   }
 
   return (
-    <div className="space-y-4 pb-40 sm:pb-8">
+    <div className="space-y-4 pb-48 sm:pb-8">
       <div
         className="rounded-xl p-4 text-white"
         style={{ backgroundColor: isCorrect ? '#22C55E' : '#EF4444' }}
@@ -213,6 +216,18 @@ export default function QuizRationale({
             {isLast ? 'See Results' : 'Next Question →'}
           </button>
 
+          {!isCorrect && onRetestWeakness && (
+            <button
+              type="button"
+              onClick={onRetestWeakness}
+              disabled={isRetestingWeakness}
+              className="block w-full rounded-lg text-white text-center font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#0D8F9C', minHeight: '44px' }}
+            >
+              {isRetestingWeakness ? 'Building Retest…' : 'Retest this weakness →'}
+            </button>
+          )}
+
           {!isCorrect && (
             <button
               type="button"
@@ -221,7 +236,7 @@ export default function QuizRationale({
               className="block w-full rounded-lg border text-center font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}
             >
-              {isDiggingDeeper ? 'Opening Tutor…' : 'Fix this weakness →'}
+              {isDiggingDeeper ? 'Opening Tutor…' : 'Fix with Tutor →'}
             </button>
           )}
         </div>
