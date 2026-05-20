@@ -13,6 +13,7 @@ const POSITIVE_STAGE_ORDER = [
 ] as const
 
 type ConfidenceStage = typeof POSITIVE_STAGE_ORDER[number]
+type PatternTrend = 'building' | 'improving' | 'steady'
 
 type MistakeTypeRow = {
   mistake_type: string
@@ -21,7 +22,7 @@ type MistakeTypeRow = {
   missed: number
   accuracy: number
   last_practiced_at: string | null
-  trend: 'building' | 'improving' | 'steady'
+  trend: PatternTrend
 }
 
 function fallbackMistakeType(category?: string | null) {
@@ -149,7 +150,7 @@ export async function GET() {
       const earlierThree = recentSorted.slice(3, 6)
       const recentAccuracy = roundAccuracy(recentThree.filter(item => item.is_correct).length, recentThree.length)
       const earlierAccuracy = roundAccuracy(earlierThree.filter(item => item.is_correct).length, earlierThree.length)
-      const trend = recentThree.length >= 2 && earlierThree.length >= 2 && recentAccuracy > earlierAccuracy
+      const trend: PatternTrend = recentThree.length >= 2 && earlierThree.length >= 2 && recentAccuracy > earlierAccuracy
         ? 'improving'
         : accuracy >= 70
           ? 'steady'
@@ -185,8 +186,8 @@ export async function GET() {
       : null
 
     const correctedPatterns = mistakeTypes.filter(item => item.trend === 'improving' || item.accuracy >= 70).length
-    const confidenceStage = chooseConfidenceStage(totalAttempted, correctedPatterns, overallAccuracy)
     const enoughData = totalAttempted >= MIN_ATTEMPTS_FOR_RECOMMENDATION
+    const confidenceStage = chooseConfidenceStage(totalAttempted, correctedPatterns, overallAccuracy)
 
     const recommendedMistakeType = enoughData && topWeakness ? topWeakness.mistake_type : null
     const recommendation = enoughData && topWeakness
@@ -215,8 +216,8 @@ export async function GET() {
       confidence_builder: {
         stage: confidenceStage,
         message: enoughData
-          ? `Forge is learning your patterns and turning them into focused practice.`
-          : `You are building your first clinical judgment pattern map.`,
+          ? 'Forge is learning your patterns and turning them into focused practice.'
+          : 'You are building your first clinical judgment pattern map.',
         positive_signals: [
           totalAttempted > 0 ? `${totalAttempted} question${totalAttempted === 1 ? '' : 's'} answered` : 'Ready to start building your map',
           correctedPatterns > 0 ? `${correctedPatterns} pattern${correctedPatterns === 1 ? '' : 's'} showing progress` : 'Every missed question helps Forge choose what to train next',
