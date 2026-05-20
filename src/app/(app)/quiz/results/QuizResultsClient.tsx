@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { getBrowserClient } from '@/lib/supabase/client'
 
 interface QuizQuestion {
   id: string
@@ -32,6 +31,16 @@ interface CategoryBreakdown {
 interface MistakeBreakdown {
   mistakeType: string
   missed: number
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(label)), ms)
+    promise
+      .then(resolve)
+      .catch(reject)
+      .finally(() => clearTimeout(timer))
+  })
 }
 
 function fallbackMistakeType(category: string | null | undefined) {
@@ -77,32 +86,47 @@ export default function QuizResultsClient() {
   const [session, setSession] = useState<any>(null)
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [reviewingId, setReviewingId] = useState<string | null>(null)
   const [fixingQuestionId, setFixingQuestionId] = useState<string | null>(null)
   const [fixWeaknessError, setFixWeaknessError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!sessionId) return
+    if (!sessionId) {
+      setLoadError('Missing quiz session.')
+      setLoading(false)
+      return
+    }
 
     const load = async () => {
-      const supabase = getBrowserClient()
+      setLoading(true)
+      setLoadError(null)
+      try {
+        const response = await withTimeout(
+          fetch(`/api/quiz/results?sessionId=${encodeURIComponent(sessionId)}`, {
+            credentials: 'include',
+            cache: 'no-store',
+          }),
+          10000,
+          'RESULTS_TIMEOUT'
+        )
 
-      const { data: sess } = await supabase
-        .from('quiz_sessions')
-        .select('*')
-        .eq('id', sessionId)
-        .single()
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}))
+          throw new Error(data.error || 'Failed to load results')
+        }
 
-      const { data: qs } = await supabase
-        .from('quiz_questions')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('question_index', { ascending: true })
-
-      setSession(sess)
-      setQuestions(qs ?? [])
-      setLoading(false)
+        const data = await response.json()
+        setSession(data.session)
+        setQuestions(data.questions ?? [])
+      } catch (error: any) {
+        console.error('[QuizResults] Load error:', error)
+        setLoadError(error?.message || 'Failed to load results')
+      } finally {
+        setLoading(false)
+      }
     }
+
     load()
   }, [sessionId])
 
@@ -110,6 +134,22 @@ export default function QuizResultsClient() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-gray-500">Loading results...</p>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 text-center">
+        <p className="text-gray-500">{loadError}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="rounded-lg text-white font-semibold px-5 py-3"
+          style={{ backgroundColor: '#0D8F9C' }}
+        >
+          Try Again
+        </button>
+        <Link href="/quiz" className="underline" style={{ color: '#0D8F9C' }}>Start a new quiz</Link>
       </div>
     )
   }
