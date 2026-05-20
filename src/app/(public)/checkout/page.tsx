@@ -2,9 +2,15 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { startStripeCheckout } from '@/lib/stripeClient'
 import { getBrowserClient } from '@/lib/supabase/client'
-import { Loader2, ArrowRight, Check } from 'lucide-react'
+import { Loader2, ArrowRight, Check, CheckCircle } from 'lucide-react'
+
+function isFutureDate(value: string | null | undefined) {
+  if (!value) return false
+  return new Date(value).getTime() > Date.now()
+}
 
 function CheckoutContent() {
   const searchParams = useSearchParams()
@@ -13,12 +19,12 @@ function CheckoutContent() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'semester' | 'annual' | null>(urlPlan || null)
   const [isStartingCheckout, setIsStartingCheckout] = useState(false)
   const [isExpired, setIsExpired] = useState(false)
+  const [hasCurrentAccess, setHasCurrentAccess] = useState(false)
+  const [checkingAccess, setCheckingAccess] = useState(true)
 
   useEffect(() => {
-    // Clean up localStorage
     localStorage.removeItem('forgenursing-pending-plan')
 
-    // If a plan is provided in URL and valid, set it as selected (but still show UI)
     if (urlPlan && (urlPlan === 'monthly' || urlPlan === 'semester' || urlPlan === 'annual')) {
       setSelectedPlan(urlPlan)
     }
@@ -26,16 +32,28 @@ function CheckoutContent() {
 
   useEffect(() => {
     const checkSubscription = async () => {
-      const supabase = getBrowserClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('subscription_status')
-        .eq('id', user.id)
-        .single()
-      if (profile?.subscription_status === 'expired') {
-        setIsExpired(true)
+      setCheckingAccess(true)
+      try {
+        const supabase = getBrowserClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_status, trial_ends_at, is_beta, beta_expires_at')
+          .eq('id', user.id)
+          .single()
+
+        const activePaid = profile?.subscription_status === 'active'
+        const activeTrial = profile?.subscription_status === 'trialing' && isFutureDate(profile?.trial_ends_at)
+        const activeBeta = profile?.is_beta === true && isFutureDate(profile?.beta_expires_at)
+        const expired = profile?.subscription_status === 'expired' ||
+          (profile?.subscription_status === 'trialing' && !isFutureDate(profile?.trial_ends_at))
+
+        setHasCurrentAccess(Boolean(activePaid || activeTrial || activeBeta))
+        setIsExpired(Boolean(expired && !activePaid && !activeBeta))
+      } finally {
+        setCheckingAccess(false)
       }
     }
     checkSubscription()
@@ -54,8 +72,48 @@ function CheckoutContent() {
     }
   }
 
-  // Always show plan selection UI (even if a plan is pre-selected from URL)
-  // This allows users to see and change their plan before checkout
+  if (checkingAccess) {
+    return (
+      <div className="min-h-[calc(100dvh-4rem)] bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
+          <p className="text-slate-700">Checking your access...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (hasCurrentAccess) {
+    return (
+      <div className="min-h-[calc(100dvh-4rem)] bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50 flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-lg text-center">
+          <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
+            <CheckCircle className="w-9 h-9 text-green-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-3">You already have access</h1>
+          <p className="text-slate-600 mb-6 leading-relaxed">
+            Your ForgeNursing access is active. Go back to the app to practice, find your mistake type, and fix the weakness.
+          </p>
+          <div className="space-y-3">
+            <Link
+              href="/entry"
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-base font-semibold hover:bg-indigo-700 transition-all"
+            >
+              Go to Study Options
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+            <Link
+              href="/quiz"
+              className="block text-sm text-indigo-600 hover:text-indigo-700 transition-colors"
+            >
+              Start a Practice Quiz
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-[calc(100dvh-4rem)] bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50 py-12 sm:py-16 pb-safe-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="paywall">
@@ -70,9 +128,7 @@ function CheckoutContent() {
           </p>
         </div>
 
-        {/* Pricing Cards — Monthly + Annual only */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto mb-8">
-            {/* Monthly Plan */}
             <div 
               onClick={() => setSelectedPlan('monthly')}
               className={`bg-white/80 backdrop-blur-sm border-2 rounded-2xl p-6 sm:p-8 shadow-lg cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
@@ -92,19 +148,19 @@ function CheckoutContent() {
               <ul className="space-y-2.5 mb-6 text-sm text-slate-700">
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>Unlimited NCLEX practice questions</span>
+                  <span>NCLEX-style practice quizzes</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-indigo-600 mt-0.5">•</span>
+                  <span>Mistake-type feedback</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-indigo-600 mt-0.5">•</span>
+                  <span>Retest missed weaknesses</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
                   <span>AI clinical reasoning tutor</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>Upload your own study materials</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>Cancel anytime</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
@@ -119,7 +175,6 @@ function CheckoutContent() {
               )}
             </div>
 
-            {/* Annual Plan - Best Value */}
             <div 
               onClick={() => setSelectedPlan('annual')}
               className={`bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-indigo-50/80 backdrop-blur-sm border-2 rounded-2xl p-6 sm:p-8 shadow-xl relative cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
@@ -151,11 +206,11 @@ function CheckoutContent() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>Best overall savings</span>
+                  <span>Mistake-type feedback and targeted retests</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
-                  <span>Renews annually (reminders sent)</span>
+                  <span>Best overall savings</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-indigo-600 mt-0.5">•</span>
@@ -171,7 +226,6 @@ function CheckoutContent() {
             </div>
         </div>
 
-        {/* Continue Button */}
         <div className="text-center max-w-md mx-auto">
           <button
             onClick={handleStartCheckout}
@@ -213,4 +267,3 @@ export default function CheckoutPage() {
     </Suspense>
   )
 }
-
