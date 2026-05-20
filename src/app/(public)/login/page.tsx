@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { getBrowserClient } from '@/lib/supabase/client'
+import { useState, useEffect } from 'react'
+import { getBrowserClient, resetBrowserClient } from '@/lib/supabase/client'
 import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { clearSupabaseStorage, isSessionError, debugAuthLog, resetSession } from '@/lib/auth-utils'
@@ -20,6 +20,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 
 async function clearAuthSession() {
   clearSupabaseStorage()
+  resetBrowserClient()
 
   try {
     await withTimeout(
@@ -36,25 +37,16 @@ async function clearAuthSession() {
   }
 
   clearSupabaseStorage()
+  resetBrowserClient()
 }
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false)
-
-  const supabase = useMemo(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('Supabase configuration is missing. Please check your environment variables.')
-    }
-
-    return getBrowserClient()
-  }, [])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -98,13 +90,22 @@ export default function LoginPage() {
           type: 'success',
         })
       }
-
-      const hasAuthError = params.get('error') === 'auth-code-error' || params.get('error') === 'session-error'
-      if (hasAuthError) {
-        clearAuthSession()
-      }
     }
   }, [])
+
+  const handleResetLoginSession = async () => {
+    setResetting(true)
+    setLoading(false)
+    setMessage(null)
+
+    await clearAuthSession()
+
+    setMessage({
+      text: 'Login session reset. Please enter your email and password again.',
+      type: 'success',
+    })
+    setResetting(false)
+  }
 
   const handleLogin = async (e: React.FormEvent, retryCount = 0) => {
     e.preventDefault()
@@ -116,15 +117,14 @@ export default function LoginPage() {
     debugAuthLog('Sign-in started', { email: email.trim(), retryCount })
 
     try {
-      // Do not call supabase.auth.getUser() before login.
-      // A corrupted/stale auth cookie can cause that call to hang and leave the user stuck.
-      // Instead, do a short best-effort cleanup, then sign in directly.
       if (retryCount === 0) {
         await clearAuthSession()
       }
 
+      const authClient = getBrowserClient()
+
       const signInResult: any = await withTimeout(
-        supabase.auth.signInWithPassword({
+        authClient.auth.signInWithPassword({
           email: email.trim(),
           password,
         }),
@@ -140,7 +140,7 @@ export default function LoginPage() {
 
         if (isSessionError(error) && retryCount === 0) {
           debugAuthLog('Session error detected, clearing storage/cookies and retrying')
-          await supabase.auth.signOut().catch(() => null)
+          await authClient.auth.signOut().catch(() => null)
           await clearAuthSession()
           await new Promise((resolve) => setTimeout(resolve, 250))
           return handleLogin(e, 1)
@@ -171,8 +171,9 @@ export default function LoginPage() {
         // Sync is best-effort; continue with profile check
       }
 
+      const profileClient = getBrowserClient()
       const profileResult: any = await withTimeout(
-        supabase
+        profileClient
           .from('profiles')
           .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
           .eq('id', data.user.id)
@@ -206,7 +207,7 @@ export default function LoginPage() {
 
       if (err instanceof Error && err.message === 'TIMEOUT') {
         setMessage({
-          text: 'Login is taking longer than expected. Please check your connection and try again.',
+          text: 'Login is taking longer than expected. Tap “Reset login session” below, then try again.',
           type: 'error',
         })
         return
@@ -221,7 +222,6 @@ export default function LoginPage() {
       }
 
       if (isSessionError(err) && retryCount === 0) {
-        await supabase.auth.signOut().catch(() => null)
         await clearAuthSession()
         await new Promise((resolve) => setTimeout(resolve, 250))
         return handleLogin(e, 1)
@@ -364,7 +364,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   data-testid="login-submit"
-                  disabled={loading || !email || !password}
+                  disabled={loading || resetting || !email || !password}
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 sm:py-3.5 bg-[#0D8F9C] text-white rounded-xl text-base font-medium hover:bg-[#0A7A85] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl min-h-[44px]"
                 >
                   {loading ? (
@@ -380,6 +380,19 @@ export default function LoginPage() {
                   )}
                 </button>
               </form>
+
+              <button
+                type="button"
+                onClick={handleResetLoginSession}
+                disabled={loading || resetting}
+                className="mt-4 w-full text-sm text-slate-500 underline underline-offset-4 disabled:opacity-50"
+              >
+                {resetting ? 'Resetting login session…' : 'Reset login session'}
+              </button>
+
+              <p className="mt-2 text-center text-xs text-slate-400">
+                Use this if login spins or the wrong account appears.
+              </p>
 
               <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-200 text-center">
                 <span className="text-sm text-slate-600">
