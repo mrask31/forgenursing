@@ -1,17 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { hasSubscriptionAccess, isBetaActive, isTrialActive } from '@/lib/subscription-access'
 import { usePathname } from 'next/navigation'
-import { getBrowserClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
-import { AuthChangeEvent, Session } from '@supabase/supabase-js'
 import { X } from 'lucide-react'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [user, setUser] = useState<any>(null)
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
   const [showBetaBanner, setShowBetaBanner] = useState(false)
   const [spotsRemaining, setSpotsRemaining] = useState<number | null>(null)
   const [betaFull, setBetaFull] = useState(false)
@@ -42,62 +37,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       if (!dismissed) setShowBetaBanner(true)
     }
   }, [betaFull])
-
-  useEffect(() => {
-    const supabase = getBrowserClient()
-
-    const checkUserAndSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('subscription_status, is_beta, beta_expires_at, trial_ends_at')
-          .eq('id', user.id)
-          .single()
-
-        const subscriptionStatus = profile?.subscription_status
-        const betaFlag = profile?.is_beta ?? false
-        const betaExp = profile?.beta_expires_at ?? null
-        const trialEndsAt = profile?.trial_ends_at ?? null
-        setHasActiveSubscription(
-          hasSubscriptionAccess(subscriptionStatus) ||
-          (subscriptionStatus === 'trialing' && isTrialActive(trialEndsAt)) ||
-          isBetaActive(betaFlag, betaExp)
-        )
-      } else {
-        setHasActiveSubscription(false)
-      }
-    }
-
-    checkUserAndSubscription()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, session: Session | null) => {
-      setUser(session?.user ?? null)
-
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('subscription_status, is_beta, beta_expires_at, trial_ends_at')
-          .eq('id', session.user.id)
-          .single()
-
-        const betaFlag = profile?.is_beta ?? false
-        const betaExp = profile?.beta_expires_at ?? null
-        const trialEndsAt = profile?.trial_ends_at ?? null
-        setHasActiveSubscription(
-          hasSubscriptionAccess(profile?.subscription_status) ||
-          (profile?.subscription_status === 'trialing' && isTrialActive(trialEndsAt)) ||
-          isBetaActive(betaFlag, betaExp)
-        )
-      } else {
-        setHasActiveSubscription(false)
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
 
   return (
     <div className="min-h-screen-dynamic bg-[#F7F9FB] flex flex-col">
@@ -151,17 +90,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             </Link>
 
             <div className="flex items-center gap-3 sm:gap-4">
-              {/* Go to Tutor for active subscribers */}
-              {user && hasActiveSubscription && pathname !== '/checkout' && (
-                <Link
-                  href="/tutor"
-                  className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#0D8F9C] text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-[#0a7d88] transition-colors min-h-[40px] sm:min-h-[44px] flex items-center"
-                >
-                  Go to Tutor
-                </Link>
-              )}
-              {/* Log In ghost button */}
-              {(!user || (pathname === '/' && !hasActiveSubscription)) && (
+              {pathname !== '/login' && (
                 <Link
                   href="/login"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 text-[#0B2545] hover:text-[#0D8F9C] text-xs sm:text-sm font-semibold transition-colors min-h-[40px] sm:min-h-[44px] flex items-center border border-[#DDE5EE] hover:border-[#0D8F9C] rounded-lg"
@@ -169,8 +98,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   Log In
                 </Link>
               )}
-              {/* Join Free Beta / Start Trial CTA */}
-              {pathname === '/' && (!user || !hasActiveSubscription) && (
+
+              {pathname === '/' && (
                 <Link
                   href="/signup"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#0D8F9C] text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-[#0a7d88] transition-colors min-h-[40px] sm:min-h-[44px] flex items-center shadow-sm"
