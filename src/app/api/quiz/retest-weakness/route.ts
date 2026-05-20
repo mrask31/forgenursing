@@ -327,12 +327,6 @@ export async function POST(req: NextRequest) {
 
     const mistakeMetadata = normalizeMistakeMetadata(questionData, mistakeType, retestFocus);
 
-    await supabase
-      .from('quiz_sessions')
-      .update({ status: 'abandoned', abandoned_at: new Date().toISOString() })
-      .eq('user_id', user.id)
-      .eq('status', 'in_progress');
-
     const { data: retestSession, error: sessionError } = await supabase
       .from('quiz_sessions')
       .insert({
