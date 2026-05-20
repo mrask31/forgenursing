@@ -9,6 +9,22 @@ import { clearSupabaseStorage, isSessionError, debugAuthLog, resetSession } from
 import { hasAccess } from '@/lib/subscription-access'
 import { resolveEntryPath } from '@/lib/resolve-entry-path'
 
+async function clearAuthSession() {
+  clearSupabaseStorage()
+
+  try {
+    await fetch('/api/auth/clear-session', {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store',
+    })
+  } catch (error) {
+    debugAuthLog('Server-side auth cookie clear failed', error)
+  }
+
+  clearSupabaseStorage()
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,13 +35,10 @@ export default function LoginPage() {
   
   const router = useRouter()
 
-  // Memoize Supabase client to prevent recreation on every render
-  // Ensure Supabase client configuration for production
   const supabase = useMemo(() => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    // Sanity check: log warning in dev if env vars are missing
     if (process.env.NODE_ENV === 'development') {
       if (!supabaseUrl || !supabaseAnonKey) {
         console.warn('⚠️ [Login] Supabase environment variables are missing!')
@@ -42,22 +55,16 @@ export default function LoginPage() {
   }, [])
 
   useEffect(() => {
-    // Only clear storage if there's an explicit error parameter
-    // This prevents destroying valid sessions on normal page loads
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const hasAuthError = params.get('error') === 'auth-code-error' || params.get('error') === 'session-error'
       
-      // Only clear storage if there's an auth error
       if (hasAuthError) {
-        clearSupabaseStorage()
+        clearAuthSession()
       }
       
-      // Make resetSession available globally for debugging (escape hatch)
       ;(window as any).resetSession = resetSession
       
-      // Force fresh page load - prevent browser caching
-      // Add cache-busting headers via meta tags
       const metaCacheControl = document.createElement('meta')
       metaCacheControl.httpEquiv = 'Cache-Control'
       metaCacheControl.content = 'no-store, no-cache, must-revalidate, proxy-revalidate'
@@ -83,7 +90,6 @@ export default function LoginPage() {
         setRedirect(redirectParam)
       }
       
-      // Check if user just verified their email
       const verified = params.get('verified')
       const verifiedEmail = params.get('email')
       if (verified === 'true' && verifiedEmail) {
@@ -95,21 +101,14 @@ export default function LoginPage() {
         })
       }
 
-      // Only clean session if there's an auth error
       const hasAuthError = params.get('error') === 'auth-code-error' || params.get('error') === 'session-error'
       if (hasAuthError) {
         const checkAndCleanSession = async () => {
           try {
-            // Small delay to ensure cookies are cleared
             await new Promise(resolve => setTimeout(resolve, 100))
-            
-            // Try to sign out any remaining session (will fail silently if no session)
-            await supabase.auth.signOut()
-            
-            // Clear storage again as a safety measure
-            clearSupabaseStorage()
+            await supabase.auth.signOut().catch(() => null)
+            await clearAuthSession()
           } catch (error) {
-            // Ignore errors - we're just cleaning up
             debugAuthLog('Cleanup signOut error (expected if no session)', error)
           }
         }
@@ -122,13 +121,11 @@ export default function LoginPage() {
     e.preventDefault()
     e.stopPropagation()
     
-    // Ensure spinner stops on login error - always set loading to false in finally
     setLoading(true)
     setMessage(null)
 
     debugAuthLog('Sign-in started', { email: email.trim(), retryCount })
 
-    // Create timeout promise for 30-second timeout
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
         reject(new Error('TIMEOUT'))
@@ -136,25 +133,25 @@ export default function LoginPage() {
     })
 
     try {
-      // First, check if there's an existing session and sign out if needed
-      // This prevents issues when trying to log in again after already being logged in
-      // Use getUser() for fresh check (bypasses cache)
-      const { data: { user: existingUser } } = await supabase.auth.getUser()
-      if (existingUser) {
-        debugAuthLog('Existing user found, signing out first')
-        await supabase.auth.signOut()
-        clearSupabaseStorage()
-        // Small delay to ensure sign out completes
-        await new Promise(resolve => setTimeout(resolve, 200))
+      const existingSessionResult = await supabase.auth.getUser()
+      const existingUser = existingSessionResult.data?.user
+      const existingError = existingSessionResult.error
+
+      if (existingError || existingUser) {
+        debugAuthLog('Existing or stale session found, clearing before sign-in', {
+          hasExistingUser: !!existingUser,
+          error: existingError?.message,
+        })
+        await supabase.auth.signOut().catch(() => null)
+        await clearAuthSession()
+        await new Promise(resolve => setTimeout(resolve, 250))
       }
 
-      // Create sign-in promise
       const signInPromise = supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       })
 
-      // Race between sign-in and timeout
       const { data, error } = await Promise.race([
         signInPromise,
         timeoutPromise,
@@ -162,17 +159,14 @@ export default function LoginPage() {
 
       debugAuthLog('Sign-in response received', { hasData: !!data, hasError: !!error, userId: data?.user?.id })
 
-      // On error: Check if it's a session error and retry with storage clearing
       if (error) {
         debugAuthLog('Sign-in error', { error: error.message, code: error.code })
         
-        // If it's a session error and we haven't retried yet, clear storage and retry
         if (isSessionError(error) && retryCount === 0) {
-          debugAuthLog('Session error detected, clearing storage and retrying')
-          clearSupabaseStorage()
-          // Small delay before retry
-          await new Promise(resolve => setTimeout(resolve, 200))
-          // Retry once
+          debugAuthLog('Session error detected, clearing storage/cookies and retrying')
+          await supabase.auth.signOut().catch(() => null)
+          await clearAuthSession()
+          await new Promise(resolve => setTimeout(resolve, 250))
           return handleLogin(e, 1)
         }
 
@@ -180,7 +174,7 @@ export default function LoginPage() {
           text: error.message || 'Login failed. Please check your email and password.', 
           type: 'error' 
         })
-        return // Exit early, finally block will set loading to false
+        return
       }
 
       if (!data || !data.user) {
@@ -189,12 +183,11 @@ export default function LoginPage() {
           text: 'Login failed: No user data returned. Please try again.', 
           type: 'error' 
         })
-        return // Exit early, finally block will set loading to false
+        return
       }
 
       debugAuthLog('Sign-in successful, syncing subscription then checking access', { userId: data.user.id })
 
-      // Sync subscription from Stripe on login — fixes missed webhooks, delayed events, edge cases
       try {
         const syncRes = await Promise.race([
           fetch('/api/stripe/sync-subscription', { method: 'POST', credentials: 'include' }),
@@ -207,7 +200,6 @@ export default function LoginPage() {
         // Sync is best-effort; continue with profile check
       }
 
-      // Check subscription status
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
@@ -222,13 +214,10 @@ export default function LoginPage() {
           details: profileError.details,
           hint: profileError.hint
         })
-        // On error, default to checkout to be safe
         window.location.replace('/checkout')
-        return // Exit early, redirecting so don't set loading to false
+        return
       }
 
-      // Check access using the shared hasAccess function
-      // active → allow, trialing + not expired → allow, beta active → allow
       const userHasAccess = hasAccess(
         profile?.subscription_status,
         profile?.trial_ends_at,
@@ -242,33 +231,27 @@ export default function LoginPage() {
         return
       }
       
-      // No access — redirect to checkout
       window.location.replace('/checkout')
-      // Note: We don't set loading to false on success because we're redirecting
     } catch (err) {
       debugAuthLog('Unexpected login error', { error: err })
       
-      // Handle timeout specifically
       if (err instanceof Error && err.message === 'TIMEOUT') {
         debugAuthLog('Sign-in timed out after 30 seconds')
         setMessage({ 
           text: 'Login is taking longer than expected. Please check your connection and try again.', 
           type: 'error' 
         })
-        return // Exit early, finally block will set loading to false
+        return
       }
 
-      // Check if it's a session error and we haven't retried yet
       if (isSessionError(err) && retryCount === 0) {
-        debugAuthLog('Session error in catch, clearing storage and retrying')
-        clearSupabaseStorage()
-        // Small delay before retry
-        await new Promise(resolve => setTimeout(resolve, 200))
-        // Retry once
+        debugAuthLog('Session error in catch, clearing storage/cookies and retrying')
+        await supabase.auth.signOut().catch(() => null)
+        await clearAuthSession()
+        await new Promise(resolve => setTimeout(resolve, 250))
         return handleLogin(e, 1)
       }
 
-      // In catch: console.error for debugging, show user-friendly error
       console.error('[Login] Unexpected login error:', err)
       const errorMessage = err instanceof Error 
         ? err.message 
@@ -278,9 +261,6 @@ export default function LoginPage() {
         type: 'error' 
       })
     } finally {
-      // Make sure finally always runs so the spinner stops, even on failure
-      // Check if we're still on the login page before setting loading to false
-      // (If we redirected, the page will unmount anyway)
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
       if (currentPath === '/login') {
         setLoading(false)
@@ -292,7 +272,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-[calc(100dvh-4rem)] bg-slate-50">
       <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100dvh-4rem)] flex-col-reverse lg:flex-row">
-        {/* Left Column - Desktop Only, shown below on mobile */}
         <div className="hidden lg:flex bg-gradient-to-br from-[#f0fafa] to-[#e8f4f4] border-r border-slate-200 flex flex-col justify-center items-center h-full px-8 text-center">
           <div className="max-w-md space-y-8">
             <div className="space-y-4">
@@ -304,7 +283,6 @@ export default function LoginPage() {
               </blockquote>
             </div>
 
-            {/* Quick Benefits */}
             <div className="space-y-4 pt-8 border-t border-[#0D8F9C]/20">
               <div className="flex items-start gap-3 text-left">
                 <div className="w-10 h-10 rounded-lg bg-[#E0F4F6] flex items-center justify-center flex-shrink-0">
@@ -337,11 +315,9 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Column - Auth Form - Shown first on mobile */}
         <div className="flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 bg-white order-1 lg:order-2">
           <div className="w-full max-w-md">
             <div className="bg-white border border-[#DDE5EE] rounded-2xl p-6 sm:p-8 shadow-lg">
-              {/* Header */}
               <div className="text-center mb-6 sm:mb-8">
                 <div className="inline-flex items-center justify-center w-14 h-14 bg-[#0B2545] rounded-xl mb-4 shadow-lg">
                   <span className="text-xl font-bold text-white">Fx</span>
@@ -367,7 +343,6 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* Form */}
               <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
                 <div className="space-y-4">
                   <div className="relative">
@@ -435,7 +410,6 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              {/* Toggle */}
               <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-200 text-center">
                 <span className="text-sm text-slate-600">
                   Don't have an account?{' '}
