@@ -4,8 +4,6 @@ import { createClient } from '@supabase/supabase-js'
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server'
 import { hasAccess } from '@/lib/subscription-access'
 
-const HAS_ACCESS_STATUSES = ['trialing', 'active']
-
 function getStripeClient(): Stripe | null {
   if (!process.env.STRIPE_SECRET_KEY) return null
   return new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -17,9 +15,9 @@ export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/subscription/status
- * Load subscription from Supabase first; if status missing but stripe_subscription_id exists,
- * fetch from Stripe, upsert status to Supabase, return. Handles trial subscriptions;
- * does NOT require invoices or payments.
+ * Server-authoritative subscription/access status.
+ * Prefer this endpoint over client-side supabase.auth.getUser() for guards,
+ * because browser auth state can get stale while server cookies are still valid.
  */
 export async function GET(req: Request) {
   try {
@@ -41,10 +39,9 @@ export async function GET(req: Request) {
       ? createClient(supabaseUrl, serviceRoleKey)
       : null
 
-    // Use same route-handler client for profile read (session cookie is set)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('subscription_status, stripe_subscription_id, trial_ends_at, is_beta, beta_expires_at')
+      .select('subscription_status, stripe_subscription_id, trial_ends_at, is_beta, beta_expires_at, stripe_customer_id, program_level, quiz_first_enabled, default_entry_path')
       .eq('id', user.id)
       .single()
 
@@ -55,10 +52,13 @@ export async function GET(req: Request) {
         userId: user.id,
       })
       return NextResponse.json({
+        user_id: user.id,
+        email: user.email ?? null,
         status: null,
         trial_end: null,
         current_period_end: null,
         hasAccess: false,
+        profile: null,
       })
     }
 
@@ -73,7 +73,7 @@ export async function GET(req: Request) {
     if (subscriptionStatus && stripe_subscription_id && stripe) {
       try {
         const sub = await stripe.subscriptions.retrieve(stripe_subscription_id, {
-          expand: [], // no invoices/payments
+          expand: [],
         })
         trial_end = sub.trial_end ?? null
         current_period_end = (sub as any).current_period_end ?? null
@@ -83,7 +83,6 @@ export async function GET(req: Request) {
           subscriptionId: stripe_subscription_id,
           err: e instanceof Error ? e.message : e,
         })
-        // keep status from DB; trial_end/current_period_end stay null
       }
     }
 
@@ -128,12 +127,15 @@ export async function GET(req: Request) {
       }
     }
 
-    const userHasAccess = hasAccess(profile?.subscription_status, profile?.trial_ends_at, profile?.is_beta, profile?.beta_expires_at)
+    const userHasAccess = hasAccess(subscriptionStatus, profile?.trial_ends_at, profile?.is_beta, profile?.beta_expires_at)
     const trial_end_display =
       subscriptionStatus === 'trialing' && trial_end
         ? new Date(trial_end * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : null
+
     return NextResponse.json({
+      user_id: user.id,
+      email: user.email ?? null,
       status: subscriptionStatus,
       trial_end,
       current_period_end,
@@ -141,6 +143,17 @@ export async function GET(req: Request) {
       trial_end_display,
       cancel_at_period_end,
       stripe_subscription_id,
+      profile: {
+        subscription_status: subscriptionStatus,
+        trial_ends_at: profile?.trial_ends_at ?? null,
+        stripe_customer_id: profile?.stripe_customer_id ?? null,
+        stripe_subscription_id,
+        is_beta: profile?.is_beta ?? false,
+        beta_expires_at: profile?.beta_expires_at ?? null,
+        program_level: profile?.program_level ?? null,
+        quiz_first_enabled: profile?.quiz_first_enabled ?? false,
+        default_entry_path: profile?.default_entry_path ?? null,
+      },
     })
   } catch (err) {
     console.error('[Subscription Status] Non-200: unexpected error', {
