@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { getBrowserClient } from '@/lib/supabase/client'
 import QuizSetup from './components/QuizSetup'
 import QuizProgress from './components/QuizProgress'
@@ -41,66 +41,35 @@ interface AnswerResult {
 
 export default function QuizPageClient() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const directSessionId = searchParams.get('sessionId')
+
   const [phase, setPhase] = useState<Phase>('setup')
   const [hasDocuments, setHasDocuments] = useState(false)
   const [sourceType, setSourceType] = useState<'document' | 'generic'>('generic')
   const [category, setCategory] = useState('All Categories')
   const [loading, setLoading] = useState(false)
+  const [retestingWeakness, setRetestingWeakness] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Session state
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [totalQuestions] = useState(10)
+  const [sessionTotalQuestions, setSessionTotalQuestions] = useState(10)
   const [questionStartTime, setQuestionStartTime] = useState<number>(0)
 
-  // Question state
   const [currentQuestion, setCurrentQuestion] = useState<QuestionData | null>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [answerResult, setAnswerResult] = useState<AnswerResult | null>(null)
 
-  // Resume detection
   const [resumeSession, setResumeSession] = useState<any>(null)
 
   const initRef = useRef(false)
   const prefetchingIndexesRef = useRef<Set<string>>(new Set())
 
-  // Check for documents and in-progress sessions on mount
-  useEffect(() => {
-    if (initRef.current) return
-    initRef.current = true
-
-    const init = async () => {
-      const supabase = getBrowserClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      // Check for documents
-      const { data: docs } = await supabase
-        .from('documents')
-        .select('id')
-        .eq('user_id', user.id)
-        .limit(1)
-      setHasDocuments((docs?.length ?? 0) > 0)
-      if ((docs?.length ?? 0) > 0) setSourceType('document')
-
-      // Check for in-progress session
-      try {
-        const res = await fetch('/api/quiz/sessions')
-        if (res.ok) {
-          const { sessions } = await res.json()
-          const inProgress = sessions?.find((s: any) => s.status === 'in_progress')
-          if (inProgress) setResumeSession(inProgress)
-        }
-      } catch {}
-    }
-    init()
-  }, [])
-
   const prefetchQuestions = useCallback((sessId: string, startIndex: number, count = 2) => {
     for (let offset = 0; offset < count; offset++) {
       const targetIndex = startIndex + offset
-      if (targetIndex < 0 || targetIndex >= totalQuestions) continue
+      if (targetIndex < 0 || targetIndex >= sessionTotalQuestions) continue
 
       const prefetchKey = `${sessId}:${targetIndex}`
       if (prefetchingIndexesRef.current.has(prefetchKey)) continue
@@ -137,7 +106,7 @@ export default function QuizPageClient() {
           prefetchingIndexesRef.current.delete(prefetchKey)
         })
     }
-  }, [sourceType, category, totalQuestions])
+  }, [sourceType, category, sessionTotalQuestions])
 
   const generateQuestion = useCallback(async (sessId: string, index: number) => {
     setPhase('loading')
@@ -168,13 +137,53 @@ export default function QuizPageClient() {
       setQuestionStartTime(Date.now())
       setPhase('question')
 
-      // Best-effort background prefetch so the next questions are usually ready instantly.
       prefetchQuestions(sessId, index + 1, 2)
     } catch (err: any) {
       setError(err.message || 'Failed to generate question. Please try again.')
       setPhase('setup')
     }
   }, [sourceType, category, prefetchQuestions])
+
+  useEffect(() => {
+    if (initRef.current) return
+    initRef.current = true
+
+    const init = async () => {
+      const supabase = getBrowserClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: docs } = await supabase
+        .from('documents')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+      setHasDocuments((docs?.length ?? 0) > 0)
+      if ((docs?.length ?? 0) > 0) setSourceType('document')
+
+      try {
+        const res = await fetch('/api/quiz/sessions')
+        if (!res.ok) return
+
+        const { sessions } = await res.json()
+        const directSession = directSessionId
+          ? sessions?.find((s: any) => s.id === directSessionId)
+          : null
+
+        if (directSession) {
+          setSessionId(directSession.id)
+          setSessionTotalQuestions(directSession.total_questions || 10)
+          setResumeSession(null)
+          await generateQuestion(directSession.id, directSession.current_question_index || 0)
+          return
+        }
+
+        const inProgress = sessions?.find((s: any) => s.status === 'in_progress')
+        if (inProgress) setResumeSession(inProgress)
+      } catch {}
+    }
+    init()
+  }, [directSessionId, generateQuestion])
 
   const handleStart = useCallback(async () => {
     setLoading(true)
@@ -192,9 +201,9 @@ export default function QuizPageClient() {
       if (!res.ok) throw new Error('Failed to create session')
       const { session } = await res.json()
       setSessionId(session.id)
+      setSessionTotalQuestions(session.total_questions || 10)
       setResumeSession(null)
 
-      // PostHog
       try {
         const posthog = (await import('posthog-js')).default
         posthog.capture('quiz_started', {
@@ -203,6 +212,7 @@ export default function QuizPageClient() {
           nclex_category: category === 'All Categories' ? null : category,
           has_documents: hasDocuments,
           is_resume: false,
+          total_questions: session.total_questions || 10,
         })
       } catch {}
 
@@ -217,6 +227,7 @@ export default function QuizPageClient() {
   const handleResume = useCallback(async () => {
     if (!resumeSession) return
     setSessionId(resumeSession.id)
+    setSessionTotalQuestions(resumeSession.total_questions || 10)
     setResumeSession(null)
 
     try {
@@ -250,10 +261,8 @@ export default function QuizPageClient() {
       setAnswerResult(result)
       setPhase('rationale')
 
-      // Keep the next questions warm while the student reviews the rationale.
       prefetchQuestions(sessionId, currentIndex + 1, 2)
 
-      // PostHog
       try {
         const timeSpent = Math.round((Date.now() - questionStartTime) / 1000)
         const posthog = (await import('posthog-js')).default
@@ -270,6 +279,7 @@ export default function QuizPageClient() {
           retest_focus: result.retest_focus ?? currentQuestion.retest_focus ?? null,
           time_spent_seconds: timeSpent,
           source_type: sourceType,
+          total_questions: sessionTotalQuestions,
         })
       } catch {}
     } catch (err: any) {
@@ -277,21 +287,73 @@ export default function QuizPageClient() {
     } finally {
       setLoading(false)
     }
-  }, [currentQuestion, selectedAnswer, sessionId, currentIndex, questionStartTime, sourceType, prefetchQuestions])
+  }, [currentQuestion, selectedAnswer, sessionId, currentIndex, questionStartTime, sourceType, sessionTotalQuestions, prefetchQuestions])
+
+  const handleRetestWeakness = useCallback(async () => {
+    if (!currentQuestion || !sessionId || retestingWeakness) return
+
+    setRetestingWeakness(true)
+    setError(null)
+
+    try {
+      try {
+        const posthog = (await import('posthog-js')).default
+        posthog.capture('retest_weakness_clicked', {
+          session_id: sessionId,
+          question_id: currentQuestion.id,
+          question_index: currentIndex,
+          nclex_category: currentQuestion.nclex_category,
+          mistake_type: currentQuestion.mistake_type ?? answerResult?.mistake_type ?? null,
+          retest_focus: currentQuestion.retest_focus ?? answerResult?.retest_focus ?? null,
+          source: 'rationale_screen',
+        })
+      } catch {}
+
+      const res = await fetch('/api/quiz/retest-weakness', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          quizSessionId: sessionId,
+          questionId: currentQuestion.id,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to create targeted retest')
+      }
+
+      const { session, question } = await res.json()
+      setSessionId(session.id)
+      setSessionTotalQuestions(session.total_questions || 1)
+      setCurrentIndex(question.question_index ?? 0)
+      setCurrentQuestion(question)
+      setSelectedAnswer(null)
+      setAnswerResult(null)
+      setQuestionStartTime(Date.now())
+      setResumeSession(null)
+      setPhase('question')
+      router.replace(`/quiz?sessionId=${session.id}`)
+    } catch (err: any) {
+      setError(err.message || 'Failed to create targeted retest')
+    } finally {
+      setRetestingWeakness(false)
+    }
+  }, [currentQuestion, sessionId, retestingWeakness, currentIndex, answerResult, router])
 
   const handleNext = useCallback(async () => {
     if (!sessionId) return
     const nextIndex = currentIndex + 1
 
-    if (nextIndex >= totalQuestions || answerResult?.session_complete) {
-      // Quiz complete — PostHog event
+    if (nextIndex >= sessionTotalQuestions || answerResult?.session_complete) {
       try {
         const posthog = (await import('posthog-js')).default
         posthog.capture('quiz_completed', {
           session_id: sessionId,
           score: answerResult?.score ?? 0,
-          total: totalQuestions,
-          percentage: Math.round(((answerResult?.score ?? 0) / totalQuestions) * 100),
+          total: sessionTotalQuestions,
+          percentage: Math.round(((answerResult?.score ?? 0) / sessionTotalQuestions) * 100),
           source_type: sourceType,
         })
       } catch {}
@@ -301,9 +363,8 @@ export default function QuizPageClient() {
     }
 
     await generateQuestion(sessionId, nextIndex)
-  }, [sessionId, currentIndex, totalQuestions, answerResult, sourceType, router, generateQuestion])
+  }, [sessionId, currentIndex, sessionTotalQuestions, answerResult, sourceType, router, generateQuestion])
 
-  // Render
   return (
     <div className="min-h-screen px-4 py-6 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       {error && (
@@ -336,7 +397,7 @@ export default function QuizPageClient() {
 
       {phase === 'question' && currentQuestion && (
         <div className="space-y-5">
-          <QuizProgress current={currentIndex} total={totalQuestions} />
+          <QuizProgress current={currentIndex} total={sessionTotalQuestions} />
           <QuizQuestion
             stem={currentQuestion.question_stem}
             options={currentQuestion.options}
@@ -350,7 +411,7 @@ export default function QuizPageClient() {
 
       {phase === 'rationale' && currentQuestion && answerResult && (
         <div className="space-y-5">
-          <QuizProgress current={currentIndex} total={totalQuestions} />
+          <QuizProgress current={currentIndex} total={sessionTotalQuestions} />
           <QuizRationale
             isCorrect={answerResult.is_correct}
             userAnswer={answerResult.user_answer}
@@ -368,7 +429,9 @@ export default function QuizPageClient() {
             questionId={currentQuestion.id}
             questionIndex={currentIndex}
             onNext={handleNext}
-            isLast={currentIndex >= totalQuestions - 1}
+            onRetestWeakness={handleRetestWeakness}
+            isRetestingWeakness={retestingWeakness}
+            isLast={currentIndex >= sessionTotalQuestions - 1}
           />
         </div>
       )}
