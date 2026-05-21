@@ -31,7 +31,7 @@ export default function ClosingCTA({ betaFull = false }: ClosingCTAProps) {
               <h2 id="cta-heading" className="font-display text-3xl leading-tight text-white sm:text-4xl md:text-[2.75rem]">
                 Stop collecting rationales. Start fixing the mistake.
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/72 sm:text-lg">
+              <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
                 Practice from your notes, fix your weak spots, and train the patterns that cost you points before test day.
               </p>
             </div>
@@ -45,13 +45,13 @@ export default function ClosingCTA({ betaFull = false }: ClosingCTAProps) {
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <a
-                href="#how-forge-thinks"
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-white/20 px-6 py-3 text-sm font-bold text-white/85 transition-colors hover:border-[#0BBCD4] hover:text-[#0BBCD4]"
+                href="#clinical-judgment-map"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-white/25 px-6 py-3 text-sm font-bold text-white transition-colors hover:border-[#0BBCD4] hover:text-[#0BBCD4]"
               >
                 <Target className="h-4 w-4" />
                 Explore the Clinical Judgment Map
               </a>
-              <p className="text-center text-xs text-white/45">
+              <p className="text-center text-xs text-white/60">
                 7-day free trial · No credit card required
               </p>
             </div>
