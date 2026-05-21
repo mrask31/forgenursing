@@ -1,545 +1,175 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { Brain, CreditCard, Loader2, Settings, Target, User } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
-import { Mail, LogOut, CreditCard, Layout, GraduationCap, Calendar, XCircle, CheckCircle } from 'lucide-react'
-import { useDensity } from '@/contexts/DensityContext'
-import { getDensityTokens } from '@/lib/density-tokens'
 
-/** Shape from /api/subscription/status (Supabase-first, trial-aware) */
-interface SubscriptionData {
-  subscription: {
-    id: string
-    status: string
-    trialEndDate: string | null
-    currentPeriodEnd: string | null
-    cancelAtPeriodEnd: boolean
-  } | null
-  status: string | null
+type Profile = {
+  preferred_name: string | null
+  program_track: string | null
+  program_level: string | null
+  graduation_date: string | null
+  subscription_status: string | null
+  trial_ends_at: string | null
+  default_entry_path: string | null
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return 'Not set'
+  try {
+    return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  } catch {
+    return 'Not set'
+  }
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('TIMEOUT')), ms)
+    promise.then(resolve).catch(reject).finally(() => clearTimeout(timer))
+  })
 }
 
 export default function SettingsPage() {
-  const router = useRouter()
-  const [user, setUser] = useState<any>(null)
+  const [email, setEmail] = useState<string | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [graduationDate, setGraduationDate] = useState<string>('')
-  const [preferredName, setPreferredName] = useState<string>('')
-  const [programTrack, setProgramTrack] = useState<string>('')
-  const [schoolName, setSchoolName] = useState<string>('')
-  const [isSaving, setIsSaving] = useState(false)
-  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
-  const [isCanceling, setIsCanceling] = useState(false)
-  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null)
-  const { density, setDensity } = useDensity()
-  const tokens = getDensityTokens(density)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-  const supabase = getBrowserClient()
-    
-    const loadProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      
-      if (user) {
-        // Load profile data
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('graduation_date, preferred_name, program_track, school_name, trial_ends_at')
-          .eq('id', user.id)
-          .single()
-        
-        if (profile?.graduation_date) {
-          // Format date for input (YYYY-MM-DD)
-          const date = new Date(profile.graduation_date)
-          const formatted = date.toISOString().split('T')[0]
-          setGraduationDate(formatted)
-        }
-        
-        if (profile?.preferred_name) {
-          setPreferredName(profile.preferred_name)
-        }
-        
-        if (profile?.program_track) {
-          setProgramTrack(profile.program_track)
-        }
-        
-        if (profile?.school_name) {
-          setSchoolName(profile.school_name)
+    const load = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const supabase = getBrowserClient()
+        const userResult = await withTimeout(supabase.auth.getUser(), 5000)
+        const user = userResult.data.user
+
+        if (!user) {
+          setError('Please log in again to view settings.')
+          return
         }
 
-        if (profile?.trial_ends_at) {
-          setTrialEndsAt(profile.trial_ends_at)
+        setEmail(user.email ?? null)
+
+        const profileResult = await withTimeout(
+          supabase
+            .from('profiles')
+            .select('preferred_name, program_track, program_level, graduation_date, subscription_status, trial_ends_at, default_entry_path')
+            .eq('id', user.id)
+            .single(),
+          7000
+        )
+
+        if (profileResult.error) {
+          console.error('[Settings] profile load error:', profileResult.error)
+          setProfile(null)
+          return
         }
 
-        // Load subscription from /api/subscription/status only (no Stripe/invoice calls)
-        try {
-          const subRes = await fetch('/api/subscription/status', { credentials: 'include' })
-          if (subRes.ok) {
-            const data = await subRes.json()
-            const status = data.status ?? null
-            // Format trial_end from API: prefer trial_end_display (string), fallback to trial_end (Unix timestamp)
-            let trialEndDate: string | null = data.trial_end_display ?? null
-            if (!trialEndDate && data.trial_end) {
-              trialEndDate = new Date(data.trial_end * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-            }
-            let currentPeriodEnd: string | null = null
-            if (data.current_period_end) {
-              currentPeriodEnd = new Date(data.current_period_end * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-            }
-            setSubscriptionData({
-              status,
-              subscription: status
-                ? {
-                    id: data.stripe_subscription_id ?? '',
-                    status,
-                    trialEndDate,
-                    currentPeriodEnd,
-                    cancelAtPeriodEnd: data.cancel_at_period_end ?? false,
-                  }
-                : null,
-            })
-          }
-        } catch (error) {
-          console.error('Error loading subscription:', error)
-        }
+        setProfile(profileResult.data as Profile)
+      } catch (err) {
+        console.error('[Settings] load error:', err)
+        setError('Settings took too long to load. Please refresh and try again.')
+      } finally {
+        setLoading(false)
       }
-      
-      setLoading(false)
     }
-    
-    loadProfile()
-  }, [])
 
-  const handleLogout = async () => {
-    const supabase = getBrowserClient()
-    
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
-  }
+    load()
+  }, [])
 
   if (loading) {
     return (
-      <div className="h-full bg-clinical-bg flex items-center justify-center">
-        <div className="text-clinical-text-secondary">Loading...</div>
+      <div className="min-h-screen bg-[#F7F9FB] flex items-center justify-center px-4">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#0D8F9C]" />
+          <p className="text-sm text-slate-500">Loading settings...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#F7F9FB] flex items-center justify-center px-4">
+        <div className="max-w-md w-full rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <Settings className="w-10 h-10 mx-auto mb-4 text-[#0D8F9C]" />
+          <h1 className="text-xl font-bold text-[#0B2545] mb-2">Settings unavailable</h1>
+          <p className="text-sm text-slate-600 mb-5">{error}</p>
+          <div className="flex flex-col gap-3">
+            <button onClick={() => window.location.reload()} className="rounded-xl bg-[#0D8F9C] px-5 py-3 text-sm font-bold text-white">
+              Try Again
+            </button>
+            <Link href="/login" className="rounded-xl border border-[#DDE5EE] px-5 py-3 text-sm font-bold text-[#0B2545]">
+              Go to Login
+            </Link>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-[var(--gray-50)]">
-      <div className={`${tokens.containerMaxWidth || 'max-w-4xl'} mx-auto px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pt-safe-t`}>
-        {/* Header - Enhanced */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-3">
-            <div className="p-2 sm:p-2.5 bg-[var(--navy)] rounded-xl flex-shrink-0">
-              <Layout className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--navy)]">
-              Settings
-            </h1>
+    <div className="min-h-screen bg-[#F7F9FB] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl space-y-6 pb-16">
+        <header>
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#0D8F9C]/20 bg-[#E0F4F6] px-3 py-1.5">
+            <Settings className="h-4 w-4 text-[#0D8F9C]" />
+            <span className="text-xs font-bold uppercase tracking-wide text-[#0B2545]">Settings</span>
           </div>
-          <p className="text-sm sm:text-base text-slate-600 ml-11 sm:ml-14 max-w-2xl leading-relaxed">
-            Manage your account and preferences.
+          <h1 className="mt-3 text-3xl font-bold text-[#0B2545] sm:text-4xl">Account settings</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">
+            View your ForgeNursing account, study profile, and access status.
           </p>
-        </div>
+        </header>
 
-        {/* Identity Section - New */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
-          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
-              <GraduationCap className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
-            </div>
-            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
-              Identity
-            </h2>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className={`block ${tokens.smallText} text-clinical-text-secondary mb-2`}>
-                Preferred Name
-              </label>
-              <input
-                type="text"
-                value={preferredName}
-                onChange={(e) => setPreferredName(e.target.value)}
-                placeholder="e.g., Michael R."
-                className={`w-full px-4 py-2 border border-clinical-border rounded-lg ${tokens.bodyText} text-clinical-text-primary focus:outline-none focus:ring-2 focus:ring-clinical-primary`}
-              />
-            </div>
-            <div>
-              <label className={`block ${tokens.smallText} text-clinical-text-secondary mb-2`}>
-                Program / Track
-              </label>
-              <select
-                value={programTrack}
-                onChange={(e) => setProgramTrack(e.target.value)}
-                className={`w-full px-4 py-2 border border-clinical-border rounded-lg ${tokens.bodyText} text-clinical-text-primary focus:outline-none focus:ring-2 focus:ring-clinical-primary bg-white`}
-              >
-                <option value="">Select program...</option>
-                <option value="RN Track">RN Track</option>
-                <option value="ADN">ADN</option>
-                <option value="BSN">BSN</option>
-                <option value="LPN">LPN</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className={`block ${tokens.smallText} text-clinical-text-secondary mb-2`}>
-                School Name <span className="text-slate-400">(Optional)</span>
-              </label>
-              <input
-                type="text"
-                value={schoolName}
-                onChange={(e) => setSchoolName(e.target.value)}
-                placeholder="e.g., State University"
-                className={`w-full px-4 py-2 border border-clinical-border rounded-lg ${tokens.bodyText} text-clinical-text-primary focus:outline-none focus:ring-2 focus:ring-clinical-primary`}
-              />
-            </div>
-            <button
-              onClick={async () => {
-                if (!user) return
-                setIsSaving(true)
-                try {
-                  const supabase = getBrowserClient()
-                  
-                  const { error } = await supabase
-                    .from('profiles')
-                    .upsert({
-                      id: user.id,
-                      preferred_name: preferredName || null,
-                      program_track: programTrack || null,
-                      school_name: schoolName || null,
-                    })
-                  
-                  if (error) throw error
-                  alert('Identity information saved!')
-                } catch (error) {
-                  console.error('Error saving identity:', error)
-                  alert('Failed to save identity information. Please try again.')
-                } finally {
-                  setIsSaving(false)
-                }
-              }}
-              disabled={isSaving}
-              className={`w-full px-5 py-2.5 bg-[var(--teal)] text-white rounded-xl ${tokens.smallText || 'text-sm'} font-semibold hover:bg-[#0A7A85] transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none `}
-            >
-              {isSaving ? 'Saving...' : 'Save Identity'}
-            </button>
-          </div>
-        </div>
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <SettingsCard icon={<User className="h-5 w-5" />} title="Account">
+            <SettingRow label="Email" value={email || 'Not available'} />
+            <SettingRow label="Name" value={profile?.preferred_name || 'Student Account'} />
+          </SettingsCard>
 
-        {/* Display Density Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
-          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
-              <Layout className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
-            </div>
-            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
-              Display Density
-            </h2>
-          </div>
-          <div className="space-y-3 sm:space-y-4">
-            <div>
-              <p className={`${tokens.smallText} text-clinical-text-secondary mb-2 sm:mb-3`}>
-                Choose how much space and text size you prefer. Comfort is larger and easier to read; Compact fits more on screen.
-              </p>
-              <div className="flex gap-2 sm:gap-3">
-                <button
-                  onClick={() => setDensity('comfort')}
-                  className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
-                    density === 'comfort'
-                      ? 'bg-[var(--teal)] text-white border-transparent '
-                      : 'bg-white text-slate-700 border-slate-200 hover:border-[var(--teal)]/30 hover:bg-[var(--gray-50)]'
-                  } ${tokens.bodyText || 'text-sm'} font-semibold`}
-                >
-                  Comfort
-                </button>
-                <button
-                  onClick={() => setDensity('compact')}
-                  className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
-                    density === 'compact'
-                      ? 'bg-[var(--teal)] text-white border-transparent '
-                      : 'bg-white text-slate-700 border-slate-200 hover:border-[var(--teal)]/30 hover:bg-[var(--gray-50)]'
-                  } ${tokens.bodyText || 'text-sm'} font-semibold`}
-                >
-                  Compact
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+          <SettingsCard icon={<Brain className="h-5 w-5" />} title="Study profile">
+            <SettingRow label="Program" value={profile?.program_track || profile?.program_level || 'RN Track'} />
+            <SettingRow label="Graduation" value={formatDate(profile?.graduation_date)} />
+            <SettingRow label="Default start" value={profile?.default_entry_path || '/entry'} />
+          </SettingsCard>
 
-        {/* Academic Goals Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
-          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
-              <Calendar className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
-            </div>
-            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
-              Academic Goals
-            </h2>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className={`block ${tokens.smallText} text-clinical-text-secondary mb-2`}>
-                Graduation Date
-              </label>
-              <div className="flex gap-3">
-                <input
-                  type="date"
-                  value={graduationDate}
-                  onChange={(e) => setGraduationDate(e.target.value)}
-                  className={`flex-1 px-4 py-2 border border-clinical-border rounded-lg ${tokens.bodyText} text-clinical-text-primary focus:outline-none focus:ring-2 focus:ring-clinical-primary`}
-                />
-                <button
-                  onClick={async () => {
-                    if (!user) return
-                    setIsSaving(true)
-                    try {
-                      const supabase = getBrowserClient()
-                      
-                      const { error } = await supabase
-                        .from('profiles')
-                        .upsert({
-                          id: user.id,
-                          graduation_date: graduationDate || null,
-                          preferred_name: preferredName || null,
-                          program_track: programTrack || null,
-                          school_name: schoolName || null,
-                        })
-                      
-                      if (error) throw error
-                      alert('Graduation date saved!')
-                    } catch (error) {
-                      console.error('Error saving graduation date:', error)
-                      alert('Failed to save graduation date. Please try again.')
-                    } finally {
-                      setIsSaving(false)
-                    }
-                  }}
-                  disabled={isSaving}
-                  className={`px-5 py-2.5 bg-[var(--teal)] text-white rounded-xl ${tokens.smallText || 'text-sm'} font-semibold hover:bg-[#0A7A85] transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none `}
-                >
-                  {isSaving ? 'Saving...' : 'Save'}
-                </button>
-              </div>
-              <p className={`${tokens.smallText} text-clinical-text-secondary mt-2`}>
-                Set your graduation date to see a countdown on your dashboard
-              </p>
-            </div>
-          </div>
-        </div>
+          <SettingsCard icon={<CreditCard className="h-5 w-5" />} title="Access">
+            <SettingRow label="Status" value={profile?.subscription_status || 'Not available'} />
+            <SettingRow label="Trial ends" value={formatDate(profile?.trial_ends_at)} />
+          </SettingsCard>
 
-        {/* Account Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
-          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
-              <Mail className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
-            </div>
-            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
-              Account
-            </h2>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-              <Mail className="w-5 h-5 text-slate-500 flex-shrink-0" />
-              <div>
-                <p className={`${tokens.smallText} text-slate-500 mb-0.5`}>Email</p>
-                <p className={`${tokens.smallText} font-medium text-slate-900`}>
-                  {user?.email || 'Not available'}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-50 to-rose-50 text-red-600 border-2 border-red-200 rounded-xl ${tokens.smallText || 'text-sm'} font-semibold hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md`}
-            >
-              <LogOut className="w-4 h-4" />
-              Log out
-            </button>
-          </div>
-        </div>
-
-        {/* Subscription Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-4 sm:p-6'} mb-6`}>
-          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
-              <CreditCard className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
-            </div>
-            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
-              Subscription
-            </h2>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <p className={`${tokens.smallText} text-clinical-text-secondary mb-1`}>Status</p>
-              <div className="flex items-center gap-2">
-                {subscriptionData?.subscription ? (
-                  <>
-                    {subscriptionData.subscription.status === 'trialing' ? (
-                      <CheckCircle className="w-4 h-4 text-[var(--teal)]" />
-                    ) : subscriptionData.subscription.status === 'active' ? (
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <XCircle className="w-4 h-4 text-red-600" />
-                    )}
-                    <p className={`${tokens.smallText} font-medium text-clinical-text-primary`}>
-                      {subscriptionData.subscription.status === 'trialing'
-                        ? `Trial active — ends ${subscriptionData.subscription.trialEndDate || 'soon'}`
-                        : subscriptionData.subscription.status === 'active'
-                          ? `Active subscription${subscriptionData.subscription.currentPeriodEnd ? ` — next billing ${subscriptionData.subscription.currentPeriodEnd}` : ''}`
-                          : subscriptionData.subscription.status === 'canceled'
-                            ? 'Canceled'
-                            : subscriptionData.subscription.status === 'past_due'
-                              ? 'Past due'
-                              : String(subscriptionData.subscription.status || 'Unknown')}
-                    </p>
-                  </>
-                ) : subscriptionData !== null ? (
-                  <p className={`${tokens.smallText} text-clinical-text-secondary`}>
-                    No active subscription.
-                  </p>
-                ) : (
-                  <p className={`${tokens.smallText} text-clinical-text-secondary`}>
-                    Subscription details could not be loaded. Refresh the page or contact support if this persists.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Trial period - show days remaining */}
-            {trialEndsAt && new Date(trialEndsAt) > new Date() && (
-              <div className="p-3 sm:p-4 bg-[var(--teal-light)] border border-[var(--teal)]/20 rounded-xl">
-                {(() => {
-                  const now = new Date()
-                  const endDate = new Date(trialEndsAt)
-                  const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-                  const formattedDate = endDate.toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })
-                  
-                  return (
-                    <>
-                      <p className={`${tokens.smallText} font-medium text-[var(--navy)] mb-1`}>
-                        {daysRemaining === 1 
-                          ? '🎯 Last day of your trial!' 
-                          : `🎯 ${daysRemaining} days left in your trial`}
-                      </p>
-                      <p className={`${tokens.smallText} text-[var(--teal)] mb-3`}>
-                        Your trial ends on <span className="font-semibold">{formattedDate}</span>. Subscribe anytime to continue your access.
-                      </p>
-                      <button
-                        onClick={() => router.push('/checkout')}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--teal)] text-white text-sm font-semibold rounded-lg hover:bg-[#0A7A85] transition-colors"
-                      >
-                        <CreditCard className="w-4 h-4" />
-                        Subscribe Now
-                      </button>
-                    </>
-                  )
-                })()}
-              </div>
-            )}
-
-            {/* Active (past trial) — paid subscription */}
-            {subscriptionData?.subscription?.status === 'active' && !subscriptionData?.subscription?.cancelAtPeriodEnd && (
-              <p className={`${tokens.smallText} text-clinical-text-secondary`}>
-                Your 7-day trial has ended and you're on a paid subscription. Cancel anytime to stop at the end of your billing period.
-              </p>
-            )}
-
-            {/* Cancel at Period End Notice */}
-            {subscriptionData?.subscription?.cancelAtPeriodEnd && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className={`${tokens.smallText} text-amber-800`}>
-                  Your subscription will be canceled at the end of the current billing period.
-                </p>
-              </div>
-            )}
-
-            {/* Cancel Subscription Button — shown when subscribed (including during trial) */}
-            {subscriptionData?.subscription && 
-             subscriptionData.subscription.status !== 'canceled' && 
-             !subscriptionData.subscription.cancelAtPeriodEnd && (
-              <button
-                onClick={async () => {
-                  const isTrialing = subscriptionData.subscription?.status === 'trialing'
-                  const trialEnd = subscriptionData.subscription?.trialEndDate
-                  const confirmMsg = isTrialing
-                    ? `Cancel before your trial ends? You won't be charged. You'll keep access until ${trialEnd || 'the end of your trial'}.`
-                    : 'Are you sure you want to cancel your subscription? You will continue to have access until the end of your current billing period.'
-                  if (!confirm(confirmMsg)) return
-
-                  setIsCanceling(true)
-                  try {
-                    const res = await fetch('/api/stripe/cancel-subscription', {
-                      method: 'POST',
-                      credentials: 'include',
-                    })
-                    if (!res.ok) {
-                      const error = await res.json()
-                      throw new Error(error.error || 'Failed to cancel subscription')
-                    }
-                    const subRes = await fetch('/api/subscription/status', { credentials: 'include' })
-                    if (subRes.ok) {
-                      const data = await subRes.json()
-                      const status = data.status ?? null
-                      let refreshTrialEnd: string | null = data.trial_end_display ?? null
-                      if (!refreshTrialEnd && data.trial_end) {
-                        refreshTrialEnd = new Date(data.trial_end * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                      }
-                      setSubscriptionData({
-                        status,
-                        subscription: status ? { id: data.stripe_subscription_id ?? '', status, trialEndDate: refreshTrialEnd, currentPeriodEnd: data.current_period_end ? new Date(data.current_period_end * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : null, cancelAtPeriodEnd: data.cancel_at_period_end ?? false } : null,
-                      })
-                    }
-                    const successMsg = isTrialing
-                      ? "You won't be charged. Access continues until the end of your trial."
-                      : 'Your subscription will be canceled at the end of the current billing period.'
-                    alert(successMsg)
-                  } catch (error: any) {
-                    console.error('Error canceling subscription:', error)
-                    alert(error.message || 'Failed to cancel subscription. Please try again or contact support.')
-                  } finally {
-                    setIsCanceling(false)
-                  }
-                }}
-                disabled={isCanceling}
-                className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-rose-50 text-red-600 border-2 border-red-200 rounded-lg ${tokens.smallText} font-semibold hover:from-red-100 hover:to-rose-100 hover:border-red-300 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-sm hover:shadow-md`}
-              >
-                <XCircle className="w-4 h-4" />
-                {isCanceling ? 'Canceling...' : 'Cancel Subscription'}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Support Section - Enhanced */}
-        <div className={`bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/50 ${tokens.cardPadding || 'p-6'}`}>
-          <div className="flex items-center gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-slate-200">
-            <div className="p-2 bg-[var(--teal-light)] rounded-lg">
-              <Mail className="w-5 h-5 text-[var(--teal)] flex-shrink-0" />
-            </div>
-            <h2 className={`${tokens.subheading} font-bold text-slate-900`}>
-              Support
-            </h2>
-          </div>
-          <p className={`${tokens.smallText} text-clinical-text-secondary`}>
-            Need help? Email{' '}
-            <a
-              href="mailto:support@forgenursing.com"
-              className="text-[#0D8F9C] hover:text-[#0A7A85] transition-colors"
-            >
-              support@forgenursing.com
-            </a>
-          </p>
-        </div>
+          <SettingsCard icon={<Target className="h-5 w-5" />} title="Quick links">
+            <Link href="/quiz" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Practice Questions →</Link>
+            <Link href="/readiness" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Judgment Map →</Link>
+            <a href="mailto:support@forgenursing.com" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Contact Support →</a>
+          </SettingsCard>
+        </section>
       </div>
     </div>
   )
 }
 
+function SettingsCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-[#DDE5EE] bg-white p-5 shadow-sm sm:p-6">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E0F4F6] text-[#0D8F9C]">{icon}</div>
+        <h2 className="text-lg font-bold text-[#0B2545]">{title}</h2>
+      </div>
+      <div className="space-y-3">{children}</div>
+    </div>
+  )
+}
+
+function SettingRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-2 last:border-b-0 last:pb-0">
+      <span className="text-xs font-bold uppercase tracking-wide text-slate-400">{label}</span>
+      <span className="text-right text-sm font-medium text-[#0B2545]">{value}</span>
+    </div>
+  )
+}
