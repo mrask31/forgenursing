@@ -5,7 +5,6 @@
 
 type ProgramLevel = 'LPN' | 'ADN' | 'BSN' | 'MSN';
 
-// Program level blocks for quiz generation (mirrors system-prompt.ts)
 const QUIZ_PROGRAM_LEVEL_BLOCKS: Record<ProgramLevel, string> = {
   LPN: 'Generate questions at the LPN/LVN level. Focus on task-based clinical reasoning, safety, and basic assessment. Use NCLEX-PN framework. Avoid graduate-level pathophysiology.',
   ADN: 'Generate questions at the ADN/associate degree level. Focus on acute care prioritization, delegation basics, pharmacology fundamentals. Use NCLEX-RN Next Generation format.',
@@ -13,7 +12,6 @@ const QUIZ_PROGRAM_LEVEL_BLOCKS: Record<ProgramLevel, string> = {
   MSN: 'Generate questions at the MSN/graduate level. Advanced pathophysiology, differential diagnosis, clinical decision-making at the provider level. DNP-level case complexity is appropriate.',
 };
 
-// NCLEX category rotation for 10-question generic quizzes (mirrors blueprint weighting)
 const CATEGORY_ROTATION: string[] = [
   'Pharmacological Therapies',
   'Pharmacological Therapies',
@@ -39,10 +37,6 @@ export const MISTAKE_TYPES = [
   'Patient education',
 ] as const;
 
-/**
- * Get the NCLEX category for a given question index in a generic quiz.
- * If user selected a specific category, all questions use that category.
- */
 export function getCategoryForIndex(questionIndex: number, userCategory?: string | null): string {
   if (userCategory) return userCategory;
   return CATEGORY_ROTATION[questionIndex] ?? 'Pharmacological Therapies';
@@ -54,7 +48,7 @@ QUESTION STEM RULES:
 - Write a clinical scenario in 2-3 sentences. Include a patient (age, relevant history, presenting signs/symptoms).
 - End with a clear, single-action question: "Which action should the nurse take FIRST?" or "Which finding should the nurse report IMMEDIATELY?" or similar NCLEX phrasing.
 - Do NOT use "all of the above" or "none of the above."
-- Do NOT use negative stems ("Which is NOT correct?") unless testing safety (e.g., contraindications).
+- Do NOT use negative stems ("Which is NOT correct?") unless testing safety.
 
 QUESTION VARIETY RULES:
 - Do NOT reuse or closely paraphrase any blocked/recent question stem provided below.
@@ -67,13 +61,19 @@ ANSWER OPTIONS RULES:
 - Provide exactly 4 options labeled A through D.
 - Exactly 1 option is correct. The other 3 are plausible distractors.
 - Distractors must reflect COMMON STUDENT MISCONCEPTIONS, not obviously wrong answers.
-- Each option should be similar in length (within ~20% word count of each other).
-- Options should be grammatically parallel.
-- Randomize the position of the correct answer (do not always put it in B or C).
+- Each option should be similar in length and grammatically parallel.
+- Randomize the position of the correct answer.
 
 RATIONALE RULES:
-- rationale_correct: 2-3 sentences explaining WHY the correct answer is right. Reference the clinical reasoning (ABCs, Maslow, safety, assessment-before-intervention).
-- rationale_incorrect: For EACH wrong option, 1-2 sentences explaining WHY it's wrong AND what misconception it targets. Connect back to the correct reasoning.
+- rationale_correct: 2-3 sentences explaining WHY the correct answer is right.
+- rationale_incorrect: For EACH wrong option, 1-2 sentences explaining WHY it is wrong and what misconception it targets.
+
+MICRO-FEEDBACK RULES:
+Students do not want long feedback by default. Generate short, sharp coaching fields:
+- key_cue: 1 short sentence naming the cue the student needed to notice.
+- why_correct_short: 1 short sentence explaining why the correct answer works.
+- why_wrong_short: 1 short sentence explaining why the most tempting wrong answer pulls students in. Do not mention a specific option letter unless necessary.
+- one_line_fix: 1 short coaching sentence the student can remember next time.
 
 CLINICAL JUDGMENT MISTAKE METADATA:
 - mistake_type: Assign exactly one value from this list:
@@ -86,9 +86,9 @@ CLINICAL JUDGMENT MISTAKE METADATA:
   - Pathophysiology / knowledge gap
   - Lab / diagnostic interpretation
   - Patient education
-- reasoning_trap: One plain-language sentence explaining the tempting thinking error a student might make when choosing the most plausible wrong answer.
-- fix_instruction: One coaching sentence that teaches the reasoning move the student should use next time.
-- retest_focus: A short phrase describing what targeted weakness should be practiced next, e.g. "therapeutic communication with anxious clients" or "assessment-before-intervention in respiratory distress".
+- reasoning_trap: One plain-language sentence explaining the tempting thinking error.
+- fix_instruction: One coaching sentence that teaches the reasoning move for next time.
+- retest_focus: A short phrase describing what targeted pattern should be practiced next.
 
 CATEGORY: Assign exactly one NCLEX category from this list:
 - Management of Care
@@ -103,11 +103,11 @@ CATEGORY: Assign exactly one NCLEX category from this list:
 - Delegation
 
 DIFFICULTY: Rate 1-5 where:
-- 1 = Pure recall (definition, normal range)
-- 2 = Comprehension (explain why)
-- 3 = Application (apply to clinical scenario) — target most questions here
-- 4 = Analysis (compare, prioritize, differentiate)
-- 5 = Synthesis (complex multi-system, SATA-style reasoning)`;
+- 1 = Pure recall
+- 2 = Comprehension
+- 3 = Application — target most questions here
+- 4 = Analysis
+- 5 = Synthesis`;
 
 const OUTPUT_FORMAT = `Respond with ONLY valid JSON. No markdown, no explanation, no preamble.
 
@@ -132,24 +132,23 @@ const OUTPUT_FORMAT = `Respond with ONLY valid JSON. No markdown, no explanation
   "mistake_type": "Priority-setting",
   "reasoning_trap": "The student may focus on a helpful later task instead of the action that protects the client first.",
   "fix_instruction": "When two actions both seem appropriate, choose the one that addresses the most immediate safety or physiologic threat first.",
-  "retest_focus": "priority-setting with immediate safety cues"
+  "retest_focus": "priority-setting with immediate safety cues",
+  "key_cue": "The client has a new immediate safety cue that changes the priority.",
+  "why_correct_short": "This answer addresses the most urgent nursing priority first.",
+  "why_wrong_short": "The tempting answer helps later, but it does not address the immediate cue.",
+  "one_line_fix": "When two answers sound right, choose the one that handles the most immediate risk first."
 }`;
 
-/**
- * Build the document-based quiz question generation prompt (Spec Section 4.1)
- */
 export function buildQuizPrompt(
   programLevel: ProgramLevel,
   sourceChunk: string,
   previousStems: string[] = []
 ): string {
   const programBlock = QUIZ_PROGRAM_LEVEL_BLOCKS[programLevel] ?? QUIZ_PROGRAM_LEVEL_BLOCKS.ADN;
-  const previousStemsJson = previousStems.length > 0
-    ? JSON.stringify(previousStems)
-    : '[]';
+  const previousStemsJson = previousStems.length > 0 ? JSON.stringify(previousStems) : '[]';
 
   return `<identity>
-You are ForgeNursing Quiz Generator. You create single NCLEX-style multiple-choice questions from nursing course materials. You are NOT a tutor — you are an exam item writer and clinical judgment pattern mapper. Your questions must be clinically accurate, appropriately difficult, and follow NCLEX item-writing standards.
+You are ForgeNursing Quiz Generator. You create single NCLEX-style multiple-choice questions from nursing course materials. You are NOT a tutor — you are an exam item writer and clinical judgment pattern mapper.
 </identity>
 
 <program_level>
@@ -157,7 +156,7 @@ ${programBlock}
 </program_level>
 
 <source_material>
-The following is an excerpt from the student's uploaded course material. Generate a question DIRECTLY from this content. The question must test a concept that appears in this material.
+Generate a question DIRECTLY from this content. The question must test a concept that appears in this material.
 
 ---
 ${sourceChunk}
@@ -165,8 +164,6 @@ ${sourceChunk}
 </source_material>
 
 <blocked_recent_questions>
-The following question stems have already been used in this quiz session or recently used for this student. Do NOT repeat or closely paraphrase any of them. Generate a meaningfully different question, scenario, medication/lab combination, and priority decision.
-
 ${previousStemsJson}
 </blocked_recent_questions>
 
@@ -179,18 +176,13 @@ ${OUTPUT_FORMAT}
 </output_format>`;
 }
 
-/**
- * Build the generic (no documents) quiz question generation prompt (Spec Section 4.2)
- */
 export function buildGenericQuizPrompt(
   programLevel: ProgramLevel,
   category: string,
   previousStems: string[] = []
 ): string {
   const programBlock = QUIZ_PROGRAM_LEVEL_BLOCKS[programLevel] ?? QUIZ_PROGRAM_LEVEL_BLOCKS.ADN;
-  const previousStemsJson = previousStems.length > 0
-    ? JSON.stringify(previousStems)
-    : '[]';
+  const previousStemsJson = previousStems.length > 0 ? JSON.stringify(previousStems) : '[]';
 
   return `<identity>
 You are ForgeNursing Quiz Generator. You create single NCLEX-style multiple-choice questions targeting the NCLEX test blueprint. You are NOT a tutor — you are an exam item writer and clinical judgment pattern mapper.
@@ -201,7 +193,7 @@ ${programBlock}
 </program_level>
 
 <nclex_blueprint_focus>
-Generate a question from the following NCLEX Client Needs category:
+Generate a question from this NCLEX Client Needs category:
 
 Category: ${category}
 
@@ -209,26 +201,9 @@ STRICT CATEGORY LOCK:
 - The question must test ${category}.
 - The returned JSON field nclex_category must be exactly "${category}".
 - Do not drift into another category even if the clinical scenario overlaps with prioritization, safety, labs, or physiology.
-- If the selected category is Pharmacological Therapies, the core decision must involve medication administration, adverse effects, contraindications, expected outcomes, drug toxicity, or medication safety.
-
-NCLEX Client Needs categories and their approximate exam weight:
-- Safe and Effective Care Environment
-  - Management of Care (15-21%): delegation, prioritization, ethical/legal, advocacy, case management
-  - Safety and Infection Control (10-16%): standard precautions, fall prevention, restraints, error prevention
-- Health Promotion and Maintenance (6-12%): developmental stages, screening, immunizations, lifestyle choices
-- Psychosocial Integrity (6-12%): therapeutic communication, crisis intervention, grief/loss, mental health
-- Physiological Integrity
-  - Basic Care and Comfort (6-12%): nutrition, mobility, elimination, rest/sleep, pain management
-  - Pharmacological Therapies (13-19%): medication administration, adverse effects, dosage calculation, expected outcomes
-  - Reduction of Risk Potential (9-15%): lab values, diagnostic tests, complications, vital sign changes
-  - Physiological Adaptation (11-17%): fluid/electrolyte, emergency response, pathophysiology, medical emergencies
-
-Generate a question that tests a HIGH-YIELD concept within the selected category. Prioritize topics that appear frequently on NCLEX, but do not repeat blocked/recent stems or their same clinical scenario.
 </nclex_blueprint_focus>
 
 <blocked_recent_questions>
-The following question stems have already been used in this quiz session or recently used for this student. Do NOT repeat or closely paraphrase any of them. Generate a meaningfully different question, scenario, medication/lab combination, and priority decision.
-
 ${previousStemsJson}
 </blocked_recent_questions>
 
@@ -241,9 +216,51 @@ ${OUTPUT_FORMAT}
 </output_format>`;
 }
 
-/**
- * Build the "Dig Deeper" handoff context for tutor (Spec Section 4.3)
- */
+export function buildTargetedMistakePrompt(
+  programLevel: ProgramLevel,
+  targetMistakeType: string,
+  targetFocus: string | null,
+  previousStems: string[] = []
+): string {
+  const programBlock = QUIZ_PROGRAM_LEVEL_BLOCKS[programLevel] ?? QUIZ_PROGRAM_LEVEL_BLOCKS.ADN;
+  const previousStemsJson = previousStems.length > 0 ? JSON.stringify(previousStems) : '[]';
+  const focusText = targetFocus || `${targetMistakeType} clinical judgment practice`;
+
+  return `<identity>
+You are ForgeNursing Quiz Generator. You create targeted NCLEX-style questions that train one specific clinical judgment pattern. You are NOT a tutor — you are an exam item writer and clinical judgment pattern mapper.
+</identity>
+
+<program_level>
+${programBlock}
+</program_level>
+
+<targeted_training_goal>
+This is a short 3-question targeted drill from the student's Clinical Judgment Map.
+
+Target mistake type: ${targetMistakeType}
+Target focus: ${focusText}
+
+STRICT TARGET LOCK:
+- The question must test the target mistake type: ${targetMistakeType}.
+- The returned JSON field mistake_type must be exactly "${targetMistakeType}".
+- The distractors should make this exact mistake tempting.
+- The micro-feedback should teach the cue and reasoning move for this target pattern.
+- Use a fresh clinical scenario. Do not repeat earlier stems or the same medication/lab/diagnosis combination.
+</targeted_training_goal>
+
+<blocked_recent_questions>
+${previousStemsJson}
+</blocked_recent_questions>
+
+<instructions>
+${SHARED_INSTRUCTIONS}
+</instructions>
+
+<output_format>
+${OUTPUT_FORMAT}
+</output_format>`;
+}
+
 export function buildDigDeeperContext(questionData: {
   question_stem: string;
   user_answer: string;
@@ -266,11 +283,11 @@ export function buildDigDeeperContext(questionData: {
     : '';
 
   const mistakeBlock = questionData.mistake_type
-    ? `\nMISTAKE TYPE: ${questionData.mistake_type}\nREASONING TRAP: ${questionData.reasoning_trap || 'Help the student identify the reasoning trap.'}\nFIX INSTRUCTION: ${questionData.fix_instruction || 'Coach the student toward the correct clinical judgment move.'}\nRETEST FOCUS: ${questionData.retest_focus || 'Practice the same clinical judgment weakness again.'}`
+    ? `\nMISTAKE TYPE: ${questionData.mistake_type}\nREASONING TRAP: ${questionData.reasoning_trap || 'Help the student identify the reasoning trap.'}\nFIX INSTRUCTION: ${questionData.fix_instruction || 'Coach the student toward the correct clinical judgment move.'}\nRETEST FOCUS: ${questionData.retest_focus || 'Practice the same clinical judgment pattern again.'}`
     : '';
 
   return `<quiz_context>
-The student just answered an NCLEX-style practice question incorrectly. They clicked "Fix this weakness" to understand the reasoning. Use this context to guide a focused exploration of WHY the correct answer is right and WHERE their clinical judgment went wrong.
+The student just answered an NCLEX-style practice question incorrectly. They clicked "Fix with Tutor" to understand the reasoning. Use this context to guide a focused exploration of WHY the correct answer is right and WHERE their clinical judgment went wrong.
 
 QUESTION:
 ${questionData.question_stem}
@@ -291,9 +308,8 @@ ${sourceBlock}
 1. Do NOT repeat the question or rationale verbatim — the student already saw it.
 2. Start by naming the likely clinical judgment mistake in plain English.
 3. Ask the student to explain what made their selected answer feel right.
-4. Use the ADPIE framework to guide them to the correct reasoning.
-5. If source material is present, reference it: "Looking at your notes on [topic]..."
-6. Keep it to 2-3 exchanges max. This is a focused fix, not a full tutoring session.
-7. End with a CHECK question that tests whether they now understand the distinction.
+4. Use the ADPIE framework when useful.
+5. Keep it to 2-3 exchanges max. This is a focused fix, not a full tutoring session.
+6. End with a CHECK question that tests whether they now understand the distinction.
 </instructions>`;
 }
