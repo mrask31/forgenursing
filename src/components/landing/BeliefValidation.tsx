@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, ClipboardList, HelpCircle, RefreshCcw, Target, TrendingUp } from 'lucide-react'
+import { ArrowRight, CheckCircle2, ClipboardList, HelpCircle, RefreshCcw, Target } from 'lucide-react'
 
 const painPoints = [
   {
@@ -92,7 +92,7 @@ export default function BeliefValidation() {
           ))}
         </div>
 
-        <div className="mt-14 grid grid-cols-1 items-center gap-8 rounded-3xl border border-[#DDE5EE] bg-white p-5 shadow-sm sm:p-8 lg:grid-cols-[0.85fr_1.15fr] lg:p-10">
+        <div id="clinical-judgment-map" className="mt-14 scroll-mt-24 grid grid-cols-1 items-center gap-8 rounded-3xl border border-[#DDE5EE] bg-white p-5 shadow-sm sm:p-8 lg:grid-cols-[0.85fr_1.15fr] lg:p-10">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-[#0D8F9C]">Why Forge is different</p>
             <h3 className="mt-3 font-display text-3xl leading-tight text-[#0B2545] sm:text-4xl">
