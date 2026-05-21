@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
 
+const VALID_QUIZ_MODES = ['standard', 'targeted_drill', 'retest'] as const;
+
+type QuizMode = typeof VALID_QUIZ_MODES[number];
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = createClient();
@@ -16,21 +20,37 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { sourceType = 'generic', classId, nclexCategory } = body;
+    const {
+      sourceType = 'generic',
+      classId,
+      nclexCategory,
+      quizMode = 'standard',
+      targetMistakeType = null,
+      targetFocus = null,
+      totalQuestions,
+    } = body;
 
-    // Validate sourceType
     if (!['document', 'generic', 'mixed'].includes(sourceType)) {
       return NextResponse.json({ error: 'Invalid sourceType' }, { status: 400 });
     }
 
-    // Abandon any existing in_progress sessions
+    if (!VALID_QUIZ_MODES.includes(quizMode as QuizMode)) {
+      return NextResponse.json({ error: 'Invalid quizMode' }, { status: 400 });
+    }
+
+    const isTargetedDrill = quizMode === 'targeted_drill';
+    if (isTargetedDrill && !targetMistakeType) {
+      return NextResponse.json({ error: 'targetMistakeType is required for targeted drills' }, { status: 400 });
+    }
+
+    const sessionTotalQuestions = isTargetedDrill ? 3 : Math.max(1, Math.min(Number(totalQuestions) || 10, 20));
+
     await supabase
       .from('quiz_sessions')
       .update({ status: 'abandoned', abandoned_at: new Date().toISOString() })
       .eq('user_id', user.id)
       .eq('status', 'in_progress');
 
-    // Create new session
     const { data: session, error: insertError } = await supabase
       .from('quiz_sessions')
       .insert({
@@ -40,8 +60,11 @@ export async function POST(req: NextRequest) {
         nclex_category: nclexCategory || null,
         status: 'in_progress',
         score: 0,
-        total_questions: 10,
+        total_questions: sessionTotalQuestions,
         current_question_index: 0,
+        quiz_mode: quizMode,
+        target_mistake_type: targetMistakeType || null,
+        target_focus: targetFocus || null,
       })
       .select()
       .single();
@@ -71,7 +94,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Payment required' }, { status: 402 });
     }
 
-    // Get user's sessions, most recent first
     const { data: sessions, error } = await supabase
       .from('quiz_sessions')
       .select('*')
