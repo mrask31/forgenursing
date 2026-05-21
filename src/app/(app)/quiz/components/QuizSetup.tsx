@@ -16,13 +16,20 @@ const NCLEX_CATEGORIES = [
   'Physiological Adaptation',
 ]
 
+type StartOptions = {
+  quizMode?: 'standard' | 'targeted_drill'
+  targetMistakeType?: string | null
+  targetFocus?: string | null
+  totalQuestions?: number
+}
+
 interface QuizSetupProps {
   hasDocuments: boolean
   sourceType: 'document' | 'generic'
   setSourceType: (t: 'document' | 'generic') => void
   category: string
   setCategory: (c: string) => void
-  onStart: () => void
+  onStart: (options?: StartOptions) => void
   loading: boolean
   resumeSession?: { id: string; current_question_index: number; total_questions: number } | null
   onResume?: () => void
@@ -39,6 +46,7 @@ type JudgmentMapSummary = {
     title: string
     message: string
     mistake_type: string | null
+    explanation?: string | null
   }
 }
 
@@ -83,19 +91,39 @@ export default function QuizSetup({
     }
   }
 
-  const handleStart = () => {
-    if (mode === 'documents' && !hasDocuments) return
-    onStart()
-  }
-
   const enoughMapData = Boolean(judgmentMap?.summary?.enough_data)
-  const nextFocus = judgmentMap?.recommendation?.mistake_type
+  const nextFocus = judgmentMap?.recommendation?.mistake_type ?? null
   const recommendationTitle = enoughMapData && nextFocus
     ? `Practice ${nextFocus}`
     : 'Build your first pattern map'
   const recommendationMessage = enoughMapData && judgmentMap?.recommendation?.message
     ? judgmentMap.recommendation.message
     : 'Answer a few questions so Forge can learn your missed-answer patterns and recommend what to train next.'
+
+  const handleStart = () => {
+    if (mode === 'documents' && !hasDocuments) return
+
+    if (mode === 'recommended' && enoughMapData && nextFocus) {
+      onStart({
+        quizMode: 'targeted_drill',
+        targetMistakeType: nextFocus,
+        targetFocus: judgmentMap?.recommendation?.explanation ?? recommendationMessage,
+        totalQuestions: 3,
+      })
+      return
+    }
+
+    onStart({
+      quizMode: 'standard',
+      totalQuestions: 10,
+    })
+  }
+
+  const questionCountLabel = mode === 'recommended' && enoughMapData && nextFocus
+    ? '3-question focused drill · ~3 minutes'
+    : mode === 'documents'
+      ? '10 questions from your materials'
+      : '10 questions · ~8 minutes'
 
   return (
     <div className="w-full max-w-md mx-auto space-y-5 px-4 py-6">
@@ -143,7 +171,7 @@ export default function QuizSetup({
           eyebrow="Recommended"
           title={recommendationTitle}
           body={recommendationMessage}
-          footer={enoughMapData ? 'Based on your recent missed-answer patterns.' : 'Forge needs a few answers to personalize this.'}
+          footer={enoughMapData && nextFocus ? 'Starts a 3-question focused drill from your Judgment Map.' : 'Forge needs a few answers to personalize this.'}
           onClick={() => selectMode('recommended')}
         />
 
@@ -205,9 +233,7 @@ export default function QuizSetup({
       )}
 
       <div className="space-y-1">
-        <p className="text-sm text-gray-400">
-          {mode === 'documents' ? '10 questions from your materials' : '10 questions · ~8 minutes'}
-        </p>
+        <p className="text-sm text-gray-400">{questionCountLabel}</p>
         <p className="text-[11px] leading-snug text-gray-400">
           AI-generated NCLEX-style practice questions for educational study and clinical reasoning. Results do not guarantee exam performance.
         </p>
@@ -219,7 +245,7 @@ export default function QuizSetup({
         className="w-full rounded-lg text-white font-semibold text-base transition-all disabled:opacity-50"
         style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}
       >
-        {loading ? 'Starting...' : mode === 'recommended' ? 'Start Recommended Practice' : mode === 'documents' ? 'Practice From Notes' : mode === 'topic' ? 'Start Focused Drill' : 'Start General Quiz'}
+        {loading ? 'Starting...' : mode === 'recommended' && enoughMapData && nextFocus ? 'Start 3-Question Drill' : mode === 'recommended' ? 'Start Recommended Practice' : mode === 'documents' ? 'Practice From Notes' : mode === 'topic' ? 'Start Focused Drill' : 'Start General Quiz'}
       </button>
 
       <Link href="/readiness" className="block text-center text-sm font-semibold" style={{ color: '#0D8F9C' }}>
