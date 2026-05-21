@@ -1,84 +1,86 @@
+import { BarChart3, CheckCircle2, Lightbulb, Search } from 'lucide-react'
+
+const steps = [
+  {
+    icon: Search,
+    title: 'Miss a question',
+    body: 'Your answer reveals a missed cue, not a personal failure.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Spot the pattern',
+    body: 'Forge maps the clinical judgment pattern behind the miss.',
+  },
+  {
+    icon: Lightbulb,
+    title: 'Fix the reasoning',
+    body: 'Quick Why feedback shows what to notice next time.',
+  },
+  {
+    icon: CheckCircle2,
+    title: 'Retest the pattern',
+    body: 'A focused drill helps turn the pattern into confidence.',
+  },
+]
+
 export default function HowItClicks() {
   return (
-    <section id="how-forge-thinks" className="bg-white py-14 sm:py-18 md:py-20" aria-labelledby="how-forge-thinks-heading">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="how-forge-thinks" className="bg-[#F7F9FB] py-14 sm:py-18 md:py-20" aria-labelledby="how-forge-thinks-heading">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 sm:mb-14">
+          <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#0D8F9C]">How it works</p>
           <h2 id="how-forge-thinks-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3 sm:mb-4">
-            Miss → Map → Fix → Retest
+            How Forge helps you fix the pattern
           </h2>
-          <p className="text-base sm:text-lg text-[#1E2D3D]/70 max-w-2xl mx-auto">
-            Most apps explain the answer. ForgeNursing helps you find the clinical judgment mistake that made you choose the wrong one.
+          <p className="mx-auto max-w-2xl text-base text-[#1E2D3D]/70 sm:text-lg">
+            Miss one. Find the thinking error. Fix the pattern. Then practice it again until it sticks.
           </p>
         </div>
 
-        {/* Conversation flow */}
-        <div className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl overflow-hidden shadow-lg shadow-[#0B2545]/5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          {steps.map((step, index) => {
+            const Icon = step.icon
+            return (
+              <div key={step.title} className="relative rounded-2xl border border-[#DDE5EE] bg-white p-5 shadow-sm">
+                <div className="mb-5 flex items-center justify-between">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E0F4F6]">
+                    <Icon className="h-6 w-6 text-[#0D8F9C]" />
+                  </div>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E0F4F6] text-sm font-bold text-[#0D8F9C]">
+                    {index + 1}
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-[#0B2545]">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#1E2D3D]/65">{step.body}</p>
+              </div>
+            )
+          })}
+        </div>
 
-          {/* Tutor chrome */}
-          <div className="bg-[#0B2545] px-5 py-3 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0B2545] to-[#0D8F9C] border border-white/20 flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-xs">Fx</span>
-            </div>
+        <div className="mt-10 rounded-3xl border border-[#DDE5EE] bg-white p-5 shadow-sm sm:p-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
             <div>
-              <div className="text-xs font-bold text-white">Forge</div>
-              <div className="text-[10px] text-[#0BBCD4]">Clinical Judgment Trainer</div>
+              <p className="text-xs font-bold uppercase tracking-widest text-[#0D8F9C]">The Forge loop</p>
+              <h3 className="mt-3 font-display text-3xl text-[#0B2545]">Most apps explain the answer. Forge trains the thinking.</h3>
+              <p className="mt-4 text-sm leading-relaxed text-[#1E2D3D]/70">
+                A normal rationale tells you what was right. Forge shows why your answer felt tempting, maps the pattern, and gives you a short drill to build the habit.
+              </p>
             </div>
-          </div>
-
-          <div className="p-5 sm:p-6 space-y-4">
-            {/* Miss */}
-            <div className="bg-white border border-[#DDE5EE] rounded-2xl px-5 py-4 shadow-sm space-y-3">
-              <div className="bg-red-50 border border-red-100 rounded-xl p-3.5">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-bold text-red-700 uppercase tracking-widest">MISS</span>
-                  <span className="text-[10px] text-red-700/60">· You chose the tempting answer</span>
-                </div>
-                <p className="text-sm text-[#1E2D3D] leading-relaxed">
-                  You picked <strong>A: Give detailed information about the procedure.</strong> It sounds helpful — but the client is anxious right now.
-                </p>
+            <div className="rounded-2xl bg-[#0B2545] p-5 text-white">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {['Miss', 'Map', 'Fix', 'Retest'].map((label, index) => (
+                  <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#0BBCD4]">{index + 1}</p>
+                    <p className="mt-1 text-lg font-bold text-white">{label}</p>
+                  </div>
+                ))}
               </div>
-
-              {/* Map */}
-              <div className="bg-[#0B2545] rounded-xl p-3.5 text-white">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">MAP</span>
-                  <span className="text-[10px] text-white/50">· Identify the mistake type</span>
-                </div>
-                <p className="text-sm font-bold mb-1">Mistake Type: Therapeutic communication</p>
-                <p className="text-sm text-white/85 leading-relaxed">
-                  The trap was educating before acknowledging fear. When emotion is the cue, the nurse first validates the client’s concern.
-                </p>
-              </div>
-
-              {/* Fix */}
-              <div className="bg-[#E0F4F6] border border-[#0D8F9C]/20 rounded-xl p-3.5">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-widest">FIX</span>
-                  <span className="text-[10px] text-[#0D8F9C]/70">· Learn the reasoning move</span>
-                </div>
-                <p className="text-sm text-[#1E2D3D] leading-relaxed">
-                  Better answer: <strong>“Tell me what concerns you most about the procedure.”</strong> This opens assessment of fear before teaching.
-                </p>
-              </div>
-
-              {/* Retest */}
-              <div className="bg-white border border-[#DDE5EE] rounded-xl p-3.5">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-bold text-[#0B2545] uppercase tracking-widest">RETEST</span>
-                  <span className="text-[10px] text-[#0B2545]/50">· Practice the same weakness again</span>
-                </div>
-                <p className="text-sm text-[#1E2D3D] leading-relaxed">
-                  Forge gives you another question targeting the same judgment pattern, so you do not just memorize one rationale — you fix the habit.
-                </p>
-              </div>
+              <p className="mt-4 text-sm text-white/70">
+                Every missed question becomes signal for what Forge should train next.
+              </p>
             </div>
           </div>
         </div>
-
-        {/* Caption */}
-        <p className="text-center text-sm text-[#1E2D3D]/60 mt-6 italic max-w-2xl mx-auto">
-          "The goal is not more questions. The goal is knowing why you picked the wrong answer."
-        </p>
       </div>
     </section>
   )
