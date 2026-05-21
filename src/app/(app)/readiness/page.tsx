@@ -50,6 +50,10 @@ function formatDate(value: string | null) {
   return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+function practiceProgress(attempted: number) {
+  return Math.min(100, Math.max(8, attempted * 18))
+}
+
 export default function ClinicalJudgmentMapPage() {
   const router = useRouter()
   const [data, setData] = useState<JudgmentMapData | null>(null)
@@ -114,6 +118,7 @@ export default function ClinicalJudgmentMapPage() {
 
   const hasAnyData = data.summary.total_attempted > 0
   const topRows = data.mistake_types.slice(0, 6)
+  const mapProgress = Math.min(100, Math.max(10, data.summary.total_attempted * 8))
 
   return (
     <div className="min-h-screen bg-[#F7F9FB] px-4 py-6 sm:px-6 lg:px-8">
@@ -158,19 +163,19 @@ export default function ClinicalJudgmentMapPage() {
           </div>
 
           <div className="rounded-2xl bg-white border border-slate-200 p-5 sm:p-6 shadow-sm">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Questions Answered</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Map Progress</p>
             <div className="text-4xl font-bold mb-1" style={{ color: '#0B2545' }}>{data.summary.total_attempted}</div>
             <p className="text-sm text-slate-500 mb-4">
-              {data.summary.total_correct} correct so far
+              questions helping Forge learn your patterns
             </p>
             <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
               <div
                 className="h-2 rounded-full"
-                style={{ width: `${data.summary.overall_accuracy}%`, backgroundColor: '#0D8F9C' }}
+                style={{ width: `${mapProgress}%`, backgroundColor: '#0D8F9C' }}
               />
             </div>
             <p className="text-xs text-slate-400 mt-2">
-              {data.summary.overall_accuracy}% overall practice accuracy
+              More answers make your recommendations sharper.
             </p>
           </div>
         </section>
@@ -222,14 +227,14 @@ export default function ClinicalJudgmentMapPage() {
               label="Next growth pattern"
               icon={<Target className="w-5 h-5 text-white" />}
               title={data.top_weakness?.mistake_type || 'Keep practicing'}
-              stat={data.top_weakness ? `${data.top_weakness.accuracy}%` : '--'}
+              stat={data.top_weakness ? trendLabel(data.top_weakness.trend) : 'Building'}
               body={data.top_weakness?.explanation || 'Forge will identify your next growth pattern as you answer more questions.'}
             />
             <PatternCard
               label="Strongest pattern"
               icon={<BarChart3 className="w-5 h-5 text-white" />}
               title={data.strongest_area?.mistake_type || 'Building'}
-              stat={data.strongest_area ? `${data.strongest_area.accuracy}%` : '--'}
+              stat={data.strongest_area ? trendLabel(data.strongest_area.trend) : 'Building'}
               body={data.strongest_area?.explanation || 'Your strongest pattern will appear after a few more questions.'}
             />
           </section>
@@ -238,7 +243,7 @@ export default function ClinicalJudgmentMapPage() {
         {topRows.length > 0 && (
           <section className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-5 sm:p-6 border-b border-slate-100">
-              <h2 className="text-xl font-bold" style={{ color: '#0B2545' }}>Pattern Breakdown</h2>
+              <h2 className="text-xl font-bold" style={{ color: '#0B2545' }}>Patterns to Train</h2>
               <p className="text-sm text-slate-500 mt-1">
                 These are the clinical judgment patterns Forge is tracking from your answers.
               </p>
@@ -254,14 +259,14 @@ export default function ClinicalJudgmentMapPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold" style={{ color: '#0D8F9C' }}>{item.accuracy}%</div>
-                      <div className="text-xs text-slate-400">{item.correct}/{item.attempted}</div>
+                      <div className="text-sm font-bold" style={{ color: '#0D8F9C' }}>{trendLabel(item.trend)}</div>
+                      <div className="text-xs text-slate-400">{item.attempted} practiced</div>
                     </div>
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                     <div
                       className="h-2 rounded-full"
-                      style={{ width: `${item.accuracy}%`, backgroundColor: '#0D8F9C' }}
+                      style={{ width: `${practiceProgress(item.attempted)}%`, backgroundColor: '#0D8F9C' }}
                     />
                   </div>
                   <div className="mt-2 text-xs text-slate-500">
@@ -289,7 +294,7 @@ function PatternCard({ label, icon, title, stat, body }: { label: string; icon: 
           {icon}
         </div>
       </div>
-      <div className="text-3xl font-bold mb-2" style={{ color: '#0D8F9C' }}>{stat}</div>
+      <div className="text-2xl font-bold mb-2" style={{ color: '#0D8F9C' }}>{stat}</div>
       <p className="text-sm text-slate-600 leading-relaxed">{body}</p>
     </div>
   )
