@@ -24,10 +24,13 @@ function formatDate(value?: string | null) {
   }
 }
 
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return new Promise((resolve, reject) => {
+function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('TIMEOUT')), ms)
-    promise.then(resolve).catch(reject).finally(() => clearTimeout(timer))
+    Promise.resolve(promise)
+      .then(resolve)
+      .catch(reject)
+      .finally(() => clearTimeout(timer))
   })
 }
 
@@ -43,8 +46,8 @@ export default function SettingsPage() {
       setError(null)
       try {
         const supabase = getBrowserClient()
-        const userResult = await withTimeout(supabase.auth.getUser(), 5000)
-        const user = userResult.data.user
+        const userResult: any = await withTimeout(supabase.auth.getUser(), 5000)
+        const user = userResult.data?.user
 
         if (!user) {
           setError('Please log in again to view settings.')
@@ -53,7 +56,7 @@ export default function SettingsPage() {
 
         setEmail(user.email ?? null)
 
-        const profileResult = await withTimeout(
+        const profileResult: any = await withTimeout(
           supabase
             .from('profiles')
             .select('preferred_name, program_track, program_level, graduation_date, subscription_status, trial_ends_at, default_entry_path')
