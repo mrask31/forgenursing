@@ -16,6 +16,10 @@ interface QuizRationaleProps {
   reasoningTrap?: string | null
   fixInstruction?: string | null
   retestFocus?: string | null
+  keyCue?: string | null
+  whyCorrectShort?: string | null
+  whyWrongShort?: string | null
+  oneLineFix?: string | null
   sessionId: string
   questionId: string
   questionIndex: number
@@ -48,16 +52,33 @@ function fallbackMistakeType(category: string) {
 export default function QuizRationale({
   isCorrect, userAnswer, correctAnswer, options, rationaleCorrect,
   rationaleIncorrect, nclexCategory, difficulty, mistakeType, reasoningTrap,
-  fixInstruction, retestFocus, sessionId, questionId, questionIndex, onNext,
+  fixInstruction, retestFocus, keyCue, whyCorrectShort, whyWrongShort, oneLineFix,
+  sessionId, questionId, questionIndex, onNext,
   onRetestWeakness, isRetestingWeakness = false, isLast,
 }: QuizRationaleProps) {
   const router = useRouter()
   const [isDiggingDeeper, setIsDiggingDeeper] = useState(false)
+  const [showFullRationale, setShowFullRationale] = useState(false)
   const [digDeeperError, setDigDeeperError] = useState<string | null>(null)
   const correctOptionText = options.find(o => o.label === correctAnswer)?.text ?? ''
   const userOptionText = options.find(o => o.label === userAnswer)?.text ?? ''
   const displayedMistakeType = mistakeType || fallbackMistakeType(nclexCategory)
   const showMistakeMap = !isCorrect && displayedMistakeType
+
+  const handleToggleFullRationale = () => {
+    setShowFullRationale(prev => !prev)
+    try {
+      const posthog = require('posthog-js').default
+      posthog.capture('show_full_rationale_clicked', {
+        session_id: sessionId,
+        question_id: questionId,
+        question_index: questionIndex,
+        is_opening: !showFullRationale,
+        nclex_category: nclexCategory,
+        mistake_type: displayedMistakeType,
+      })
+    } catch {}
+  }
 
   const handleFixWeakness = async () => {
     if (isDiggingDeeper) return
@@ -145,10 +166,44 @@ export default function QuizRationale({
         )}
       </div>
 
+      <div className="rounded-xl border border-[#DDE5EE] bg-white p-4 space-y-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#0D8F9C' }}>
+          Quick why
+        </p>
+        {keyCue && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">Key cue</p>
+            <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>{keyCue}</p>
+          </div>
+        )}
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">
+            {isCorrect ? 'Why you got it' : 'Why the better answer works'}
+          </p>
+          <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
+            {whyCorrectShort || rationaleCorrect}
+          </p>
+        </div>
+        {!isCorrect && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">Why your answer was tempting</p>
+            <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
+              {whyWrongShort || rationaleIncorrect[userAnswer] || reasoningTrap || 'The answer was plausible, but it missed the most important cue.'}
+            </p>
+          </div>
+        )}
+        {oneLineFix && (
+          <div className="rounded-lg bg-[#F7F9FB] border border-[#DDE5EE] p-3">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">Remember this</p>
+            <p className="text-sm font-medium leading-relaxed" style={{ color: '#0B2545' }}>{oneLineFix}</p>
+          </div>
+        )}
+      </div>
+
       {showMistakeMap && (
         <div className="rounded-xl p-4 text-white" style={{ backgroundColor: '#0B2545' }}>
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1">
-            You missed this because
+            Pattern Forge noticed
           </p>
           <p className="text-lg font-bold mb-2">Mistake Type: {displayedMistakeType}</p>
           {reasoningTrap && (
@@ -166,19 +221,32 @@ export default function QuizRationale({
         </div>
       )}
 
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#0B2545' }}>
-          Why {correctAnswer} is better
-        </p>
-        <p className="text-sm text-gray-700 leading-relaxed">{rationaleCorrect}</p>
-      </div>
+      <button
+        type="button"
+        onClick={handleToggleFullRationale}
+        className="w-full rounded-lg border text-sm font-semibold py-3"
+        style={{ borderColor: '#DDE5EE', color: '#0B2545', minHeight: '44px' }}
+      >
+        {showFullRationale ? 'Hide full rationale' : 'Show full rationale'}
+      </button>
 
-      {!isCorrect && rationaleIncorrect[userAnswer] && (
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#EF4444' }}>
-            Why {userAnswer} pulled you in
-          </p>
-          <p className="text-sm text-gray-700 leading-relaxed">{rationaleIncorrect[userAnswer]}</p>
+      {showFullRationale && (
+        <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#0B2545' }}>
+              Why {correctAnswer} is better
+            </p>
+            <p className="text-sm text-gray-700 leading-relaxed">{rationaleCorrect}</p>
+          </div>
+
+          {!isCorrect && rationaleIncorrect[userAnswer] && (
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#EF4444' }}>
+                Why {userAnswer} pulled you in
+              </p>
+              <p className="text-sm text-gray-700 leading-relaxed">{rationaleIncorrect[userAnswer]}</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -188,7 +256,7 @@ export default function QuizRationale({
             Next move
           </p>
           <p className="text-sm text-gray-700 leading-relaxed">
-            Practice this weakness next: <span className="font-semibold" style={{ color: '#0B2545' }}>{retestFocus}</span>
+            Practice this pattern next: <span className="font-semibold" style={{ color: '#0B2545' }}>{retestFocus}</span>
           </p>
         </div>
       )}
@@ -224,7 +292,7 @@ export default function QuizRationale({
               className="block w-full rounded-lg text-white text-center font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#0D8F9C', minHeight: '44px' }}
             >
-              {isRetestingWeakness ? 'Building Retest…' : 'Retest this weakness →'}
+              {isRetestingWeakness ? 'Building Retest…' : 'Retest this pattern →'}
             </button>
           )}
 
