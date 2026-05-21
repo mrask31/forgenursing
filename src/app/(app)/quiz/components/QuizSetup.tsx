@@ -119,6 +119,29 @@ export default function QuizSetup({
     })
   }
 
+  const handleRecommendedStart = (event: React.MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setMode('recommended')
+    setSourceType('generic')
+    setCategory('All Categories')
+
+    if (enoughMapData && nextFocus) {
+      onStart({
+        quizMode: 'targeted_drill',
+        targetMistakeType: nextFocus,
+        targetFocus: judgmentMap?.recommendation?.explanation ?? recommendationMessage,
+        totalQuestions: 3,
+      })
+      return
+    }
+
+    onStart({
+      quizMode: 'standard',
+      totalQuestions: 10,
+    })
+  }
+
   const questionCountLabel = mode === 'recommended' && enoughMapData && nextFocus
     ? '3-question focused drill · ~3 minutes'
     : mode === 'documents'
@@ -172,6 +195,9 @@ export default function QuizSetup({
           title={recommendationTitle}
           body={recommendationMessage}
           footer={enoughMapData && nextFocus ? 'Starts a 3-question focused drill from your Judgment Map.' : 'Forge needs a few answers to personalize this.'}
+          actionLabel={mode === 'recommended' ? (enoughMapData && nextFocus ? 'Start 3-Question Drill' : 'Start Recommended Practice') : undefined}
+          actionLoading={loading}
+          onAction={handleRecommendedStart}
           onClick={() => selectMode('recommended')}
         />
 
@@ -263,6 +289,9 @@ function TrainingCard({
   title,
   body,
   footer,
+  actionLabel,
+  actionLoading = false,
+  onAction,
   onClick,
 }: {
   selected: boolean
@@ -272,6 +301,9 @@ function TrainingCard({
   title: string
   body: string
   footer: string
+  actionLabel?: string
+  actionLoading?: boolean
+  onAction?: (event: React.MouseEvent) => void
   onClick: () => void
 }) {
   return (
@@ -297,6 +329,22 @@ function TrainingCard({
           <h3 className="text-sm font-bold mb-1" style={{ color: '#0B2545' }}>{title}</h3>
           <p className="text-xs text-gray-600 leading-relaxed mb-2">{body}</p>
           <p className="text-[11px] text-gray-400 leading-snug">{footer}</p>
+          {actionLabel && onAction && (
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={onAction}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  onAction(event as unknown as React.MouseEvent)
+                }
+              }}
+              className="mt-3 inline-flex w-full items-center justify-center rounded-lg px-3 py-2.5 text-sm font-bold text-white"
+              style={{ backgroundColor: '#0D8F9C', minHeight: '44px' }}
+            >
+              {actionLoading ? 'Starting...' : actionLabel}
+            </span>
+          )}
         </div>
         {selected && <ArrowRight className="w-4 h-4 flex-shrink-0 mt-1" style={{ color: '#0D8F9C' }} />}
       </div>
