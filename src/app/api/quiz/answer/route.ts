@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid answer. Must be A, B, C, or D.' }, { status: 400 });
     }
 
-    // Fetch the question (RLS ensures user owns it via session)
     const { data: question, error: fetchError } = await supabase
       .from('quiz_questions')
       .select('*, quiz_sessions!inner(user_id, id, status, score, current_question_index, total_questions)')
@@ -45,9 +44,12 @@ export async function POST(req: NextRequest) {
       reasoning_trap: question.reasoning_trap,
       fix_instruction: question.fix_instruction,
       retest_focus: question.retest_focus,
+      key_cue: question.key_cue,
+      why_correct_short: question.why_correct_short,
+      why_wrong_short: question.why_wrong_short,
+      one_line_fix: question.one_line_fix,
     };
 
-    // Idempotent: if already answered, return existing result
     if (question.answered_at) {
       return NextResponse.json({
         ...baseResult,
@@ -59,7 +61,6 @@ export async function POST(req: NextRequest) {
     const isCorrect = userAnswer === question.correct_answer;
     const now = new Date().toISOString();
 
-    // Update the question with user's answer
     const { error: updateError } = await supabase
       .from('quiz_questions')
       .update({
@@ -74,7 +75,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to save answer' }, { status: 500 });
     }
 
-    // Update session: increment score if correct, advance question index
     const session = question.quiz_sessions;
     const newScore = (session.score || 0) + (isCorrect ? 1 : 0);
     const newIndex = (session.current_question_index || 0) + 1;
@@ -97,7 +97,6 @@ export async function POST(req: NextRequest) {
 
     if (sessionUpdateError) {
       console.error('[Quiz Answer] Update session error:', sessionUpdateError);
-      // Non-fatal: answer was saved, session update failed
     }
 
     return NextResponse.json({
