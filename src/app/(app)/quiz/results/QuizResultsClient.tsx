@@ -36,10 +36,7 @@ interface MistakeBreakdown {
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(label)), ms)
-    promise
-      .then(resolve)
-      .catch(reject)
-      .finally(() => clearTimeout(timer))
+    promise.then(resolve).catch(reject).finally(() => clearTimeout(timer))
   })
 }
 
@@ -142,11 +139,7 @@ export default function QuizResultsClient() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 text-center">
         <p className="text-gray-500">{loadError}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="rounded-lg text-white font-semibold px-5 py-3"
-          style={{ backgroundColor: '#0D8F9C' }}
-        >
+        <button onClick={() => window.location.reload()} className="rounded-lg text-white font-semibold px-5 py-3" style={{ backgroundColor: '#0D8F9C' }}>
           Try Again
         </button>
         <Link href="/quiz" className="underline" style={{ color: '#0D8F9C' }}>Start a new quiz</Link>
@@ -167,6 +160,8 @@ export default function QuizResultsClient() {
   const total = questions.length
   const pct = Math.round((score / total) * 100)
   const missed = questions.filter(q => !q.is_correct && q.user_answer)
+  const isTargetedDrill = session.quiz_mode === 'targeted_drill'
+  const targetPattern = session.target_mistake_type || questions[0]?.mistake_type || null
 
   const catMap = new Map<string, { correct: number; total: number }>()
   questions.forEach(q => {
@@ -227,10 +222,7 @@ export default function QuizResultsClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          quizSessionId: sessionId,
-          questionId: q.id,
-        }),
+        body: JSON.stringify({ quizSessionId: sessionId, questionId: q.id }),
       })
 
       if (!response.ok) {
@@ -258,20 +250,27 @@ export default function QuizResultsClient() {
     <div className="min-h-screen px-4 py-6 pb-40 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div className="space-y-6 pb-24">
         <h1 className="text-2xl font-bold text-center" style={{ color: '#0B2545' }}>
-          Quiz Complete! 🎉
+          {isTargetedDrill ? 'Focused Drill Complete 🎯' : 'Quiz Complete! 🎉'}
         </h1>
 
         <div className="rounded-xl border border-gray-200 p-5 text-center space-y-3">
-          <p className="text-4xl font-bold" style={{ color: '#0D8F9C' }}>
-            {score} / {total}
-          </p>
-          <div className="w-full h-3 rounded-full bg-gray-200">
-            <div
-              className="h-3 rounded-full transition-all"
-              style={{ width: `${pct}%`, backgroundColor: '#0D8F9C' }}
-            />
-          </div>
-          <p className="text-sm text-gray-500">{pct}%</p>
+          {isTargetedDrill ? (
+            <>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>Pattern trained</p>
+              <p className="text-3xl font-bold" style={{ color: '#0B2545' }}>{targetPattern || 'Clinical judgment'}</p>
+              <p className="text-sm text-gray-600">
+                You completed {total} focused question{total === 1 ? '' : 's'} and gave Forge more signal for your Judgment Map.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-4xl font-bold" style={{ color: '#0D8F9C' }}>{score} / {total}</p>
+              <div className="w-full h-3 rounded-full bg-gray-200">
+                <div className="h-3 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: '#0D8F9C' }} />
+              </div>
+              <p className="text-sm text-gray-500">{pct}%</p>
+            </>
+          )}
           <p className="text-[11px] leading-snug text-gray-400">
             Scores reflect AI-generated practice questions for study only and do not predict exam performance.
           </p>
@@ -282,13 +281,11 @@ export default function QuizResultsClient() {
             What Forge learned
           </p>
           <p className="text-sm text-gray-700 leading-relaxed">
-            This quiz updated your Clinical Judgment Map. Forge uses each answer to learn what pattern to train next.
+            {isTargetedDrill
+              ? `This drill trained ${targetPattern || 'your next focus'} and updated your Clinical Judgment Map.`
+              : 'This quiz updated your Clinical Judgment Map. Forge uses each answer to learn what pattern to train next.'}
           </p>
-          <button
-            onClick={() => router.push('/readiness')}
-            className="w-full rounded-lg text-white font-semibold text-sm"
-            style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
-          >
+          <button onClick={() => router.push('/readiness')} className="w-full rounded-lg text-white font-semibold text-sm" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
             View Judgment Map →
           </button>
         </div>
@@ -299,27 +296,27 @@ export default function QuizResultsClient() {
               Your Clinical Judgment Pattern
             </p>
             <div>
-              <p className="text-sm text-white/70">Top missed pattern</p>
+              <p className="text-sm text-white/70">Pattern to keep training</p>
               <p className="text-2xl font-bold">{topMistake.mistakeType}</p>
             </div>
             <p className="text-sm text-white/85 leading-relaxed">
               {patternExplanation(topMistake.mistakeType)}
             </p>
             <p className="text-xs text-white/50">
-              Missed {topMistake.missed} question{topMistake.missed === 1 ? '' : 's'} in this pattern.
+              {topMistake.missed} answer{topMistake.missed === 1 ? '' : 's'} gave Forge more signal for this pattern.
             </p>
           </div>
         )}
 
         {mistakeBreakdown.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Mistake Types to Fix</h2>
+            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Patterns to Train</h2>
             <div className="rounded-xl border border-gray-200 p-4 space-y-3">
               {mistakeBreakdown.map(item => (
                 <div key={item.mistakeType} className="flex items-center justify-between gap-3">
                   <span className="text-sm" style={{ color: '#0B2545' }}>{item.mistakeType}</span>
                   <span className="text-xs rounded-full px-2 py-1 bg-gray-100 text-gray-500">
-                    {item.missed} missed
+                    {item.missed} to train
                   </span>
                 </div>
               ))}
@@ -327,7 +324,7 @@ export default function QuizResultsClient() {
           </div>
         )}
 
-        {categories.length > 0 && (
+        {categories.length > 0 && !isTargetedDrill && (
           <div className="space-y-3">
             <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Performance by Category</h2>
             <div className="rounded-xl border border-gray-200 p-4 space-y-3">
@@ -340,10 +337,7 @@ export default function QuizResultsClient() {
                       <span className="text-gray-500">{cat.correct}/{cat.total} {catPct}%</span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-gray-200">
-                      <div
-                        className="h-2 rounded-full"
-                        style={{ width: `${catPct}%`, backgroundColor: '#0D8F9C' }}
-                      />
+                      <div className="h-2 rounded-full" style={{ width: `${catPct}%`, backgroundColor: '#0D8F9C' }} />
                     </div>
                   </div>
                 )
@@ -352,22 +346,18 @@ export default function QuizResultsClient() {
           </div>
         )}
 
-        {fixWeaknessError && (
-          <p className="text-xs text-red-600">{fixWeaknessError}</p>
-        )}
+        {fixWeaknessError && <p className="text-xs text-red-600">{fixWeaknessError}</p>}
 
         {missed.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Missed Questions to Fix</h2>
+            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Questions to Review</h2>
             <div className="rounded-xl border border-gray-200 divide-y divide-gray-100">
               {missed.map(q => {
                 const mistakeType = q.mistake_type || fallbackMistakeType(q.nclex_category)
                 return (
                   <div key={q.id} className="p-4 space-y-2">
                     <div className="space-y-1">
-                      <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
-                        {mistakeType}
-                      </p>
+                      <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>{mistakeType}</p>
                       <p className="text-sm" style={{ color: '#0B2545' }}>
                         <span className="font-medium">Q{q.question_index + 1}</span> · {q.question_stem.slice(0, 80)}...
                       </p>
@@ -384,21 +374,11 @@ export default function QuizResultsClient() {
                     )}
 
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => setReviewingId(reviewingId === q.id ? null : q.id)}
-                        className="px-3 py-1.5 rounded text-sm font-medium border"
-                        style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}
-                      >
+                      <button onClick={() => setReviewingId(reviewingId === q.id ? null : q.id)} className="px-3 py-1.5 rounded text-sm font-medium border" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}>
                         {reviewingId === q.id ? 'Hide' : 'Review'}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleFixWeakness(q)}
-                        disabled={fixingQuestionId === q.id}
-                        className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center disabled:opacity-60 disabled:cursor-not-allowed"
-                        style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
-                      >
-                        {fixingQuestionId === q.id ? 'Opening…' : 'Fix Weakness →'}
+                      <button type="button" onClick={() => handleFixWeakness(q)} disabled={fixingQuestionId === q.id} className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
+                        {fixingQuestionId === q.id ? 'Opening…' : 'Train Pattern →'}
                       </button>
                     </div>
                   </div>
@@ -409,25 +389,13 @@ export default function QuizResultsClient() {
         )}
 
         <div className="space-y-3 pt-2">
-          <button
-            onClick={() => router.push('/quiz')}
-            className="w-full rounded-lg text-white font-semibold text-base"
-            style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}
-          >
-            Start New Quiz
+          <button onClick={() => router.push('/quiz')} className="w-full rounded-lg text-white font-semibold text-base" style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}>
+            {isTargetedDrill ? 'Start Another Practice' : 'Start New Quiz'}
           </button>
-          <button
-            onClick={() => router.push('/readiness')}
-            className="w-full rounded-lg font-semibold text-base border-2"
-            style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '56px' }}
-          >
+          <button onClick={() => router.push('/readiness')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '56px' }}>
             View Judgment Map
           </button>
-          <button
-            onClick={() => router.push('/entry')}
-            className="w-full rounded-lg font-semibold text-base border-2"
-            style={{ borderColor: '#DDE5EE', color: '#0B2545', minHeight: '56px' }}
-          >
+          <button onClick={() => router.push('/entry')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#DDE5EE', color: '#0B2545', minHeight: '56px' }}>
             Back to Study Options
           </button>
         </div>
