@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { MessageSquare, BarChart3, GraduationCap, BookOpen, Settings, LogOut, ChevronUp, ClipboardList } from 'lucide-react'
-import { getBrowserClient } from '@/lib/supabase/client'
+import { getBrowserClient, resetBrowserClient } from '@/lib/supabase/client'
+import { clearSupabaseStorage } from '@/lib/auth-utils'
 import HistoryButton from './HistoryButton'
 
 interface SidebarProps {
@@ -13,12 +14,12 @@ interface SidebarProps {
 
 export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   const pathname = usePathname()
-  const router = useRouter()
   const [preferredName, setPreferredName] = useState<string | null>(null)
   const [programTrack, setProgramTrack] = useState<string | null>(null)
   const [graduationDate, setGraduationDate] = useState<string | null>(null)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [quizFirstEnabled, setQuizFirstEnabled] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -61,10 +62,38 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   }, [isProfileMenuOpen])
 
   const handleLogout = async () => {
-    const supabase = getBrowserClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+    setIsProfileMenuOpen(false)
+
+    try {
+      const supabase = getBrowserClient()
+      await Promise.race([
+        supabase.auth.signOut(),
+        new Promise((resolve) => setTimeout(resolve, 2000)),
+      ])
+    } catch (error) {
+      console.warn('[Sidebar] Supabase signOut failed; continuing cleanup:', error)
+    }
+
+    try {
+      clearSupabaseStorage()
+      resetBrowserClient()
+      await Promise.race([
+        fetch('/api/auth/clear-session', {
+          method: 'POST',
+          credentials: 'include',
+          cache: 'no-store',
+        }),
+        new Promise((resolve) => setTimeout(resolve, 2000)),
+      ])
+      clearSupabaseStorage()
+      resetBrowserClient()
+    } catch (error) {
+      console.warn('[Sidebar] Server session cleanup failed; redirecting anyway:', error)
+    } finally {
+      window.location.replace('/login?loggedOut=true')
+    }
   }
 
   const mainNav = [
@@ -84,6 +113,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
     if (href === '/dictionary' && pathname.startsWith('/dictionary')) return true
     if (href === '/readiness' && pathname.startsWith('/readiness') && label === 'Judgment Map') return true
     if (href === '/quiz' && pathname.startsWith('/quiz')) return true
+    if (href === '/settings' && pathname.startsWith('/settings')) return true
     return false
   }
 
@@ -195,10 +225,11 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
               <button
                 onClick={handleLogout}
                 data-testid="logout-button"
-                className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors w-full text-left"
+                disabled={isLoggingOut}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors w-full text-left disabled:opacity-60 disabled:cursor-wait"
               >
                 <LogOut className="w-4 h-4" />
-                Log Out
+                {isLoggingOut ? 'Logging out…' : 'Log Out'}
               </button>
             </div>
           )}
