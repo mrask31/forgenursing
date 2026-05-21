@@ -10,6 +10,13 @@ import QuizRationale from './components/QuizRationale'
 
 type Phase = 'setup' | 'question' | 'rationale' | 'loading'
 
+type StartOptions = {
+  quizMode?: 'standard' | 'targeted_drill'
+  targetMistakeType?: string | null
+  targetFocus?: string | null
+  totalQuestions?: number
+}
+
 interface QuestionData {
   id: string
   session_id: string
@@ -22,6 +29,10 @@ interface QuestionData {
   reasoning_trap?: string | null
   fix_instruction?: string | null
   retest_focus?: string | null
+  key_cue?: string | null
+  why_correct_short?: string | null
+  why_wrong_short?: string | null
+  one_line_fix?: string | null
 }
 
 interface AnswerResult {
@@ -37,6 +48,10 @@ interface AnswerResult {
   reasoning_trap?: string | null
   fix_instruction?: string | null
   retest_focus?: string | null
+  key_cue?: string | null
+  why_correct_short?: string | null
+  why_wrong_short?: string | null
+  one_line_fix?: string | null
 }
 
 export default function QuizPageClient() {
@@ -55,6 +70,7 @@ export default function QuizPageClient() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [sessionTotalQuestions, setSessionTotalQuestions] = useState(10)
+  const [currentQuizMode, setCurrentQuizMode] = useState<string>('standard')
   const [questionStartTime, setQuestionStartTime] = useState<number>(0)
 
   const [currentQuestion, setCurrentQuestion] = useState<QuestionData | null>(null)
@@ -173,6 +189,7 @@ export default function QuizPageClient() {
         if (directSession) {
           setSessionId(directSession.id)
           setSessionTotalQuestions(directSession.total_questions || 10)
+          setCurrentQuizMode(directSession.quiz_mode || 'standard')
           setResumeSession(null)
           await generateQuestion(directSession.id, directSession.current_question_index || 0)
           return
@@ -185,23 +202,32 @@ export default function QuizPageClient() {
     init()
   }, [directSessionId, generateQuestion])
 
-  const handleStart = useCallback(async () => {
+  const handleStart = useCallback(async (options?: StartOptions) => {
     setLoading(true)
     setError(null)
     try {
+      const quizMode = options?.quizMode || 'standard'
       const res = await fetch('/api/quiz/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sourceType,
           nclexCategory: category === 'All Categories' ? null : category,
+          quizMode,
+          targetMistakeType: options?.targetMistakeType ?? null,
+          targetFocus: options?.targetFocus ?? null,
+          totalQuestions: options?.totalQuestions ?? (quizMode === 'targeted_drill' ? 3 : 10),
         }),
       })
 
-      if (!res.ok) throw new Error('Failed to create session')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to create session')
+      }
       const { session } = await res.json()
       setSessionId(session.id)
       setSessionTotalQuestions(session.total_questions || 10)
+      setCurrentQuizMode(session.quiz_mode || quizMode)
       setResumeSession(null)
 
       try {
@@ -213,7 +239,17 @@ export default function QuizPageClient() {
           has_documents: hasDocuments,
           is_resume: false,
           total_questions: session.total_questions || 10,
+          quiz_mode: session.quiz_mode || quizMode,
+          target_mistake_type: session.target_mistake_type || null,
+          target_focus: session.target_focus || null,
         })
+        if ((session.quiz_mode || quizMode) === 'targeted_drill') {
+          posthog.capture('recommended_practice_started', {
+            session_id: session.id,
+            target_mistake_type: session.target_mistake_type || options?.targetMistakeType || null,
+            target_focus: session.target_focus || options?.targetFocus || null,
+          })
+        }
       } catch {}
 
       await generateQuestion(session.id, 0)
@@ -228,6 +264,7 @@ export default function QuizPageClient() {
     if (!resumeSession) return
     setSessionId(resumeSession.id)
     setSessionTotalQuestions(resumeSession.total_questions || 10)
+    setCurrentQuizMode(resumeSession.quiz_mode || 'standard')
     setResumeSession(null)
 
     try {
@@ -236,6 +273,7 @@ export default function QuizPageClient() {
         session_id: resumeSession.id,
         questions_completed: resumeSession.current_question_index,
         total_questions: resumeSession.total_questions,
+        quiz_mode: resumeSession.quiz_mode || 'standard',
       })
     } catch {}
 
@@ -280,6 +318,7 @@ export default function QuizPageClient() {
           time_spent_seconds: timeSpent,
           source_type: sourceType,
           total_questions: sessionTotalQuestions,
+          quiz_mode: currentQuizMode,
         })
       } catch {}
     } catch (err: any) {
@@ -287,7 +326,7 @@ export default function QuizPageClient() {
     } finally {
       setLoading(false)
     }
-  }, [currentQuestion, selectedAnswer, sessionId, currentIndex, questionStartTime, sourceType, sessionTotalQuestions, prefetchQuestions])
+  }, [currentQuestion, selectedAnswer, sessionId, currentIndex, questionStartTime, sourceType, sessionTotalQuestions, currentQuizMode, prefetchQuestions])
 
   const handleRetestWeakness = useCallback(async () => {
     if (!currentQuestion || !sessionId || retestingWeakness) return
@@ -327,6 +366,7 @@ export default function QuizPageClient() {
       const { session, question } = await res.json()
       setSessionId(session.id)
       setSessionTotalQuestions(session.total_questions || 1)
+      setCurrentQuizMode(session.quiz_mode || 'retest')
       setCurrentIndex(question.question_index ?? 0)
       setCurrentQuestion(question)
       setSelectedAnswer(null)
@@ -355,6 +395,7 @@ export default function QuizPageClient() {
           total: sessionTotalQuestions,
           percentage: Math.round(((answerResult?.score ?? 0) / sessionTotalQuestions) * 100),
           source_type: sourceType,
+          quiz_mode: currentQuizMode,
         })
       } catch {}
 
@@ -363,7 +404,7 @@ export default function QuizPageClient() {
     }
 
     await generateQuestion(sessionId, nextIndex)
-  }, [sessionId, currentIndex, sessionTotalQuestions, answerResult, sourceType, router, generateQuestion])
+  }, [sessionId, currentIndex, sessionTotalQuestions, answerResult, sourceType, currentQuizMode, router, generateQuestion])
 
   return (
     <div className="min-h-screen px-4 py-6 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
@@ -425,6 +466,10 @@ export default function QuizPageClient() {
             reasoningTrap={answerResult.reasoning_trap ?? currentQuestion.reasoning_trap}
             fixInstruction={answerResult.fix_instruction ?? currentQuestion.fix_instruction}
             retestFocus={answerResult.retest_focus ?? currentQuestion.retest_focus}
+            keyCue={answerResult.key_cue ?? currentQuestion.key_cue}
+            whyCorrectShort={answerResult.why_correct_short ?? currentQuestion.why_correct_short}
+            whyWrongShort={answerResult.why_wrong_short ?? currentQuestion.why_wrong_short}
+            oneLineFix={answerResult.one_line_fix ?? currentQuestion.one_line_fix}
             sessionId={sessionId!}
             questionId={currentQuestion.id}
             questionIndex={currentIndex}
