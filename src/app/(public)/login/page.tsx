@@ -164,58 +164,50 @@ export default function LoginPage() {
       try {
         await withTimeout(
           fetch('/api/stripe/sync-subscription', { method: 'POST', credentials: 'include' }),
-          5000,
+          3000,
           'SYNC_TIMEOUT'
         )
       } catch (_) {
-        // Sync is best-effort; continue with profile check
+        // Sync is best-effort. Do not block login on Stripe sync.
       }
 
-      const profileClient = getBrowserClient()
-      const profileResult: any = await withTimeout(
-        profileClient
-          .from('profiles')
-          .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
-          .eq('id', data.user.id)
-          .single(),
-        10000,
-        'PROFILE_TIMEOUT'
-      )
-      const { data: profile, error: profileError } = profileResult
+      try {
+        const profileClient = getBrowserClient()
+        const profileResult: any = await withTimeout(
+          profileClient
+            .from('profiles')
+            .select('subscription_status, trial_ends_at, is_beta, beta_expires_at, quiz_first_enabled, default_entry_path')
+            .eq('id', data.user.id)
+            .single(),
+          3500,
+          'PROFILE_TIMEOUT'
+        )
+        const { data: profile, error: profileError } = profileResult
 
-      if (profileError) {
-        console.error('[Login] Error checking subscription status:', profileError)
-        window.location.replace('/checkout')
-        return
+        if (!profileError && profile) {
+          const userHasAccess = hasAccess(
+            profile?.subscription_status,
+            profile?.trial_ends_at,
+            profile?.is_beta,
+            profile?.beta_expires_at
+          )
+
+          window.location.replace(userHasAccess ? resolveEntryPath(profile) : '/checkout')
+          return
+        }
+
+        console.warn('[Login] Profile lookup failed after sign-in; continuing to app gate:', profileError)
+      } catch (profileError) {
+        console.warn('[Login] Profile lookup timed out after sign-in; continuing to app gate:', profileError)
       }
 
-      const userHasAccess = hasAccess(
-        profile?.subscription_status,
-        profile?.trial_ends_at,
-        profile?.is_beta,
-        profile?.beta_expires_at
-      )
-
-      if (userHasAccess) {
-        window.location.replace(resolveEntryPath(profile))
-        return
-      }
-
-      window.location.replace('/checkout')
+      window.location.replace('/entry')
     } catch (err) {
       debugAuthLog('Unexpected login error', { error: err })
 
       if (err instanceof Error && err.message === 'TIMEOUT') {
         setMessage({
           text: 'Login is taking longer than expected. Tap “Reset login session” below, then try again.',
-          type: 'error',
-        })
-        return
-      }
-
-      if (err instanceof Error && err.message === 'PROFILE_TIMEOUT') {
-        setMessage({
-          text: 'Login worked, but your profile took too long to load. Please refresh and try again.',
           type: 'error',
         })
         return
