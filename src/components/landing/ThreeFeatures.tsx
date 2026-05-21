@@ -1,97 +1,174 @@
-import { BookOpen, Brain, Upload, FileText, RotateCcw } from 'lucide-react'
+import { BookOpen, Brain, ClipboardList, MessageCircle, Target, Upload, Zap } from 'lucide-react'
 
-const features = [
+function TargetedDrillMockup() {
+  return (
+    <div className="mt-5 rounded-2xl border border-[#DDE5EE] bg-white p-4 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E0F4F6]">
+          <Target className="h-5 w-5 text-[#0D8F9C]" />
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#0D8F9C]">Recommended Next Focus</p>
+          <p className="mt-1 text-sm font-bold text-[#0B2545]">Assessment-first</p>
+          <p className="mt-1 text-xs text-[#1E2D3D]/60">Train when to assess before intervening.</p>
+        </div>
+      </div>
+      <div className="mt-4 rounded-xl border border-[#DDE5EE] p-3">
+        <p className="text-sm font-bold text-[#0B2545]">3-Question Drill</p>
+        <p className="text-xs text-[#1E2D3D]/55">Short, focused, and built from your map.</p>
+        <div className="mt-3 rounded-lg bg-[#0D8F9C] px-3 py-2 text-center text-xs font-bold text-white">Start Drill →</div>
+      </div>
+    </div>
+  )
+}
+
+function QuickWhyMockup() {
+  return (
+    <div className="mt-5 rounded-2xl border border-[#DDE5EE] bg-white p-4 shadow-sm">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-[#0D8F9C]">Quick Why</p>
+      <div className="mt-3 space-y-3 text-xs leading-relaxed text-[#1E2D3D]/70">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#94A3B8]">Key cue</p>
+          <p>The client shows possible swallowing difficulty.</p>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#94A3B8]">Why the better answer works</p>
+          <p>Assessment must come before feeding interventions.</p>
+        </div>
+        <div className="rounded-xl bg-[#F7F9FB] p-3">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#94A3B8]">Remember this</p>
+          <p className="font-semibold text-[#0B2545]">When safety risk is possible, assess first.</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TutorMockup() {
+  return (
+    <div className="mt-5 rounded-2xl border border-[#DDE5EE] bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#0B2545] to-[#0D8F9C] text-xs font-bold text-white">Fx</div>
+        <div>
+          <p className="text-xs font-bold text-[#0B2545]">Forge Tutor</p>
+          <p className="text-[10px] text-[#0D8F9C]">Focused fix</p>
+        </div>
+      </div>
+      <div className="space-y-3 text-xs leading-relaxed">
+        <div className="ml-8 rounded-2xl bg-[#E0F4F6] p-3 text-[#0B2545]">
+          Why is assessment-first the priority here?
+        </div>
+        <div className="mr-6 rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-[#1E2D3D]/75">
+          Because dysphagia creates aspiration risk. Before feeding, the nurse needs to assess swallowing safety.
+        </div>
+        <div className="rounded-xl border border-[#DDE5EE] px-3 py-2 text-[#94A3B8]">Ask another question…</div>
+      </div>
+    </div>
+  )
+}
+
+const featureCards = [
   {
-    icon: Brain,
-    title: 'Miss → Map → Fix → Retest',
-    body: 'ForgeNursing is built around the moment you get a question wrong. It helps map the mistake type, fix the reasoning, and practice that weakness again.',
+    icon: Target,
+    title: '3-Question Targeted Drills',
+    body: 'Forge turns your next growth pattern into a short drill so practice feels focused instead of endless.',
+    mockup: <TargetedDrillMockup />,
   },
   {
-    icon: BookOpen,
-    title: 'See the thinking error',
-    body: 'Not just “right” or “wrong.” Forge shows whether you missed priority, safety, assessment, delegation, medication, knowledge, or therapeutic communication.',
+    icon: Zap,
+    title: 'Quick Why Feedback',
+    body: 'See the key cue, why the better answer works, why your answer was tempting, and what to remember next time.',
+    mockup: <QuickWhyMockup />,
   },
   {
-    icon: RotateCcw,
-    title: 'Practice the pattern again',
-    body: 'The goal is not to memorize one rationale. The goal is to recognize the pattern the next time a question tries to trick you.',
+    icon: MessageCircle,
+    title: 'Fix with Tutor',
+    body: 'Turn a missed answer into a short, focused tutor session that builds understanding without another long lecture.',
+    mockup: <TutorMockup />,
   },
 ]
 
-const UploadCallout = () => (
-  <div className="mt-5 space-y-3">
-    {/* Mock upload zone */}
-    <div className="border-2 border-dashed border-[#0D8F9C]/40 rounded-xl p-4 flex flex-col items-center gap-2 bg-[#F7F9FB]">
-      <div className="w-8 h-8 bg-[#E0F4F6] rounded-lg flex items-center justify-center">
-        <Upload className="w-4 h-4 text-[#0D8F9C]" />
-      </div>
-      <p className="text-xs text-[#1E2D3D]/60 text-center">Upload your study guide, slides, or class notes</p>
-    </div>
-    {/* File chips */}
-    <div className="space-y-1.5">
-      {[
-        'Med-Surg Exam 2 Study Guide.pdf',
-        'Professor Kim — Pharm Notes Week 3.pdf',
-      ].map((name) => (
-        <div key={name} className="flex items-center gap-2 px-3 py-2 bg-[#E0F4F6] rounded-lg">
-          <FileText className="w-3.5 h-3.5 text-[#0D8F9C] flex-shrink-0" />
-          <span className="text-xs text-[#0B2545] font-medium truncate">{name}</span>
-        </div>
-      ))}
-    </div>
-    <p className="text-xs text-[#1E2D3D]/60 leading-relaxed">
-      Start from your material, then use missed answers to find the clinical judgment gap.
-    </p>
-  </div>
-)
+const practiceModes = [
+  {
+    icon: Target,
+    title: 'Recommended Practice',
+    body: 'Forge builds your next quiz from your current training pattern.',
+    highlighted: true,
+  },
+  {
+    icon: Upload,
+    title: 'Practice From My Notes',
+    body: 'Create practice from study guides, slides, and class material.',
+  },
+  {
+    icon: BookOpen,
+    title: 'Choose a Topic',
+    body: 'Pick Pharm, Safety, Delegation, Psychosocial, or another NCLEX area.',
+  },
+  {
+    icon: ClipboardList,
+    title: 'General NCLEX Practice',
+    body: 'Build overall confidence with mixed NCLEX-style practice.',
+  },
+]
 
 export default function ThreeFeatures() {
   return (
-    <section className="bg-[#F7F9FB] py-14 sm:py-18 md:py-20" aria-labelledby="introduce-forge-heading">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Header */}
+    <section className="bg-white py-14 sm:py-18 md:py-20" aria-labelledby="features-heading">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 sm:mb-16">
-          <h2 id="introduce-forge-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3">
-            Forge trains the judgment behind the answer.
+          <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#0D8F9C]">Built around the missed answer</p>
+          <h2 id="features-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3">
+            Miss one. Find the thinking error. Fix the pattern.
           </h2>
-          <p className="text-lg sm:text-xl text-[#0B2545]/70 italic font-display max-w-3xl mx-auto">
-            Practice from your notes. Miss one. Find the mistake type. Fix the pattern.
+          <p className="mx-auto max-w-2xl text-base text-[#1E2D3D]/70 sm:text-lg">
+            Forge does not just explain answers. It turns every missed question into a personalized training signal.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-start mb-12 sm:mb-16">
-          {features.map((feat) => {
-            const Icon = feat.icon
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {featureCards.map((feature) => {
+            const Icon = feature.icon
             return (
-              <div
-                key={feat.title}
-                className="bg-white border border-[#DDE5EE] rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all duration-200"
-              >
-                <div className="w-12 h-12 bg-[#E0F4F6] rounded-xl flex items-center justify-center mb-5">
-                  <Icon className="w-6 h-6 text-[#0D8F9C]" />
+              <div key={feature.title} className="rounded-3xl border border-[#DDE5EE] bg-[#F7F9FB] p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg sm:p-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E0F4F6]">
+                  <Icon className="h-6 w-6 text-[#0D8F9C]" />
                 </div>
-                <h3 className="text-lg font-bold text-[#0B2545] mb-3">{feat.title}</h3>
-                <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">{feat.body}</p>
-                {feat.title === 'Miss → Map → Fix → Retest' && <UploadCallout />}
+                <h3 className="mt-5 text-xl font-bold text-[#0B2545]">{feature.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#1E2D3D]/70">{feature.body}</p>
+                {feature.mockup}
               </div>
             )
           })}
         </div>
 
-        {/* Forge avatar display */}
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#0B2545] to-[#0D8F9C] flex items-center justify-center shadow-xl shadow-[#0B2545]/20">
-            <span className="text-white font-bold text-3xl sm:text-4xl tracking-tight">Fx</span>
-          </div>
-          <div className="text-center">
-            <div className="text-base font-bold text-[#0B2545]">Forge</div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#0D8F9C] rounded-full mt-1">
-              <span className="text-white text-xs font-semibold">Clinical Judgment Trainer</span>
-            </div>
-          </div>
+        <div className="mt-16 text-center">
+          <h3 className="font-display text-3xl text-[#0B2545]">Practice your way</h3>
+          <p className="mt-2 text-sm text-[#1E2D3D]/60">Choose the best way to study today.</p>
         </div>
 
+        <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {practiceModes.map((mode) => {
+            const Icon = mode.icon
+            return (
+              <div
+                key={mode.title}
+                className={`rounded-2xl border p-5 transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                  mode.highlighted ? 'border-[#0D8F9C] bg-[#E0F4F6]' : 'border-[#DDE5EE] bg-white'
+                }`}
+              >
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#0D8F9C] shadow-sm">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className="text-xl text-[#0D8F9C]">›</span>
+                </div>
+                <p className="text-sm font-bold text-[#0B2545]">{mode.title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#1E2D3D]/60">{mode.body}</p>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </section>
   )
