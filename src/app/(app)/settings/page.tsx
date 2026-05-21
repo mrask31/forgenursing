@@ -24,6 +24,31 @@ function formatDate(value?: string | null) {
   }
 }
 
+function formatEntryPath(value?: string | null) {
+  if (value === '/quiz') return 'Practice Questions'
+  if (value === '/tutor') return 'Clinical Tutor'
+  if (value === '/readiness') return 'Judgment Map'
+  if (value === '/entry' || !value) return 'Study Options'
+  return value.replace(/^\//, '').replace(/-/g, ' ')
+}
+
+function formatStatus(value?: string | null) {
+  if (!value) return 'Not available'
+  if (value === 'active') return 'Active'
+  if (value === 'trialing') return 'Trialing'
+  if (value === 'expired') return 'Expired'
+  if (value === 'past_due') return 'Past due'
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function accessLabel(profile: Profile | null) {
+  if (profile?.subscription_status === 'active') return 'Subscription active'
+  if (profile?.subscription_status === 'trialing') return `Trial active through ${formatDate(profile.trial_ends_at)}`
+  if (profile?.subscription_status === 'expired') return 'Subscription needed'
+  if (profile?.subscription_status === 'past_due') return 'Payment update needed'
+  return 'Not available'
+}
+
 function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('TIMEOUT')), ms)
@@ -137,12 +162,12 @@ export default function SettingsPage() {
           <SettingsCard icon={<Brain className="h-5 w-5" />} title="Study profile">
             <SettingRow label="Program" value={profile?.program_track || profile?.program_level || 'RN Track'} />
             <SettingRow label="Graduation" value={formatDate(profile?.graduation_date)} />
-            <SettingRow label="Default start" value={profile?.default_entry_path || '/entry'} />
+            <SettingRow label="Default start" value={formatEntryPath(profile?.default_entry_path)} />
           </SettingsCard>
 
           <SettingsCard icon={<CreditCard className="h-5 w-5" />} title="Access">
-            <SettingRow label="Status" value={profile?.subscription_status || 'Not available'} />
-            <SettingRow label="Trial ends" value={formatDate(profile?.trial_ends_at)} />
+            <SettingRow label="Status" value={formatStatus(profile?.subscription_status)} />
+            <SettingRow label="Access" value={accessLabel(profile)} />
           </SettingsCard>
 
           <SettingsCard icon={<Target className="h-5 w-5" />} title="Quick links">
