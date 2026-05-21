@@ -3,7 +3,7 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { generateText } from 'ai';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
-import { buildQuizPrompt, buildGenericQuizPrompt, getCategoryForIndex, MISTAKE_TYPES } from '@/lib/ai/quiz-prompts';
+import { buildQuizPrompt, buildGenericQuizPrompt, buildTargetedMistakePrompt, getCategoryForIndex, MISTAKE_TYPES } from '@/lib/ai/quiz-prompts';
 import { z } from 'zod';
 import OpenAI from 'openai';
 
@@ -13,8 +13,8 @@ const openaiEmbeddings = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const QUESTION_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer, mistake_type, reasoning_trap, fix_instruction, retest_focus';
-const QUESTION_PUBLIC_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, mistake_type, reasoning_trap, fix_instruction, retest_focus';
+const QUESTION_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer, mistake_type, reasoning_trap, fix_instruction, retest_focus, key_cue, why_correct_short, why_wrong_short, one_line_fix';
+const QUESTION_PUBLIC_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, mistake_type, reasoning_trap, fix_instruction, retest_focus, key_cue, why_correct_short, why_wrong_short, one_line_fix';
 
 const MistakeTypeSchema = z.enum(MISTAKE_TYPES);
 
@@ -90,9 +90,14 @@ function defaultFixInstruction(mistakeType: MistakeType): string {
   }
 }
 
-function normalizeMistakeMetadata(questionData: any, lockedCategory: string) {
+function normalizeMistakeMetadata(questionData: any, lockedCategory: string, forcedMistakeType?: string | null) {
+  const forcedParsed = MistakeTypeSchema.safeParse(forcedMistakeType);
   const parsedMistakeType = MistakeTypeSchema.safeParse(questionData?.mistake_type);
-  const mistakeType = parsedMistakeType.success ? parsedMistakeType.data : fallbackMistakeType(lockedCategory);
+  const mistakeType = forcedParsed.success
+    ? forcedParsed.data
+    : parsedMistakeType.success
+      ? parsedMistakeType.data
+      : fallbackMistakeType(lockedCategory);
 
   return {
     mistake_type: mistakeType,
@@ -111,6 +116,28 @@ function normalizeMistakeMetadata(questionData: any, lockedCategory: string) {
   };
 }
 
+function normalizeMicroFeedback(questionData: any, mistakeType: string, lockedCategory: string) {
+  const keyCue = typeof questionData?.key_cue === 'string' && questionData.key_cue.trim().length > 0
+    ? questionData.key_cue.trim()
+    : 'Find the clinical cue that changes what the nurse should do first.';
+  const whyCorrectShort = typeof questionData?.why_correct_short === 'string' && questionData.why_correct_short.trim().length > 0
+    ? questionData.why_correct_short.trim()
+    : 'The correct answer addresses the most important clinical cue in the question.';
+  const whyWrongShort = typeof questionData?.why_wrong_short === 'string' && questionData.why_wrong_short.trim().length > 0
+    ? questionData.why_wrong_short.trim()
+    : defaultReasoningTrap(MistakeTypeSchema.safeParse(mistakeType).success ? mistakeType as MistakeType : fallbackMistakeType(lockedCategory));
+  const oneLineFix = typeof questionData?.one_line_fix === 'string' && questionData.one_line_fix.trim().length > 0
+    ? questionData.one_line_fix.trim()
+    : defaultFixInstruction(MistakeTypeSchema.safeParse(mistakeType).success ? mistakeType as MistakeType : fallbackMistakeType(lockedCategory));
+
+  return {
+    key_cue: keyCue,
+    why_correct_short: whyCorrectShort,
+    why_wrong_short: whyWrongShort,
+    one_line_fix: oneLineFix,
+  };
+}
+
 const QuizQuestionSchema = z.object({
   question_stem: z.string().min(10),
   options: z.array(z.object({
@@ -126,6 +153,10 @@ const QuizQuestionSchema = z.object({
   reasoning_trap: z.string().min(10).optional(),
   fix_instruction: z.string().min(10).optional(),
   retest_focus: z.string().min(3).optional(),
+  key_cue: z.string().min(5).optional(),
+  why_correct_short: z.string().min(5).optional(),
+  why_wrong_short: z.string().min(5).optional(),
+  one_line_fix: z.string().min(5).optional(),
 });
 
 async function fetchExistingPublicQuestion(supabase: any, sessionId: string, questionIndex: number) {
@@ -175,7 +206,8 @@ export async function POST(req: NextRequest) {
     }
 
     const selectedCategory = category || session.nclex_category || null;
-    const lockedCategory = getCategoryForIndex(questionIndex, selectedCategory);
+    const isTargetedDrill = session.quiz_mode === 'targeted_drill' && session.target_mistake_type;
+    const lockedCategory = isTargetedDrill ? null : getCategoryForIndex(questionIndex, selectedCategory);
 
     const { data: existingQuestion } = await supabase
       .from('quiz_questions')
@@ -198,6 +230,10 @@ export async function POST(req: NextRequest) {
           reasoning_trap: existingQuestion.reasoning_trap,
           fix_instruction: existingQuestion.fix_instruction,
           retest_focus: existingQuestion.retest_focus,
+          key_cue: existingQuestion.key_cue,
+          why_correct_short: existingQuestion.why_correct_short,
+          why_wrong_short: existingQuestion.why_wrong_short,
+          one_line_fix: existingQuestion.one_line_fix,
         },
         resumed: true,
       });
@@ -243,7 +279,9 @@ export async function POST(req: NextRequest) {
     let sourceChunkText: string | null = null;
     let sourceDocId: string | null = null;
 
-    if (sourceType === 'document') {
+    if (isTargetedDrill) {
+      prompt = buildTargetedMistakePrompt(programLevel, session.target_mistake_type, session.target_focus || null, previousStems);
+    } else if (sourceType === 'document') {
       const ragQuery = `NCLEX nursing question about clinical concepts`;
       try {
         const embeddingResponse = await openaiEmbeddings.embeddings.create({
@@ -276,10 +314,10 @@ export async function POST(req: NextRequest) {
       if (sourceChunkText && !selectedCategory) {
         prompt = buildQuizPrompt(programLevel, sourceChunkText, previousStems);
       } else {
-        prompt = buildGenericQuizPrompt(programLevel, lockedCategory, previousStems);
+        prompt = buildGenericQuizPrompt(programLevel, lockedCategory!, previousStems);
       }
     } else {
-      prompt = buildGenericQuizPrompt(programLevel, lockedCategory, previousStems);
+      prompt = buildGenericQuizPrompt(programLevel, lockedCategory!, previousStems);
     }
 
     let questionData;
@@ -294,7 +332,7 @@ export async function POST(req: NextRequest) {
 
         const { text } = await generateText({
           model: anthropic('claude-sonnet-4-20250514') as any,
-          maxTokens: 1200,
+          maxTokens: 1400,
           prompt: prompt + retryHint,
         });
 
@@ -305,7 +343,9 @@ export async function POST(req: NextRequest) {
         cleaned = cleaned.trim();
 
         questionData = QuizQuestionSchema.parse(JSON.parse(cleaned));
-        questionData.nclex_category = lockedCategory;
+        if (!isTargetedDrill && lockedCategory) {
+          questionData.nclex_category = lockedCategory;
+        }
         break;
       } catch (parseError) {
         retries++;
@@ -316,7 +356,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const mistakeMetadata = normalizeMistakeMetadata(questionData, lockedCategory);
+    const finalCategory = questionData!.nclex_category || lockedCategory || 'Pharmacological Therapies';
+    const mistakeMetadata = normalizeMistakeMetadata(questionData, finalCategory, isTargetedDrill ? session.target_mistake_type : null);
+    const microFeedback = normalizeMicroFeedback(questionData, mistakeMetadata.mistake_type, finalCategory);
 
     const { data: question, error: insertError } = await supabase
       .from('quiz_questions')
@@ -328,11 +370,12 @@ export async function POST(req: NextRequest) {
         correct_answer: questionData!.correct_answer,
         rationale_correct: questionData!.rationale_correct,
         rationale_incorrect: questionData!.rationale_incorrect,
-        nclex_category: lockedCategory,
+        nclex_category: finalCategory,
         difficulty: questionData!.difficulty,
         source_doc_id: sourceDocId,
         source_chunk_text: sourceChunkText,
         ...mistakeMetadata,
+        ...microFeedback,
       })
       .select(QUESTION_PUBLIC_SELECT)
       .single();
