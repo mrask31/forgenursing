@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Brain, CheckCircle2, Eye, Loader2, PlayCircle, X } from 'lucide-react'
 
 interface QuizRationaleProps {
   isCorrect: boolean
@@ -27,6 +28,23 @@ interface QuizRationaleProps {
   onRetestWeakness?: () => void
   isRetestingWeakness?: boolean
   isLast: boolean
+}
+
+type VisualLesson = {
+  id: string
+  title: string
+  concept: string
+  mistake_type: string | null
+  nclex_category: string | null
+  lesson_steps: Array<{ title: string; body: string }>
+  check_question: {
+    stem: string
+    options: string[]
+    correct: string
+    explanation?: string
+  } | null
+  video_url: string | null
+  thumbnail_url: string | null
 }
 
 const clearTutorAutoSendState = () => {
@@ -60,6 +78,11 @@ export default function QuizRationale({
   const [isDiggingDeeper, setIsDiggingDeeper] = useState(false)
   const [showFullRationale, setShowFullRationale] = useState(false)
   const [digDeeperError, setDigDeeperError] = useState<string | null>(null)
+  const [isVisualLessonOpen, setIsVisualLessonOpen] = useState(false)
+  const [isLoadingVisualLesson, setIsLoadingVisualLesson] = useState(false)
+  const [visualLesson, setVisualLesson] = useState<VisualLesson | null>(null)
+  const [visualLessonError, setVisualLessonError] = useState<string | null>(null)
+  const [selectedCheckAnswer, setSelectedCheckAnswer] = useState<string | null>(null)
   const correctOptionText = options.find(o => o.label === correctAnswer)?.text ?? ''
   const userOptionText = options.find(o => o.label === userAnswer)?.text ?? ''
   const displayedMistakeType = mistakeType || fallbackMistakeType(nclexCategory)
@@ -80,6 +103,79 @@ export default function QuizRationale({
     } catch {}
   }
 
+  const handleShowVisualLesson = async () => {
+    if (isLoadingVisualLesson) return
+    setIsVisualLessonOpen(true)
+    setVisualLessonError(null)
+    setSelectedCheckAnswer(null)
+
+    try {
+      const posthog = require('posthog-js').default
+      posthog.capture('visual_lesson_button_clicked', {
+        session_id: sessionId,
+        question_id: questionId,
+        question_index: questionIndex,
+        nclex_category: nclexCategory,
+        mistake_type: displayedMistakeType,
+      })
+    } catch {}
+
+    if (visualLesson) return
+
+    setIsLoadingVisualLesson(true)
+    try {
+      const response = await fetch(`/api/visual-lessons/match?questionId=${encodeURIComponent(questionId)}`, {
+        credentials: 'include',
+        cache: 'no-store',
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Visual lesson could not load')
+      }
+
+      const data = await response.json()
+      if (!data.matched || !data.lesson) {
+        setVisualLessonError('Forge does not have a visual lesson for this exact concept yet.')
+        return
+      }
+
+      setVisualLesson(data.lesson)
+      try {
+        const posthog = require('posthog-js').default
+        posthog.capture('visual_lesson_opened', {
+          session_id: sessionId,
+          question_id: questionId,
+          question_index: questionIndex,
+          lesson_id: data.lesson.id,
+          lesson_concept: data.lesson.concept,
+          nclex_category: nclexCategory,
+          mistake_type: displayedMistakeType,
+        })
+      } catch {}
+    } catch (error: any) {
+      console.error('[QuizRationale] Visual lesson error:', error)
+      setVisualLessonError(error?.message || 'Visual lesson could not load')
+    } finally {
+      setIsLoadingVisualLesson(false)
+    }
+  }
+
+  const handleCheckAnswer = (answer: string) => {
+    setSelectedCheckAnswer(answer)
+    try {
+      const posthog = require('posthog-js').default
+      posthog.capture('visual_lesson_check_answered', {
+        session_id: sessionId,
+        question_id: questionId,
+        question_index: questionIndex,
+        lesson_id: visualLesson?.id ?? null,
+        answer,
+        is_correct: answer === visualLesson?.check_question?.correct,
+      })
+    } catch {}
+  }
+
   const handleFixWeakness = async () => {
     if (isDiggingDeeper) return
 
@@ -95,7 +191,7 @@ export default function QuizRationale({
           question_id: questionId,
           question_index: questionIndex,
           nclex_category: nclexCategory,
-          source: 'rationale_screen',
+          source: isVisualLessonOpen ? 'visual_lesson_modal' : 'rationale_screen',
           user_answer: userAnswer,
           correct_answer: correctAnswer,
           mistake_type: displayedMistakeType,
@@ -106,7 +202,7 @@ export default function QuizRationale({
           question_id: questionId,
           question_index: questionIndex,
           nclex_category: nclexCategory,
-          source: 'rationale_screen',
+          source: isVisualLessonOpen ? 'visual_lesson_modal' : 'rationale_screen',
           user_answer: userAnswer,
           correct_answer: correctAnswer,
           mistake_type: displayedMistakeType,
@@ -199,6 +295,19 @@ export default function QuizRationale({
           </div>
         )}
       </div>
+
+      {!isCorrect && (
+        <button
+          type="button"
+          onClick={handleShowVisualLesson}
+          disabled={isLoadingVisualLesson}
+          className="w-full rounded-lg border-2 text-sm font-bold py-3 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait"
+          style={{ borderColor: '#0D8F9C', color: '#0D8F9C', minHeight: '48px' }}
+        >
+          {isLoadingVisualLesson ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
+          Show Me Visually
+        </button>
+      )}
 
       {showMistakeMap && (
         <div className="rounded-xl p-4 text-white" style={{ backgroundColor: '#0B2545' }}>
@@ -309,6 +418,148 @@ export default function QuizRationale({
           )}
         </div>
       </div>
+
+      {isVisualLessonOpen && (
+        <div className="fixed inset-0 z-50 bg-black/45 px-4 py-6 overflow-y-auto">
+          <div className="min-h-full flex items-end sm:items-center justify-center">
+            <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden">
+              <div className="bg-[#0B2545] text-white p-4 flex items-start justify-between gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#0BBCD4] mb-2">
+                    <Brain className="w-3.5 h-3.5" />
+                    Show Me Visually
+                  </div>
+                  <h2 className="text-xl font-bold text-white">
+                    {visualLesson?.title || 'Visual lesson'}
+                  </h2>
+                  <p className="text-xs text-white/65 mt-1">
+                    Here is what was happening behind that question.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsVisualLessonOpen(false)}
+                  className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+                  aria-label="Close visual lesson"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-4 sm:p-5 space-y-4">
+                {isLoadingVisualLesson && (
+                  <div className="py-10 text-center">
+                    <Loader2 className="w-7 h-7 animate-spin mx-auto mb-3 text-[#0D8F9C]" />
+                    <p className="text-sm text-gray-500">Finding the best visual lesson...</p>
+                  </div>
+                )}
+
+                {!isLoadingVisualLesson && visualLessonError && (
+                  <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 text-sm text-gray-700">
+                    {visualLessonError}
+                  </div>
+                )}
+
+                {!isLoadingVisualLesson && visualLesson && (
+                  <>
+                    {visualLesson.video_url ? (
+                      <div className="rounded-xl overflow-hidden border border-[#DDE5EE] bg-black">
+                        <video src={visualLesson.video_url} controls className="w-full" poster={visualLesson.thumbnail_url || undefined} />
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-[#E0F4F6] flex items-center justify-center flex-shrink-0">
+                          <PlayCircle className="w-6 h-6 text-[#0D8F9C]" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-[#0B2545]">Visual step lesson</p>
+                          <p className="text-xs text-gray-500">Video support is coming next. For now, Forge shows the process step by step.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      {visualLesson.lesson_steps.map((step, index) => (
+                        <div key={`${step.title}-${index}`} className="rounded-xl border border-[#DDE5EE] bg-white p-4">
+                          <div className="flex gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-[#0B2545]">{step.title}</p>
+                              <p className="text-sm text-gray-700 leading-relaxed mt-1">{step.body}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {visualLesson.check_question && (
+                      <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 space-y-3">
+                        <p className="text-xs font-bold uppercase tracking-wide text-[#0D8F9C]">Check yourself</p>
+                        <p className="text-sm font-bold text-[#0B2545]">{visualLesson.check_question.stem}</p>
+                        <div className="space-y-2">
+                          {visualLesson.check_question.options.map((option) => {
+                            const selected = selectedCheckAnswer === option
+                            const correct = option === visualLesson.check_question?.correct
+                            const showResult = selectedCheckAnswer !== null
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                onClick={() => handleCheckAnswer(option)}
+                                className="w-full rounded-lg border px-3 py-2 text-left text-sm font-medium transition-all"
+                                style={{
+                                  borderColor: showResult && correct ? '#22C55E' : selected ? '#0D8F9C' : '#DDE5EE',
+                                  backgroundColor: showResult && correct ? '#DCFCE7' : selected ? '#E0F4F6' : '#FFFFFF',
+                                  color: '#0B2545',
+                                }}
+                              >
+                                {option}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        {selectedCheckAnswer && (
+                          <div className="rounded-lg bg-white border border-[#DDE5EE] p-3 text-sm text-gray-700">
+                            <div className="flex items-start gap-2">
+                              <CheckCircle2 className="w-4 h-4 mt-0.5 text-[#0D8F9C] flex-shrink-0" />
+                              <p>{visualLesson.check_question.explanation || `Correct answer: ${visualLesson.check_question.correct}`}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="space-y-2 pt-1">
+                      {onRetestWeakness && (
+                        <button
+                          type="button"
+                          onClick={onRetestWeakness}
+                          disabled={isRetestingWeakness}
+                          className="w-full rounded-lg text-white font-bold py-3 disabled:opacity-60"
+                          style={{ backgroundColor: '#0D8F9C', minHeight: '48px' }}
+                        >
+                          {isRetestingWeakness ? 'Building Retest…' : 'Got it — Retest this pattern'}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleFixWeakness}
+                        disabled={isDiggingDeeper}
+                        className="w-full rounded-lg border font-bold py-3 disabled:opacity-60"
+                        style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '48px' }}
+                      >
+                        {isDiggingDeeper ? 'Opening Tutor…' : 'Ask Tutor about this'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
