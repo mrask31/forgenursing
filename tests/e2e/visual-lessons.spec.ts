@@ -172,9 +172,9 @@ test('@smoke @regression missed question opens Show Me Visually lesson', async (
 
   await expect(page.getByText(/Show Me Visually/i).first()).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(/respond to the feeling first/i)).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText(/The cue/i)).toBeVisible();
-  await expect(page.getByText(/The client expresses fear/i)).toBeVisible();
-  await expect(page.getByText(/Check yourself/i)).toBeVisible();
+  await expect(page.getByText(/The cue/i).first()).toBeVisible();
+  await expect(page.getByText(/The client expresses fear/i).first()).toBeVisible();
+  await expect(page.getByText(/Check yourself/i).first()).toBeVisible();
 
   await page.getByRole('button', { name: /^Acknowledge the feeling$/ }).click();
   await expect(page.getByText(/Therapeutic communication starts/i)).toBeVisible();
