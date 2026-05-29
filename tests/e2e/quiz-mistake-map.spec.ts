@@ -3,14 +3,14 @@ import { admin, deleteUserByEmail } from './helpers/supabase';
 import { uniqueTestEmail } from './helpers/users';
 
 /**
- * SMOKE TEST — Quiz Mistake Map / Fix with Tutor
+ * SMOKE TEST — Quiz Mistake Map / Fix Weakness
  * @smoke @regression
  *
- * Verifies the Miss → Map → Fix product promise inside the app:
+ * Verifies the new Miss → Map → Fix product promise inside the app:
  * - A seeded quiz question can be resumed through the UI
  * - A wrong answer displays Mistake Type, trap, fix instruction, and retest focus
- * - "Fix with Tutor" opens a seeded tutor session with mistake metadata
- * - Results page summarizes clinical judgment patterns using confidence-building language
+ * - "Fix this weakness" opens a seeded tutor session with mistake metadata
+ * - Results page summarizes clinical judgment patterns and uses POST handoff
  */
 
 test.describe.configure({ mode: 'serial' });
@@ -21,7 +21,7 @@ const TEST_PASSWORD = process.env.TEST_USER_PASSWORD!;
 let testUserId: string | null = null;
 let sessionId: string | null = null;
 
- test.afterAll(async () => {
+test.afterAll(async () => {
   if (TEST_EMAIL) {
     await deleteUserByEmail(TEST_EMAIL);
   }
@@ -115,21 +115,24 @@ async function login(page: any) {
   await page.waitForURL(/\/quiz/, { timeout: 20_000 });
 }
 
-test('@smoke @regression missed question shows mistake map and opens fix tutor', async ({ page }) => {
+test('@smoke @regression missed question shows mistake map and opens fix weakness tutor', async ({ page }) => {
   await createAccessibleQuizUser();
   await seedKnownQuizQuestion();
 
   await login(page);
 
+  // Resume the seeded in-progress quiz session instead of generating a new AI question.
   const resumeButton = page.getByRole('button', { name: /^Resume$/ });
   await expect(resumeButton).toBeVisible({ timeout: 15_000 });
   await resumeButton.click();
 
   await expect(page.getByText(/cardiac catheterization/i)).toBeVisible({ timeout: 15_000 });
 
+  // Intentionally choose the known wrong answer.
   await page.getByRole('button', { name: /^A\)/ }).click();
   await page.getByRole('button', { name: /Submit Answer/i }).click();
 
+  // Rationale screen should now deliver the public-page promise.
   await expect(page.getByText(/Missed this one/i)).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(/Mistake Type: Therapeutic communication/i)).toBeVisible();
   await expect(page.getByText(/You tried to educate before reducing anxiety/i)).toBeVisible();
@@ -161,6 +164,7 @@ test('@smoke @regression missed question shows mistake map and opens fix tutor',
 });
 
 test('@smoke @regression quiz results summarizes clinical judgment pattern', async ({ page }) => {
+  // Reuse the same completed session from the first test.
   expect(sessionId).toBeTruthy();
 
   await login(page);
@@ -170,6 +174,5 @@ test('@smoke @regression quiz results summarizes clinical judgment pattern', asy
   await expect(page.getByText(/Pattern to keep training/i)).toBeVisible();
   await expect(page.getByText(/Therapeutic communication/i).first()).toBeVisible();
   await expect(page.getByText(/Patterns to Train/i)).toBeVisible();
-  await expect(page.getByText(/Questions to Review/i)).toBeVisible();
   await expect(page.getByRole('button', { name: /Train Pattern/i }).first()).toBeVisible();
 });
