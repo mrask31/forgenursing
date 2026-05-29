@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Brain, CheckCircle2, Loader2, Target, Sparkles } from 'lucide-react'
+import { Brain, Loader2, Target, Sparkles } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 
 type FixPlan = {
@@ -22,6 +22,8 @@ export default function EntryChoiceClient() {
   const [loading, setLoading] = useState(false)
   const [fixPlan, setFixPlan] = useState<FixPlan | null>(null)
   const [fixPlanLoading, setFixPlanLoading] = useState(true)
+  const [fixPlanStarting, setFixPlanStarting] = useState(false)
+  const [fixPlanError, setFixPlanError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -90,6 +92,10 @@ export default function EntryChoiceClient() {
   }
 
   const handleFixPlanStart = async () => {
+    if (fixPlanStarting) return
+    setFixPlanStarting(true)
+    setFixPlanError(null)
+
     try {
       const posthog = (await import('posthog-js')).default
       posthog.capture('fix_plan_started', {
@@ -100,7 +106,49 @@ export default function EntryChoiceClient() {
       })
     } catch {}
 
-    router.push('/quiz')
+    if (!fixPlan?.has_personal_plan || !fixPlan.focus) {
+      router.push('/quiz')
+      return
+    }
+
+    try {
+      const res = await fetch('/api/quiz/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          sourceType: 'generic',
+          nclexCategory: null,
+          quizMode: 'targeted_drill',
+          targetMistakeType: fixPlan.focus,
+          targetFocus: fixPlan.focus_explanation,
+          totalQuestions: 3,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Could not start today’s drill')
+      }
+
+      const { session } = await res.json()
+
+      try {
+        const posthog = (await import('posthog-js')).default
+        posthog.capture('fix_plan_targeted_drill_created', {
+          source: 'entry_screen',
+          session_id: session.id,
+          focus: fixPlan.focus,
+          total_questions: session.total_questions || 3,
+        })
+      } catch {}
+
+      router.push(`/quiz?sessionId=${session.id}`)
+    } catch (error: any) {
+      console.error('[Entry] Fix plan drill start failed:', error)
+      setFixPlanError(error?.message || 'Could not start today’s drill. Try Practice Questions instead.')
+      setFixPlanStarting(false)
+    }
   }
 
   return (
@@ -160,21 +208,32 @@ export default function EntryChoiceClient() {
             )}
           </div>
 
+          {fixPlanError && (
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {fixPlanError}
+            </div>
+          )}
+
           <button
             type="button"
             onClick={handleFixPlanStart}
-            disabled={fixPlanLoading || loading}
+            disabled={fixPlanLoading || loading || fixPlanStarting}
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0a7d88] disabled:opacity-60"
             style={{ minHeight: '52px' }}
           >
-            {fixPlanLoading ? 'Building plan…' : fixPlan?.cta_label || 'Start Practice'}
+            {fixPlanStarting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Starting today’s drill…
+              </>
+            ) : fixPlanLoading ? 'Building plan…' : fixPlan?.cta_label || 'Start Practice'}
           </button>
         </section>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <button
             onClick={() => handleChoice('quiz')}
-            disabled={loading}
+            disabled={loading || fixPlanStarting}
             className="w-full rounded-xl border-2 bg-white p-4 text-left transition-all hover:shadow-md disabled:opacity-50"
             style={{ borderColor: '#0D8F9C', minHeight: '56px' }}
           >
@@ -191,7 +250,7 @@ export default function EntryChoiceClient() {
 
           <button
             onClick={() => handleChoice('tutor')}
-            disabled={loading}
+            disabled={loading || fixPlanStarting}
             className="w-full rounded-xl border-2 bg-white p-4 text-left transition-all hover:shadow-md disabled:opacity-50"
             style={{ borderColor: '#0B2545', minHeight: '56px' }}
           >
