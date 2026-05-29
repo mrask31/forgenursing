@@ -3,14 +3,14 @@ import { admin, deleteUserByEmail } from './helpers/supabase';
 import { uniqueTestEmail } from './helpers/users';
 
 /**
- * SMOKE TEST — Quiz Mistake Map / Fix Weakness
+ * SMOKE TEST — Quiz Mistake Map / Fix with Tutor
  * @smoke @regression
  *
- * Verifies the new Miss → Map → Fix product promise inside the app:
+ * Verifies the Miss → Map → Fix product promise inside the app:
  * - A seeded quiz question can be resumed through the UI
  * - A wrong answer displays Mistake Type, trap, fix instruction, and retest focus
- * - "Fix this weakness" opens a seeded tutor session with mistake metadata
- * - Results page summarizes clinical judgment patterns and uses POST handoff
+ * - "Fix with Tutor" opens a seeded tutor session with mistake metadata
+ * - Results page summarizes clinical judgment patterns using confidence-building language
  */
 
 test.describe.configure({ mode: 'serial' });
@@ -21,7 +21,7 @@ const TEST_PASSWORD = process.env.TEST_USER_PASSWORD!;
 let testUserId: string | null = null;
 let sessionId: string | null = null;
 
-test.afterAll(async () => {
+ test.afterAll(async () => {
   if (TEST_EMAIL) {
     await deleteUserByEmail(TEST_EMAIL);
   }
@@ -115,31 +115,28 @@ async function login(page: any) {
   await page.waitForURL(/\/quiz/, { timeout: 20_000 });
 }
 
-test('@smoke @regression missed question shows mistake map and opens fix weakness tutor', async ({ page }) => {
+test('@smoke @regression missed question shows mistake map and opens fix tutor', async ({ page }) => {
   await createAccessibleQuizUser();
   await seedKnownQuizQuestion();
 
   await login(page);
 
-  // Resume the seeded in-progress quiz session instead of generating a new AI question.
   const resumeButton = page.getByRole('button', { name: /^Resume$/ });
   await expect(resumeButton).toBeVisible({ timeout: 15_000 });
   await resumeButton.click();
 
   await expect(page.getByText(/cardiac catheterization/i)).toBeVisible({ timeout: 15_000 });
 
-  // Intentionally choose the known wrong answer.
   await page.getByRole('button', { name: /^A\)/ }).click();
   await page.getByRole('button', { name: /Submit Answer/i }).click();
 
-  // Rationale screen should now deliver the public-page promise.
   await expect(page.getByText(/Missed this one/i)).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(/Mistake Type: Therapeutic communication/i)).toBeVisible();
   await expect(page.getByText(/You tried to educate before reducing anxiety/i)).toBeVisible();
   await expect(page.getByText(/When emotion is the cue/i)).toBeVisible();
   await expect(page.getByText(/therapeutic communication with anxious clients/i)).toBeVisible();
 
-  const fixButton = page.getByRole('button', { name: /Fix this weakness/i });
+  const fixButton = page.getByRole('button', { name: /Fix with Tutor/i });
   await expect(fixButton).toBeVisible();
   await fixButton.click();
 
@@ -164,16 +161,15 @@ test('@smoke @regression missed question shows mistake map and opens fix weaknes
 });
 
 test('@smoke @regression quiz results summarizes clinical judgment pattern', async ({ page }) => {
-  // Reuse the same completed session from the first test.
   expect(sessionId).toBeTruthy();
 
   await login(page);
   await page.goto(`/quiz/results?sessionId=${sessionId}`);
 
   await expect(page.getByText(/Your Clinical Judgment Pattern/i)).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText(/Top missed pattern/i)).toBeVisible();
+  await expect(page.getByText(/Pattern to keep training/i)).toBeVisible();
   await expect(page.getByText(/Therapeutic communication/i).first()).toBeVisible();
-  await expect(page.getByText(/Mistake Types to Fix/i)).toBeVisible();
-  await expect(page.getByText(/Missed Questions to Fix/i)).toBeVisible();
-  await expect(page.getByRole('button', { name: /Fix Weakness/i }).first()).toBeVisible();
+  await expect(page.getByText(/Patterns to Train/i)).toBeVisible();
+  await expect(page.getByText(/Questions to Review/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /Train Pattern/i }).first()).toBeVisible();
 });
