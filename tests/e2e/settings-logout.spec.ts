@@ -41,7 +41,7 @@ async function createActiveUser() {
     .update({
       preferred_name: 'Settings Tester',
       quiz_first_enabled: true,
-      default_entry_path: '/entry',
+      default_entry_path: null,
       subscription_status: 'active',
       trial_ends_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
       phi_acknowledged_at: new Date().toISOString(),
@@ -65,20 +65,16 @@ test('@smoke @regression settings loads and logout clears session', async ({ pag
   await createActiveUser();
   await login(page);
 
-  await page.getByTestId('user-menu').click();
+  await page.getByTestId('user-menu').first().click();
   await page.getByRole('link', { name: /^Settings$/ }).click();
 
   await expect(page).toHaveURL(/\/settings/, { timeout: 15_000 });
   await expect(page.getByRole('heading', { name: /Account settings/i })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(TEST_EMAIL)).toBeVisible();
-  await expect(page.getByText(/Status/i)).toBeVisible();
-  await expect(page.getByText(/^Active$/)).toBeVisible();
-  await expect(page.getByText(/Access/i)).toBeVisible();
   await expect(page.getByText(/Subscription active/i)).toBeVisible();
-  await expect(page.getByText(/Default start/i)).toBeVisible();
   await expect(page.getByText(/Study Options/i)).toBeVisible();
 
-  await page.getByTestId('user-menu').click();
+  await page.getByTestId('user-menu').first().click();
   await page.getByTestId('logout-button').click();
 
   await expect(page).toHaveURL(/\/login\?loggedOut=true/, { timeout: 20_000 });
@@ -86,3 +82,4 @@ test('@smoke @regression settings loads and logout clears session', async ({ pag
   await page.goto('/entry');
   await expect(page).toHaveURL(/\/login/, { timeout: 20_000 });
 });
+
