@@ -40,11 +40,11 @@ test('@regression Tutor flow unchanged when quiz_first_enabled = false', async (
 
   // 3. Assert tutor chat interface loads
   // Wait for the tutor page to render (look for known tutor UI elements)
-  await expect(page.locator('[data-testid="user-menu"]')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('[data-testid="user-menu"]').first()).toBeVisible({ timeout: 10_000 });
 
   // 4. Assert no quiz-related UI elements visible
   // The sidebar should NOT show "Practice Questions" when flag is off
-  const sidebarText = await page.locator('aside').textContent();
+  const sidebarText = await page.locator('aside').first().textContent();
   expect(sidebarText).not.toContain('Practice Questions');
 
   // No quiz-related routes should be linked

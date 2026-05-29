@@ -102,9 +102,9 @@ test('@smoke @regression Quiz-first user routes to /entry after login', async ({
     page.getByText('AI Clinical Tutor').first()
   ).toBeVisible({ timeout: 5_000 });
 
-  // Verify "How do you want to study?" or similar heading is present
+  // Verify entry page heading or fix plan is present
   await expect(
-    page.getByText(/how do you want to study/i).first()
+    page.getByText(/study path ready|Today's Fix Plan|Practice Questions/i).first()
   ).toBeVisible({ timeout: 5_000 });
 });
 
