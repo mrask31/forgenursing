@@ -96,6 +96,9 @@ export default function EntryChoiceClient() {
     setFixPlanStarting(true)
     setFixPlanError(null)
 
+    const hasPersonalPlan = !!fixPlan?.has_personal_plan && !!fixPlan?.focus
+    const quizMode = hasPersonalPlan ? 'targeted_drill' : 'diagnostic'
+
     try {
       const posthog = (await import('posthog-js')).default
       posthog.capture('fix_plan_started', {
@@ -103,50 +106,55 @@ export default function EntryChoiceClient() {
         focus: fixPlan?.focus ?? null,
         has_personal_plan: fixPlan?.has_personal_plan ?? false,
         total_attempted: fixPlan?.total_attempted ?? 0,
+        quiz_mode: quizMode,
       })
     } catch {}
 
-    if (!fixPlan?.has_personal_plan || !fixPlan.focus) {
-      router.push('/quiz')
-      return
-    }
-
     try {
+      const body = hasPersonalPlan
+        ? {
+            sourceType: 'generic',
+            nclexCategory: null,
+            quizMode: 'targeted_drill',
+            targetMistakeType: fixPlan!.focus,
+            targetFocus: fixPlan!.focus_explanation,
+            totalQuestions: 3,
+          }
+        : {
+            sourceType: 'generic',
+            nclexCategory: null,
+            quizMode: 'diagnostic',
+            totalQuestions: 5,
+          }
+
       const res = await fetch('/api/quiz/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          sourceType: 'generic',
-          nclexCategory: null,
-          quizMode: 'targeted_drill',
-          targetMistakeType: fixPlan.focus,
-          targetFocus: fixPlan.focus_explanation,
-          totalQuestions: 3,
-        }),
+        body: JSON.stringify(body),
       })
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Could not start today’s drill')
+        throw new Error(data.error || 'Could not start today’s practice')
       }
 
       const { session } = await res.json()
 
       try {
         const posthog = (await import('posthog-js')).default
-        posthog.capture('fix_plan_targeted_drill_created', {
+        posthog.capture(hasPersonalPlan ? 'fix_plan_targeted_drill_created' : 'clinical_judgment_diagnostic_created', {
           source: 'entry_screen',
           session_id: session.id,
-          focus: fixPlan.focus,
-          total_questions: session.total_questions || 3,
+          focus: hasPersonalPlan ? fixPlan!.focus : null,
+          total_questions: session.total_questions || (hasPersonalPlan ? 3 : 5),
         })
       } catch {}
 
       router.push(`/quiz?sessionId=${session.id}`)
     } catch (error: any) {
-      console.error('[Entry] Fix plan drill start failed:', error)
-      setFixPlanError(error?.message || 'Could not start today’s drill. Try Practice Questions instead.')
+      console.error('[Entry] Fix plan practice start failed:', error)
+      setFixPlanError(error?.message || 'Could not start today’s practice. Try Practice Questions instead.')
       setFixPlanStarting(false)
     }
   }
@@ -171,12 +179,12 @@ export default function EntryChoiceClient() {
                 Today’s Fix Plan
               </div>
               <h2 className="mt-3 text-xl font-bold" style={{ color: '#0B2545' }}>
-                {fixPlanLoading ? 'Building your plan…' : fixPlan?.focus || 'Build your first Judgment Map'}
+                {fixPlanLoading ? 'Building your plan…' : fixPlan?.focus || 'Find your clinical judgment pattern'}
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-gray-600">
                 {fixPlanLoading
                   ? 'Forge is checking your recent practice patterns.'
-                  : fixPlan?.focus_explanation || 'Answer a few questions so Forge can learn what to train next.'}
+                  : fixPlan?.focus_explanation || 'Take a short diagnostic so Forge can learn what pattern to train first.'}
               </p>
             </div>
             <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#E0F4F6] sm:flex">
@@ -224,9 +232,9 @@ export default function EntryChoiceClient() {
             {fixPlanStarting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Starting today’s drill…
+                Starting today’s practice…
               </>
-            ) : fixPlanLoading ? 'Building plan…' : fixPlan?.cta_label || 'Start Practice'}
+            ) : fixPlanLoading ? 'Building plan…' : fixPlan?.cta_label || 'Start 5-Question Diagnostic'}
           </button>
         </section>
 
