@@ -161,6 +161,7 @@ export default function QuizResultsClient() {
   const pct = Math.round((score / total) * 100)
   const missed = questions.filter(q => !q.is_correct && q.user_answer)
   const isTargetedDrill = session.quiz_mode === 'targeted_drill'
+  const isDiagnostic = session.quiz_mode === 'diagnostic'
   const targetPattern = session.target_mistake_type || questions[0]?.mistake_type || null
 
   const catMap = new Map<string, { correct: number; total: number }>()
@@ -250,7 +251,7 @@ export default function QuizResultsClient() {
     <div className="min-h-screen px-4 py-6 pb-40 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div className="space-y-6 pb-24">
         <h1 className="text-2xl font-bold text-center" style={{ color: '#0B2545' }}>
-          {isTargetedDrill ? 'Focused Drill Complete 🎯' : 'Quiz Complete! 🎉'}
+          {isTargetedDrill ? 'Focused Drill Complete 🎯' : isDiagnostic ? 'Diagnostic Complete 🧭' : 'Quiz Complete! 🎉'}
         </h1>
 
         <div className="rounded-xl border border-gray-200 p-5 text-center space-y-3">
@@ -260,6 +261,14 @@ export default function QuizResultsClient() {
               <p className="text-3xl font-bold" style={{ color: '#0B2545' }}>{targetPattern || 'Clinical judgment'}</p>
               <p className="text-sm text-gray-600">
                 You completed {total} focused question{total === 1 ? '' : 's'} and gave Forge more signal for your Judgment Map.
+              </p>
+            </>
+          ) : isDiagnostic ? (
+            <>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>Map started</p>
+              <p className="text-3xl font-bold" style={{ color: '#0B2545' }}>{total} questions</p>
+              <p className="text-sm text-gray-600">
+                Forge used this diagnostic to start finding the clinical judgment patterns to train next.
               </p>
             </>
           ) : (
@@ -283,7 +292,9 @@ export default function QuizResultsClient() {
           <p className="text-sm text-gray-700 leading-relaxed">
             {isTargetedDrill
               ? `This drill trained ${targetPattern || 'your next focus'} and updated your Clinical Judgment Map.`
-              : 'This quiz updated your Clinical Judgment Map. Forge uses each answer to learn what pattern to train next.'}
+              : isDiagnostic
+                ? 'This diagnostic started your Clinical Judgment Map. Forge will use your answers to recommend what to train next.'
+                : 'This quiz updated your Clinical Judgment Map. Forge uses each answer to learn what pattern to train next.'}
           </p>
           <button onClick={() => router.push('/readiness')} className="w-full rounded-lg text-white font-semibold text-sm" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
             View Judgment Map →
@@ -293,7 +304,7 @@ export default function QuizResultsClient() {
         {topMistake && (
           <div className="rounded-xl p-5 text-white space-y-3" style={{ backgroundColor: '#0B2545' }}>
             <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
-              Your Clinical Judgment Pattern
+              {isDiagnostic ? 'First pattern Forge noticed' : 'Your Clinical Judgment Pattern'}
             </p>
             <div>
               <p className="text-sm text-white/70">Pattern to keep training</p>
@@ -324,7 +335,7 @@ export default function QuizResultsClient() {
           </div>
         )}
 
-        {categories.length > 0 && !isTargetedDrill && (
+        {categories.length > 0 && !isTargetedDrill && !isDiagnostic && (
           <div className="space-y-3">
             <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Performance by Category</h2>
             <div className="rounded-xl border border-gray-200 p-4 space-y-3">
@@ -390,7 +401,7 @@ export default function QuizResultsClient() {
 
         <div className="space-y-3 pt-2">
           <button onClick={() => router.push('/quiz')} className="w-full rounded-lg text-white font-semibold text-base" style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}>
-            {isTargetedDrill ? 'Start Another Practice' : 'Start New Quiz'}
+            {isTargetedDrill ? 'Start Another Practice' : isDiagnostic ? 'Start Recommended Practice' : 'Start New Quiz'}
           </button>
           <button onClick={() => router.push('/readiness')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '56px' }}>
             View Judgment Map
