@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
 
-const VALID_QUIZ_MODES = ['standard', 'targeted_drill', 'retest'] as const;
+const VALID_QUIZ_MODES = ['standard', 'targeted_drill', 'retest', 'diagnostic'] as const;
 
 type QuizMode = typeof VALID_QUIZ_MODES[number];
 
@@ -39,11 +39,17 @@ export async function POST(req: NextRequest) {
     }
 
     const isTargetedDrill = quizMode === 'targeted_drill';
+    const isDiagnostic = quizMode === 'diagnostic';
+
     if (isTargetedDrill && !targetMistakeType) {
       return NextResponse.json({ error: 'targetMistakeType is required for targeted drills' }, { status: 400 });
     }
 
-    const sessionTotalQuestions = isTargetedDrill ? 3 : Math.max(1, Math.min(Number(totalQuestions) || 10, 20));
+    const sessionTotalQuestions = isTargetedDrill
+      ? 3
+      : isDiagnostic
+        ? 5
+        : Math.max(1, Math.min(Number(totalQuestions) || 10, 20));
 
     await supabase
       .from('quiz_sessions')
