@@ -24,6 +24,18 @@ function normalizeText(value: unknown) {
   return String(value ?? '').toLowerCase()
 }
 
+function fallbackMistakeType(category?: string | null) {
+  if (category === 'Psychosocial Integrity') return 'Therapeutic communication'
+  if (category === 'Pharmacological Therapies') return 'Medication reasoning'
+  if (category === 'Safety and Infection Control') return 'Safety'
+  if (category === 'Delegation') return 'Delegation'
+  if (category === 'Reduction of Risk Potential') return 'Lab / diagnostic interpretation'
+  if (category === 'Management of Care' || category === 'Priority Setting') return 'Priority-setting'
+  if (category === 'Health Promotion and Maintenance') return 'Patient education'
+  if (category === 'Physiological Adaptation') return 'Assessment-first'
+  return 'Pathophysiology / knowledge gap'
+}
+
 function keywordScore(lesson: VisualLesson, text: string) {
   const keywords = lesson.trigger_keywords ?? []
   return keywords.reduce((score, keyword) => {
@@ -34,10 +46,12 @@ function keywordScore(lesson: VisualLesson, text: string) {
 }
 
 function scoreLesson(lesson: VisualLesson, question: any) {
+  const derivedMistakeType = question.mistake_type || fallbackMistakeType(question.nclex_category)
   const haystack = normalizeText([
     question.question_stem,
     question.nclex_category,
     question.mistake_type,
+    derivedMistakeType,
     question.retest_focus,
     question.key_cue,
     question.reasoning_trap,
@@ -47,18 +61,23 @@ function scoreLesson(lesson: VisualLesson, question: any) {
 
   let score = 0
 
-  if (lesson.mistake_type && question.mistake_type && lesson.mistake_type === question.mistake_type) {
-    score += 6
+  if (lesson.mistake_type && derivedMistakeType && lesson.mistake_type === derivedMistakeType) {
+    score += 8
   }
 
   if (lesson.nclex_category && question.nclex_category && lesson.nclex_category === question.nclex_category) {
     score += 3
   }
 
-  score += keywordScore(lesson, haystack) * 4
+  score += keywordScore(lesson, haystack) * 5
 
   if (lesson.concept && haystack.includes(lesson.concept.toLowerCase())) {
-    score += 5
+    score += 6
+  }
+
+  // Prefer exact concept/pathology lessons over generic fallback lessons when both match.
+  if (!lesson.concept.startsWith('fallback ')) {
+    score += 1
   }
 
   return score
@@ -118,6 +137,7 @@ export async function GET(req: NextRequest) {
       lesson: best.lesson,
       matched: true,
       score: best.score,
+      derived_mistake_type: question.mistake_type || fallbackMistakeType(question.nclex_category),
     })
   } catch (error) {
     console.error('[Visual Lessons] match GET error:', error)
