@@ -190,6 +190,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields: sessionId, questionIndex, sourceType' }, { status: 400 });
     }
 
+    const numericQuestionIndex = Number(questionIndex);
+    if (!Number.isInteger(numericQuestionIndex) || numericQuestionIndex < 0) {
+      return NextResponse.json({ error: 'Invalid questionIndex' }, { status: 400 });
+    }
+
     const { data: session, error: sessionError } = await supabase
       .from('quiz_sessions')
       .select('*')
@@ -205,15 +210,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Session is not in progress' }, { status: 400 });
     }
 
+    const intendedTotal = Number(session.total_questions) || 0;
+    if (intendedTotal > 0 && numericQuestionIndex >= intendedTotal) {
+      return NextResponse.json({ error: 'Question index is outside this session total' }, { status: 400 });
+    }
+
     const selectedCategory = category || session.nclex_category || null;
     const isTargetedDrill = session.quiz_mode === 'targeted_drill' && session.target_mistake_type;
-    const lockedCategory = isTargetedDrill ? null : getCategoryForIndex(questionIndex, selectedCategory);
+    const lockedCategory = isTargetedDrill ? null : getCategoryForIndex(numericQuestionIndex, selectedCategory);
 
     const { data: existingQuestion } = await supabase
       .from('quiz_questions')
       .select(QUESTION_SELECT)
       .eq('session_id', sessionId)
-      .eq('question_index', questionIndex)
+      .eq('question_index', numericQuestionIndex)
       .maybeSingle();
 
     if (existingQuestion && !existingQuestion.answered_at && !existingQuestion.user_answer) {
@@ -301,7 +311,7 @@ export async function POST(req: NextRequest) {
           const { data: matchedChunks } = await supabase.rpc('match_documents', rpcParams);
 
           if (matchedChunks && matchedChunks.length > 0) {
-            const chunkIndex = questionIndex % matchedChunks.length;
+            const chunkIndex = numericQuestionIndex % matchedChunks.length;
             const chunk = matchedChunks[chunkIndex];
             sourceChunkText = chunk.content || '';
             sourceDocId = chunk.id || null;
@@ -364,7 +374,7 @@ export async function POST(req: NextRequest) {
       .from('quiz_questions')
       .insert({
         session_id: sessionId,
-        question_index: questionIndex,
+        question_index: numericQuestionIndex,
         question_stem: questionData!.question_stem,
         options: questionData!.options,
         correct_answer: questionData!.correct_answer,
@@ -382,7 +392,7 @@ export async function POST(req: NextRequest) {
 
     if (insertError) {
       console.warn('[Quiz Generate] Insert failed; checking for existing generated question', insertError);
-      const fallbackQuestion = await fetchExistingPublicQuestion(supabase, sessionId, questionIndex);
+      const fallbackQuestion = await fetchExistingPublicQuestion(supabase, sessionId, numericQuestionIndex);
       if (fallbackQuestion) {
         return NextResponse.json({ question: fallbackQuestion, resumed: true, recovered: true });
       }
