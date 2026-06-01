@@ -31,10 +31,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Quiz session not found' }, { status: 404 });
     }
 
+    const intendedTotal = Number(session.total_questions) || 20;
+
     const { data: questions, error: questionsError } = await supabase
       .from('quiz_questions')
       .select('*')
       .eq('session_id', sessionId)
+      .not('answered_at', 'is', null)
+      .lt('question_index', intendedTotal)
       .order('question_index', { ascending: true });
 
     if (questionsError) {
