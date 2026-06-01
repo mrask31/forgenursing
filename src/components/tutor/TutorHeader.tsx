@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Plus, Volume2, VolumeX } from 'lucide-react'
+import { ArrowLeft, Plus, Volume2, VolumeX } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { useTutorContext } from './TutorContext'
@@ -43,6 +43,9 @@ export default function TutorHeader({
   const [voiceEnabled, setVoiceEnabled] = useState(false)
   const tutorContext = useTutorContext()
 
+  const returnTo = searchParams.get('returnTo')
+  const returnLabel = searchParams.get('returnLabel') || 'Back to Practice'
+
   // Load voice preference from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -66,7 +69,7 @@ export default function TutorHeader({
     const loadActiveExam = async () => {
       if (tutorContext.activeExamId && tutorContext.selectedClassId) {
         try {
-  const supabase = getBrowserClient()
+   const supabase = getBrowserClient()
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
             const exams = await listExams(user.id, tutorContext.selectedClassId)
@@ -92,7 +95,19 @@ export default function TutorHeader({
     <>
       <header className="flex items-center justify-between h-[52px] border-b border-[var(--gray-200)] bg-white px-3 sm:px-4 md:px-6 mb-0 w-full">
         {/* Left: Forge avatar + identity */}
-        <div className="flex items-center gap-2.5 flex-shrink-0">
+        <div className="flex items-center gap-2.5 flex-shrink-0 min-w-0">
+          {returnTo && (
+            <button
+              type="button"
+              onClick={() => router.push(returnTo)}
+              className="mr-1 inline-flex items-center gap-1.5 rounded-lg border border-[var(--gray-200)] bg-white px-2 py-1.5 text-xs font-semibold text-[var(--gray-700)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)] sm:px-3"
+              title={returnLabel}
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{returnLabel}</span>
+              <span className="sm:hidden">Back</span>
+            </button>
+          )}
           {/* Forge avatar — small navy→teal gradient square */}
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--navy)] to-[var(--teal)] text-white text-xs font-bold select-none">
             Fx
