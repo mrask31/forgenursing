@@ -41,17 +41,34 @@ export default function TutorHeader({
   const [isExamDialogOpen, setIsExamDialogOpen] = useState(false)
   const [activeExam, setActiveExam] = useState<ExamPlan | null>(null)
   const [voiceEnabled, setVoiceEnabled] = useState(false)
+  const [canGoBack, setCanGoBack] = useState(false)
   const tutorContext = useTutorContext()
 
   const returnTo = searchParams.get('returnTo')
   const returnLabel = searchParams.get('returnLabel') || 'Back to Practice'
+  const showBackButton = !!returnTo || canGoBack
 
-  // Load voice preference from localStorage
+  // Load voice preference and browser-history state
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setVoiceEnabled(localStorage.getItem('forge-voice-enabled') === 'true')
+      setCanGoBack(window.history.length > 1)
     }
   }, [])
+
+  const handleBackToContext = () => {
+    if (returnTo && returnTo !== '__history') {
+      router.push(returnTo)
+      return
+    }
+
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      window.history.back()
+      return
+    }
+
+    router.push('/entry')
+  }
 
   const toggleVoice = () => {
     const newValue = !voiceEnabled
@@ -96,15 +113,15 @@ export default function TutorHeader({
       <header className="flex items-center justify-between h-[52px] border-b border-[var(--gray-200)] bg-white px-3 sm:px-4 md:px-6 mb-0 w-full">
         {/* Left: Forge avatar + identity */}
         <div className="flex items-center gap-2.5 flex-shrink-0 min-w-0">
-          {returnTo && (
+          {showBackButton && (
             <button
               type="button"
-              onClick={() => router.push(returnTo)}
+              onClick={handleBackToContext}
               className="mr-1 inline-flex items-center gap-1.5 rounded-lg border border-[var(--gray-200)] bg-white px-2 py-1.5 text-xs font-semibold text-[var(--gray-700)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)] sm:px-3"
-              title={returnLabel}
+              title={returnTo ? returnLabel : 'Back to previous page'}
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{returnLabel}</span>
+              <span className="hidden sm:inline">{returnTo ? returnLabel : 'Back'}</span>
               <span className="sm:hidden">Back</span>
             </button>
           )}
