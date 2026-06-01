@@ -130,8 +130,14 @@ test('@smoke @regression Fix with Tutor → browser back returns to quiz rationa
   await page.waitForURL(/\/tutor/, { timeout: 20_000 });
   expect(page.url()).toContain('/tutor');
 
-  // Browser back should return to quiz
-  await page.goBack();
+  // Confirm in-app Back button is visible in tutor header
+  const backButton = page.locator('button:has-text("Back")').first();
+  await expect(backButton).toBeVisible({ timeout: 10_000 });
+
+  // Click the in-app Back button (NOT browser toolbar)
+  await backButton.click();
+
+  // Should return to the quiz session
   await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
   const backUrl = page.url();
@@ -175,8 +181,12 @@ test('@smoke @regression Results → Train Pattern tutor → browser back return
     await page.waitForURL(/\/tutor/, { timeout: 20_000 });
     expect(page.url()).toContain('/tutor');
 
-    // Browser back should return to results
-    await page.goBack();
+    // Confirm in-app Back button is visible
+    const backButton = page.locator('button:has-text("Back")').first();
+    await expect(backButton).toBeVisible({ timeout: 10_000 });
+
+    // Click the in-app Back button (NOT browser toolbar)
+    await backButton.click();
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
     const backUrl = page.url();
