@@ -108,7 +108,7 @@ export default function NclexPracticePage() {
                   onClick={() => trackEvent('nclex_practice_primary_cta_clicked')}
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
                 >
-                  Start Free Practice Quiz
+                  Start Free 7-Day Trial
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a
@@ -121,7 +121,7 @@ export default function NclexPracticePage() {
               </div>
 
               <p className="text-xs text-[#1E2D3D]/50">
-                7-day free trial · No credit card required · Built for ADN, BSN, LPN, and MSN students
+                No credit card required · Create your account first, then start your quiz · Built for ADN, BSN, LPN, and MSN students
               </p>
             </div>
 
@@ -261,14 +261,14 @@ export default function NclexPracticePage() {
             Stop collecting rationales. Start fixing the mistake.
           </h2>
           <p className="text-sm sm:text-base text-[#1E2D3D]/70 mb-6">
-            Try ForgeNursing with your own notes or a nursing topic. No credit card required.
+            Create a free account to start your 7-day trial, then use ForgeNursing with your own notes or a nursing topic. No credit card required.
           </p>
           <Link
             href="/signup"
             onClick={() => trackEvent('nclex_practice_primary_cta_clicked')}
             className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#0D8F9C] text-white rounded-lg text-base font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
           >
-            Start Free Practice Quiz
+            Start Free 7-Day Trial
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
