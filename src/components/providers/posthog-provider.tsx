@@ -31,10 +31,39 @@ function getSignupTrackingContext() {
   }
 }
 
-function identifyPostHogUser(user: User) {
-  posthog.identify(user.id, {
+async function identifyPostHogUser(supabase: any, user: User) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('onboarding_completed,onboarding_skipped,onboarding_step,subscription_status,trial_ends_at,is_beta,beta_expires_at,default_entry_path,quiz_first_enabled')
+    .eq('id', user.id)
+    .single()
+
+  const personProperties = {
     email: user.email,
-  })
+    onboarding_completed: Boolean(profile?.onboarding_completed),
+    onboarding_skipped: Boolean(profile?.onboarding_skipped),
+    onboarding_step: profile?.onboarding_step ?? 0,
+    subscription_status: profile?.subscription_status ?? null,
+    trial_ends_at: profile?.trial_ends_at ?? null,
+    is_beta: Boolean(profile?.is_beta),
+    beta_expires_at: profile?.beta_expires_at ?? null,
+    default_entry_path: profile?.default_entry_path ?? null,
+    quiz_first_enabled: Boolean(profile?.quiz_first_enabled),
+  }
+
+  posthog.identify(user.id, personProperties)
+
+  if (typeof window !== 'undefined' && profile?.trial_ends_at) {
+    const trialEventKey = `forgenursing-trial-started-captured-${user.id}`
+    if (!localStorage.getItem(trialEventKey)) {
+      localStorage.setItem(trialEventKey, 'true')
+      posthog.capture('trial_started', {
+        subscription_status: profile.subscription_status ?? null,
+        trial_ends_at: profile.trial_ends_at,
+        source: 'profile_identify_sync',
+      })
+    }
+  }
 }
 
 function PostHogPageView() {
@@ -201,13 +230,13 @@ export function PHProvider({ children }: { children: React.ReactNode }) {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (isMounted && session?.user) {
-        identifyPostHogUser(session.user)
+        identifyPostHogUser(supabase, session.user)
       }
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && session?.user) {
-        identifyPostHogUser(session.user)
+        identifyPostHogUser(supabase, session.user)
         posthog.capture('signup_success', {
           ...getSignupTrackingContext(),
           source: 'auth_state_change',
