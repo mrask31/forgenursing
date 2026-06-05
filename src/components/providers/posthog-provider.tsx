@@ -122,6 +122,77 @@ function SignupFrictionTracker() {
   return null
 }
 
+function TutorChipClickGuard() {
+  const pathname = usePathname()
+
+  useEffect(() => {
+    if (pathname !== '/tutor') return
+
+    let guardUntil = 0
+    let resetTimer: ReturnType<typeof setTimeout> | null = null
+
+    const setChipState = (disabled: boolean) => {
+      const chips = Array.from(document.querySelectorAll('button.rounded-full')) as HTMLButtonElement[]
+      chips.forEach((chip) => {
+        const text = chip.textContent?.trim()
+        if (!text || text.length < 8) return
+
+        chip.disabled = disabled
+        chip.setAttribute('aria-busy', disabled ? 'true' : 'false')
+        chip.style.opacity = disabled ? '0.6' : ''
+        chip.style.cursor = disabled ? 'not-allowed' : ''
+      })
+    }
+
+    const clearGuard = () => {
+      guardUntil = 0
+      setChipState(false)
+      if (resetTimer) {
+        clearTimeout(resetTimer)
+        resetTimer = null
+      }
+    }
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null
+      const button = target?.closest('button.rounded-full') as HTMLButtonElement | null
+      if (!button) return
+
+      const text = button.textContent?.trim()
+      if (!text || text.length < 8) return
+
+      const now = Date.now()
+      if (now < guardUntil) {
+        event.preventDefault()
+        event.stopPropagation()
+        posthog.capture('tutor_chip_repeat_click_blocked', {
+          path: window.location.pathname,
+          time_remaining_ms: guardUntil - now,
+        })
+        return
+      }
+
+      guardUntil = now + 12000
+      setChipState(true)
+      posthog.capture('tutor_chip_click_guard_started', {
+        path: window.location.pathname,
+      })
+
+      if (resetTimer) clearTimeout(resetTimer)
+      resetTimer = setTimeout(clearGuard, 12000)
+    }
+
+    document.addEventListener('click', handleClick, true)
+
+    return () => {
+      document.removeEventListener('click', handleClick, true)
+      clearGuard()
+    }
+  }, [pathname])
+
+  return null
+}
+
 export function PHProvider({ children }: { children: React.ReactNode }) {
   const supabase = getBrowserClient()
 
@@ -157,6 +228,7 @@ export function PHProvider({ children }: { children: React.ReactNode }) {
       <Suspense fallback={null}>
         <PostHogPageView />
         <SignupFrictionTracker />
+        <TutorChipClickGuard />
       </Suspense>
       {children}
     </PostHogProvider>
