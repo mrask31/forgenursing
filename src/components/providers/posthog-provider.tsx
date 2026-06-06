@@ -126,7 +126,7 @@ function SignupFrictionTracker() {
       }
     }
 
-    const handleSubmit = (event: SubmitEvent) => {
+    const handleSubmit = (event: Event) => {
       const form = event.target as HTMLFormElement | null
       const submitButton = form?.querySelector('[data-testid="signup-submit"]')
       if (!submitButton) return
