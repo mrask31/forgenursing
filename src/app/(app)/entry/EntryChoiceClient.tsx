@@ -26,6 +26,21 @@ export default function EntryChoiceClient() {
   const [fixPlanError, setFixPlanError] = useState<string | null>(null)
 
   useEffect(() => {
+    try {
+      import('posthog-js').then(({ default: posthog }) => {
+        posthog.capture('onboarding_started', {
+          source: 'entry_screen',
+          path: window.location.pathname,
+        })
+        posthog.capture('entry_screen_viewed', {
+          source: 'entry_screen',
+          path: window.location.pathname,
+        })
+      })
+    } catch {}
+  }, [])
+
+  useEffect(() => {
     const loadProfile = async () => {
       const supabase = getBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -77,6 +92,12 @@ export default function EntryChoiceClient() {
 
       try {
         const posthog = (await import('posthog-js')).default
+        posthog.capture('onboarding_completed', {
+          source: 'entry_screen',
+          selected_path: path,
+          completion_action: 'manual_path_choice',
+          remember_choice_checked: rememberChoice,
+        })
         posthog.capture('quiz_path_selected', {
           source: 'entry_screen',
           had_previous_preference: false,
@@ -101,6 +122,14 @@ export default function EntryChoiceClient() {
 
     try {
       const posthog = (await import('posthog-js')).default
+      posthog.capture('onboarding_completed', {
+        source: 'entry_screen',
+        selected_path: 'fix_plan',
+        completion_action: 'fix_plan_start',
+        has_personal_plan: fixPlan?.has_personal_plan ?? false,
+        total_attempted: fixPlan?.total_attempted ?? 0,
+        quiz_mode: quizMode,
+      })
       posthog.capture('fix_plan_started', {
         source: 'entry_screen',
         focus: fixPlan?.focus ?? null,
