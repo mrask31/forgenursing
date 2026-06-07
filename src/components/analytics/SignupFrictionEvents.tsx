@@ -34,6 +34,38 @@ export function SignupFrictionEvents() {
   }, [pathname])
 
   useEffect(() => {
+    if (pathname !== '/readiness') return
+
+    const viewedAt = Date.now()
+    posthog.capture('judgment_map_viewed', {
+      ...context(),
+      source: 'readiness_page',
+    })
+
+    const onClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null
+      const button = target?.closest('button')
+      if (!button) return
+
+      const label = button.textContent?.trim().replace(/\s+/g, ' ') || ''
+      const isPracticeCta = label.includes('Practice') || label.includes('Start Building Map')
+      if (!isPracticeCta) return
+
+      posthog.capture('judgment_map_practice_cta_clicked', {
+        ...context(),
+        button_label: label,
+        time_on_page_ms: Date.now() - viewedAt,
+      })
+    }
+
+    document.addEventListener('click', onClick)
+
+    return () => {
+      document.removeEventListener('click', onClick)
+    }
+  }, [pathname])
+
+  useEffect(() => {
     if (pathname !== '/signup') return
 
     const startedAt = Date.now()
