@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import posthog from 'posthog-js'
 
 interface FollowUpPromptsProps {
@@ -146,6 +146,8 @@ export default function FollowUpPrompts({
   activeCourse,
   activeCourseType,
 }: FollowUpPromptsProps) {
+  const lastChipClickRef = useRef<{ prompt: string; clickedAt: number; count: number } | null>(null)
+
   // Only show on the last assistant message
   if (!isLastMessage) return null
 
@@ -165,6 +167,25 @@ export default function FollowUpPrompts({
             key={index}
             onClick={(e) => {
               e.stopPropagation()
+              const now = Date.now()
+              const previous = lastChipClickRef.current
+              const repeatCount = previous?.prompt === prompt && now - previous.clickedAt < 5000
+                ? previous.count + 1
+                : 1
+
+              lastChipClickRef.current = { prompt, clickedAt: now, count: repeatCount }
+
+              if (repeatCount > 1) {
+                posthog.capture('tutor_prompt_chip_repeat_clicked', {
+                  prompt_text: prompt,
+                  repeat_count: repeatCount,
+                  ms_since_previous_click: previous ? now - previous.clickedAt : null,
+                  active_course_type: activeCourseType ?? null,
+                  active_course_present: Boolean(activeCourse),
+                  path: typeof window !== 'undefined' ? window.location.pathname : null,
+                })
+              }
+
               posthog.capture('tutor_prompt_chip_clicked', {
                 prompt_text: prompt,
                 prompt_index: index,
