@@ -191,6 +191,20 @@ export default function QuizPageClient() {
           setSessionTotalQuestions(directSession.total_questions || 10)
           setCurrentQuizMode(directSession.quiz_mode || 'standard')
           setResumeSession(null)
+          try {
+            const posthog = (await import('posthog-js')).default
+            posthog.capture('quiz_started', {
+              session_id: directSession.id,
+              source_type: sourceType,
+              nclex_category: category === 'All Categories' ? null : category,
+              has_documents: (docs?.length ?? 0) > 0,
+              is_resume: true,
+              source: 'direct_session_load',
+              questions_completed: directSession.current_question_index || 0,
+              total_questions: directSession.total_questions || 10,
+              quiz_mode: directSession.quiz_mode || 'standard',
+            })
+          } catch {}
           await generateQuestion(directSession.id, directSession.current_question_index || 0)
           return
         }
@@ -200,7 +214,7 @@ export default function QuizPageClient() {
       } catch {}
     }
     init()
-  }, [directSessionId, generateQuestion])
+  }, [directSessionId, generateQuestion, sourceType, category])
 
   const handleStart = useCallback(async (options?: StartOptions) => {
     setLoading(true)
