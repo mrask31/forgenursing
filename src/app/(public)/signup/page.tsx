@@ -229,6 +229,41 @@ export default function SignupPage() {
           body: JSON.stringify({ userId: data.user.id }),
         })
         const trialData = await trialRes.json()
+
+        try {
+          const posthog = (await import('posthog-js')).default
+          if (trialData.isBeta && trialData.betaExpiresAt) {
+            posthog.capture('trial_started', {
+              source: 'signup_set_trial',
+              access_type: 'beta',
+              is_beta: true,
+              beta_expires_at: trialData.betaExpiresAt,
+              plan: plan || null,
+              trial_days: 90,
+            })
+            posthog.capture('beta_access_started', {
+              source: 'signup_set_trial',
+              beta_expires_at: trialData.betaExpiresAt,
+              plan: plan || null,
+            })
+          } else if (trialData.trialEndsAt) {
+            posthog.capture('trial_started', {
+              source: 'signup_set_trial',
+              access_type: 'standard_trial',
+              is_beta: false,
+              trial_ends_at: trialData.trialEndsAt,
+              plan: plan || null,
+              trial_days: 7,
+            })
+          } else if (!trialRes.ok) {
+            posthog.capture('trial_start_failed', {
+              source: 'signup_set_trial',
+              status: trialRes.status,
+              plan: plan || null,
+            })
+          }
+        } catch {}
+
         if (trialData.isBeta && trialData.betaExpiresAt) {
           // Store beta welcome for display in the app
           localStorage.setItem('forgenursing-beta-welcome', trialData.betaExpiresAt)
@@ -236,6 +271,13 @@ export default function SignupPage() {
       } catch (trialError) {
         // Don't block signup if trial setting fails
         console.error('[Signup] Failed to set trial:', trialError)
+        try {
+          const posthog = (await import('posthog-js')).default
+          posthog.capture('trial_start_failed', {
+            source: 'signup_set_trial_exception',
+            plan: plan || null,
+          })
+        } catch {}
       }
       
       // Check for session (with email verification disabled, should have immediate session)
