@@ -88,6 +88,21 @@ export default function QuizResultsClient() {
   const [fixingQuestionId, setFixingQuestionId] = useState<string | null>(null)
   const [fixWeaknessError, setFixWeaknessError] = useState<string | null>(null)
 
+  const captureResultsEvent = (eventName: string, extra: Record<string, any> = {}) => {
+    try {
+      const posthog = require('posthog-js').default
+      posthog.capture(eventName, {
+        session_id: sessionId,
+        quiz_mode: session?.quiz_mode ?? null,
+        score: session?.score ?? null,
+        total_questions: questions.length,
+        missed_count: questions.filter(q => !q.is_correct && q.user_answer).length,
+        source: 'quiz_results',
+        ...extra,
+      })
+    } catch {}
+  }
+
   useEffect(() => {
     if (!sessionId) {
       setLoadError('Missing quiz session.')
@@ -116,6 +131,16 @@ export default function QuizResultsClient() {
         const data = await response.json()
         setSession(data.session)
         setQuestions(data.questions ?? [])
+        try {
+          const posthog = require('posthog-js').default
+          posthog.capture('quiz_results_viewed', {
+            session_id: sessionId,
+            quiz_mode: data.session?.quiz_mode ?? null,
+            score: data.session?.score ?? null,
+            total_questions: (data.questions ?? []).length,
+            missed_count: (data.questions ?? []).filter((q: QuizQuestion) => !q.is_correct && q.user_answer).length,
+          })
+        } catch {}
       } catch (error: any) {
         console.error('[QuizResults] Load error:', error)
         setLoadError(error?.message || 'Failed to load results')
@@ -185,6 +210,11 @@ export default function QuizResultsClient() {
     .map(([mistakeType, missed]) => ({ mistakeType, missed }))
     .sort((a, b) => b.missed - a.missed)
   const topMistake = mistakeBreakdown[0]
+
+  const handleViewJudgmentMap = (buttonLocation: string) => {
+    captureResultsEvent('judgment_map_cta_clicked', { button_location: buttonLocation })
+    router.push('/readiness')
+  }
 
   const handleFixWeakness = async (q: QuizQuestion) => {
     if (!sessionId || fixingQuestionId) return
@@ -296,7 +326,7 @@ export default function QuizResultsClient() {
                 ? 'This diagnostic started your Clinical Judgment Map. Forge will use your answers to recommend what to train next.'
                 : 'This quiz updated your Clinical Judgment Map. Forge uses each answer to learn what pattern to train next.'}
           </p>
-          <button onClick={() => router.push('/readiness')} className="w-full rounded-lg text-white font-semibold text-sm" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
+          <button onClick={() => handleViewJudgmentMap('what_forge_learned_card')} className="w-full rounded-lg text-white font-semibold text-sm" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
             View Judgment Map →
           </button>
         </div>
@@ -403,7 +433,7 @@ export default function QuizResultsClient() {
           <button onClick={() => router.push('/quiz')} className="w-full rounded-lg text-white font-semibold text-base" style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}>
             {isTargetedDrill ? 'Start Another Practice' : isDiagnostic ? 'Start Recommended Practice' : 'Start New Quiz'}
           </button>
-          <button onClick={() => router.push('/readiness')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '56px' }}>
+          <button onClick={() => handleViewJudgmentMap('bottom_button')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '56px' }}>
             View Judgment Map
           </button>
           <button onClick={() => router.push('/entry')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#DDE5EE', color: '#0B2545', minHeight: '56px' }}>
