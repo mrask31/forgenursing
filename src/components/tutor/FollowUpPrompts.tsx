@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import posthog from 'posthog-js'
 
 interface FollowUpPromptsProps {
   messageContent: string
@@ -164,6 +165,13 @@ export default function FollowUpPrompts({
             key={index}
             onClick={(e) => {
               e.stopPropagation()
+              posthog.capture('tutor_prompt_chip_clicked', {
+                prompt_text: prompt,
+                prompt_index: index,
+                active_course_type: activeCourseType ?? null,
+                active_course_present: Boolean(activeCourse),
+                path: typeof window !== 'undefined' ? window.location.pathname : null,
+              })
               onPromptClick(prompt)
             }}
             className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-all hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 cursor-pointer shadow-sm"
@@ -175,4 +183,3 @@ export default function FollowUpPrompts({
     </div>
   )
 }
-
