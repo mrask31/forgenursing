@@ -38,6 +38,7 @@ export function SignupFrictionEvents() {
 
     const startedAt = Date.now()
     const focusedFields = new Set<string>()
+    let noRedirectTimer: ReturnType<typeof setTimeout> | null = null
 
     posthog.capture('signup_page_viewed', context())
 
@@ -67,6 +68,18 @@ export function SignupFrictionEvents() {
         ...context(),
         time_on_page_ms: Date.now() - startedAt,
       })
+
+      if (noRedirectTimer) clearTimeout(noRedirectTimer)
+      noRedirectTimer = setTimeout(() => {
+        if (window.location.pathname === '/signup') {
+          const pendingSubmittedAt = window.localStorage.getItem(pendingSignupKey)
+          posthog.capture('signup_no_redirect_after_submit', {
+            ...context(),
+            source: 'still_on_signup_after_submit',
+            time_since_submit_ms: pendingSubmittedAt ? Date.now() - Number(pendingSubmittedAt) : null,
+          })
+        }
+      }, 12000)
     }
 
     document.addEventListener('focusin', onFocusIn)
@@ -75,6 +88,7 @@ export function SignupFrictionEvents() {
     return () => {
       document.removeEventListener('focusin', onFocusIn)
       document.removeEventListener('submit', onSubmit)
+      if (noRedirectTimer) clearTimeout(noRedirectTimer)
     }
   }, [pathname])
 
