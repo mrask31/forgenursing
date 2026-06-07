@@ -2,6 +2,9 @@
 
 import posthog from 'posthog-js'
 import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
+
+const pendingSignupKey = 'forgenursing-pending-signup-submit'
 
 function context() {
   return {
@@ -14,8 +17,24 @@ function context() {
 }
 
 export function SignupFrictionEvents() {
+  const pathname = usePathname()
+
   useEffect(() => {
-    if (window.location.pathname !== '/signup') return
+    if (pathname === '/entry') {
+      const pendingSubmittedAt = window.localStorage.getItem(pendingSignupKey)
+      if (pendingSubmittedAt) {
+        window.localStorage.removeItem(pendingSignupKey)
+        posthog.capture('signup_success', {
+          ...context(),
+          source: 'entry_redirect_after_signup_submit',
+          signup_submit_to_entry_ms: Date.now() - Number(pendingSubmittedAt),
+        })
+      }
+    }
+  }, [pathname])
+
+  useEffect(() => {
+    if (pathname !== '/signup') return
 
     const startedAt = Date.now()
     const focusedFields = new Set<string>()
@@ -43,6 +62,7 @@ export function SignupFrictionEvents() {
       const form = event.target as HTMLFormElement | null
       if (!form?.querySelector('[data-testid="signup-submit"]')) return
 
+      window.localStorage.setItem(pendingSignupKey, String(Date.now()))
       posthog.capture('signup_submitted', {
         ...context(),
         time_on_page_ms: Date.now() - startedAt,
@@ -56,7 +76,7 @@ export function SignupFrictionEvents() {
       document.removeEventListener('focusin', onFocusIn)
       document.removeEventListener('submit', onSubmit)
     }
-  }, [])
+  }, [pathname])
 
   return null
 }
