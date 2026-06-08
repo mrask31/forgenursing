@@ -15,8 +15,22 @@ export const FOUNDER_PRICE_IDS: Record<Plan, string> = {
   annual: process.env.STRIPE_PRICE_ANNUAL_FOUNDER!,
 }
 
+async function captureCheckoutEvent(eventName: string, properties: Record<string, unknown>) {
+  try {
+    const posthog = (await import('posthog-js')).default
+    posthog.capture(eventName, properties)
+  } catch {}
+}
+
 export async function startStripeCheckout(plan: Plan) {
   const priceId = PRICE_IDS[plan]
+
+  await captureCheckoutEvent('checkout_started', {
+    source: 'stripe_client',
+    plan,
+    checkout_type: 'standard',
+    has_price_id: Boolean(priceId),
+  })
 
   // Log price IDs for debugging (first 10 chars only for security)
 
@@ -28,6 +42,12 @@ export async function startStripeCheckout(plan: Plan) {
       semester: PRICE_IDS.semester,
       annual: PRICE_IDS.annual,
     })
+    await captureCheckoutEvent('checkout_configuration_error', {
+      source: 'stripe_client',
+      plan,
+      checkout_type: 'standard',
+      error_type: 'duplicate_price_ids',
+    })
     alert(`Pricing configuration error: Duplicate price IDs detected. Please check your environment variables. All three plans (monthly, semester, annual) must have unique Stripe price IDs.`)
     return
   }
@@ -35,6 +55,12 @@ export async function startStripeCheckout(plan: Plan) {
   if (!priceId) {
     console.error('Missing Stripe price ID for plan:', plan)
     console.error('Available price IDs:', PRICE_IDS)
+    await captureCheckoutEvent('checkout_configuration_error', {
+      source: 'stripe_client',
+      plan,
+      checkout_type: 'standard',
+      error_type: 'missing_price_id',
+    })
     alert(`Pricing configuration error: Missing price ID for ${plan} plan. Please check your environment variables.`)
     return
   }
@@ -47,6 +73,11 @@ export async function startStripeCheckout(plan: Plan) {
     })
 
     if (res.status === 401) {
+      await captureCheckoutEvent('checkout_requires_signup', {
+        source: 'stripe_client',
+        plan,
+        checkout_type: 'standard',
+      })
       // Not logged in – send them to signup, preserving intended plan
       window.location.href = `/signup?plan=${plan}`
       return
@@ -64,6 +95,13 @@ export async function startStripeCheckout(plan: Plan) {
         statusText: res.statusText,
         error: errorData,
       })
+      await captureCheckoutEvent('checkout_start_failed', {
+        source: 'stripe_client',
+        plan,
+        checkout_type: 'standard',
+        status: res.status,
+        error_message: errorData?.error || null,
+      })
       
       // Show more detailed error message in development
       const errorMessage = errorData?.error || 'Unknown error'
@@ -75,17 +113,37 @@ export async function startStripeCheckout(plan: Plan) {
       return
     }
 
-    const { url } = await res.json()
+    const { url, sessionId } = await res.json()
     if (!url) {
       console.error('Stripe checkout session missing URL')
+      await captureCheckoutEvent('checkout_start_failed', {
+        source: 'stripe_client',
+        plan,
+        checkout_type: 'standard',
+        error_type: 'missing_checkout_url',
+        session_id: sessionId || null,
+      })
       alert('Checkout session missing URL. Please contact support.')
       return
     }
 
+    await captureCheckoutEvent('checkout_redirect_started', {
+      source: 'stripe_client',
+      plan,
+      checkout_type: 'standard',
+      session_id: sessionId || null,
+    })
     window.location.href = url
   } catch (err) {
     console.error('Stripe checkout error', err)
     const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+    await captureCheckoutEvent('checkout_start_failed', {
+      source: 'stripe_client',
+      plan,
+      checkout_type: 'standard',
+      error_type: 'network_or_exception',
+      error_message: errorMessage,
+    })
     if (process.env.NODE_ENV === 'development') {
       alert(`Network error: ${errorMessage}`)
     } else {
@@ -93,4 +151,3 @@ export async function startStripeCheckout(plan: Plan) {
     }
   }
 }
-
