@@ -35,7 +35,7 @@ function BillingSuccessContent() {
         <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
           <CheckCircle className="w-9 h-9 text-green-600" />
         </div>
-        <h1 className="text-2xl font-bold text-slate-900 mb-3">You're subscribed</h1>
+        <h1 className="text-2xl font-bold text-slate-900 mb-3">You&apos;re subscribed</h1>
         <p className="text-slate-600 mb-6 leading-relaxed">
           Your ForgeNursing checkout completed. You can return to your study options and keep practicing.
         </p>
