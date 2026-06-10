@@ -110,7 +110,7 @@ export async function POST(req: Request) {
       payment_method_collection: 'always', // Require payment method
       allow_promotion_codes: true, // Enable coupon/promo code entry field
       success_url: `${appUrl}/entry?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/billing/cancel`,
+      cancel_url: `${appUrl}/checkout?checkout=canceled`,
       customer_email: user.email || undefined,
       client_reference_id: user.id, // Link the session to the user
     })
