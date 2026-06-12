@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Brain, CheckCircle2, PlayCircle, Target, TrendingUp } from 'lucide-react'
+import { ArrowRight, Brain, CheckCircle2, FileText, PlayCircle, Target, TrendingUp } from 'lucide-react'
 
 interface HeroProps {
   user: any
@@ -117,6 +117,18 @@ export default function Hero({ user, betaFull = false }: HeroProps) {
               ForgeNursing learns how you answer, pinpoints your clinical judgment mistakes, and gives you focused NCLEX practice to fix them before test day.
             </p>
 
+            <div className="mt-6 grid max-w-xl grid-cols-1 gap-3 rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 sm:grid-cols-[auto_1fr] sm:items-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm">
+                <FileText className="h-6 w-6 text-[#0D8F9C]" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[#0B2545]">What you get after signup</p>
+                <p className="mt-1 text-sm leading-relaxed text-[#1E2D3D]/70">
+                  Upload notes or a study guide → get NCLEX-style questions → see the reasoning behind each answer.
+                </p>
+              </div>
+            </div>
+
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link
                 href={href}
@@ -137,13 +149,14 @@ export default function Hero({ user, betaFull = false }: HeroProps) {
             <div className="mt-6 flex flex-col gap-2 text-sm text-[#1E2D3D]/60 sm:flex-row sm:items-center sm:gap-4">
               <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#0D8F9C]" />7-day free trial</span>
               <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#0D8F9C]" />No credit card required</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#0D8F9C]" />100+ NCLEX-style questions completed</span>
             </div>
 
             <div className="mt-10 rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-5">
               <div className="flex items-start gap-3">
                 <TrendingUp className="mt-0.5 h-5 w-5 shrink-0 text-[#0D8F9C]" />
                 <div>
-                  <p className="font-bold text-[#0B2545]">Forge is learning how you answer.</p>
+                  <p className="font-bold text-[#0B2545]">Forge is learning how nursing students answer.</p>
                   <p className="mt-1 text-sm leading-relaxed text-[#1E2D3D]/65">
                     Every missed question helps Forge find the clinical judgment pattern to train next.
                   </p>
