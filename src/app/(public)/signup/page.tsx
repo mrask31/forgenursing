@@ -129,32 +129,6 @@ export default function SignupPage() {
     }
 
     try {
-      const timeoutMs = 15000 // Increased from 8000 to 15000 (15 seconds)
-      const withTimeout = <T,>(promise: Promise<T>) =>
-        Promise.race([
-          promise,
-          new Promise<T>((_, reject) => setTimeout(() => reject(new Error('SIGNUP_TIMEOUT')), timeoutMs)),
-        ])
-
-      // Health check
-      try {
-        const healthRes = await fetch(`${supabaseUrl}/auth/v1/health`, {
-          headers: { apikey: supabaseAnonKey },
-        })
-        if (!healthRes.ok) {
-          throw new Error(`Health check failed (${healthRes.status})`)
-        }
-      } catch (healthError) {
-        console.error('[Signup] Health check failed:', healthError)
-        setMessage({
-          text: 'Auth service unreachable. Please disable tracking prevention for this site or try another browser.',
-          type: 'error',
-        })
-        setLoading(false)
-        return
-      }
-
-      
       // Add a manual timeout promise (30 seconds)
       const signupPromise = supabase.auth.signUp({
         email,
@@ -301,15 +275,8 @@ export default function SignupPage() {
     } catch (error: any) {
       console.error('[Signup] Unexpected error:', error)
       
-      if (error?.message === 'SIGNUP_TIMEOUT') {
-        setMessage({ 
-          text: 'Signup is taking longer than expected. Please check your connection and try again.', 
-          type: 'error' 
-        })
-      } else {
-        const errorMessage = error?.message || 'An error occurred. Please try again.'
-        setMessage({ text: errorMessage, type: 'error' })
-      }
+      const errorMessage = error?.message || 'Signup is taking longer than expected. Please check your connection and try again.'
+      setMessage({ text: errorMessage, type: 'error' })
       
       setLoading(false)
     }
@@ -355,8 +322,8 @@ export default function SignupPage() {
                   <Shield className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-900 text-sm mb-1">Free preview</div>
-                  <div className="text-xs text-slate-600">7-day free trial included</div>
+                  <div className="font-semibold text-slate-900 text-sm mb-1">Start free</div>
+                  <div className="text-xs text-slate-600">No credit card required</div>
                 </div>
               </div>
             </div>
@@ -428,11 +395,14 @@ export default function SignupPage() {
             <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-lg">
               {/* Header - Compact */}
               <div className="text-center mb-4">
+                <div className="mb-2 inline-flex items-center rounded-full bg-[#E0F4F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#0D8F9C]">
+                  Used by nursing students preparing for NCLEX
+                </div>
                 <h1 className="text-lg font-semibold text-slate-900 mb-1">
-                  Create your account
+                  Start your free 7-day trial
                 </h1>
                 <p className="text-xs text-slate-600">
-                  Join nursing students building clinical reasoning skills
+                  Create your account in 2 minutes. No credit card required.
                 </p>
               </div>
 
@@ -487,6 +457,9 @@ export default function SignupPage() {
                       minLength={8}
                     />
                   </div>
+                  <p className="text-xs text-slate-500">
+                    Use at least 8 characters. You can change this later in settings.
+                  </p>
                 </div>
 
                 {message && (
@@ -545,13 +518,13 @@ export default function SignupPage() {
                     </>
                   ) : (
                     <>
-                      Create Account
+                      Start Free Trial
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
                 </button>
                 <p className="text-sm text-gray-500 text-center">
-                  No credit card required • Cancel anytime • 2-minute setup
+                  No credit card required • Full access • 2-minute setup
                 </p>
               </form>
 
