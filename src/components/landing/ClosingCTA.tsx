@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Brain, Target } from 'lucide-react'
+import { ArrowRight, Brain, CheckCircle2, FileText, Target } from 'lucide-react'
 
 interface ClosingCTAProps {
   betaFull?: boolean
@@ -29,11 +29,29 @@ export default function ClosingCTA({ betaFull = false }: ClosingCTAProps) {
                 Clinical judgment practice
               </div>
               <h2 id="cta-heading" className="font-display text-3xl leading-tight text-white sm:text-4xl md:text-[2.75rem]">
-                Stop collecting rationales. Start fixing the mistake.
+                Turn your study materials into NCLEX practice in minutes.
               </h2>
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
-                Practice from your notes, fix your weak spots, and train the patterns that cost you points before test day.
+                Upload notes, generate practice questions, and see why each answer is right or wrong before test day.
               </p>
+
+              <div className="mt-6 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                  <FileText className="h-5 w-5 text-[#0BBCD4]" />
+                  <p className="mt-3 text-sm font-bold text-white">1. Upload notes</p>
+                  <p className="mt-1 text-xs leading-relaxed text-white/65">Use a study guide, lecture notes, or textbook chapter.</p>
+                </div>
+                <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                  <Target className="h-5 w-5 text-[#0BBCD4]" />
+                  <p className="mt-3 text-sm font-bold text-white">2. Practice questions</p>
+                  <p className="mt-1 text-xs leading-relaxed text-white/65">Forge turns your material into NCLEX-style practice.</p>
+                </div>
+                <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                  <CheckCircle2 className="h-5 w-5 text-[#0BBCD4]" />
+                  <p className="mt-3 text-sm font-bold text-white">3. Learn the why</p>
+                  <p className="mt-1 text-xs leading-relaxed text-white/65">Get step-by-step clinical reasoning explanations.</p>
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-col gap-3 lg:min-w-[320px]">
@@ -41,7 +59,7 @@ export default function ClosingCTA({ betaFull = false }: ClosingCTAProps) {
                 href={href}
                 className="inline-flex min-h-[54px] items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-8 py-4 text-base font-bold text-white shadow-sm transition-colors hover:bg-[#0a7d88]"
               >
-                Start Free Practice Quiz
+                Start Free Trial
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <a
@@ -52,7 +70,7 @@ export default function ClosingCTA({ betaFull = false }: ClosingCTAProps) {
                 Explore the Clinical Judgment Map
               </a>
               <p className="text-center text-xs text-white/60">
-                7-day free trial · No credit card required
+                7-day free trial · No credit card required · 100+ NCLEX-style questions completed
               </p>
             </div>
           </div>
