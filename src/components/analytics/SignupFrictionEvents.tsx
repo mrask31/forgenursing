@@ -160,7 +160,7 @@ function ensureSignupSubmitHint(startedAt: number) {
 
     return {
       key: 'ready',
-      text: 'Ready — tap Create Account.',
+      text: 'Ready — tap Start Free Trial.',
     }
   }
 
@@ -205,6 +205,47 @@ function ensureSignupSubmitHint(startedAt: number) {
     submitButton.removeEventListener('pointerdown', onPointerDown)
     hint?.remove()
   }
+}
+
+function ensureSignupFormVisibilityTracker(startedAt: number) {
+  const emailInput = document.querySelector('[data-testid="signup-email"]') as HTMLInputElement | null
+  if (!emailInput) return null
+
+  let captured = false
+
+  const captureVisible = (entry?: IntersectionObserverEntry) => {
+    if (captured) return
+    captured = true
+    posthog.capture('signup_form_visible', {
+      ...context(),
+      ...detectInAppBrowser(),
+      source: 'email_field_intersection_observer',
+      time_on_page_ms: Date.now() - startedAt,
+      intersection_ratio: entry?.intersectionRatio ?? null,
+    })
+  }
+
+  if (!('IntersectionObserver' in window)) {
+    captureVisible()
+    return null
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (entry?.isIntersecting) {
+        captureVisible(entry)
+        observer.disconnect()
+      }
+    },
+    {
+      threshold: 0.5,
+    }
+  )
+
+  observer.observe(emailInput)
+
+  return () => observer.disconnect()
 }
 
 export function SignupFrictionEvents() {
@@ -261,7 +302,9 @@ export function SignupFrictionEvents() {
 
     const startedAt = Date.now()
     const focusedFields = new Set<string>()
+    let fieldInteracted = false
     let noRedirectTimer: ReturnType<typeof setTimeout> | null = null
+    let abandonmentTimer: ReturnType<typeof setTimeout> | null = null
 
     posthog.capture('signup_page_viewed', {
       ...context(),
@@ -270,12 +313,31 @@ export function SignupFrictionEvents() {
 
     const cleanupBanner = ensureSignupHelpBanner(startedAt)
     const cleanupSubmitHint = ensureSignupSubmitHint(startedAt)
+    const cleanupVisibilityTracker = ensureSignupFormVisibilityTracker(startedAt)
+
+    abandonmentTimer = setTimeout(() => {
+      if (window.location.pathname !== '/signup' || fieldInteracted) return
+
+      posthog.capture('signup_form_abandoned', {
+        ...context(),
+        ...detectInAppBrowser(),
+        source: 'no_field_interaction_after_20s',
+        time_on_page_ms: Date.now() - startedAt,
+      })
+    }, 20000)
 
     const trackFocus = (fieldName: string) => {
+      fieldInteracted = true
+      if (abandonmentTimer) {
+        clearTimeout(abandonmentTimer)
+        abandonmentTimer = null
+      }
+
       if (focusedFields.has(fieldName)) return
       focusedFields.add(fieldName)
       posthog.capture('signup_field_focused', {
         ...context(),
+        ...detectInAppBrowser(),
         field_name: fieldName,
         time_on_page_ms: Date.now() - startedAt,
       })
@@ -321,7 +383,9 @@ export function SignupFrictionEvents() {
       document.removeEventListener('submit', onSubmit)
       cleanupBanner?.()
       cleanupSubmitHint?.()
+      cleanupVisibilityTracker?.()
       if (noRedirectTimer) clearTimeout(noRedirectTimer)
+      if (abandonmentTimer) clearTimeout(abandonmentTimer)
     }
   }, [pathname])
 
