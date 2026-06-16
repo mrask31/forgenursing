@@ -9,9 +9,10 @@ async function getErrorMessage(response: Response, fallback: string) {
   }
 }
 
-export async function listClasses(userId: string): Promise<StudentClass[]> {
+export async function listClasses(userId?: string): Promise<StudentClass[]> {
   try {
-    const response = await fetch(`/api/classes?userId=${userId}`, {
+    const query = userId ? `?userId=${encodeURIComponent(userId)}` : ''
+    const response = await fetch(`/api/classes${query}`, {
       credentials: 'include',
     })
     if (!response.ok) {
@@ -26,7 +27,7 @@ export async function listClasses(userId: string): Promise<StudentClass[]> {
 }
 
 export async function createClass(
-  userId: string,
+  userId: string | null | undefined,
   payload: {
     code: string
     name: string
@@ -41,7 +42,7 @@ export async function createClass(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ userId, ...payload }),
+    body: JSON.stringify(userId ? { userId, ...payload } : payload),
   })
 
   if (!response.ok) {
@@ -57,7 +58,7 @@ export async function createClass(
 }
 
 export async function updateClass(
-  userId: string,
+  userId: string | null | undefined,
   id: string,
   payload: Partial<{
     code: string
@@ -73,7 +74,7 @@ export async function updateClass(
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ userId, ...payload }),
+    body: JSON.stringify(userId ? { userId, ...payload } : payload),
   })
 
   if (!response.ok) {
