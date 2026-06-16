@@ -56,13 +56,17 @@ export default function ClassForm({ classItem, onSuccess, onCancel }: ClassFormP
   })
 
   useEffect(() => {
-  const supabase = getBrowserClient()
+    const supabase = getBrowserClient()
 
-    supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
-      if (user) {
-        setUserId(user.id)
-      }
-    })
+    supabase.auth.getUser()
+      .then(({ data: { user } }: { data: { user: any } }) => {
+        if (user) {
+          setUserId(user.id)
+        }
+      })
+      .catch((error) => {
+        console.warn('[ClassForm] Could not pre-load user session. Server API will validate on submit.', error)
+      })
   }, [])
 
   useEffect(() => {
@@ -86,23 +90,23 @@ export default function ClassForm({ classItem, onSuccess, onCancel }: ClassFormP
     const action = classItem ? 'update' : 'create'
     posthog.capture('class_add_attempted', analyticsContext(action, formData))
 
-    if (!userId) {
-      const message = 'We could not confirm your session. Please refresh and try again.'
-      setErrorMessage(message)
-      posthog.capture('class_add_failed', {
-        ...analyticsContext(action, formData),
-        reason: 'missing_user_session',
-        error_message: message,
-      })
-      return
-    }
-
     setLoading(true)
     try {
+      let resolvedUserId = userId
+
+      if (!resolvedUserId) {
+        const supabase = getBrowserClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        resolvedUserId = user?.id || null
+        if (resolvedUserId) {
+          setUserId(resolvedUserId)
+        }
+      }
+
       if (classItem) {
-        await updateClass(userId, classItem.id, formData)
+        await updateClass(resolvedUserId, classItem.id, formData)
       } else {
-        await createClass(userId, formData)
+        await createClass(resolvedUserId, formData)
       }
 
       posthog.capture('class_add_succeeded', analyticsContext(action, formData))
@@ -217,7 +221,7 @@ export default function ClassForm({ classItem, onSuccess, onCancel }: ClassFormP
         <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
           Cancel
         </Button>
-        <Button type="submit" disabled={loading || !userId}>
+        <Button type="submit" disabled={loading}>
           {loading ? 'Saving...' : classItem ? 'Update Class' : 'Add Class'}
         </Button>
       </div>
