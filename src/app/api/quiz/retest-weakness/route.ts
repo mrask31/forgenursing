@@ -128,6 +128,137 @@ function normalizeMistakeMetadata(questionData: any, sourceMistakeType: MistakeT
   };
 }
 
+function extractJsonObject(text: string) {
+  let cleaned = text.trim();
+  if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
+  if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
+  if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3);
+  cleaned = cleaned.trim();
+
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+  }
+
+  return JSON.parse(cleaned);
+}
+
+function normalizeQuestion(raw: any, category: string, mistakeType: MistakeType, retestFocus: string) {
+  const parsed = QuizQuestionSchema.parse(raw);
+  return {
+    ...parsed,
+    nclex_category: category,
+    mistake_type: parsed.mistake_type || mistakeType,
+    retest_focus: parsed.retest_focus || retestFocus,
+  };
+}
+
+function buildSafeRetestQuestion(category: string, mistakeType: MistakeType, retestFocus: string, seed: string) {
+  const index = Math.abs(seed.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % 5;
+  const base = {
+    nclex_category: category,
+    difficulty: 3,
+    mistake_type: mistakeType,
+    reasoning_trap: defaultReasoningTrap(mistakeType),
+    fix_instruction: defaultFixInstruction(mistakeType),
+    retest_focus: retestFocus,
+  };
+
+  const scenarios = [
+    {
+      question_stem: 'A nurse is caring for a client who reports new shortness of breath while lying in bed. The client is awake and speaking in short phrases. Which action should the nurse take first?',
+      options: [
+        { label: 'A', text: 'Assess the client’s oxygen saturation and lung sounds.' },
+        { label: 'B', text: 'Call the health care provider to report the change.' },
+        { label: 'C', text: 'Teach the client to use pursed-lip breathing.' },
+        { label: 'D', text: 'Review the client’s most recent medication list.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'The nurse should assess first to determine severity and guide the safest next action. Oxygen saturation and lung sounds provide immediate data about breathing status.',
+      rationale_incorrect: {
+        A: '',
+        B: 'Calling the provider may be needed later, but the nurse first needs assessment data to report and to determine urgency.',
+        C: 'Teaching is not the first priority when the client has a new respiratory change.',
+        D: 'Medication review may be relevant later, but it does not address the immediate breathing concern.',
+      },
+    },
+    {
+      question_stem: 'A nurse is caring for a postoperative client who reports increasing abdominal pain 2 hours after surgery. The client is pale and restless. Which action should the nurse take first?',
+      options: [
+        { label: 'A', text: 'Check the client’s blood pressure, heart rate, and surgical dressing.' },
+        { label: 'B', text: 'Administer the prescribed opioid pain medication.' },
+        { label: 'C', text: 'Help the client reposition and apply a warm blanket.' },
+        { label: 'D', text: 'Document that the client is having expected postoperative pain.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'Increasing pain with pallor and restlessness can indicate bleeding or deterioration. The nurse needs focused assessment data before treating this as routine pain.',
+      rationale_incorrect: {
+        A: '',
+        B: 'Pain medication may be appropriate later, but it could mask deterioration if given before assessment.',
+        C: 'Comfort measures do not address the possible postoperative complication.',
+        D: 'Documentation happens after assessment and intervention, not before identifying the priority problem.',
+      },
+    },
+    {
+      question_stem: 'A nurse receives report on four clients. Which client should the nurse assess first?',
+      options: [
+        { label: 'A', text: 'A client with pneumonia who is newly confused and has increased work of breathing.' },
+        { label: 'B', text: 'A client with a sprained ankle requesting pain medication.' },
+        { label: 'C', text: 'A client scheduled for discharge who needs medication teaching.' },
+        { label: 'D', text: 'A client with stable hypertension waiting for a routine blood pressure recheck.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'New confusion and increased work of breathing can signal hypoxia or respiratory deterioration. Airway and breathing concerns take priority.',
+      rationale_incorrect: {
+        A: '',
+        B: 'Pain should be addressed, but it is not more urgent than possible respiratory compromise.',
+        C: 'Discharge teaching can wait until unstable clients are assessed.',
+        D: 'Routine monitoring for a stable client is lower priority than a new breathing concern.',
+      },
+    },
+    {
+      question_stem: 'A nurse is caring for a client with diabetes who says, “I feel shaky and weird.” The client is alert but diaphoretic. Which action should the nurse take first?',
+      options: [
+        { label: 'A', text: 'Check the client’s capillary blood glucose level.' },
+        { label: 'B', text: 'Give the client a full meal tray.' },
+        { label: 'C', text: 'Notify the provider of possible hypoglycemia.' },
+        { label: 'D', text: 'Review the client’s insulin administration record.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'Shakiness and diaphoresis suggest possible hypoglycemia. The nurse should confirm the blood glucose so the next action is safe and appropriate.',
+      rationale_incorrect: {
+        A: '',
+        B: 'Food may be needed, but the nurse first needs to confirm the blood glucose and determine urgency.',
+        C: 'Provider notification may be needed if the client does not respond, but bedside assessment comes first.',
+        D: 'Reviewing insulin history is useful later but does not address the client’s current symptoms first.',
+      },
+    },
+    {
+      question_stem: 'A nurse is preparing morning care for several clients. Which task is most appropriate for the nurse to delegate to assistive personnel?',
+      options: [
+        { label: 'A', text: 'Obtain a stable client’s routine vital signs.' },
+        { label: 'B', text: 'Teach a client how to use an incentive spirometer.' },
+        { label: 'C', text: 'Assess a client reporting new chest pressure.' },
+        { label: 'D', text: 'Evaluate whether pain medication was effective.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'Obtaining routine vital signs on a stable client is appropriate for assistive personnel. Teaching, assessment, and evaluation require nursing judgment.',
+      rationale_incorrect: {
+        A: '',
+        B: 'Teaching requires nursing judgment and cannot be delegated to assistive personnel.',
+        C: 'New chest pressure requires nursing assessment and possible urgent intervention.',
+        D: 'Evaluation of medication effectiveness is a nursing responsibility.',
+      },
+    },
+  ];
+
+  return {
+    ...base,
+    ...scenarios[index],
+  };
+}
+
 function buildRetestPrompt(args: {
   programLevel: ProgramLevel;
   category: string;
@@ -298,29 +429,24 @@ export async function POST(req: NextRequest) {
     while (retries <= maxRetries) {
       try {
         const retryHint = retries > 0
-          ? '\n\nIMPORTANT: Your previous response was not valid JSON. Please respond with ONLY the JSON object, no markdown fences, no explanation.'
+          ? '\n\nIMPORTANT: Your previous response was not valid JSON. Return ONLY one JSON object. Use exactly four options labeled A, B, C, and D. Include correct_answer, rationale_correct, rationale_incorrect, nclex_category, difficulty, mistake_type, reasoning_trap, fix_instruction, and retest_focus.'
           : '';
 
         const { text } = await generateText({
           model: anthropic('claude-sonnet-4-20250514') as any,
-          maxTokens: 1200,
+          maxTokens: 1800,
           prompt: prompt + retryHint,
         });
 
-        let cleaned = text.trim();
-        if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
-        if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
-        if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3);
-        cleaned = cleaned.trim();
-
-        questionData = QuizQuestionSchema.parse(JSON.parse(cleaned));
-        questionData.nclex_category = category;
+        const rawQuestion = extractJsonObject(text);
+        questionData = normalizeQuestion(rawQuestion, category, mistakeType, retestFocus);
         break;
       } catch (parseError) {
         retries++;
         if (retries > maxRetries) {
-          console.error('[Retest Weakness] Failed to parse model response:', parseError);
-          return NextResponse.json({ error: 'Failed to generate retest question. Please try again.' }, { status: 500 });
+          console.error('[Retest Weakness] Failed to parse model response; using safe fallback:', parseError);
+          questionData = buildSafeRetestQuestion(category, mistakeType, retestFocus, `${questionId}-${Date.now()}`);
+          break;
         }
       }
     }
