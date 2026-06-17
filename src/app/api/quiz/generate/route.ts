@@ -146,9 +146,9 @@ const QuizQuestionSchema = z.object({
   })).length(4),
   correct_answer: z.enum(['A', 'B', 'C', 'D']),
   rationale_correct: z.string().min(10),
-  rationale_incorrect: z.record(z.enum(['A', 'B', 'C', 'D']), z.string()),
-  nclex_category: z.string(),
-  difficulty: z.number().int().min(1).max(5),
+  rationale_incorrect: z.record(z.string(), z.string()).optional(),
+  nclex_category: z.string().optional(),
+  difficulty: z.coerce.number().int().min(1).max(5).default(3),
   mistake_type: MistakeTypeSchema.optional(),
   reasoning_trap: z.string().min(10).optional(),
   fix_instruction: z.string().min(10).optional(),
@@ -158,6 +158,112 @@ const QuizQuestionSchema = z.object({
   why_wrong_short: z.string().min(5).optional(),
   one_line_fix: z.string().min(5).optional(),
 });
+
+function extractJsonObject(text: string) {
+  let cleaned = text.trim();
+  if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
+  if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
+  if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3);
+  cleaned = cleaned.trim();
+
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+  }
+
+  return JSON.parse(cleaned);
+}
+
+function normalizeGeneratedQuestion(raw: any, finalCategory: string, forcedMistakeType?: string | null) {
+  const parsed = QuizQuestionSchema.parse(raw);
+  const labels = ['A', 'B', 'C', 'D'] as const;
+  const optionMap = new Map<string, string>();
+
+  for (const option of parsed.options) {
+    optionMap.set(option.label, option.text);
+  }
+
+  const options = labels.map((label, index) => ({
+    label,
+    text: optionMap.get(label) || parsed.options[index]?.text || `Option ${label}`,
+  }));
+
+  const rationaleIncorrect: Record<string, string> = {};
+  for (const label of labels) {
+    if (label === parsed.correct_answer) continue;
+    const existing = parsed.rationale_incorrect?.[label];
+    rationaleIncorrect[label] = typeof existing === 'string' && existing.trim().length > 0
+      ? existing.trim()
+      : 'This answer may sound reasonable, but it misses the highest-priority clinical cue in the question.';
+  }
+
+  const forcedParsed = MistakeTypeSchema.safeParse(forcedMistakeType);
+
+  return {
+    ...parsed,
+    options,
+    rationale_incorrect: rationaleIncorrect,
+    nclex_category: parsed.nclex_category || finalCategory,
+    mistake_type: forcedParsed.success ? forcedParsed.data : parsed.mistake_type,
+  };
+}
+
+function buildSafeFallbackQuestion(finalCategory: string, forcedMistakeType?: string | null, questionIndex = 0) {
+  const forcedParsed = MistakeTypeSchema.safeParse(forcedMistakeType);
+  const mistakeType = forcedParsed.success ? forcedParsed.data : fallbackMistakeType(finalCategory);
+
+  const base = {
+    nclex_category: finalCategory,
+    difficulty: 3,
+    mistake_type: mistakeType,
+    reasoning_trap: defaultReasoningTrap(mistakeType),
+    fix_instruction: defaultFixInstruction(mistakeType),
+    retest_focus: `${mistakeType.toLowerCase()} practice`,
+    key_cue: 'The nurse needs one more assessment cue before choosing an intervention.',
+    why_correct_short: 'The correct answer gathers the priority data needed to act safely.',
+    why_wrong_short: 'The tempting answer jumps to a reasonable intervention before assessment is complete.',
+    one_line_fix: defaultFixInstruction(mistakeType),
+  };
+
+  if (mistakeType === 'Assessment-first') {
+    return {
+      ...base,
+      question_stem: 'A nurse is caring for a client who reports new shortness of breath while lying in bed. The client is awake and speaking in short phrases. Which action should the nurse take first?',
+      options: [
+        { label: 'A', text: 'Assess the client’s oxygen saturation and lung sounds.' },
+        { label: 'B', text: 'Call the health care provider to report the change.' },
+        { label: 'C', text: 'Teach the client to use pursed-lip breathing.' },
+        { label: 'D', text: 'Review the client’s most recent medication list.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'The nurse should assess first to determine the severity and likely cause of the new respiratory change. Oxygen saturation and lung sounds provide immediate data needed to choose a safe next action.',
+      rationale_incorrect: {
+        B: 'Calling the provider may be needed later, but the nurse first needs assessment data to report and to determine urgency.',
+        C: 'Breathing techniques may help, but teaching is not the first priority when the client has a new respiratory change.',
+        D: 'Medication review may be relevant later, but it does not address the immediate need to assess breathing status.',
+      },
+    };
+  }
+
+  return {
+    ...base,
+    question_stem: `A nurse is caring for a client with a new change in condition during a busy shift. Several actions seem appropriate. Which action should the nurse take first?`,
+    options: [
+      { label: 'A', text: 'Collect focused assessment data related to the new change.' },
+      { label: 'B', text: 'Document the change in the client’s medical record.' },
+      { label: 'C', text: 'Delegate routine care to assistive personnel.' },
+      { label: 'D', text: 'Review teaching materials with the client and family.' },
+    ],
+    correct_answer: 'A',
+    rationale_correct: 'A new change in condition requires focused assessment before the nurse can choose the safest intervention. Assessment identifies the priority cue and prevents premature action.',
+    rationale_incorrect: {
+      B: 'Documentation is important after assessment and intervention, but it is not the first action for a new change in condition.',
+      C: 'Delegation may help manage workload, but it does not address the client’s new clinical change first.',
+      D: 'Teaching is useful when the client is stable, but a new condition change requires assessment first.',
+    },
+  };
+}
 
 async function fetchExistingPublicQuestion(supabase: any, sessionId: string, questionIndex: number) {
   const { data } = await supabase
@@ -333,26 +439,22 @@ export async function POST(req: NextRequest) {
     let questionData;
     let retries = 0;
     const maxRetries = 2;
+    const finalCategoryHint = lockedCategory || session.nclex_category || 'Physiological Adaptation';
 
     while (retries <= maxRetries) {
       try {
         const retryHint = retries > 0
-          ? '\n\nIMPORTANT: Your previous response was not valid JSON. Please respond with ONLY the JSON object, no markdown fences, no explanation.'
+          ? '\n\nIMPORTANT: Your previous response was not valid JSON. Return ONLY one JSON object. Use exactly four options labeled A, B, C, and D. Include correct_answer, rationale_correct, rationale_incorrect, nclex_category, difficulty, and the clinical judgment metadata fields.'
           : '';
 
         const { text } = await generateText({
           model: anthropic('claude-sonnet-4-20250514') as any,
-          maxTokens: 1400,
+          maxTokens: 1800,
           prompt: prompt + retryHint,
         });
 
-        let cleaned = text.trim();
-        if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
-        if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
-        if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3);
-        cleaned = cleaned.trim();
-
-        questionData = QuizQuestionSchema.parse(JSON.parse(cleaned));
+        const rawQuestion = extractJsonObject(text);
+        questionData = normalizeGeneratedQuestion(rawQuestion, finalCategoryHint, isTargetedDrill ? session.target_mistake_type : null);
         if (!isTargetedDrill && lockedCategory) {
           questionData.nclex_category = lockedCategory;
         }
@@ -360,8 +462,11 @@ export async function POST(req: NextRequest) {
       } catch (parseError) {
         retries++;
         if (retries > maxRetries) {
-          console.error('[Quiz Generate] Failed to parse Claude response after retries:', parseError);
-          return NextResponse.json({ error: 'Failed to generate valid question. Please try again.' }, { status: 500 });
+          console.error('[Quiz Generate] Failed to parse Claude response after retries; using safe fallback:', parseError);
+          questionData = buildSafeFallbackQuestion(finalCategoryHint, isTargetedDrill ? session.target_mistake_type : null, numericQuestionIndex);
+          sourceChunkText = null;
+          sourceDocId = null;
+          break;
         }
       }
     }
