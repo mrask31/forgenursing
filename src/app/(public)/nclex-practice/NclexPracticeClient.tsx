@@ -14,7 +14,6 @@ function trackEvent(eventName: string) {
 function QuizPreviewCard() {
   return (
     <div className="bg-white border border-[#DDE5EE] rounded-2xl shadow-xl shadow-[#0B2545]/8 overflow-hidden">
-      {/* Chrome bar */}
       <div className="h-9 bg-[#0B2545] flex items-center px-4 gap-2">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-white/20" />
@@ -27,59 +26,124 @@ function QuizPreviewCard() {
       </div>
 
       <div className="p-4 sm:p-5 space-y-4">
-        {/* Question */}
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-wide">
               Two answers look right
             </span>
-            <span className="text-[10px] text-[#1E2D3D]/40">Therapeutic Communication</span>
+            <span className="text-[10px] text-[#1E2D3D]/40">Assessment-first</span>
           </div>
           <p className="text-sm text-[#0B2545] font-medium leading-relaxed">
-            A client says, “I am scared something will go wrong during my cardiac catheterization.” What is the nurse’s best response?
+            A client reports new shortness of breath and is speaking in short phrases. What should the nurse do first?
           </p>
         </div>
 
-        {/* Missed choice */}
         <div className="bg-red-50 border border-red-100 rounded-lg p-3">
           <div className="text-[10px] font-bold text-red-700 uppercase tracking-wide mb-1">
-            You chose A
+            You chose C
           </div>
           <p className="text-xs text-[#1E2D3D]/80 leading-relaxed">
-            Provide detailed information about the procedure and possible complications.
+            Teach the client to use pursed-lip breathing.
           </p>
         </div>
 
-        {/* Better answer */}
         <div className="bg-[#E0F4F6]/60 border border-[#0D8F9C]/30 rounded-lg p-3">
           <div className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-wide mb-1">
-            Better answer: B
+            Better answer: A
           </div>
           <p className="text-xs text-[#1E2D3D]/80 leading-relaxed">
-            Acknowledge the client’s feelings and ask what concerns them most.
+            Assess oxygen saturation and lung sounds before choosing the next intervention.
           </p>
         </div>
 
-        {/* Mistake type */}
         <div className="bg-[#0B2545] rounded-lg p-3 text-white">
           <div className="text-[10px] font-bold uppercase tracking-wide mb-1 text-white/60">
-            Mistake Type
+            Pattern Detected
           </div>
-          <p className="text-sm font-bold mb-1">Therapeutic communication</p>
+          <p className="text-sm font-bold mb-1">Assessment before intervention</p>
           <p className="text-xs text-white/85 leading-relaxed">
-            You tried to educate before reducing anxiety. Forge helps you spot the thinking error, not just memorize the answer.
+            Forge shows the reasoning mistake behind the answer so you can fix the pattern, not just memorize the rationale.
           </p>
         </div>
 
-        {/* Fix weakness pill */}
         <div className="flex justify-end">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0D8F9C] text-white rounded-full text-[11px] font-semibold">
             <Target className="w-3 h-3" />
-            Fix this weakness
+            Retest this pattern
           </span>
         </div>
       </div>
     </div>
+  )
+}
+
+function ProductProofSection() {
+  return (
+    <section className="bg-white py-12 sm:py-16" aria-label="Product proof">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto text-center mb-9">
+          <p className="text-xs font-bold text-[#0D8F9C] uppercase tracking-widest mb-3">
+            Real ForgeNursing loop
+          </p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] mb-3">
+            See the mistake. Learn the why. Retest the pattern.
+          </h2>
+          <p className="text-sm sm:text-base text-[#1E2D3D]/70 leading-relaxed">
+            The screenshots you take after practice should not just show a score. They should show what thinking pattern cost you points and what to practice next.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 shadow-sm">
+            <div className="rounded-xl bg-white border border-[#DDE5EE] p-4 mb-4">
+              <div className="text-xs font-semibold text-[#0B2545] mb-3">Question 3 of 3</div>
+              <div className="rounded-xl bg-red-500 text-white p-4 mb-4">
+                <p className="font-bold mb-3">✗ Missed this one</p>
+                <p className="text-sm leading-relaxed mb-2">You chose: D — Review the client's insulin administration record.</p>
+                <p className="text-sm leading-relaxed font-semibold">Better answer: A — Check the client's capillary blood glucose level.</p>
+              </div>
+              <div className="rounded-xl border border-[#DDE5EE] p-4">
+                <p className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-widest mb-2">Quick why</p>
+                <p className="text-sm text-[#0B2545] leading-relaxed">Shaky and diaphoretic are clinical cues for possible hypoglycemia. Confirm the glucose before deciding the next action.</p>
+              </div>
+            </div>
+            <h3 className="font-bold text-[#0B2545] mb-1">Understand why you missed it</h3>
+            <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">Forge turns a wrong answer into a clear clinical judgment correction.</p>
+          </div>
+
+          <div className="rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 shadow-sm">
+            <div className="rounded-xl bg-white border border-[#DDE5EE] p-4 mb-4">
+              <div className="text-xs font-semibold text-[#0B2545] mb-3">Question 2 of 3</div>
+              <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 mb-3">
+                <p className="text-sm text-[#0B2545] leading-relaxed">A postoperative client reports increasing abdominal pain 2 hours after surgery. The client is pale and restless. Which action should the nurse take first?</p>
+              </div>
+              <div className="space-y-2 text-sm text-[#0B2545]">
+                <div className="rounded-lg border border-[#DDE5EE] p-3">A) Check blood pressure, heart rate, and surgical dressing.</div>
+                <div className="rounded-lg border border-[#DDE5EE] p-3">B) Administer prescribed opioid pain medication.</div>
+                <div className="rounded-lg border border-[#DDE5EE] p-3">C) Reposition and apply a warm blanket.</div>
+                <div className="rounded-lg border border-[#DDE5EE] p-3">D) Document expected postoperative pain.</div>
+              </div>
+            </div>
+            <h3 className="font-bold text-[#0B2545] mb-1">Practice clinical judgment</h3>
+            <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">Train the exact decision points that make NCLEX questions feel vague or close.</p>
+          </div>
+
+          <div className="rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 shadow-sm">
+            <div className="rounded-xl bg-white border border-[#DDE5EE] p-4 mb-4">
+              <div className="rounded-xl bg-[#E0F4F6] border border-[#0D8F9C]/40 p-4 mb-4">
+                <p className="text-[10px] font-bold text-[#0D8F9C] uppercase tracking-widest mb-2">Recommended</p>
+                <h4 className="font-bold text-[#0B2545] mb-2">Practice Assessment-first</h4>
+                <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">Assessment-first is your next growth pattern. A short drill will help Forge strengthen this area.</p>
+              </div>
+              <div className="rounded-lg bg-[#0D8F9C] text-white text-center py-3 font-semibold mb-3">Start 3-Question Drill</div>
+              <div className="rounded-lg border border-[#0B2545]/20 text-[#0B2545] text-center py-3 font-semibold">Retest this pattern →</div>
+            </div>
+            <h3 className="font-bold text-[#0B2545] mb-1">Fix weak patterns immediately</h3>
+            <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">After a miss, Forge gives you a focused retest instead of sending you back to random questions.</p>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -90,16 +154,15 @@ export default function NclexPracticePage() {
       <section className="bg-white" aria-label="Hero">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10 sm:pt-12 sm:pb-14">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Left: Copy */}
             <div className="order-1">
               <p className="text-xs font-bold text-[#0D8F9C] uppercase tracking-widest mb-3">
-                Clinical Judgment Trainer
+                NCLEX Readiness + Clinical Judgment Practice
               </p>
               <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight text-[#0B2545] font-bold mb-4">
-                Stop guessing between two nursing answers that both look right.
+                Stop getting NCLEX questions down to two answers and picking the wrong one.
               </h1>
               <p className="text-base text-[#1E2D3D]/80 mb-6 leading-relaxed">
-                ForgeNursing helps you practice from your notes, miss questions safely, and find the clinical judgment mistake behind each wrong answer — priority, safety, assessment, delegation, medication, or therapeutic communication.
+                ForgeNursing identifies the reasoning mistakes behind your wrong answers and shows exactly what to practice next — so you can build confidence before exam day.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -108,7 +171,7 @@ export default function NclexPracticePage() {
                   onClick={() => trackEvent('nclex_practice_primary_cta_clicked')}
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
                 >
-                  Start Free 7-Day Trial
+                  Find My Weak Spots
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a
@@ -116,16 +179,15 @@ export default function NclexPracticePage() {
                   onClick={() => trackEvent('nclex_practice_secondary_cta_clicked')}
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-[#0B2545]/30 text-[#0B2545] rounded-lg text-sm font-semibold hover:border-[#0D8F9C] hover:text-[#0D8F9C] transition-colors"
                 >
-                  See Miss → Map → Fix
+                  See How Forge Works
                 </a>
               </div>
 
               <p className="text-xs text-[#1E2D3D]/50">
-                No credit card required · Create your account first, then start your quiz · Built for ADN, BSN, LPN, and MSN students
+                No credit card required · 7-day free trial · Built for ADN, BSN, LPN, and MSN students
               </p>
             </div>
 
-            {/* Right: Product preview */}
             <div className="order-2 w-full max-w-[480px] mx-auto lg:mx-0">
               <QuizPreviewCard />
             </div>
@@ -137,36 +199,42 @@ export default function NclexPracticePage() {
       <section className="py-10 sm:py-14" aria-label="The problem">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] text-center mb-2">
-            Getting it wrong is not the problem. Not knowing why you picked it is.
+            Most students do not need another pile of questions. They need to know why they keep missing them.
           </h2>
           <p className="text-sm sm:text-base text-[#1E2D3D]/70 text-center mb-8 max-w-xl mx-auto">
-            Most practice tools stop at rationales. ForgeNursing goes one step deeper by mapping the thinking error behind the miss.
+            Reddit is full of nursing students asking the same thing: Am I ready? Why do I overthink? Why do I get stuck between two answers? Forge is built around those questions.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { icon: AlertTriangle, text: 'I narrow it down to two answers and still pick wrong.' },
-              { icon: HelpCircle, text: 'The rationale tells me the answer but not my mistake.' },
-              { icon: FileQuestion, text: 'I keep missing the same kind of question.' },
+              { icon: AlertTriangle, title: 'I get it down to two answers.', text: 'Forge helps identify the clinical judgment move that separates the tempting answer from the safest answer.' },
+              { icon: HelpCircle, title: 'I do not know if I am ready.', text: 'Your Judgment Map shows the reasoning patterns that still need work before exam day.' },
+              { icon: FileQuestion, title: 'I keep overthinking.', text: 'Focused drills help you practice the same weak pattern until the decision feels clearer.' },
             ].map((card, i) => (
               <div
                 key={i}
-                className="bg-white border border-[#DDE5EE] rounded-xl p-5 text-center"
+                className="bg-white border border-[#DDE5EE] rounded-xl p-5"
               >
-                <card.icon className="w-6 h-6 text-[#0D8F9C] mx-auto mb-3" />
-                <p className="text-sm text-[#0B2545] font-medium">{card.text}</p>
+                <card.icon className="w-6 h-6 text-[#0D8F9C] mb-3" />
+                <h3 className="text-sm font-bold text-[#0B2545] mb-2">{card.title}</h3>
+                <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">{card.text}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      <ProductProofSection />
+
       {/* ── Mistake Types Section ── */}
-      <section className="bg-white py-10 sm:py-14" aria-label="Mistake types">
+      <section className="py-10 sm:py-14" aria-label="Mistake types">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] text-center mb-8">
-            What Forge helps you catch
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] text-center mb-3">
+            Forge is not another question bank.
           </h2>
+          <p className="text-sm sm:text-base text-[#1E2D3D]/70 text-center mb-8 max-w-2xl mx-auto">
+            Question banks tell you what the right answer was. Forge helps you understand the reasoning pattern that made the wrong answer feel right.
+          </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
@@ -177,8 +245,8 @@ export default function NclexPracticePage() {
               },
               {
                 icon: HelpCircle,
-                title: 'Communication traps',
-                body: 'When a therapeutic response beats teaching, explaining, reassuring, or giving more information.',
+                title: 'Assessment traps',
+                body: 'When you jump to intervention before collecting the clinical cue that changes what the nurse should do next.',
               },
               {
                 icon: RotateCcw,
@@ -199,20 +267,23 @@ export default function NclexPracticePage() {
       </section>
 
       {/* ── How It Works ── */}
-      <section id="how-it-works" className="py-10 sm:py-14" aria-label="How it works">
+      <section id="how-it-works" className="bg-white py-10 sm:py-14" aria-label="How it works">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] text-center mb-3">
             The ForgeNursing loop
           </h2>
+          <p className="text-sm sm:text-base text-[#1E2D3D]/70 text-center mb-8 max-w-2xl mx-auto">
+            The goal is not endless reps. The goal is to find the pattern costing you points, fix it, and retest it while it is fresh.
+          </p>
 
           <div className="max-w-xl mx-auto space-y-3">
             {[
-              { step: '1', text: 'Miss a question in practice.' },
-              { step: '2', text: 'Map the mistake type.' },
-              { step: '3', text: 'Fix the reasoning move.' },
-              { step: '4', text: 'Retest the same weakness.' },
+              { step: '1', text: 'Take a short diagnostic or focused drill.' },
+              { step: '2', text: 'See the reasoning mistake behind each miss.' },
+              { step: '3', text: 'Review your Judgment Map to find weak patterns.' },
+              { step: '4', text: 'Retest the same weakness until the decision is clearer.' },
             ].map((item) => (
-              <div key={item.step} className="flex items-center gap-4 rounded-xl bg-white border border-[#DDE5EE] p-4">
+              <div key={item.step} className="flex items-center gap-4 rounded-xl bg-[#F7F9FB] border border-[#DDE5EE] p-4">
                 <div className="w-9 h-9 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
                   {item.step}
                 </div>
@@ -226,16 +297,18 @@ export default function NclexPracticePage() {
       </section>
 
       {/* ── Audience / Use-Case ── */}
-      <section className="bg-white py-10 sm:py-14" aria-label="Who this is for">
+      <section className="py-10 sm:py-14" aria-label="Who this is for">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] text-center mb-6">
-            Built for nursing students who need clinical judgment practice
+            Built for students who want confidence before exam day
           </h2>
 
           <div className="flex flex-wrap justify-center gap-2">
             {[
               'Two-right-answer questions',
+              'Readiness confidence',
               'Priority and safety',
+              'Assessment-first reasoning',
               'Delegation',
               'Med-surg',
               'Pharmacology',
@@ -255,13 +328,13 @@ export default function NclexPracticePage() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="py-12 sm:py-16" aria-label="Get started">
+      <section className="bg-white py-12 sm:py-16" aria-label="Get started">
         <div className="max-w-xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2545] mb-3">
-            Stop collecting rationales. Start fixing the mistake.
+            Stop guessing if you are ready.
           </h2>
           <p className="text-sm sm:text-base text-[#1E2D3D]/70 mb-6">
-            Create a free account to start your 7-day trial, then use ForgeNursing with your own notes or a nursing topic. No credit card required.
+            Start with a short drill, see what patterns are costing you points, and practice what actually needs work. No credit card required.
           </p>
           <Link
             href="/signup"
