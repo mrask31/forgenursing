@@ -212,6 +212,7 @@ function normalizeGeneratedQuestion(raw: any, finalCategory: string, forcedMista
 function buildSafeFallbackQuestion(finalCategory: string, forcedMistakeType?: string | null, questionIndex = 0) {
   const forcedParsed = MistakeTypeSchema.safeParse(forcedMistakeType);
   const mistakeType = forcedParsed.success ? forcedParsed.data : fallbackMistakeType(finalCategory);
+  const index = Math.abs(Number(questionIndex) || 0) % 3;
 
   const base = {
     nclex_category: finalCategory,
@@ -226,9 +227,8 @@ function buildSafeFallbackQuestion(finalCategory: string, forcedMistakeType?: st
     one_line_fix: defaultFixInstruction(mistakeType),
   };
 
-  if (mistakeType === 'Assessment-first') {
-    return {
-      ...base,
+  const assessmentFirstQuestions = [
+    {
       question_stem: 'A nurse is caring for a client who reports new shortness of breath while lying in bed. The client is awake and speaking in short phrases. Which action should the nurse take first?',
       options: [
         { label: 'A', text: 'Assess the client’s oxygen saturation and lung sounds.' },
@@ -243,25 +243,102 @@ function buildSafeFallbackQuestion(finalCategory: string, forcedMistakeType?: st
         C: 'Breathing techniques may help, but teaching is not the first priority when the client has a new respiratory change.',
         D: 'Medication review may be relevant later, but it does not address the immediate need to assess breathing status.',
       },
+    },
+    {
+      question_stem: 'A nurse is caring for a postoperative client who reports increasing abdominal pain 2 hours after surgery. The client is pale and restless. Which action should the nurse take first?',
+      options: [
+        { label: 'A', text: 'Check the client’s blood pressure, heart rate, and surgical dressing.' },
+        { label: 'B', text: 'Administer the prescribed opioid pain medication.' },
+        { label: 'C', text: 'Help the client reposition and apply a warm blanket.' },
+        { label: 'D', text: 'Document that the client is having expected postoperative pain.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'Pallor, restlessness, and increasing pain after surgery can signal bleeding or clinical deterioration. The nurse must assess vital signs and the dressing before treating the symptom as routine pain.',
+      rationale_incorrect: {
+        B: 'Pain medication may be appropriate later, but giving it before assessment can mask signs of deterioration.',
+        C: 'Comfort measures do not address the possible urgent postoperative complication.',
+        D: 'Documentation is needed after assessment and intervention, not before determining what is happening.',
+      },
+    },
+    {
+      question_stem: 'A nurse is caring for a client with diabetes who says, “I feel shaky and weird.” The client is alert but diaphoretic. Which action should the nurse take first?',
+      options: [
+        { label: 'A', text: 'Check the client’s capillary blood glucose level.' },
+        { label: 'B', text: 'Give the client a full meal tray.' },
+        { label: 'C', text: 'Notify the provider of possible hypoglycemia.' },
+        { label: 'D', text: 'Review the client’s insulin administration record.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'Shakiness and diaphoresis suggest possible hypoglycemia, but the nurse should confirm the blood glucose before choosing the next intervention. This assessment guides whether rapid carbohydrates or another action is needed.',
+      rationale_incorrect: {
+        B: 'Food may be needed, but the nurse should first confirm the blood glucose and determine urgency.',
+        C: 'The provider may need to be notified if the client does not respond, but immediate bedside assessment comes first.',
+        D: 'Reviewing insulin history is useful later, but it does not address the client’s current symptoms first.',
+      },
+    },
+  ];
+
+  if (mistakeType === 'Assessment-first') {
+    return {
+      ...base,
+      ...assessmentFirstQuestions[index],
     };
   }
 
+  const genericQuestions = [
+    {
+      question_stem: 'A nurse is caring for a client with a new change in condition during a busy shift. Several actions seem appropriate. Which action should the nurse take first?',
+      options: [
+        { label: 'A', text: 'Collect focused assessment data related to the new change.' },
+        { label: 'B', text: 'Document the change in the client’s medical record.' },
+        { label: 'C', text: 'Delegate routine care to assistive personnel.' },
+        { label: 'D', text: 'Review teaching materials with the client and family.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'A new change in condition requires focused assessment before the nurse can choose the safest intervention. Assessment identifies the priority cue and prevents premature action.',
+      rationale_incorrect: {
+        B: 'Documentation is important after assessment and intervention, but it is not the first action for a new change in condition.',
+        C: 'Delegation may help manage workload, but it does not address the client’s new clinical change first.',
+        D: 'Teaching is useful when the client is stable, but a new condition change requires assessment first.',
+      },
+    },
+    {
+      question_stem: 'A nurse receives reports on four clients at the start of shift. Which client should the nurse assess first?',
+      options: [
+        { label: 'A', text: 'A client with pneumonia who is newly confused and has increased work of breathing.' },
+        { label: 'B', text: 'A client with a sprained ankle requesting pain medication.' },
+        { label: 'C', text: 'A client scheduled for discharge who needs medication teaching.' },
+        { label: 'D', text: 'A client with stable hypertension waiting for a routine blood pressure recheck.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'New confusion with increased work of breathing suggests possible hypoxia or deterioration. This client has the most immediate airway/breathing risk and should be assessed first.',
+      rationale_incorrect: {
+        B: 'Pain should be addressed, but it is not more urgent than a possible oxygenation problem.',
+        C: 'Discharge teaching can wait until urgent clinical changes are assessed.',
+        D: 'Routine monitoring for a stable client is not the priority over new respiratory deterioration.',
+      },
+    },
+    {
+      question_stem: 'A nurse is preparing morning care for several clients. Which task is most appropriate for the nurse to delegate to assistive personnel?',
+      options: [
+        { label: 'A', text: 'Obtain a stable client’s routine vital signs.' },
+        { label: 'B', text: 'Teach a client how to use an incentive spirometer.' },
+        { label: 'C', text: 'Assess a client reporting new chest pressure.' },
+        { label: 'D', text: 'Evaluate whether pain medication was effective.' },
+      ],
+      correct_answer: 'A',
+      rationale_correct: 'Obtaining routine vital signs for a stable client is within the role of assistive personnel. Teaching, assessment, and evaluation require nursing judgment and should not be delegated.',
+      rationale_incorrect: {
+        B: 'Teaching requires nursing knowledge and cannot be delegated to assistive personnel.',
+        C: 'New chest pressure requires nursing assessment and possible urgent intervention.',
+        D: 'Evaluation of medication effectiveness is a nursing responsibility.',
+      },
+    },
+  ];
+
   return {
     ...base,
-    question_stem: `A nurse is caring for a client with a new change in condition during a busy shift. Several actions seem appropriate. Which action should the nurse take first?`,
-    options: [
-      { label: 'A', text: 'Collect focused assessment data related to the new change.' },
-      { label: 'B', text: 'Document the change in the client’s medical record.' },
-      { label: 'C', text: 'Delegate routine care to assistive personnel.' },
-      { label: 'D', text: 'Review teaching materials with the client and family.' },
-    ],
-    correct_answer: 'A',
-    rationale_correct: 'A new change in condition requires focused assessment before the nurse can choose the safest intervention. Assessment identifies the priority cue and prevents premature action.',
-    rationale_incorrect: {
-      B: 'Documentation is important after assessment and intervention, but it is not the first action for a new change in condition.',
-      C: 'Delegation may help manage workload, but it does not address the client’s new clinical change first.',
-      D: 'Teaching is useful when the client is stable, but a new condition change requires assessment first.',
-    },
+    ...genericQuestions[index],
   };
 }
 
