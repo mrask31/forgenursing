@@ -64,7 +64,7 @@ export default function ClassForm({ classItem, onSuccess, onCancel }: ClassFormP
           setUserId(user.id)
         }
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         console.warn('[ClassForm] Could not pre-load user session. Server API will validate on submit.', error)
       })
   }, [])
