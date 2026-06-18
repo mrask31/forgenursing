@@ -69,14 +69,37 @@ RATIONALE RULES:
 - rationale_incorrect: For EACH wrong option, 1-2 sentences explaining WHY it is wrong and what misconception it targets.
 
 MICRO-FEEDBACK RULES:
-Students do not want long feedback by default. Generate short, sharp coaching fields that feel like a real NCLEX coach explaining THIS specific question — not generic advice.
+Generate 4 coaching fields that teach THIS SPECIFIC clinical scenario — not the general pattern.
 
-- key_cue: 1 sentence naming the SPECIFIC clinical cue from the scenario that changes what the nurse should do. Reference the actual patient data, symptom, or finding. Example: "Pallor and restlessness after surgery may indicate bleeding or hemodynamic instability."
-- why_correct_short: 1-2 sentences explaining why the correct answer works FOR THIS SCENARIO. Reference the clinical reasoning. Example: "Checking vitals and the surgical site helps identify whether the patient is deteriorating before treating symptoms."
-- why_wrong_short: 1-2 sentences explaining why the most tempting wrong answer pulls students in FOR THIS SCENARIO. Name the reasoning trap. Example: "Treating pain feels helpful, but it addresses the symptom before identifying the underlying cause of the change."
-- one_line_fix: 1 sentence the student can remember as a clinical reasoning rule. Frame it as "Think like a nurse" advice. Example: "Assess first when the cause of a change in condition is unclear."
+CRITICAL RULE: Two different clinical scenarios must NEVER produce similar coaching text. A post-op hemorrhage scenario and a hypoglycemia scenario require completely different explanations in every field.
 
-IMPORTANT: Do NOT use generic language like "The nurse needs one more assessment cue" or "The correct answer gathers the priority data needed to act safely." Every field must reference the SPECIFIC clinical scenario, patient data, or nursing action from this question.
+Fields:
+
+- key_cue (Clinical Cue): Name the SPECIFIC patient findings from YOUR scenario that signal danger. Use the actual vital signs, symptoms, lab values, or assessment data you wrote in the question stem. Do NOT use category-level language.
+  GOOD: "Pallor and restlessness after surgery may indicate bleeding or hemodynamic instability."
+  GOOD: "Shakiness and diaphoresis in a diabetic patient suggest hypoglycemia requiring immediate glucose check."
+  BAD: "The client has a new immediate safety cue that changes the priority."
+  BAD: "There is a change in condition requiring assessment."
+
+- why_correct_short (Clinical Risk + Why Correct): Explain what CLINICAL DANGER the nurse is evaluating in this scenario AND why the correct answer addresses it. Reference the specific pathophysiology or risk.
+  GOOD: "Checking vitals and the surgical site determines whether this patient is hemorrhaging — a life-threatening post-op complication that requires intervention before pain management."
+  GOOD: "Checking blood glucose confirms hypoglycemia, which can progress to seizures or loss of consciousness if untreated."
+  BAD: "This answer addresses the most urgent nursing priority first."
+  BAD: "The correct answer gathers the priority data needed to act safely."
+
+- why_wrong_short (Why The Wrong Answer Was Tempting): Explain why the MOST TEMPTING wrong answer felt like a good choice in THIS scenario. Reference what that specific wrong action does and why it falls short.
+  GOOD: "Administering pain medication feels responsive to the patient's complaint, but it treats the symptom without determining whether the patient is bleeding internally."
+  GOOD: "Offering juice seems reasonable for suspected hypoglycemia, but without confirming the glucose level first, you risk masking a different cause or giving sugar to a hyperglycemic patient."
+  BAD: "The tempting answer helps later, but it does not address the immediate cue."
+  BAD: "The tempting answer jumps to intervention before assessment."
+
+- one_line_fix (Transferable Rule): One sentence clinical reasoning rule the student can apply to SIMILAR scenarios in the future.
+  GOOD: "Assess before intervening when the cause of a post-operative condition change is unclear."
+  GOOD: "Confirm glucose level before treating suspected hypoglycemia — verify before you intervene."
+  BAD: "When two answers sound right, choose the one that handles the most immediate risk first."
+  BAD: "Assessment before intervention."
+
+VALIDATION CHECK: Before outputting, verify that your key_cue and why_correct_short reference SPECIFIC clinical details from your question stem (patient findings, vital signs, lab values, medications, or diagnoses). If they could apply to any question of the same category, rewrite them.
 
 CLINICAL JUDGMENT MISTAKE METADATA:
 - mistake_type: Assign exactly one value from this list:
