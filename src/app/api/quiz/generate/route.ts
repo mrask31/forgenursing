@@ -162,21 +162,46 @@ function defaultWhyCorrectShort(mistakeType: MistakeType): string {
   }
 }
 
+// Patterns that indicate generic/pattern-level output rather than scenario-specific coaching
+const GENERIC_PATTERNS = [
+  'the nurse needs one more assessment cue',
+  'the correct answer gathers the priority data',
+  'the correct answer addresses the most',
+  'this answer addresses the most urgent',
+  'this answer addresses the most important',
+  'the tempting answer helps later',
+  'the tempting answer jumps to intervention',
+  'there is a change in condition',
+  'the client has a new immediate',
+  'assessment before intervention',
+  'when two answers sound right',
+];
+
+function isGenericFeedback(text: string): boolean {
+  const lower = text.toLowerCase();
+  return GENERIC_PATTERNS.some(pattern => lower.includes(pattern));
+}
+
 function normalizeMicroFeedback(questionData: any, mistakeType: string, lockedCategory: string) {
   const resolvedType: MistakeType = MistakeTypeSchema.safeParse(mistakeType).success
     ? mistakeType as MistakeType
     : fallbackMistakeType(lockedCategory);
 
+  // Accept AI output only if non-empty AND not generic pattern-level text
   const keyCue = typeof questionData?.key_cue === 'string' && questionData.key_cue.trim().length > 0
+    && !isGenericFeedback(questionData.key_cue)
     ? questionData.key_cue.trim()
     : defaultKeyCue(resolvedType);
   const whyCorrectShort = typeof questionData?.why_correct_short === 'string' && questionData.why_correct_short.trim().length > 0
+    && !isGenericFeedback(questionData.why_correct_short)
     ? questionData.why_correct_short.trim()
     : defaultWhyCorrectShort(resolvedType);
   const whyWrongShort = typeof questionData?.why_wrong_short === 'string' && questionData.why_wrong_short.trim().length > 0
+    && !isGenericFeedback(questionData.why_wrong_short)
     ? questionData.why_wrong_short.trim()
     : defaultReasoningTrap(resolvedType);
   const oneLineFix = typeof questionData?.one_line_fix === 'string' && questionData.one_line_fix.trim().length > 0
+    && !isGenericFeedback(questionData.one_line_fix)
     ? questionData.one_line_fix.trim()
     : defaultFixInstruction(resolvedType);
 
