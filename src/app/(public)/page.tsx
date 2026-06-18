@@ -181,7 +181,74 @@ export default function HomePage() {
       {/* Section 4: How Forge teaches clinical reasoning */}
       <HowItClicks />
 
-      {/* Section 5: Pricing */}
+      {/* Section 5: Build Confidence Before Exam Day */}
+      <section className="bg-[#F7F9FB] py-14 sm:py-18 md:py-20" aria-labelledby="confidence-heading">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-12">
+            <p className="text-xs font-bold text-[#0D8F9C] uppercase tracking-widest mb-3">
+              Confidence, Not Just Questions
+            </p>
+            <h2 id="confidence-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3">
+              Build Confidence Before Exam Day
+            </h2>
+            <p className="text-base sm:text-lg text-[#1E2D3D]/70 max-w-2xl mx-auto">
+              The goal is not more random questions. The goal is knowing exactly what to improve — and walking into your exam prepared.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="rounded-2xl border border-[#DDE5EE] bg-white p-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-xl bg-[#E0F4F6] flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6 text-[#0D8F9C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-[#0B2545]">Find Weak Patterns</h3>
+              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
+                Forge identifies the clinical judgment patterns behind your missed answers — not just which questions you got wrong.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#DDE5EE] bg-white p-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-xl bg-[#E0F4F6] flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6 text-[#0D8F9C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-[#0B2545]">Practice With Purpose</h3>
+              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
+                Short focused drills target your specific weak patterns — so every question you practice actually moves you forward.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#DDE5EE] bg-white p-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-xl bg-[#E0F4F6] flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6 text-[#0D8F9C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-[#0B2545]">Retest Your Weaknesses</h3>
+              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
+                Forge retests the patterns you missed so you can see real progress — not just more scores to worry about.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#DDE5EE] bg-white p-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-xl bg-[#E0F4F6] flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6 text-[#0D8F9C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-[#0B2545]">Walk Into Exam Day Prepared</h3>
+              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
+                Leave each session knowing what you improved — so you build real confidence, not just hope.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 6: Pricing */}
       <section className="bg-white py-14 sm:py-18 md:py-20" aria-labelledby="pricing-heading">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-12">

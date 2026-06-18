@@ -69,11 +69,14 @@ RATIONALE RULES:
 - rationale_incorrect: For EACH wrong option, 1-2 sentences explaining WHY it is wrong and what misconception it targets.
 
 MICRO-FEEDBACK RULES:
-Students do not want long feedback by default. Generate short, sharp coaching fields:
-- key_cue: 1 short sentence naming the cue the student needed to notice.
-- why_correct_short: 1 short sentence explaining why the correct answer works.
-- why_wrong_short: 1 short sentence explaining why the most tempting wrong answer pulls students in. Do not mention a specific option letter unless necessary.
-- one_line_fix: 1 short coaching sentence the student can remember next time.
+Students do not want long feedback by default. Generate short, sharp coaching fields that feel like a real NCLEX coach explaining THIS specific question — not generic advice.
+
+- key_cue: 1 sentence naming the SPECIFIC clinical cue from the scenario that changes what the nurse should do. Reference the actual patient data, symptom, or finding. Example: "Pallor and restlessness after surgery may indicate bleeding or hemodynamic instability."
+- why_correct_short: 1-2 sentences explaining why the correct answer works FOR THIS SCENARIO. Reference the clinical reasoning. Example: "Checking vitals and the surgical site helps identify whether the patient is deteriorating before treating symptoms."
+- why_wrong_short: 1-2 sentences explaining why the most tempting wrong answer pulls students in FOR THIS SCENARIO. Name the reasoning trap. Example: "Treating pain feels helpful, but it addresses the symptom before identifying the underlying cause of the change."
+- one_line_fix: 1 sentence the student can remember as a clinical reasoning rule. Frame it as "Think like a nurse" advice. Example: "Assess first when the cause of a change in condition is unclear."
+
+IMPORTANT: Do NOT use generic language like "The nurse needs one more assessment cue" or "The correct answer gathers the priority data needed to act safely." Every field must reference the SPECIFIC clinical scenario, patient data, or nursing action from this question.
 
 CLINICAL JUDGMENT MISTAKE METADATA:
 - mistake_type: Assign exactly one value from this list:
@@ -133,10 +136,10 @@ const OUTPUT_FORMAT = `Respond with ONLY valid JSON. No markdown, no explanation
   "reasoning_trap": "The student may focus on a helpful later task instead of the action that protects the client first.",
   "fix_instruction": "When two actions both seem appropriate, choose the one that addresses the most immediate safety or physiologic threat first.",
   "retest_focus": "priority-setting with immediate safety cues",
-  "key_cue": "The client has a new immediate safety cue that changes the priority.",
-  "why_correct_short": "This answer addresses the most urgent nursing priority first.",
-  "why_wrong_short": "The tempting answer helps later, but it does not address the immediate cue.",
-  "one_line_fix": "When two answers sound right, choose the one that handles the most immediate risk first."
+  "key_cue": "A new onset of chest pain with diaphoresis in a post-op patient suggests a cardiac event requiring immediate assessment.",
+  "why_correct_short": "Obtaining vitals and a 12-lead ECG confirms whether the patient is having an MI, which changes the entire plan of care.",
+  "why_wrong_short": "Administering the PRN pain medication feels responsive, but it treats the symptom before ruling out a life-threatening cause.",
+  "one_line_fix": "When a post-op patient develops new cardiopulmonary symptoms, assess and rule out emergencies before treating comfort."
 }`;
 
 export function buildQuizPrompt(

@@ -116,19 +116,69 @@ function normalizeMistakeMetadata(questionData: any, lockedCategory: string, for
   };
 }
 
+function defaultKeyCue(mistakeType: MistakeType): string {
+  switch (mistakeType) {
+    case 'Priority-setting':
+      return 'Look for the cue that tells you which problem needs attention right now, not later.';
+    case 'Safety':
+      return 'Identify the finding that puts the patient at immediate risk of harm.';
+    case 'Assessment-first':
+      return 'Notice when a change in condition has an unclear cause — that signals you need more data before acting.';
+    case 'Therapeutic communication':
+      return 'Recognize when the patient is expressing an emotion or concern that needs acknowledgment first.';
+    case 'Delegation':
+      return 'Identify the task complexity and patient stability cues that determine who can safely perform the action.';
+    case 'Medication reasoning':
+      return 'Find the medication-related cue — a lab value, symptom, or timing detail — that changes what the nurse should do.';
+    case 'Lab / diagnostic interpretation':
+      return 'Spot the abnormal value or diagnostic finding that shifts the clinical priority.';
+    case 'Patient education':
+      return 'Identify what the patient must understand to stay safe after discharge or during self-care.';
+    default:
+      return 'Find the clinical detail in the scenario that changes the nursing priority.';
+  }
+}
+
+function defaultWhyCorrectShort(mistakeType: MistakeType): string {
+  switch (mistakeType) {
+    case 'Priority-setting':
+      return 'This answer addresses the most time-sensitive or life-threatening concern before handling secondary needs.';
+    case 'Safety':
+      return 'This answer removes or reduces the immediate threat to patient safety before other interventions.';
+    case 'Assessment-first':
+      return 'This answer gathers the critical data needed to determine the right intervention, preventing a wrong or premature action.';
+    case 'Therapeutic communication':
+      return 'This answer acknowledges the patient\'s feelings first, which builds trust and opens the door to effective teaching.';
+    case 'Delegation':
+      return 'This answer matches the task to the right team member based on scope of practice and patient stability.';
+    case 'Medication reasoning':
+      return 'This answer responds to the medication-safety cue correctly — whether holding, administering, or reassessing based on the data.';
+    case 'Lab / diagnostic interpretation':
+      return 'This answer connects the abnormal finding to the clinical action that prevents deterioration.';
+    case 'Patient education':
+      return 'This answer teaches the behavior that keeps the patient safest in their specific situation.';
+    default:
+      return 'This answer applies the correct clinical reasoning to the specific scenario presented.';
+  }
+}
+
 function normalizeMicroFeedback(questionData: any, mistakeType: string, lockedCategory: string) {
+  const resolvedType: MistakeType = MistakeTypeSchema.safeParse(mistakeType).success
+    ? mistakeType as MistakeType
+    : fallbackMistakeType(lockedCategory);
+
   const keyCue = typeof questionData?.key_cue === 'string' && questionData.key_cue.trim().length > 0
     ? questionData.key_cue.trim()
-    : 'Find the clinical cue that changes what the nurse should do first.';
+    : defaultKeyCue(resolvedType);
   const whyCorrectShort = typeof questionData?.why_correct_short === 'string' && questionData.why_correct_short.trim().length > 0
     ? questionData.why_correct_short.trim()
-    : 'The correct answer addresses the most important clinical cue in the question.';
+    : defaultWhyCorrectShort(resolvedType);
   const whyWrongShort = typeof questionData?.why_wrong_short === 'string' && questionData.why_wrong_short.trim().length > 0
     ? questionData.why_wrong_short.trim()
-    : defaultReasoningTrap(MistakeTypeSchema.safeParse(mistakeType).success ? mistakeType as MistakeType : fallbackMistakeType(lockedCategory));
+    : defaultReasoningTrap(resolvedType);
   const oneLineFix = typeof questionData?.one_line_fix === 'string' && questionData.one_line_fix.trim().length > 0
     ? questionData.one_line_fix.trim()
-    : defaultFixInstruction(MistakeTypeSchema.safeParse(mistakeType).success ? mistakeType as MistakeType : fallbackMistakeType(lockedCategory));
+    : defaultFixInstruction(resolvedType);
 
   return {
     key_cue: keyCue,
