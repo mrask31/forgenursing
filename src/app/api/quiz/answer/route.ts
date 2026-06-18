@@ -50,6 +50,14 @@ export async function POST(req: NextRequest) {
       one_line_fix: question.one_line_fix,
     };
 
+    console.log('[Quiz Answer] ANSWER_ROUTE_MICRO_FEEDBACK', JSON.stringify({
+      question_id: questionId,
+      key_cue: question.key_cue,
+      why_correct_short: question.why_correct_short,
+      why_wrong_short: question.why_wrong_short,
+      one_line_fix: question.one_line_fix,
+    }));
+
     if (question.answered_at) {
       return NextResponse.json({
         ...baseResult,

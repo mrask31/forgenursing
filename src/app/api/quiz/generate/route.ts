@@ -636,6 +636,16 @@ export async function POST(req: NextRequest) {
         if (!isTargetedDrill && lockedCategory) {
           questionData.nclex_category = lockedCategory;
         }
+
+        // LOG STEP 1: Raw AI output after Zod parse
+        console.log('[Quiz Generate] RAW_AI_MICRO_FEEDBACK', JSON.stringify({
+          key_cue: questionData.key_cue ?? '(undefined after zod parse)',
+          why_correct_short: questionData.why_correct_short ?? '(undefined after zod parse)',
+          why_wrong_short: questionData.why_wrong_short ?? '(undefined after zod parse)',
+          one_line_fix: questionData.one_line_fix ?? '(undefined after zod parse)',
+          question_stem_preview: questionData.question_stem?.slice(0, 60),
+        }));
+
         break;
       } catch (parseError) {
         retries++;
@@ -681,6 +691,15 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({ error: 'Failed to save question' }, { status: 500 });
     }
+
+    // LOG STEP 3: What DB returned after insert (what client will see)
+    console.log('[Quiz Generate] DB_INSERT_MICRO_FEEDBACK', JSON.stringify({
+      question_id: question?.id,
+      key_cue: question?.key_cue,
+      why_correct_short: question?.why_correct_short,
+      why_wrong_short: question?.why_wrong_short,
+      one_line_fix: question?.one_line_fix,
+    }));
 
     return NextResponse.json({ question });
   } catch (error: any) {
