@@ -163,29 +163,42 @@ function defaultWhyCorrectShort(mistakeType: MistakeType): string {
 }
 
 // Patterns that indicate generic/pattern-level output rather than scenario-specific coaching
+// These must be FULL phrase matches that are unambiguously generic
 const GENERIC_PATTERNS = [
   'the nurse needs one more assessment cue',
-  'the correct answer gathers the priority data',
-  'the correct answer addresses the most',
-  'this answer addresses the most urgent',
-  'this answer addresses the most important',
-  'the tempting answer helps later',
-  'the tempting answer jumps to intervention',
-  'there is a change in condition',
-  'the client has a new immediate',
-  'assessment before intervention',
-  'when two answers sound right',
+  'the correct answer gathers the priority data needed to act safely',
+  'the correct answer addresses the most important clinical cue in the question',
+  'the tempting answer helps later, but it does not address the immediate cue',
+  'the tempting answer jumps to intervention before gathering the assessment data',
+  'there is a change in condition requiring assessment',
+  'the client has a new immediate safety cue that changes the priority',
+  'find the clinical cue that changes what the nurse should do first',
+  'when two answers sound right, choose the one that handles the most immediate risk first',
 ];
 
 function isGenericFeedback(text: string): boolean {
-  const lower = text.toLowerCase();
-  return GENERIC_PATTERNS.some(pattern => lower.includes(pattern));
+  const lower = text.toLowerCase().trim();
+  // Only reject if the ENTIRE text is essentially one of these generic phrases
+  // (allow up to 10 extra chars for punctuation/minor variation)
+  return GENERIC_PATTERNS.some(pattern => {
+    const patternLower = pattern.toLowerCase();
+    return lower === patternLower || 
+      (lower.includes(patternLower) && lower.length <= patternLower.length + 10);
+  });
 }
 
 function normalizeMicroFeedback(questionData: any, mistakeType: string, lockedCategory: string) {
   const resolvedType: MistakeType = MistakeTypeSchema.safeParse(mistakeType).success
     ? mistakeType as MistakeType
     : fallbackMistakeType(lockedCategory);
+
+  // Log raw AI output for debugging explanation quality
+  console.log('[Quiz Generate] Raw micro-feedback from AI:', JSON.stringify({
+    key_cue: questionData?.key_cue ?? '(missing)',
+    why_correct_short: questionData?.why_correct_short ?? '(missing)',
+    why_wrong_short: questionData?.why_wrong_short ?? '(missing)',
+    one_line_fix: questionData?.one_line_fix ?? '(missing)',
+  }));
 
   // Accept AI output only if non-empty AND not generic pattern-level text
   const keyCue = typeof questionData?.key_cue === 'string' && questionData.key_cue.trim().length > 0
@@ -204,6 +217,19 @@ function normalizeMicroFeedback(questionData: any, mistakeType: string, lockedCa
     && !isGenericFeedback(questionData.one_line_fix)
     ? questionData.one_line_fix.trim()
     : defaultFixInstruction(resolvedType);
+
+  const usedFallback = {
+    key_cue: keyCue === defaultKeyCue(resolvedType),
+    why_correct_short: whyCorrectShort === defaultWhyCorrectShort(resolvedType),
+    why_wrong_short: whyWrongShort === defaultReasoningTrap(resolvedType),
+    one_line_fix: oneLineFix === defaultFixInstruction(resolvedType),
+  };
+
+  if (Object.values(usedFallback).some(v => v)) {
+    console.warn('[Quiz Generate] Fallback used for micro-feedback:', usedFallback, 'mistakeType:', resolvedType);
+  }
+
+  console.log('[Quiz Generate] Final micro-feedback:', JSON.stringify({ key_cue: keyCue, why_correct_short: whyCorrectShort, why_wrong_short: whyWrongShort, one_line_fix: oneLineFix }));
 
   return {
     key_cue: keyCue,
