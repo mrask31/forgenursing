@@ -61,6 +61,27 @@ export default function ClinicalJudgmentMapPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    try {
+      const posthog = require('posthog-js').default
+      posthog.capture('readiness_map_opened')
+    } catch {}
+
+    const handleBeforeUnload = () => {
+      try {
+        const posthog = require('posthog-js').default
+        posthog.capture('readiness_map_abandoned', {
+          had_data: !!data,
+          time_on_page_ms: Date.now() - pageLoadTime,
+        })
+      } catch {}
+    }
+
+    const pageLoadTime = Date.now()
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
+
+  useEffect(() => {
     const loadMap = async () => {
       setLoading(true)
       setError(null)
@@ -72,14 +93,14 @@ export default function ClinicalJudgmentMapPage() {
 
         if (!response.ok) {
           const body = await response.json().catch(() => ({}))
-          throw new Error(body.error || 'Failed to load your Judgment Map')
+          throw new Error(body.error || 'Failed to load your Readiness Map')
         }
 
         const map = await response.json()
         setData(map)
       } catch (err: any) {
         console.error('[JudgmentMap] load error:', err)
-        setError(err.message || 'Failed to load your Judgment Map')
+        setError(err.message || 'Failed to load your Readiness Map')
       } finally {
         setLoading(false)
       }
@@ -127,14 +148,14 @@ export default function ClinicalJudgmentMapPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E0F4F6] border border-[#0D8F9C]/20">
             <Brain className="w-4 h-4" style={{ color: '#0D8F9C' }} />
             <span className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0B2545' }}>
-              Clinical Judgment Map
+              Your Readiness Map
             </span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: '#0B2545' }}>
-            Forge is learning how you answer.
+            Know what to improve before exam day.
           </h1>
           <p className="text-base text-slate-600 max-w-2xl">
-            Every missed question helps Forge find the clinical judgment patterns to train next.
+            Forge tracks your weak patterns so you can practice with purpose — not just do more random questions.
           </p>
         </header>
 
@@ -183,7 +204,7 @@ export default function ClinicalJudgmentMapPage() {
         <section className="rounded-2xl bg-[#0B2545] p-5 sm:p-6 text-white shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-center">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-white/50 mb-2">Today’s next focus</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-white/50 mb-2">Suggested focus</p>
               <h2 className="text-2xl font-bold mb-2 text-white">{data.recommendation.title}</h2>
               <p className="text-sm text-white/75 leading-relaxed max-w-2xl">
                 {data.recommendation.message}
@@ -196,7 +217,7 @@ export default function ClinicalJudgmentMapPage() {
               onClick={() => router.push('/quiz')}
               className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-[#0B2545] text-sm font-bold hover:bg-slate-100 transition-colors"
             >
-              {data.summary.enough_data ? 'Practice Next Focus' : 'Start Building Map'}
+              {data.summary.enough_data ? 'Practice This Focus' : 'Start Building Confidence'}
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -224,18 +245,18 @@ export default function ClinicalJudgmentMapPage() {
         {hasAnyData && (
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <PatternCard
-              label="Next growth pattern"
+              label="Area to strengthen"
               icon={<Target className="w-5 h-5 text-white" />}
               title={data.top_weakness?.mistake_type || 'Keep practicing'}
               stat={data.top_weakness ? trendLabel(data.top_weakness.trend) : 'Building'}
-              body={data.top_weakness?.explanation || 'Forge will identify your next growth pattern as you answer more questions.'}
+              body={data.top_weakness?.explanation || 'Forge will identify your next area to strengthen as you answer more questions.'}
             />
             <PatternCard
-              label="Strongest pattern"
+              label="Strong area"
               icon={<BarChart3 className="w-5 h-5 text-white" />}
               title={data.strongest_area?.mistake_type || 'Building'}
               stat={data.strongest_area ? trendLabel(data.strongest_area.trend) : 'Building'}
-              body={data.strongest_area?.explanation || 'Your strongest pattern will appear after a few more questions.'}
+              body={data.strongest_area?.explanation || 'Your strong areas will appear after a few more questions.'}
             />
           </section>
         )}
@@ -243,9 +264,9 @@ export default function ClinicalJudgmentMapPage() {
         {topRows.length > 0 && (
           <section className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-5 sm:p-6 border-b border-slate-100">
-              <h2 className="text-xl font-bold" style={{ color: '#0B2545' }}>Patterns to Train</h2>
+              <h2 className="text-xl font-bold" style={{ color: '#0B2545' }}>Areas To Strengthen</h2>
               <p className="text-sm text-slate-500 mt-1">
-                These are the clinical judgment patterns Forge is tracking from your answers.
+                These are the clinical judgment patterns Forge suggests you focus on next.
               </p>
             </div>
             <div className="divide-y divide-slate-100">

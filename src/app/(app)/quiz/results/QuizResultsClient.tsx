@@ -260,7 +260,7 @@ export default function QuizResultsClient() {
               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>Pattern trained</p>
               <p className="text-3xl font-bold" style={{ color: '#0B2545' }}>{targetPattern || 'Clinical judgment'}</p>
               <p className="text-sm text-gray-600">
-                You completed {total} focused question{total === 1 ? '' : 's'} and gave Forge more signal for your Judgment Map.
+                You completed {total} focused question{total === 1 ? '' : 's'} and gave Forge more signal for your Readiness Map.
               </p>
             </>
           ) : isDiagnostic ? (
@@ -285,26 +285,62 @@ export default function QuizResultsClient() {
           </p>
         </div>
 
+        <div className="rounded-xl border border-[#0D8F9C]/20 bg-[#E0F4F6]/30 p-4 space-y-2">
+          <p className="text-sm font-semibold" style={{ color: '#0B2545' }}>
+            Forge is helping identify the patterns that may be costing you points.
+          </p>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            The goal is not more questions. The goal is understanding what to improve before exam day.
+          </p>
+        </div>
+
         <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 space-y-3">
           <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
             What Forge learned
           </p>
           <p className="text-sm text-gray-700 leading-relaxed">
             {isTargetedDrill
-              ? `This drill trained ${targetPattern || 'your next focus'} and updated your Clinical Judgment Map.`
+              ? `This drill trained ${targetPattern || 'your next focus'} and updated your Readiness Map.`
               : isDiagnostic
-                ? 'This diagnostic started your Clinical Judgment Map. Forge will use your answers to recommend what to train next.'
-                : 'This quiz updated your Clinical Judgment Map. Forge uses each answer to learn what pattern to train next.'}
+                ? 'This diagnostic started your Readiness Map. Forge will use your answers to recommend what to practice next.'
+                : 'This quiz updated your Readiness Map. Forge uses each answer to find your weak patterns.'}
           </p>
-          <button onClick={() => router.push('/readiness')} className="w-full rounded-lg text-white font-semibold text-sm" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
-            View Judgment Map →
+          {topMistake && (
+            <div className="rounded-lg bg-white border border-[#DDE5EE] p-3 space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
+                Forge detected a pattern
+              </p>
+              <p className="text-base font-bold" style={{ color: '#0B2545' }}>{topMistake.mistakeType}</p>
+              <p className="text-xs text-gray-500">
+                This pattern may be costing you points on NCLEX questions.
+              </p>
+            </div>
+          )}
+          <button
+            onClick={() => {
+              try {
+                const posthog = require('posthog-js').default
+                posthog.capture('readiness_map_cta_clicked', {
+                  session_id: sessionId,
+                  source: 'quiz_results',
+                  top_mistake_type: topMistake?.mistakeType || null,
+                  is_targeted_drill: isTargetedDrill,
+                  is_diagnostic: isDiagnostic,
+                })
+              } catch {}
+              router.push('/readiness')
+            }}
+            className="w-full rounded-lg text-white font-semibold text-sm"
+            style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
+          >
+            {topMistake ? 'See What\'s Costing You Points →' : 'See What To Practice Next →'}
           </button>
         </div>
 
         {topMistake && (
           <div className="rounded-xl p-5 text-white space-y-3" style={{ backgroundColor: '#0B2545' }}>
             <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
-              {isDiagnostic ? 'First pattern Forge noticed' : 'Your Clinical Judgment Pattern'}
+              {isDiagnostic ? 'First pattern Forge noticed' : 'Your Weak Pattern'}
             </p>
             <div>
               <p className="text-sm text-white/70">Pattern to keep training</p>
@@ -314,7 +350,7 @@ export default function QuizResultsClient() {
               {patternExplanation(topMistake.mistakeType)}
             </p>
             <p className="text-xs text-white/50">
-              {topMistake.missed} answer{topMistake.missed === 1 ? '' : 's'} gave Forge more signal for this pattern.
+              {topMistake.missed} answer{topMistake.missed === 1 ? '' : 's'} showed this pattern. See where it appears on your Readiness Map.
             </p>
           </div>
         )}

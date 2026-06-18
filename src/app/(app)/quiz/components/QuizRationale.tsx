@@ -268,7 +268,7 @@ export default function QuizRationale({
         </p>
         {keyCue && (
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">Key cue</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">Key clinical cue</p>
             <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>{keyCue}</p>
           </div>
         )}
@@ -290,7 +290,7 @@ export default function QuizRationale({
         )}
         {oneLineFix && (
           <div className="rounded-lg bg-[#F7F9FB] border border-[#DDE5EE] p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">Remember this</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">Think like a nurse</p>
             <p className="text-sm font-medium leading-relaxed" style={{ color: '#0B2545' }}>{oneLineFix}</p>
           </div>
         )}
