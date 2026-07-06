@@ -6,9 +6,19 @@
 -- Safe to run multiple times — uses ON CONFLICT DO NOTHING via unique constraint.
 -- ============================================================================
 
--- Add unique constraint on question_stem to prevent duplicates on re-run
-ALTER TABLE public.answer_trap_questions
-  ADD CONSTRAINT uq_answer_trap_questions_stem UNIQUE (question_stem);
+-- Add unique constraint on question_stem to prevent duplicates on re-run (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'uq_answer_trap_questions_stem'
+      AND conrelid = 'public.answer_trap_questions'::regclass
+  ) THEN
+    ALTER TABLE public.answer_trap_questions
+      ADD CONSTRAINT uq_answer_trap_questions_stem UNIQUE (question_stem);
+  END IF;
+END $$;
 
 -- ============================================================================
 -- Assessment Trap (Assessment-first)
