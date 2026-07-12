@@ -167,11 +167,11 @@ export default function NclexPracticePage() {
 
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
                 <Link
-                  href="/signup"
+                  href="/answer-trap-check?ref=nclex_practice"
                   onClick={() => trackEvent('nclex_practice_primary_cta_clicked')}
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0a7d88] transition-colors shadow-sm"
                 >
-                  Find My Weak Spots
+                  Find My Answer Trap
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a

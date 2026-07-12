@@ -10,8 +10,7 @@ interface HeroProps {
 
 function startHref(user: any, betaFull: boolean) {
   if (user) return '/quiz'
-  if (betaFull) return '/signup'
-  return '/signup?plan=monthly'
+  return '/answer-trap-check?ref=homepage'
 }
 
 function ClinicalJudgmentMapMockup() {
@@ -134,7 +133,7 @@ export default function Hero({ user, betaFull = false }: HeroProps) {
                 href={href}
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-7 py-3.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#0a7d88]"
               >
-                {user ? 'Start Practice' : 'Start Free Practice'}
+                {user ? 'Start Practice' : 'Find My Answer Trap'}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
@@ -147,9 +146,9 @@ export default function Hero({ user, betaFull = false }: HeroProps) {
             </div>
 
             <div className="mt-6 flex flex-col gap-2 text-sm text-[#1E2D3D]/60 sm:flex-row sm:items-center sm:gap-4">
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#0D8F9C]" />7-day free trial</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#0D8F9C]" />No credit card required</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#0D8F9C]" />100+ NCLEX-style questions completed</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#0D8F9C]" />3 questions, free</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#0D8F9C]" />No account required</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#0D8F9C]" />Find your reasoning pattern</span>
             </div>
 
             <div className="mt-10 rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-5">

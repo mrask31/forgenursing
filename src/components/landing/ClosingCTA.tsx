@@ -8,7 +8,7 @@ interface ClosingCTAProps {
 }
 
 export default function ClosingCTA({ betaFull = false }: ClosingCTAProps) {
-  const href = betaFull ? '/signup' : '/signup?plan=monthly'
+  const href = '/answer-trap-check?ref=closing_cta'
 
   return (
     <section className="bg-white py-12 sm:py-16" aria-labelledby="cta-heading">
@@ -59,7 +59,7 @@ export default function ClosingCTA({ betaFull = false }: ClosingCTAProps) {
                 href={href}
                 className="inline-flex min-h-[54px] items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-8 py-4 text-base font-bold text-white shadow-sm transition-colors hover:bg-[#0a7d88]"
               >
-                Start Free Trial
+                Find My Answer Trap
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <a
