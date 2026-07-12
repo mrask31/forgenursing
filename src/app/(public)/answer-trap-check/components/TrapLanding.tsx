@@ -14,7 +14,7 @@ export default function TrapLanding({ onStart, loading }: TrapLandingProps) {
         {/* Brand */}
         <div className="space-y-2">
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#0D8F9C' }}>
-            DownToTwo by ForgeNursing
+            Down To Two by ForgeNursing
           </p>
           <p className="text-[10px] uppercase tracking-wide text-slate-400">
             The NCLEX Decision Trainer
@@ -27,10 +27,10 @@ export default function TrapLanding({ onStart, loading }: TrapLandingProps) {
             Still getting NCLEX questions down to two answers… and picking the wrong one?
           </h1>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-md mx-auto">
-            It's not a knowledge problem. It's a pattern.
+            It might not be a knowledge problem. It might be a pattern.
           </p>
           <p className="text-sm text-slate-500 leading-relaxed max-w-md mx-auto">
-            Answer 3 quick NCLEX-style questions. DownToTwo will find the first signal of your Answer Trap — the reasoning pattern behind the miss.
+            Answer 3 quick NCLEX-style questions. Down To Two will find the first signal of your Answer Trap — the reasoning pattern behind the miss.
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export default function TrapLanding({ onStart, loading }: TrapLandingProps) {
         </div>
 
         {/* Disclaimer */}
-        <p className="text-[10px] text-slate-300 max-w-sm mx-auto leading-relaxed">
+        <p className="text-[10px] text-slate-500 max-w-sm mx-auto leading-relaxed">
           This is a study tool for practice only. Results do not predict NCLEX outcomes or exam readiness.
         </p>
       </div>

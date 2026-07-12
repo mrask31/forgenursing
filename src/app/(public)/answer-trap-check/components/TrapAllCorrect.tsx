@@ -67,7 +67,7 @@ export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectPr
         {/* Brand */}
         <div className="text-center">
           <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#0D8F9C' }}>
-            DownToTwo by ForgeNursing
+            Down To Two by ForgeNursing
           </p>
         </div>
 
@@ -142,7 +142,7 @@ export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectPr
         </div>
 
         {/* Disclaimer */}
-        <p className="text-[10px] text-center text-slate-300 leading-relaxed max-w-sm mx-auto">
+        <p className="text-[10px] text-center text-slate-500 leading-relaxed max-w-sm mx-auto">
           This is a short check for study purposes only. Results do not predict NCLEX outcomes or exam readiness.
         </p>
       </div>

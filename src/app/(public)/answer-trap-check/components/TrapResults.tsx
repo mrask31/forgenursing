@@ -77,7 +77,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
         {/* Brand */}
         <div className="text-center">
           <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#0D8F9C' }}>
-            DownToTwo by ForgeNursing
+            Down To Two by ForgeNursing
           </p>
         </div>
 
@@ -153,7 +153,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
               Save your Answer Trap Map and practice with focused drills.
             </p>
             <p className="text-sm text-white/70 leading-relaxed">
-              Create a free account to save this result. Forge will help you train the {result.detected_trap_display} pattern until it stops costing you points.
+              Create a free account to save this result. ForgeNursing will help you keep practicing the {result.detected_trap_display} pattern with focused drills.
             </p>
           </div>
           <button
@@ -167,7 +167,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
         </div>
 
         {/* Disclaimer */}
-        <p className="text-[10px] text-center text-slate-300 leading-relaxed max-w-sm mx-auto">
+        <p className="text-[10px] text-center text-slate-500 leading-relaxed max-w-sm mx-auto">
           This is a first signal from 3 questions — not a definitive assessment. More practice gives Forge a clearer picture of your patterns. Results do not predict NCLEX outcomes.
         </p>
       </div>
