@@ -150,10 +150,10 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
               Keep training this pattern
             </p>
             <p className="text-base font-bold text-white">
-              Save your Answer Trap Map and practice with focused drills.
+              Create a free account to keep practicing this pattern with focused drills.
             </p>
             <p className="text-sm text-white/70 leading-relaxed">
-              Create a free account to save this result. ForgeNursing will help you keep practicing the {result.detected_trap_display} pattern with focused drills.
+              ForgeNursing uses focused drills and mistake-type feedback to help you train the {result.detected_trap_display} pattern until it clicks.
             </p>
           </div>
           <button
