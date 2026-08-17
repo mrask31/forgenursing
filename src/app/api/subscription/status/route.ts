@@ -13,10 +13,23 @@ function getStripeClient(): Stripe | null {
 
 export const dynamic = 'force-dynamic'
 
-/**
- * GET /api/subscription/status
- * Server-authoritative subscription/access status.
- */
+async function fetchProfileWithOptionalTier(supabase: any, userId: string) {
+  const fullSelect = 'subscription_status, stripe_subscription_id, trial_ends_at, is_beta, beta_expires_at, stripe_customer_id, program_level, quiz_first_enabled, default_entry_path, tier_type'
+  const fallbackSelect = 'subscription_status, stripe_subscription_id, trial_ends_at, is_beta, beta_expires_at, stripe_customer_id, program_level, quiz_first_enabled, default_entry_path'
+
+  const result = await supabase.from('profiles').select(fullSelect).eq('id', userId).single()
+  if (!result.error) return result
+
+  if (result.error.message?.toLowerCase().includes('tier_type')) {
+    const fallback = await supabase.from('profiles').select(fallbackSelect).eq('id', userId).single()
+    return fallback.error
+      ? fallback
+      : { data: { ...fallback.data, tier_type: null }, error: null }
+  }
+
+  return result
+}
+
 export async function GET(req: Request) {
   try {
     const supabase = createSupabaseServerClient()
@@ -33,15 +46,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
     }
 
-    const admin = serviceRoleKey
-      ? createClient(supabaseUrl, serviceRoleKey)
-      : null
-
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('subscription_status, stripe_subscription_id, trial_ends_at, is_beta, beta_expires_at, stripe_customer_id, program_level, quiz_first_enabled, default_entry_path, tier_type')
-      .eq('id', user.id)
-      .single()
+    const admin = serviceRoleKey ? createClient(supabaseUrl, serviceRoleKey) : null
+    const { data: profile, error: profileError } = await fetchProfileWithOptionalTier(supabase, user.id)
 
     if (profileError) {
       console.error('[Subscription Status] profile fetch failed, returning nulls', {
@@ -65,14 +71,11 @@ export async function GET(req: Request) {
     let current_period_end: number | null = null
     let cancel_at_period_end: boolean = false
     const stripe_subscription_id = profile?.stripe_subscription_id ?? null
-
     const stripe = getStripeClient()
 
     if (subscriptionStatus && stripe_subscription_id && stripe) {
       try {
-        const sub = await stripe.subscriptions.retrieve(stripe_subscription_id, {
-          expand: [],
-        })
+        const sub = await stripe.subscriptions.retrieve(stripe_subscription_id, { expand: [] })
         trial_end = sub.trial_end ?? null
         current_period_end = (sub as any).current_period_end ?? null
         cancel_at_period_end = sub.cancel_at_period_end ?? false
@@ -86,9 +89,7 @@ export async function GET(req: Request) {
 
     if (!subscriptionStatus && stripe_subscription_id && stripe && admin) {
       try {
-        const sub = await stripe.subscriptions.retrieve(stripe_subscription_id, {
-          expand: [],
-        })
+        const sub = await stripe.subscriptions.retrieve(stripe_subscription_id, { expand: [] })
         const derived =
           sub.status === 'trialing' ? 'trialing' :
           sub.status === 'active' ? 'active' :
@@ -97,19 +98,10 @@ export async function GET(req: Request) {
         current_period_end = (sub as any).current_period_end ?? null
         cancel_at_period_end = sub.cancel_at_period_end ?? false
 
-        const { error: updateErr } = await admin
-          .from('profiles')
-          .update({ subscription_status: derived })
-          .eq('id', user.id)
+        const { error: updateErr } = await admin.from('profiles').update({ subscription_status: derived }).eq('id', user.id)
         if (updateErr) {
-          console.error('[Subscription Status] Non-200: Supabase upsert failed', {
-            error: updateErr.message,
-            userId: user.id,
-          })
-          return NextResponse.json(
-            { error: 'Failed to save subscription status', details: updateErr.message },
-            { status: 500 }
-          )
+          console.error('[Subscription Status] Non-200: Supabase upsert failed', { error: updateErr.message, userId: user.id })
+          return NextResponse.json({ error: 'Failed to save subscription status', details: updateErr.message }, { status: 500 })
         }
         subscriptionStatus = derived
       } catch (e) {
@@ -118,31 +110,21 @@ export async function GET(req: Request) {
           userId: user.id,
           err: e instanceof Error ? e.message : e,
         })
-        return NextResponse.json(
-          { error: 'Could not load subscription from Stripe', details: e instanceof Error ? e.message : 'Unknown' },
-          { status: 502 }
-        )
+        return NextResponse.json({ error: 'Could not load subscription from Stripe', details: e instanceof Error ? e.message : 'Unknown' }, { status: 502 })
       }
     }
 
     const isOneTimeRetakePass =
       subscriptionStatus === 'active' &&
       !stripe_subscription_id &&
-      profile?.tier_type === 'retake'
+      (profile?.tier_type === 'retake' || Boolean(profile?.trial_ends_at))
 
     if (isOneTimeRetakePass && !isTrialActive(profile?.trial_ends_at)) {
       subscriptionStatus = 'expired'
       if (admin) {
-        const { error: expireErr } = await admin
-          .from('profiles')
-          .update({ subscription_status: 'expired' })
-          .eq('id', user.id)
-
+        const { error: expireErr } = await admin.from('profiles').update({ subscription_status: 'expired' }).eq('id', user.id)
         if (expireErr) {
-          console.error('[Subscription Status] Failed to mark one-time retake pass expired', {
-            error: expireErr.message,
-            userId: user.id,
-          })
+          console.error('[Subscription Status] Failed to mark one-time retake pass expired', { error: expireErr.message, userId: user.id })
         }
       }
     }
@@ -180,12 +162,7 @@ export async function GET(req: Request) {
       },
     })
   } catch (err) {
-    console.error('[Subscription Status] Non-200: unexpected error', {
-      err: err instanceof Error ? err.message : err,
-    })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('[Subscription Status] Non-200: unexpected error', { err: err instanceof Error ? err.message : err })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
