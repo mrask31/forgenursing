@@ -9,8 +9,8 @@ export default function QuizProgress({ current, total }: QuizProgressProps) {
   const pct = Math.round((current / total) * 100)
   return (
     <div className="space-y-1">
-      <p className="text-sm font-medium" style={{ color: '#0B2545' }}>
-        Question {current + 1} of {total}
+      <p className="text-sm font-semibold" style={{ color: '#0B2545' }}>
+        Diagnostic question {current + 1} of {total}
       </p>
       <div className="w-full h-2 rounded-full bg-gray-200">
         <div
