@@ -2,11 +2,13 @@
 
 type Plan = 'monthly' | 'semester' | 'annual' | 'retake'
 
+export const RETAKE_90_DAY_PRICE_ID = 'price_1U5TaXANsjwnC4OKNGTQiDoF'
+
 const PRICE_IDS: Record<Plan, string | undefined> = {
   monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY,
   semester: process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMESTER,
   annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL,
-  retake: process.env.NEXT_PUBLIC_STRIPE_PRICE_RETAKE_90_DAY,
+  retake: process.env.NEXT_PUBLIC_STRIPE_PRICE_RETAKE_90_DAY || RETAKE_90_DAY_PRICE_ID,
 }
 
 // Founder / discounted price IDs — server-side only (no NEXT_PUBLIC_ prefix)
@@ -64,7 +66,6 @@ export async function startStripeCheckout(plan: Plan) {
         plan,
         checkout_type: 'standard',
       })
-      // Not logged in – send them to signup, preserving intended plan
       window.location.href = `/signup?plan=${plan}`
       return
     }
