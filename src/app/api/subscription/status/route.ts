@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server'
-import { hasAccess } from '@/lib/subscription-access'
+import { hasAccess, isTrialActive } from '@/lib/subscription-access'
 
 function getStripeClient(): Stripe | null {
   if (!process.env.STRIPE_SECRET_KEY) return null
@@ -16,8 +16,6 @@ export const dynamic = 'force-dynamic'
 /**
  * GET /api/subscription/status
  * Server-authoritative subscription/access status.
- * Prefer this endpoint over client-side supabase.auth.getUser() for guards,
- * because browser auth state can get stale while server cookies are still valid.
  */
 export async function GET(req: Request) {
   try {
@@ -41,7 +39,7 @@ export async function GET(req: Request) {
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('subscription_status, stripe_subscription_id, trial_ends_at, is_beta, beta_expires_at, stripe_customer_id, program_level, quiz_first_enabled, default_entry_path')
+      .select('subscription_status, stripe_subscription_id, trial_ends_at, is_beta, beta_expires_at, stripe_customer_id, program_level, quiz_first_enabled, default_entry_path, tier_type')
       .eq('id', user.id)
       .single()
 
@@ -127,10 +125,35 @@ export async function GET(req: Request) {
       }
     }
 
-    const userHasAccess = hasAccess(subscriptionStatus, profile?.trial_ends_at, profile?.is_beta, profile?.beta_expires_at)
+    const isOneTimeRetakePass =
+      subscriptionStatus === 'active' &&
+      !stripe_subscription_id &&
+      profile?.tier_type === 'retake'
+
+    if (isOneTimeRetakePass && !isTrialActive(profile?.trial_ends_at)) {
+      subscriptionStatus = 'expired'
+      if (admin) {
+        const { error: expireErr } = await admin
+          .from('profiles')
+          .update({ subscription_status: 'expired' })
+          .eq('id', user.id)
+
+        if (expireErr) {
+          console.error('[Subscription Status] Failed to mark one-time retake pass expired', {
+            error: expireErr.message,
+            userId: user.id,
+          })
+        }
+      }
+    }
+
+    const userHasAccess = isOneTimeRetakePass
+      ? subscriptionStatus === 'active' && isTrialActive(profile?.trial_ends_at)
+      : hasAccess(subscriptionStatus, profile?.trial_ends_at, profile?.is_beta, profile?.beta_expires_at)
+
     const trial_end_display =
-      subscriptionStatus === 'trialing' && trial_end
-        ? new Date(trial_end * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      (subscriptionStatus === 'trialing' || isOneTimeRetakePass) && profile?.trial_ends_at
+        ? new Date(profile.trial_ends_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : null
 
     return NextResponse.json({
@@ -153,6 +176,7 @@ export async function GET(req: Request) {
         program_level: profile?.program_level ?? null,
         quiz_first_enabled: profile?.quiz_first_enabled ?? false,
         default_entry_path: profile?.default_entry_path ?? null,
+        tier_type: profile?.tier_type ?? null,
       },
     })
   } catch (err) {
