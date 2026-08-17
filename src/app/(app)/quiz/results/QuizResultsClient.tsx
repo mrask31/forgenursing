@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, ClipboardCheck, FileSearch, Loader2, Map, Target } from 'lucide-react'
+import { ArrowRight, ClipboardCheck, FileSearch, Loader2, Map as MapIcon, Target } from 'lucide-react'
 
 interface QuizQuestion {
   id: string
@@ -152,7 +152,6 @@ export default function QuizResultsClient() {
     )
   }
 
-  const score = session.score ?? questions.filter(q => q.is_correct).length
   const total = questions.length
   const missed = questions.filter(q => !q.is_correct && q.user_answer)
   const correct = questions.filter(q => q.is_correct).length
@@ -259,7 +258,7 @@ export default function QuizResultsClient() {
               onClick={() => router.push('/readiness')}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#0B2545] px-5 py-3 text-sm font-bold text-white"
             >
-              <Map className="h-4 w-4" />
+              <MapIcon className="h-4 w-4" />
               View Mistake Pattern Map
             </button>
           </div>
@@ -355,7 +354,7 @@ export default function QuizResultsClient() {
             onClick={() => router.push('/readiness')}
             className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-[#DDE5EE] bg-white px-4 py-3 text-sm font-bold text-[#0B2545]"
           >
-            <Map className="h-4 w-4" />
+            <MapIcon className="h-4 w-4" />
             Pattern Map
           </button>
           <button
