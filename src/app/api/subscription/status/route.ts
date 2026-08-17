@@ -22,9 +22,7 @@ async function fetchProfileWithOptionalTier(supabase: any, userId: string) {
 
   if (result.error.message?.toLowerCase().includes('tier_type')) {
     const fallback = await supabase.from('profiles').select(fallbackSelect).eq('id', userId).single()
-    return fallback.error
-      ? fallback
-      : { data: { ...fallback.data, tier_type: null }, error: null }
+    return fallback.error ? fallback : { data: { ...fallback.data, tier_type: null }, error: null }
   }
 
   return result
@@ -34,17 +32,11 @@ export async function GET(req: Request) {
   try {
     const supabase = createSupabaseServerClient()
     const { data: { user }, error } = await supabase.auth.getUser()
-    if (error || !user) {
-      console.error('[Subscription Status] Non-200: unauthenticated', { error: error?.message })
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (error || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!supabaseUrl) {
-      console.error('[Subscription Status] Non-200: NEXT_PUBLIC_SUPABASE_URL missing')
-      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
-    }
+    if (!supabaseUrl) return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
 
     const admin = serviceRoleKey ? createClient(supabaseUrl, serviceRoleKey) : null
     const { data: profile, error: profileError } = await fetchProfileWithOptionalTier(supabase, user.id)
@@ -99,33 +91,20 @@ export async function GET(req: Request) {
         cancel_at_period_end = sub.cancel_at_period_end ?? false
 
         const { error: updateErr } = await admin.from('profiles').update({ subscription_status: derived }).eq('id', user.id)
-        if (updateErr) {
-          console.error('[Subscription Status] Non-200: Supabase upsert failed', { error: updateErr.message, userId: user.id })
-          return NextResponse.json({ error: 'Failed to save subscription status', details: updateErr.message }, { status: 500 })
-        }
+        if (updateErr) return NextResponse.json({ error: 'Failed to save subscription status', details: updateErr.message }, { status: 500 })
         subscriptionStatus = derived
       } catch (e) {
-        console.error('[Subscription Status] Non-200: Stripe fetch for missing status failed', {
-          subscriptionId: stripe_subscription_id,
-          userId: user.id,
-          err: e instanceof Error ? e.message : e,
-        })
         return NextResponse.json({ error: 'Could not load subscription from Stripe', details: e instanceof Error ? e.message : 'Unknown' }, { status: 502 })
       }
     }
 
-    const isOneTimeRetakePass =
-      subscriptionStatus === 'active' &&
-      !stripe_subscription_id &&
-      (profile?.tier_type === 'retake' || Boolean(profile?.trial_ends_at))
+    const isOneTimeRetakePass = subscriptionStatus === 'active' && !stripe_subscription_id && profile?.tier_type === 'retake'
 
     if (isOneTimeRetakePass && !isTrialActive(profile?.trial_ends_at)) {
       subscriptionStatus = 'expired'
       if (admin) {
         const { error: expireErr } = await admin.from('profiles').update({ subscription_status: 'expired' }).eq('id', user.id)
-        if (expireErr) {
-          console.error('[Subscription Status] Failed to mark one-time retake pass expired', { error: expireErr.message, userId: user.id })
-        }
+        if (expireErr) console.error('[Subscription Status] Failed to mark one-time retake pass expired', { error: expireErr.message, userId: user.id })
       }
     }
 
