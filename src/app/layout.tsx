@@ -12,8 +12,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ForgeNursing: AI NCLEX Tutor for Nursing Students",
-  description: "AI tutor that helps nursing students practice NCLEX-style clinical reasoning.",
+  title: "ForgeNursing: NCLEX Retake Recovery",
+  description: "ForgeNursing helps NCLEX retakers identify missed-answer patterns and build a focused retake recovery plan.",
 };
 
 export default function RootLayout({
