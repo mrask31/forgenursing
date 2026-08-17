@@ -24,8 +24,7 @@ function BillingSuccessContent() {
           return
         }
         const data = await res.json()
-        const status = data?.status ?? null
-        const shouldPoll = status === 'pending_payment' && Date.now() - start < 20000
+        const shouldPoll = !data?.hasAccess && Date.now() - start < 20000
 
         if (!shouldPoll) {
           try {
@@ -33,11 +32,11 @@ function BillingSuccessContent() {
             if (onboardingRes.ok) {
               const onboardingData = await onboardingRes.json()
               const completed = onboardingData.completed || onboardingData.skipped || false
-              
+
               if (isMounted) {
                 setOnboardingCompleted(completed)
                 setLoading(false)
-                
+
                 if (!completed) {
                   setTimeout(() => {
                     window.location.href = '/onboarding'
@@ -54,7 +53,7 @@ function BillingSuccessContent() {
               }, 1500)
             }
           }
-          
+
           if (isMounted) setLoading(false)
           return
         }
@@ -78,29 +77,29 @@ function BillingSuccessContent() {
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100dvh-4rem)] bg-slate-50 flex items-center justify-center">
+      <div className="min-h-[calc(100dvh-4rem)] bg-[#F7F9FB] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
-          <p className="text-slate-700">Confirming your subscription...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-[#0D8F9C] mx-auto mb-4" />
+          <p className="text-[#1E2D3D]">Confirming your Retake Recovery Pass...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-[calc(100dvh-4rem)] bg-slate-50 flex items-center justify-center px-4">
+    <div className="min-h-[calc(100dvh-4rem)] bg-[#F7F9FB] flex items-center justify-center px-4">
       <div className="max-w-md w-full">
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-lg text-center">
+        <div className="bg-white border border-[#DDE5EE] rounded-2xl p-8 shadow-lg text-center">
           <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          
-          <h1 className="text-2xl font-semibold text-slate-900 mb-3">
-            Welcome to ForgeNursing!
+
+          <h1 className="text-2xl font-bold text-[#0B2545] mb-3">
+            Your 90-Day Retake Recovery Pass is active.
           </h1>
-          
-          <p className="text-slate-600 mb-6 leading-relaxed">
-            Your subscription is active. You have full access to ForgeNursing, including practice quizzes, mistake-type feedback, and the clinical reasoning tutor.
+
+          <p className="text-[#1E2D3D]/70 mb-6 leading-relaxed">
+            You now have access to the retake recovery dashboard, diagnostic sets, Answer Autopsies, the Mistake Pattern Map, and focused Fix Plans.
           </p>
 
           {sessionId && (
@@ -111,25 +110,25 @@ function BillingSuccessContent() {
 
           <div className="space-y-3">
             <Link
-              href={onboardingCompleted ? "/entry" : "/onboarding"}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-base font-medium hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl"
+              href={onboardingCompleted ? '/entry' : '/onboarding'}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#0D8F9C] text-white rounded-xl text-base font-bold hover:bg-[#0a7d88] transition-all shadow-lg hover:shadow-xl"
             >
-              {onboardingCompleted ? "Start Learning" : "Get Started"}
+              {onboardingCompleted ? 'Go to Recovery Dashboard' : 'Finish Setup'}
               <ArrowRight className="w-5 h-5" />
             </Link>
-            
+
             <Link
-              href="/entry"
-              className="block text-sm text-indigo-600 hover:text-indigo-700 transition-colors"
+              href="/quiz"
+              className="block text-sm font-semibold text-[#0D8F9C] hover:text-[#0a7d88] transition-colors"
             >
-              Go to Study Options
+              Start a retake diagnostic
             </Link>
           </div>
 
           <div className="mt-8 pt-6 border-t border-slate-200">
             <p className="text-xs text-slate-500">
               Need help? Contact us at{' '}
-              <a href="mailto:support@forgenursing.com" className="text-indigo-600 hover:underline">
+              <a href="mailto:support@forgenursing.com" className="text-[#0D8F9C] hover:underline">
                 support@forgenursing.com
               </a>
             </p>
@@ -143,10 +142,10 @@ function BillingSuccessContent() {
 export default function BillingSuccessPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-[calc(100dvh-4rem)] bg-slate-50 flex items-center justify-center">
+      <div className="min-h-[calc(100dvh-4rem)] bg-[#F7F9FB] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
-          <p className="text-slate-700">Loading...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-[#0D8F9C] mx-auto mb-4" />
+          <p className="text-[#1E2D3D]">Loading...</p>
         </div>
       </div>
     }>
