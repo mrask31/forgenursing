@@ -11,16 +11,40 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${baseUrl}/nclex-practice`,
+      url: `${baseUrl}/retake-recovery-check`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.95,
     },
     {
+      url: `${baseUrl}/how-it-works`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/pricing`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/nclex-practice`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/answer-trap-check`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.9,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/failed-nclex-what-to-do-next`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.85,
     },
     {
       url: `${baseUrl}/why-do-i-get-nclex-questions-down-to-two-answers`,
@@ -32,7 +56,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/nclex-answer-traps`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.85,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/nclex-priority-vs-assessment`,
@@ -42,12 +66,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/nclex-delegation-questions`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/failed-nclex-what-to-do-next`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
