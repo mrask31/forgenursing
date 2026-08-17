@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Check, CheckCircle2, Loader2, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Check, CheckCircle2, Loader2, ShieldCheck, Target } from 'lucide-react'
 
 type Plan = 'retake'
 
