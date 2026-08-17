@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { startStripeCheckout } from '@/lib/stripeClient'
-import { ArrowRight, Check, CheckCircle, Loader2 } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Loader2, ShieldCheck } from 'lucide-react'
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -16,13 +16,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
   })
 }
 
-type Plan = 'monthly' | 'annual'
-
 function CheckoutContent() {
-  const searchParams = useSearchParams()
   const router = useRouter()
-  const urlPlan = searchParams.get('plan') as Plan | null
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(urlPlan === 'annual' ? 'annual' : urlPlan === 'monthly' ? 'monthly' : null)
   const [isStartingCheckout, setIsStartingCheckout] = useState(false)
   const [checkingAccess, setCheckingAccess] = useState(true)
   const [hasCurrentAccess, setHasCurrentAccess] = useState(false)
@@ -58,7 +53,7 @@ function CheckoutContent() {
         setHasCurrentAccess(access)
         setIsExpired(Boolean(!access && ['expired', 'past_due', 'canceled', 'incomplete_expired'].includes(status)))
       } catch (error) {
-        console.warn('[Checkout] Access check failed or timed out; showing plans instead of spinner', error)
+        console.warn('[Checkout] Access check failed or timed out; showing retake pass instead of spinner', error)
         setHasCurrentAccess(false)
         setIsExpired(false)
       } finally {
@@ -70,11 +65,9 @@ function CheckoutContent() {
   }, [])
 
   const handleStartCheckout = async () => {
-    if (!selectedPlan) return
-
     setIsStartingCheckout(true)
     try {
-      await startStripeCheckout(selectedPlan)
+      await startStripeCheckout('retake')
     } catch (error) {
       console.error('Failed to start Stripe checkout:', error)
       setIsStartingCheckout(false)
@@ -84,10 +77,10 @@ function CheckoutContent() {
 
   if (checkingAccess) {
     return (
-      <div className="min-h-[calc(100dvh-4rem)] bg-slate-50 flex items-center justify-center px-4">
+      <div className="min-h-[calc(100dvh-4rem)] bg-[#F7F9FB] flex items-center justify-center px-4">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
-          <p className="text-slate-700">Checking your access...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-[#0D8F9C] mx-auto mb-4" />
+          <p className="text-[#1E2D3D]">Checking your access...</p>
         </div>
       </div>
     )
@@ -95,22 +88,22 @@ function CheckoutContent() {
 
   if (hasCurrentAccess) {
     return (
-      <div className="min-h-[calc(100dvh-4rem)] bg-slate-50 flex items-center justify-center px-4 py-12">
-        <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-lg text-center">
-          <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
-            <CheckCircle className="w-9 h-9 text-green-600" />
+      <div className="min-h-[calc(100dvh-4rem)] bg-[#F7F9FB] flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full bg-white border border-[#DDE5EE] rounded-2xl p-8 shadow-lg text-center">
+          <div className="w-16 h-16 bg-[#E0F4F6] rounded-full flex items-center justify-center mx-auto mb-5">
+            <CheckCircle2 className="w-9 h-9 text-[#0D8F9C]" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-3">You already have access</h1>
-          <p className="text-slate-600 mb-6 leading-relaxed">
-            Your ForgeNursing access is active. Go back to the app to practice, find your mistake type, and fix the weakness.
+          <h1 className="text-2xl font-bold text-[#0B2545] mb-3">You already have access</h1>
+          <p className="text-[#1E2D3D]/70 mb-6 leading-relaxed">
+            Your ForgeNursing access is active. Go back to the app to continue your recovery plan.
           </p>
           <div className="space-y-3">
-            <Link href="/entry" className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-base font-semibold hover:bg-indigo-700 transition-all">
-              Go to Study Options
+            <Link href="/entry" className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#0D8F9C] text-white rounded-xl text-base font-bold hover:bg-[#0a7d88] transition-all">
+              Go to ForgeNursing
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <Link href="/quiz" className="block text-sm text-indigo-600 hover:text-indigo-700 transition-colors">
-              Start a Practice Quiz
+            <Link href="/quiz" className="block text-sm font-semibold text-[#0D8F9C] hover:text-[#0a7d88] transition-colors">
+              Start a diagnostic-style practice set
             </Link>
           </div>
         </div>
@@ -119,135 +112,97 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-[calc(100dvh-4rem)] bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50 py-12 sm:py-16 pb-safe-b">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="paywall">
-        <div className="text-center mb-10 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">Founding Student Plan</h1>
-          <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto">
-            {isExpired ? 'Choose a plan to continue. Cancel anytime.' : 'Start free, then choose the plan that fits. Cancel anytime.'}
-          </p>
-        </div>
+    <main className="min-h-[calc(100dvh-4rem)] bg-white text-[#0B2545]">
+      <section className="bg-gradient-to-br from-[#E0F4F6] via-white to-[#F7F9FB] py-14 sm:py-20" aria-labelledby="checkout-heading">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="paywall">
+          <Link href="/pricing" className="text-sm font-bold text-[#0D8F9C] hover:text-[#0a7d88]">
+            ← Back to Pricing
+          </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto mb-8">
-          <PlanCard
-            selected={selectedPlan === 'monthly'}
-            title="Monthly"
-            price="$9.99"
-            cadence="/ month"
-            subtitle="Perfect for students who want flexibility."
-            bullets={[
-              'NCLEX-style practice quizzes',
-              'Mistake-type feedback',
-              'Retest missed weaknesses',
-              'AI clinical reasoning tutor',
-              isExpired ? 'Immediate access after subscribing' : '7-day free trial included',
-            ]}
-            onClick={() => setSelectedPlan('monthly')}
-          />
+          <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_0.85fr] lg:items-start">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full border border-[#0D8F9C]/30 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">
+                {isExpired ? 'Renew Recovery Access' : '90-Day Retake Recovery Pass'}
+              </p>
+              <h1 id="checkout-heading" className="mt-5 font-display text-4xl sm:text-5xl font-bold leading-tight tracking-tight text-[#0B2545]">
+                Unlock the plan that helps you know why you picked the wrong one.
+              </h1>
+              <p className="mt-5 text-lg leading-8 text-[#1E2D3D]/75">
+                Get diagnostic sets, Answer Autopsies, a Mistake Pattern Map, and a focused retake plan for one preparation window.
+              </p>
 
-          <PlanCard
-            selected={selectedPlan === 'annual'}
-            title="Annual"
-            price="$79"
-            cadence="/ year"
-            subtitle="Best value for a full year. Save 34% vs monthly."
-            featured
-            bullets={[
-              '12 months of unlimited access',
-              'Mistake-type feedback and targeted retests',
-              'Best overall savings',
-              isExpired ? 'Immediate access after subscribing' : '7-day free trial included',
-            ]}
-            onClick={() => setSelectedPlan('annual')}
-          />
-        </div>
+              <div className="mt-8 rounded-2xl border border-[#0D8F9C]/25 bg-[#E0F4F6] p-5">
+                <div className="flex gap-3">
+                  <ShieldCheck className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#0D8F9C]" />
+                  <p className="text-sm leading-6 text-[#1E2D3D]/75">
+                    ForgeNursing is an educational study aid. It is not affiliated with NCSBN and does not guarantee exam outcomes.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-        <div className="text-center max-w-md mx-auto">
-          <button
-            onClick={handleStartCheckout}
-            disabled={!selectedPlan || isStartingCheckout}
-            className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-base sm:text-lg font-bold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-          >
-            {isStartingCheckout ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin inline-block mr-2" />
-                Starting checkout...
-              </>
-            ) : (
-              <>
-                Continue to Checkout
-                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 inline-block ml-2" />
-              </>
-            )}
-          </button>
-          <p className="text-xs text-slate-500 mt-3">
-            {isExpired ? 'Subscribe to continue. Cancel anytime.' : 'Start free, then $9.99/month. Cancel anytime.'}
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
+            <div className="rounded-[2rem] border border-[#0D8F9C]/25 bg-white p-6 sm:p-8 shadow-xl shadow-[#0B2545]/10">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">Retake Recovery Pass</p>
+              <div className="mt-4 flex items-end gap-2">
+                <span className="text-5xl font-bold text-[#0B2545]">$19.99</span>
+                <span className="pb-2 text-base font-semibold text-[#1E2D3D]/65">/ 90 days</span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-[#1E2D3D]/70">
+                {isExpired ? 'Renew access and continue your recovery workflow.' : 'One focused retake window. No monthly plan grid.'}
+              </p>
 
-function PlanCard({
-  selected,
-  title,
-  price,
-  cadence,
-  subtitle,
-  bullets,
-  featured = false,
-  onClick,
-}: {
-  selected: boolean
-  title: string
-  price: string
-  cadence: string
-  subtitle: string
-  bullets: string[]
-  featured?: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`text-left bg-white border-2 rounded-2xl p-6 sm:p-8 shadow-lg cursor-pointer transition-all duration-200 ${
-        selected ? 'border-indigo-500 shadow-xl shadow-indigo-500/20' : featured ? 'border-indigo-300' : 'border-slate-200 hover:border-indigo-300'
-      }`}
-    >
-      {featured && <div className="mb-3"><span className="bg-indigo-600 text-white text-xs px-3 py-1 rounded-full font-semibold">Best Value</span></div>}
-      <h3 className="text-xl font-bold text-slate-900 mb-2">{title}</h3>
-      <div className="mb-4">
-        <span className="text-4xl font-bold text-slate-900">{price}</span>
-        <span className="text-lg text-slate-600"> {cadence}</span>
-      </div>
-      <p className="text-sm text-slate-600 mb-4">{subtitle}</p>
-      <ul className="space-y-2.5 mb-6 text-sm text-slate-700">
-        {bullets.map((bullet) => (
-          <li key={bullet} className="flex items-start gap-2">
-            <span className="text-indigo-600 mt-0.5">•</span>
-            <span>{bullet}</span>
-          </li>
-        ))}
-      </ul>
-      {selected && (
-        <div className="flex items-center justify-center gap-2 text-indigo-600 font-semibold">
-          <Check className="w-5 h-5" />
-          <span>Selected</span>
+              <div className="mt-6 space-y-3">
+                {[
+                  'Retake Recovery Check',
+                  'Diagnostic question sets',
+                  'Answer Autopsies',
+                  'Mistake Pattern Map',
+                  '7-day and 14-day Fix Plans',
+                  'Weekly Retake Readiness Reports',
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-3 text-sm text-[#1E2D3D]/75">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#0D8F9C]" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={handleStartCheckout}
+                disabled={isStartingCheckout}
+                className="mt-6 inline-flex w-full min-h-[50px] items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-6 py-3 text-base font-bold text-white shadow-lg shadow-[#0D8F9C]/20 transition hover:bg-[#0a7d88] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isStartingCheckout ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Starting checkout...
+                  </>
+                ) : (
+                  <>
+                    Continue to Checkout
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
+              </button>
+
+              <p className="mt-4 text-xs leading-5 text-[#1E2D3D]/55">
+                If checkout is not configured yet, contact support@forgenursing.com. Stripe must use the 90-day recovery pass price.
+              </p>
+            </div>
+          </div>
         </div>
-      )}
-    </button>
+      </section>
+    </main>
   )
 }
 
 export default function CheckoutPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-[calc(100dvh-4rem)] bg-slate-50 flex items-center justify-center">
+      <div className="min-h-[calc(100dvh-4rem)] bg-[#F7F9FB] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
-          <p className="text-slate-700">Loading...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-[#0D8F9C] mx-auto mb-4" />
+          <p className="text-[#1E2D3D]">Loading...</p>
         </div>
       </div>
     }>
