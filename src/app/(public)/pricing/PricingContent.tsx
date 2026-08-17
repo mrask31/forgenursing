@@ -1,30 +1,15 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight, Check, CheckCircle2, Loader2, ShieldCheck } from 'lucide-react'
 
-type Plan = 'monthly' | 'semester' | 'annual'
+type Plan = 'retake'
 
 interface PricingContentProps {
   isBeta: boolean
   isSubscribed: boolean
-}
-
-async function startFounderCheckout(plan: Plan): Promise<void> {
-  const res = await fetch('/api/stripe/checkout-founder', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ plan }),
-  })
-
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}))
-    throw new Error(data.error || 'Checkout failed')
-  }
-
-  const { url } = await res.json()
-  if (url) window.location.href = url
 }
 
 async function startStandardCheckout(plan: Plan): Promise<void> {
@@ -32,24 +17,39 @@ async function startStandardCheckout(plan: Plan): Promise<void> {
   await startStripeCheckout(plan)
 }
 
-export default function PricingContent({ isBeta, isSubscribed }: PricingContentProps) {
+const included = [
+  '90 days of access for one focused retake window',
+  'Retake Recovery Check',
+  'Diagnostic question sets',
+  'Answer Autopsies for missed diagnostic questions',
+  'Mistake Pattern Map',
+  '7-day and 14-day Fix Plans',
+  'Weekly Retake Readiness Reports',
+]
+
+const reasons = [
+  'Built for NCLEX retakers, not generic nursing school study.',
+  'Focused on why answers were missed, not just what topic was weak.',
+  'One simple price instead of another monthly subscription.',
+]
+
+export default function PricingContent({ isSubscribed }: PricingContentProps) {
   const router = useRouter()
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   if (isSubscribed) {
     return (
-      <div className="min-h-[calc(100dvh-4rem)] bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center bg-white rounded-2xl p-8 shadow-lg border border-slate-200">
-          <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check className="w-8 h-8 text-teal-600" />
+      <div className="min-h-[calc(100dvh-4rem)] bg-[#F7F9FB] flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center bg-white rounded-2xl p-8 shadow-lg border border-[#DDE5EE]">
+          <div className="w-16 h-16 bg-[#E0F4F6] rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-[#0D8F9C]" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">You're subscribed</h1>
-          <p className="text-slate-600 mb-6">Your ForgeNursing subscription is active. You have full access to everything.</p>
+          <h1 className="text-2xl font-bold text-[#0B2545] mb-2">You already have access</h1>
+          <p className="text-[#1E2D3D]/70 mb-6">Your ForgeNursing access is active. Go back to the app to continue your recovery plan.</p>
           <button
-            onClick={() => router.push('/tutor')}
-            className="w-full px-6 py-3 bg-teal-600 text-white rounded-xl font-medium hover:bg-teal-700 transition-colors"
+            onClick={() => router.push('/entry')}
+            className="w-full px-6 py-3 bg-[#0D8F9C] text-white rounded-xl font-bold hover:bg-[#0a7d88] transition-colors"
           >
             Go to ForgeNursing →
           </button>
@@ -59,15 +59,10 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
   }
 
   const handleCheckout = async () => {
-    if (!selectedPlan) return
     setLoading(true)
     setError(null)
     try {
-      if (isBeta) {
-        await startFounderCheckout(selectedPlan)
-      } else {
-        await startStandardCheckout(selectedPlan)
-      }
+      await startStandardCheckout('retake')
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.')
       setLoading(false)
@@ -75,183 +70,122 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
   }
 
   return (
-    <div className="min-h-[calc(100dvh-4rem)] bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50 py-12 sm:py-16 pb-safe-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Founder banner */}
-        {isBeta && (
-          <div className="max-w-3xl mx-auto mb-8 bg-teal-50 border border-teal-200 rounded-xl px-6 py-4 text-center">
-            <p className="text-teal-800 font-medium text-sm sm:text-base">
-              As a ForgeNursing beta founder, you've unlocked permanent discounted pricing. This offer expires when your beta access ends.
+    <main className="min-h-[calc(100dvh-4rem)] bg-white text-[#0B2545]">
+      <section className="bg-gradient-to-br from-[#E0F4F6] via-white to-[#F7F9FB] py-14 sm:py-20" aria-labelledby="pricing-heading">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="text-sm font-bold text-[#0D8F9C] hover:text-[#0a7d88]">
+            ← Back to Home
+          </Link>
+          <div className="mt-8 text-center max-w-3xl mx-auto">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[#0D8F9C]/30 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">
+              90-Day Retake Recovery Pass
+            </p>
+            <h1 id="pricing-heading" className="mt-5 font-display text-4xl sm:text-5xl font-bold leading-tight tracking-tight text-[#0B2545]">
+              One retake window. One focused recovery plan.
+            </h1>
+            <p className="mt-5 text-lg leading-8 text-[#1E2D3D]/75">
+              ForgeNursing is priced for retakers who need clarity now — not another open-ended monthly subscription.
             </p>
           </div>
-        )}
-
-        <div className="text-center mb-10 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-4">
-            {isBeta ? 'Your Founder Pricing' : 'Founding Student Plan'}
-          </h1>
-          <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto">
-            {isBeta
-              ? 'Locked-in forever as long as you stay subscribed. Never offered publicly.'
-              : 'Start free, then choose the plan that fits your learning journey. Cancel anytime.'}
-          </p>
         </div>
+      </section>
 
-        {/* Pricing Cards — 2 public plans (monthly + annual), semester only for beta */}
-        <div className={`grid grid-cols-1 ${isBeta ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2'} gap-6 sm:gap-8 max-w-4xl mx-auto mb-8`}>
-
-          {/* Monthly */}
-          <div
-            onClick={() => setSelectedPlan('monthly')}
-            className={`bg-white/80 backdrop-blur-sm border-2 rounded-2xl p-6 sm:p-8 shadow-lg cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
-              selectedPlan === 'monthly'
-                ? 'border-teal-500 shadow-xl shadow-teal-500/30'
-                : 'border-slate-200/60 hover:border-teal-300'
-            }`}
-          >
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Monthly</h3>
-            <div className="mb-4">
-              {isBeta ? (
-                <>
-                  <span className="text-4xl font-bold text-teal-700">$7.99</span>
-                  <span className="text-lg text-slate-500"> / month</span>
-                  <span className="ml-2 text-sm text-slate-400 line-through">$9.99</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-4xl font-bold text-slate-900">$9.99</span>
-                  <span className="text-lg text-slate-600"> / month</span>
-                </>
-              )}
-            </div>
-            <p className="text-sm text-slate-600 mb-4">Perfect for students who want flexibility.</p>
-            <ul className="space-y-2.5 mb-6 text-sm text-slate-700">
-              <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>Unlimited NCLEX practice questions</span></li>
-              <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>AI clinical reasoning tutor</span></li>
-              <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>Upload your own study materials</span></li>
-              <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>Cancel anytime</span></li>
-              {isBeta && <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span className="font-medium text-teal-700">Founder rate — locked forever</span></li>}
-              {!isBeta && <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>7-day free trial included</span></li>}
-            </ul>
-            {selectedPlan === 'monthly' && (
-              <div className="flex items-center justify-center gap-2 text-teal-600 font-semibold mb-4">
-                <Check className="w-5 h-5" /><span>Selected</span>
+      <section className="bg-white py-14 sm:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+            <div className="rounded-[2rem] border border-[#0D8F9C]/25 bg-gradient-to-br from-[#E0F4F6] via-white to-[#F7F9FB] p-6 sm:p-8 shadow-xl shadow-[#0B2545]/8">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">Retake Recovery Pass</p>
+              <div className="mt-4 flex items-end gap-2">
+                <span className="text-5xl font-bold text-[#0B2545]">$19.99</span>
+                <span className="pb-2 text-base font-semibold text-[#1E2D3D]/65">/ 90 days</span>
               </div>
-            )}
-          </div>
+              <p className="mt-4 text-base leading-7 text-[#1E2D3D]/70">
+                Designed for one NCLEX retake preparation window. No monthly billing positioning, no annual upsell, no confusing plan grid.
+              </p>
 
-          {/* Semester — Only shown to beta/founder users */}
-          {isBeta && (
-            <div
-              onClick={() => setSelectedPlan('semester')}
-              className={`bg-gradient-to-br from-indigo-50/80 via-teal-50/80 to-indigo-50/80 backdrop-blur-sm border-2 rounded-2xl p-6 sm:p-8 shadow-xl relative cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
-                selectedPlan === 'semester'
-                  ? 'border-teal-500 shadow-2xl shadow-teal-500/40'
-                  : 'border-teal-400/60'
-              }`}
-            >
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Semester</h3>
-              <div className="mb-1">
-                <span className="text-4xl font-bold text-teal-700">$59</span>
-                <span className="ml-2 text-sm text-slate-400 line-through">$89</span>
-              </div>
-              <p className="text-xs text-slate-600 mb-1">One-Time Payment • 4 Months</p>
-              <p className="text-sm text-teal-700 mb-4 font-semibold">Founder rate — save $30 vs standard</p>
-              <p className="text-sm text-slate-700 mb-4 font-medium">Designed for a single term or NCLEX prep cycle.</p>
-              <ul className="space-y-2.5 mb-6 text-sm text-slate-700">
-                <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>4 full months of access</span></li>
-                <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>No contracts or surprise renewals</span></li>
-                <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span className="font-medium text-teal-700">Founder rate — locked forever</span></li>
-              </ul>
-              {selectedPlan === 'semester' && (
-                <div className="flex items-center justify-center gap-2 text-teal-600 font-semibold mb-4">
-                  <Check className="w-5 h-5" /><span>Selected</span>
+              <div className="mt-6 rounded-2xl border border-[#DDE5EE] bg-white p-5">
+                <p className="font-bold text-[#0B2545]">Includes</p>
+                <div className="mt-4 space-y-3">
+                  {included.map((item) => (
+                    <div key={item} className="flex items-start gap-3 text-sm text-[#1E2D3D]/75">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#0D8F9C]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* Annual — Best Value */}
-          <div
-            onClick={() => setSelectedPlan('annual')}
-            className={`bg-gradient-to-br from-indigo-50/80 via-teal-50/80 to-indigo-50/80 backdrop-blur-sm border-2 rounded-2xl p-6 sm:p-8 shadow-xl relative cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
-              selectedPlan === 'annual'
-                ? 'border-teal-500 shadow-2xl shadow-teal-500/40'
-                : 'border-teal-400/60'
-            }`}
-          >
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-teal-600 text-white text-[10px] px-2.5 py-0.5 rounded-full font-semibold shadow-lg">
-                Best Value
-              </span>
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2 mt-2">Annual</h3>
-            <div className="mb-1">
-              {isBeta ? (
-                <>
-                  <span className="text-4xl font-bold text-teal-700">$59</span>
-                  <span className="text-lg text-slate-500"> / year</span>
-                  <span className="ml-2 text-sm text-slate-400 line-through">$79</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-4xl font-bold text-slate-900">$79</span>
-                  <span className="text-lg text-slate-600"> / year</span>
-                </>
-              )}
-            </div>
-            {isBeta ? (
-              <p className="text-sm text-teal-700 mb-4 font-semibold">Founder rate — save $20 vs standard</p>
-            ) : (
-              <p className="text-sm text-indigo-700 mb-4 font-semibold">Save 34% vs monthly</p>
-            )}
-            <p className="text-sm text-slate-700 mb-4 font-medium">For students committed to mastery.</p>
-            <ul className="space-y-2.5 mb-6 text-sm text-slate-700">
-              <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>12 months of unlimited access</span></li>
-              <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>Best overall savings</span></li>
-              <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>Renews annually (reminders sent)</span></li>
-              {isBeta && <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span className="font-medium text-teal-700">Founder rate — locked forever</span></li>}
-              {!isBeta && <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>7-day free trial included</span></li>}
-            </ul>
-            {selectedPlan === 'annual' && (
-              <div className="flex items-center justify-center gap-2 text-teal-600 font-semibold mb-4">
-                <Check className="w-5 h-5" /><span>Selected</span>
               </div>
-            )}
+
+              {error && <p className="mt-4 text-sm font-semibold text-red-600">{error}</p>}
+
+              <button
+                onClick={handleCheckout}
+                disabled={loading}
+                className="mt-6 inline-flex w-full min-h-[50px] items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-6 py-3 text-base font-bold text-white shadow-lg shadow-[#0D8F9C]/20 transition hover:bg-[#0a7d88] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Starting checkout...
+                  </>
+                ) : (
+                  <>
+                    Unlock Retake Recovery Pass
+                    <ArrowRight className="h-5 w-5" />
+                  </>
+                )}
+              </button>
+
+              <Link href="/retake-recovery-check" className="mt-3 inline-flex w-full min-h-[46px] items-center justify-center rounded-xl border border-[#DDE5EE] bg-white px-6 py-3 text-sm font-bold text-[#0B2545] transition hover:border-[#0D8F9C] hover:text-[#0D8F9C]">
+                Start the free check first
+              </Link>
+
+              <p className="mt-4 text-xs leading-5 text-[#1E2D3D]/55">
+                ForgeNursing is an educational study aid. It is not affiliated with NCSBN and does not guarantee exam outcomes.
+              </p>
+            </div>
+
+            <div className="space-y-5">
+              <div className="rounded-3xl border border-[#DDE5EE] bg-[#F7F9FB] p-6 sm:p-8">
+                <h2 className="font-display text-2xl font-bold text-[#0B2545]">Why this is different</h2>
+                <div className="mt-5 space-y-4">
+                  {reasons.map((reason) => (
+                    <div key={reason} className="flex items-start gap-3 text-sm leading-6 text-[#1E2D3D]/75">
+                      <Target className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#0D8F9C]" />
+                      <span>{reason}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-[#DDE5EE] bg-white p-6 sm:p-8 shadow-sm">
+                <h2 className="font-display text-2xl font-bold text-[#0B2545]">Use it with what you already bought</h2>
+                <p className="mt-4 text-sm leading-6 text-[#1E2D3D]/70">
+                  Keep using UWorld, Archer, ATI, HESI, Bootcamp, your program materials, or any other prep resource. ForgeNursing is the recovery layer that helps you diagnose the missed-answer patterns your main resource may not organize for you.
+                </p>
+                <div className="mt-5 rounded-2xl border border-[#0D8F9C]/25 bg-[#E0F4F6] p-4">
+                  <div className="flex gap-3">
+                    <ShieldCheck className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#0D8F9C]" />
+                    <p className="text-sm leading-6 text-[#1E2D3D]/75">
+                      If you use outside questions, summarize them in your own words. Do not paste full copyrighted questions from third-party platforms.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-[#DDE5EE] bg-[#0B2545] p-6 sm:p-8 text-white">
+                <h2 className="font-display text-2xl font-bold">Not ready to pay?</h2>
+                <p className="mt-4 text-sm leading-6 text-white/70">
+                  Start with the free Retake Recovery Check. It gives you a starting snapshot before you decide whether the full pass is worth it.
+                </p>
+                <Link href="/retake-recovery-check" className="mt-5 inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#0B2545] transition hover:bg-white/90">
+                  Start Free Check
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Continue Button */}
-        <div className="text-center max-w-md mx-auto">
-          {error && (
-            <p className="text-red-600 text-sm mb-3">{error}</p>
-          )}
-          <button
-            onClick={handleCheckout}
-            disabled={!selectedPlan || loading}
-            className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl text-base sm:text-lg font-bold hover:from-teal-700 hover:to-teal-800 transition-all duration-200 shadow-lg shadow-teal-500/30 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 min-h-[44px]"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin inline-block mr-2" />
-                Starting checkout...
-              </>
-            ) : (
-              <>
-                {isBeta ? 'Lock In My Founder Rate' : 'Start Free Trial'}
-                <ArrowRight className="w-5 h-5 inline-block ml-2" />
-              </>
-            )}
-          </button>
-          <p className="text-xs text-slate-500 mt-3">
-            {isBeta
-              ? 'Founder rate is yours permanently as long as you stay subscribed.'
-              : 'Start free, then $9.99/month. Cancel anytime.'}
-          </p>
-        </div>
-
-      </div>
-    </div>
+      </section>
+    </main>
   )
 }
