@@ -29,26 +29,10 @@ function addDays(days: number): string {
 function mapPriceIdToTierType(priceId: string): string | null {
   if (!priceId) return null
 
-  const monthlyIds = [
-    process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY,
-    process.env.STRIPE_PRICE_MONTHLY_FOUNDER,
-  ].filter(Boolean)
-
-  const semesterIds = [
-    process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMESTER,
-    process.env.STRIPE_PRICE_SEMESTER_FOUNDER,
-  ].filter(Boolean)
-
-  const annualIds = [
-    process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL,
-    process.env.STRIPE_PRICE_ANNUAL_FOUNDER,
-  ].filter(Boolean)
-
-  const retakeIds = [
-    process.env.NEXT_PUBLIC_STRIPE_PRICE_RETAKE_90_DAY,
-    process.env.STRIPE_PRICE_RETAKE_90_DAY_FOUNDER,
-    RETAKE_90_DAY_PRICE_ID,
-  ].filter(Boolean)
+  const monthlyIds = [process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY, process.env.STRIPE_PRICE_MONTHLY_FOUNDER].filter(Boolean)
+  const semesterIds = [process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMESTER, process.env.STRIPE_PRICE_SEMESTER_FOUNDER].filter(Boolean)
+  const annualIds = [process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL, process.env.STRIPE_PRICE_ANNUAL_FOUNDER].filter(Boolean)
+  const retakeIds = [process.env.NEXT_PUBLIC_STRIPE_PRICE_RETAKE_90_DAY, process.env.STRIPE_PRICE_RETAKE_90_DAY_FOUNDER, RETAKE_90_DAY_PRICE_ID].filter(Boolean)
 
   if (monthlyIds.includes(priceId)) return 'monthly'
   if (semesterIds.includes(priceId)) return 'semester'
@@ -82,77 +66,43 @@ function extractEventMetadata(event: Stripe.Event) {
   return { userId, customerId, subscriptionId }
 }
 
-async function logWebhookEvent(
-  supabase: any,
-  event: Stripe.Event,
-  status: 'pending' | 'processing' | 'succeeded' | 'failed',
-  error?: string
-) {
+async function logWebhookEvent(supabase: any, event: Stripe.Event, status: 'pending' | 'processing' | 'succeeded' | 'failed', error?: string) {
   try {
     const metadata = extractEventMetadata(event)
+    const { error: dbError } = await supabase.from('webhook_events').upsert({
+      stripe_event_id: event.id,
+      event_type: event.type,
+      payload: event as any,
+      status,
+      attempt_count: 1,
+      last_attempt_at: new Date().toISOString(),
+      last_error: error || null,
+      succeeded_at: status === 'succeeded' ? new Date().toISOString() : null,
+      user_id: metadata.userId,
+      customer_id: metadata.customerId,
+      subscription_id: metadata.subscriptionId,
+    }, { onConflict: 'stripe_event_id', ignoreDuplicates: false })
 
-    const { error: dbError } = await supabase
-      .from('webhook_events')
-      .upsert({
-        stripe_event_id: event.id,
-        event_type: event.type,
-        payload: event as any,
-        status,
-        attempt_count: 1,
-        last_attempt_at: new Date().toISOString(),
-        last_error: error || null,
-        succeeded_at: status === 'succeeded' ? new Date().toISOString() : null,
-        user_id: metadata.userId,
-        customer_id: metadata.customerId,
-        subscription_id: metadata.subscriptionId,
-      }, {
-        onConflict: 'stripe_event_id',
-        ignoreDuplicates: false,
-      })
-
-    if (dbError) {
-      console.error('[Webhook] Error logging to database:', dbError)
-    }
+    if (dbError) console.error('[Webhook] Error logging to database:', dbError)
   } catch (err) {
     console.error('[Webhook] Error in logWebhookEvent:', err)
   }
 }
 
-async function updateWebhookAttempt(
-  supabase: any,
-  eventId: string,
-  status: 'succeeded' | 'failed' | 'retrying',
-  error?: string
-) {
+async function updateWebhookAttempt(supabase: any, eventId: string, status: 'succeeded' | 'failed' | 'retrying', error?: string) {
   try {
-    const updates: any = {
-      status,
-      last_attempt_at: new Date().toISOString(),
-      last_error: error || null,
-    }
+    const updates: any = { status, last_attempt_at: new Date().toISOString(), last_error: error || null }
+    if (status === 'succeeded') updates.succeeded_at = new Date().toISOString()
 
-    if (status === 'succeeded') {
-      updates.succeeded_at = new Date().toISOString()
-    }
-
-    const { error: dbError } = await supabase
-      .from('webhook_events')
-      .update(updates)
-      .eq('stripe_event_id', eventId)
-
-    if (dbError) {
-      console.error('[Webhook] Error updating attempt:', dbError)
-    }
+    const { error: dbError } = await supabase.from('webhook_events').update(updates).eq('stripe_event_id', eventId)
+    if (dbError) console.error('[Webhook] Error updating attempt:', dbError)
   } catch (err) {
     console.error('[Webhook] Error in updateWebhookAttempt:', err)
   }
 }
 
 function retakePassEmailHtml(accessEndsAt?: string | null) {
-  const accessDate = accessEndsAt
-    ? new Date(accessEndsAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-    : null
-
+  const accessDate = accessEndsAt ? new Date(accessEndsAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : null
   return `<div style="font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
   <p>You're in.</p>
   <p>Your ForgeNursing 90-Day Retake Recovery Pass is active${accessDate ? ` through ${accessDate}` : ''}.</p>
@@ -183,15 +133,8 @@ async function resolveUserIdFromSession(supabase: any, session: Stripe.Checkout.
   const customerId = typeof session.customer === 'string' ? session.customer : null
 
   if (!userId && customerId) {
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('stripe_customer_id', customerId)
-      .single()
-
-    if (existingProfile?.id) {
-      userId = existingProfile.id
-    }
+    const { data: existingProfile } = await supabase.from('profiles').select('id').eq('stripe_customer_id', customerId).single()
+    if (existingProfile?.id) userId = existingProfile.id
   }
 
   return userId
@@ -199,25 +142,25 @@ async function resolveUserIdFromSession(supabase: any, session: Stripe.Checkout.
 
 async function sendEmail(to: string | null | undefined, subject: string, html: string) {
   if (!to) return
-
   try {
-    await resend.emails.send({
-      from: 'ForgeNursing <support@forgenursing.com>',
-      to,
-      replyTo: 'support@forgenursing.com',
-      subject,
-      html,
-    })
+    await resend.emails.send({ from: 'ForgeNursing <support@forgenursing.com>', to, replyTo: 'support@forgenursing.com', subject, html })
   } catch (emailError) {
     console.error('[Webhook] Failed to send email:', emailError)
   }
 }
 
-async function processWebhookEvent(
-  event: Stripe.Event,
-  supabase: any,
-  stripe: Stripe
-): Promise<{ success: boolean; error?: string }> {
+async function safeProfileUpdate(supabase: any, userId: string, update: Record<string, any>) {
+  let { error } = await supabase.from('profiles').update(update).eq('id', userId)
+
+  if (error && error.message?.toLowerCase().includes('tier_type')) {
+    const { tier_type, ...withoutTierType } = update
+    ;({ error } = await supabase.from('profiles').update(withoutTierType).eq('id', userId))
+  }
+
+  return error
+}
+
+async function processWebhookEvent(event: Stripe.Event, supabase: any, stripe: Stripe): Promise<{ success: boolean; error?: string }> {
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -227,57 +170,32 @@ async function processWebhookEvent(
         const customerEmail = session.customer_details?.email || session.customer_email
         const isRetakePayment = session.mode === 'payment' || session.metadata?.plan === 'retake'
 
-        if (!userId) {
-          const error = 'No user ID found - cannot update profile'
-          console.error('[Webhook]', error)
-          return { success: false, error }
-        }
+        if (!userId) return { success: false, error: 'No user ID found - cannot update profile' }
 
         if (isRetakePayment) {
           if (session.payment_status !== 'paid') {
-            console.warn('[Webhook] Retake payment checkout completed without paid status', {
-              sessionId: session.id,
-              paymentStatus: session.payment_status,
-            })
+            console.warn('[Webhook] Retake payment checkout completed without paid status', { sessionId: session.id, paymentStatus: session.payment_status })
             return { success: true }
           }
 
           const accessEndsAt = addDays(RETAKE_ACCESS_DAYS)
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({
-              subscription_status: 'active',
-              stripe_customer_id: customerId,
-              stripe_subscription_id: null,
-              trial_ends_at: accessEndsAt,
-              tier_type: 'retake',
-              quiz_first_enabled: true,
-            })
-            .eq('id', userId)
+          const updateError = await safeProfileUpdate(supabase, userId, {
+            subscription_status: 'active',
+            stripe_customer_id: customerId,
+            stripe_subscription_id: null,
+            trial_ends_at: accessEndsAt,
+            tier_type: 'retake',
+            quiz_first_enabled: true,
+          })
 
-          if (updateError) {
-            console.error('[Webhook] Error granting retake pass access:', updateError)
-            return {
-              success: false,
-              error: `Failed to grant retake pass access: ${updateError.message}`,
-            }
-          }
+          if (updateError) return { success: false, error: `Failed to grant retake pass access: ${updateError.message}` }
 
-          await sendEmail(
-            customerEmail,
-            'Your ForgeNursing Retake Recovery Pass is active',
-            retakePassEmailHtml(accessEndsAt)
-          )
-
+          await sendEmail(customerEmail, 'Your ForgeNursing Retake Recovery Pass is active', retakePassEmailHtml(accessEndsAt))
           return { success: true }
         }
 
         const subscriptionId = typeof session.subscription === 'string' ? session.subscription : null
-        if (!subscriptionId) {
-          const error = 'No subscription ID in checkout session'
-          console.error('[Webhook]', error)
-          return { success: false, error }
-        }
+        if (!subscriptionId) return { success: false, error: 'No subscription ID in checkout session' }
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
         const status = subscription.status === 'trialing' ? 'trialing' : 'active'
@@ -290,29 +208,12 @@ async function processWebhookEvent(
           stripe_subscription_id: subscriptionId,
           quiz_first_enabled: true,
         }
-        if (tierType) {
-          profileUpdate.tier_type = tierType
-        }
+        if (tierType) profileUpdate.tier_type = tierType
 
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update(profileUpdate)
-          .eq('id', userId)
+        const updateError = await safeProfileUpdate(supabase, userId, profileUpdate)
+        if (updateError) return { success: false, error: `Failed to update profile: ${updateError.message}` }
 
-        if (updateError) {
-          console.error('[Webhook] Error updating profile:', updateError)
-          return {
-            success: false,
-            error: `Failed to update profile: ${updateError.message}`,
-          }
-        }
-
-        await sendEmail(
-          customerEmail,
-          "You're now subscribed to ForgeNursing",
-          subscriptionConfirmationEmailHtml()
-        )
-
+        await sendEmail(customerEmail, "You're now subscribed to ForgeNursing", subscriptionConfirmationEmailHtml())
         return { success: true }
       }
 
@@ -321,29 +222,15 @@ async function processWebhookEvent(
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
         const customerId = subscription.customer as string
+        const { data: profile } = await supabase.from('profiles').select('id').eq('stripe_customer_id', customerId).single()
 
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('stripe_customer_id', customerId)
-          .single()
-
-        if (!profile) {
-          const error = `No profile found for customer: ${customerId}`
-          console.warn('[Webhook]', error)
-          return { success: false, error }
-        }
+        if (!profile) return { success: false, error: `No profile found for customer: ${customerId}` }
 
         let status: string
-        if (subscription.status === 'trialing') {
-          status = 'trialing'
-        } else if (subscription.status === 'active') {
-          status = 'active'
-        } else if (subscription.status === 'past_due' || subscription.status === 'unpaid') {
-          status = 'past_due'
-        } else {
-          status = 'expired'
-        }
+        if (subscription.status === 'trialing') status = 'trialing'
+        else if (subscription.status === 'active') status = 'active'
+        else if (subscription.status === 'past_due' || subscription.status === 'unpaid') status = 'past_due'
+        else status = 'expired'
 
         const priceId = subscription.items?.data?.[0]?.price?.id || ''
         const tierType = mapPriceIdToTierType(priceId)
@@ -354,22 +241,10 @@ async function processWebhookEvent(
         }
 
         if (tierType) updatePayload.tier_type = tierType
-        if (status === 'active' || status === 'trialing') {
-          updatePayload.quiz_first_enabled = true
-        }
+        if (status === 'active' || status === 'trialing') updatePayload.quiz_first_enabled = true
 
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update(updatePayload)
-          .eq('id', profile.id)
-
-        if (updateError) {
-          console.error('[Webhook] Error updating subscription:', updateError)
-          return {
-            success: false,
-            error: `Failed to update subscription: ${updateError.message}`,
-          }
-        }
+        const updateError = await safeProfileUpdate(supabase, profile.id, updatePayload)
+        if (updateError) return { success: false, error: `Failed to update subscription: ${updateError.message}` }
 
         return { success: true }
       }
@@ -389,46 +264,22 @@ export async function POST(req: Request) {
   let supabase: any = null
 
   try {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      console.error('[Webhook] STRIPE_SECRET_KEY is missing')
-      return NextResponse.json({ error: 'Stripe is not configured' }, { status: 500 })
-    }
-
-    if (!process.env.STRIPE_WEBHOOK_SECRET) {
-      console.error('[Webhook] STRIPE_WEBHOOK_SECRET is missing')
-      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
-    }
+    if (!process.env.STRIPE_SECRET_KEY) return NextResponse.json({ error: 'Stripe is not configured' }, { status: 500 })
+    if (!process.env.STRIPE_WEBHOOK_SECRET) return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !serviceRoleKey) {
-      console.error('[Webhook] Missing Supabase configuration')
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
-    }
+    if (!supabaseUrl || !serviceRoleKey) return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
 
     const body = await req.text()
     const signature = headers().get('stripe-signature')
-
-    if (!signature) {
-      console.error('[Webhook] Missing stripe-signature header')
-      return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
-    }
+    if (!signature) return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
 
     const stripe = getStripeClient()
-    supabase = createClient<Database>(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
+    supabase = createClient<Database>(supabaseUrl, serviceRoleKey, { auth: { autoRefreshToken: false, persistSession: false } })
 
     try {
-      event = stripe.webhooks.constructEvent(
-        body,
-        signature,
-        process.env.STRIPE_WEBHOOK_SECRET
-      )
+      event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET)
     } catch (err) {
       console.error('[Webhook] Signature verification failed:', err)
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
@@ -447,25 +298,11 @@ export async function POST(req: Request) {
     await updateWebhookAttempt(supabase, event.id, 'failed', result.error)
     console.error('[Webhook] ❌ Event processing failed:', event.id, result.error)
 
-    return NextResponse.json(
-      {
-        error: 'Webhook processing failed',
-        details: result.error,
-        willRetry: true,
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Webhook processing failed', details: result.error, willRetry: true }, { status: 500 })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('[Webhook] Unexpected error:', error)
-
-    if (event && supabase) {
-      await updateWebhookAttempt(supabase, event.id, 'failed', errorMessage)
-    }
-
-    return NextResponse.json(
-      { error: 'Webhook processing failed', details: errorMessage },
-      { status: 500 }
-    )
+    if (event && supabase) await updateWebhookAttempt(supabase, event.id, 'failed', errorMessage)
+    return NextResponse.json({ error: 'Webhook processing failed', details: errorMessage }, { status: 500 })
   }
 }
