@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, BarChart3, GraduationCap, BookOpen, Settings, LogOut, ChevronUp, ClipboardList } from 'lucide-react'
+import { BarChart3, BookOpen, ClipboardList, FileSearch, Home, LogOut, RotateCcw, Settings, ChevronUp } from 'lucide-react'
 import { getBrowserClient, resetBrowserClient } from '@/lib/supabase/client'
 import { clearSupabaseStorage } from '@/lib/auth-utils'
 import HistoryButton from './HistoryButton'
@@ -18,7 +18,6 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   const [programTrack, setProgramTrack] = useState<string | null>(null)
   const [graduationDate, setGraduationDate] = useState<string | null>(null)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-  const [quizFirstEnabled, setQuizFirstEnabled] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
@@ -31,7 +30,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('preferred_name, program_track, graduation_date, quiz_first_enabled')
+          .select('preferred_name, program_track, graduation_date')
           .eq('id', user.id)
           .single()
 
@@ -39,7 +38,6 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
           setPreferredName(profile.preferred_name || null)
           setProgramTrack(profile.program_track || null)
           setGraduationDate(profile.graduation_date || null)
-          setQuizFirstEnabled(profile.quiz_first_enabled ?? false)
         }
       } catch (error) {
         console.error('[Sidebar] Error loading profile:', error)
@@ -97,22 +95,25 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   }
 
   const mainNav = [
-    { label: 'Clinical Tutor', href: '/tutor', icon: MessageSquare },
-    ...(quizFirstEnabled ? [{ label: 'Practice Questions', href: '/quiz', icon: ClipboardList }] : []),
-    { label: 'Judgment Map', href: '/readiness', icon: BarChart3, badge: true },
-    { label: 'My Courses', href: '/classes', icon: GraduationCap },
+    { label: 'Recovery Home', href: '/entry', icon: Home },
+    { label: 'Diagnostic Sets', href: '/quiz', icon: ClipboardList },
+    { label: 'Mistake Pattern Map', href: '/readiness', icon: BarChart3, badge: true },
+    { label: 'Answer Autopsy Coach', href: '/tutor', icon: FileSearch },
   ]
 
-  const clinicalTools = [
+  const supportNav = [
+    { label: 'Course Materials', href: '/classes', icon: BookOpen },
     { label: 'Med Dictionary', href: '/dictionary', icon: BookOpen },
   ]
 
-  const isActive = (href: string, label: string) => {
+  const isActive = (href: string) => {
     if (pathname === href) return true
+    if (href === '/entry' && pathname === '/') return true
     if (href === '/classes' && pathname.startsWith('/classes')) return true
     if (href === '/dictionary' && pathname.startsWith('/dictionary')) return true
-    if (href === '/readiness' && pathname.startsWith('/readiness') && label === 'Judgment Map') return true
+    if (href === '/readiness' && pathname.startsWith('/readiness')) return true
     if (href === '/quiz' && pathname.startsWith('/quiz')) return true
+    if (href === '/tutor' && pathname.startsWith('/tutor')) return true
     if (href === '/settings' && pathname.startsWith('/settings')) return true
     return false
   }
@@ -121,76 +122,79 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
     if (preferredName) {
       return preferredName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     }
-    return 'SN'
+    return 'RN'
   }
 
   return (
     <aside className="flex w-full h-full flex-col text-[#94A3B8]" style={{ backgroundColor: '#0B2545' }}>
       <div className="flex h-full flex-col px-5 py-6">
         <div className="mb-8 px-1">
-          <div className="flex items-center gap-2.5">
+          <Link href="/entry" onClick={onNavigate} className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#0D8F9C' }}>
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <rect x="3" y="6" width="2.5" height="6" rx="1" fill="white" />
-                <rect x="6.5" y="3" width="2.5" height="12" rx="1" fill="white" />
-                <rect x="10" y="5" width="2.5" height="8" rx="1" fill="white" />
-                <rect x="13.5" y="7" width="2.5" height="4" rx="1" fill="white" />
-              </svg>
+              <RotateCcw className="h-4 w-4 text-white" />
             </div>
-            <span className="text-lg font-bold tracking-tight">
-              <span className="text-white">Forge</span>
-              <span style={{ color: '#0BBCD4' }}>Nursing</span>
-            </span>
-          </div>
+            <div>
+              <span className="block text-lg font-bold tracking-tight">
+                <span className="text-white">Forge</span>
+                <span style={{ color: '#0BBCD4' }}>Nursing</span>
+              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[#94A3B8]/70">
+                Retake Recovery
+              </span>
+            </div>
+          </Link>
         </div>
 
         <nav className="flex-1 space-y-6">
-          <div className="space-y-1">
-            {mainNav.map((item) => {
-              const active = isActive(item.href, item.label)
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={onNavigate}
-                  className={`
-                    group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-150
-                    ${active
-                      ? 'border-l-[3px] text-white'
-                      : 'border-l-[3px] border-transparent text-[#94A3B8] hover:text-[#DDE5EE]'}
-                  `}
-                  style={active ? { borderLeftColor: '#0BBCD4', color: '#0BBCD4', backgroundColor: 'rgba(11, 188, 212, 0.08)' } : {}}
-                >
-                  <Icon className="h-[18px] w-[18px]" />
-                  <span>{item.label}</span>
-                  {item.badge && (
-                    <span className="ml-auto w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-                  )}
-                </Link>
-              )
-            })}
-          </div>
-
           <div>
             <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
-              Clinical Tools
+              Recovery Workflow
             </p>
             <div className="space-y-1">
-              {clinicalTools.map((item) => {
-                const active = isActive(item.href, item.label)
+              {mainNav.map((item) => {
+                const active = isActive(item.href)
                 const Icon = item.icon
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
                     onClick={onNavigate}
-                    className={`
-                      group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-150
-                      ${active
+                    className={`group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                      active
                         ? 'border-l-[3px] text-white'
-                        : 'border-l-[3px] border-transparent text-[#94A3B8] hover:text-[#DDE5EE]'}
-                    `}
+                        : 'border-l-[3px] border-transparent text-[#94A3B8] hover:text-[#DDE5EE]'
+                    }`}
+                    style={active ? { borderLeftColor: '#0BBCD4', color: '#0BBCD4', backgroundColor: 'rgba(11, 188, 212, 0.08)' } : {}}
+                  >
+                    <Icon className="h-[18px] w-[18px]" />
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className="ml-auto w-2 h-2 rounded-full bg-[#0BBCD4] flex-shrink-0" />
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+
+          <div>
+            <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
+              Supporting Tools
+            </p>
+            <div className="space-y-1">
+              {supportNav.map((item) => {
+                const active = isActive(item.href)
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={onNavigate}
+                    className={`group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                      active
+                        ? 'border-l-[3px] text-white'
+                        : 'border-l-[3px] border-transparent text-[#94A3B8] hover:text-[#DDE5EE]'
+                    }`}
                     style={active ? { borderLeftColor: '#0BBCD4', color: '#0BBCD4', backgroundColor: 'rgba(11, 188, 212, 0.08)' } : {}}
                   >
                     <Icon className="h-[18px] w-[18px]" />
@@ -203,7 +207,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
 
           <div>
             <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
-              Session
+              Answer History
             </p>
             <div className="space-y-1">
               <HistoryButton onNavigate={onNavigate} />
@@ -249,22 +253,14 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
               {preferredName ? (
                 <>
                   <span className="text-sm font-bold text-white truncate">{preferredName}</span>
-                  {programTrack && graduationDate ? (
-                    <span className="text-xs text-[#94A3B8] truncate">
-                      {programTrack} &middot; Class of {new Date(graduationDate).getFullYear()}
-                    </span>
-                  ) : programTrack ? (
-                    <span className="text-xs text-[#94A3B8] truncate">{programTrack}</span>
-                  ) : graduationDate ? (
-                    <span className="text-xs text-[#94A3B8] truncate">
-                      Class of {new Date(graduationDate).getFullYear()}
-                    </span>
-                  ) : null}
+                  <span className="text-xs text-[#94A3B8] truncate">
+                    {programTrack || 'NCLEX Retake'}{graduationDate ? ` · Class of ${new Date(graduationDate).getFullYear()}` : ''}
+                  </span>
                 </>
               ) : (
                 <>
-                  <span className="text-sm font-medium text-white">Student Account</span>
-                  <span className="text-xs text-[#94A3B8]">{programTrack || 'RN Track'}</span>
+                  <span className="text-sm font-medium text-white">Retake Account</span>
+                  <span className="text-xs text-[#94A3B8]">90-Day Recovery Pass</span>
                 </>
               )}
             </div>
