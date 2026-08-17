@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { ArrowRight, CheckCircle2, ClipboardCheck, Map, RotateCcw, Target } from 'lucide-react'
+import { ArrowRight, CheckCircle2, ClipboardCheck, Map as MapIcon, RotateCcw, Target } from 'lucide-react'
 
 type Question = {
   id: string
@@ -131,7 +131,7 @@ export default function RetakeRecoveryCheckClient() {
 
   return (
     <main className="min-h-screen bg-white text-[#0B2545]">
-      <section className="bg-gradient-to-br from-[#E0F4F6] via-white to-[#F7F9FB] py-14 sm:py-18 lg:py-20" aria-labelledby="recovery-check-heading">
+      <section className="bg-gradient-to-br from-[#E0F4F6] via-white to-[#F7F9FB] py-14 sm:py-20" aria-labelledby="recovery-check-heading">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/" className="text-sm font-bold text-[#0D8F9C] hover:text-[#0a7d88]">
             ← Back to ForgeNursing
@@ -259,7 +259,7 @@ export default function RetakeRecoveryCheckClient() {
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             <MiniFeature icon={<ClipboardCheck className="h-5 w-5" />} title="Recovery Check" body="Find a likely starting pattern before paying." />
-            <MiniFeature icon={<Map className="h-5 w-5" />} title="Pattern Map" body="Track what your missed answers are really showing." />
+            <MiniFeature icon={<MapIcon className="h-5 w-5" />} title="Pattern Map" body="Track what your missed answers are really showing." />
             <MiniFeature icon={<CheckCircle2 className="h-5 w-5" />} title="Fix Plan" body="Turn the pattern into a focused retake plan." />
           </div>
         </div>
