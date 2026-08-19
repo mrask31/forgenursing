@@ -1,19 +1,77 @@
 'use client'
 
 import Link from 'next/link'
-import { getBrowserClient } from '@/lib/supabase/client'
-import { useEffect, useState } from 'react'
-import { Check } from 'lucide-react'
-import Hero from '@/components/landing/Hero'
-import HowItClicks from '@/components/landing/HowItClicks'
-import ThreeFeatures from '@/components/landing/ThreeFeatures'
-import BeliefValidation from '@/components/landing/BeliefValidation'
-import ClosingCTA from '@/components/landing/ClosingCTA'
-// import { startStripeCheckout } from '@/lib/stripeClient' // Disabled during beta
+import { useEffect } from 'react'
+import {
+  ArrowRight,
+  CheckCircle2,
+  ClipboardCheck,
+  FileSearch,
+  Map,
+  RotateCcw,
+  Target,
+} from 'lucide-react'
+
+const painPoints = [
+  'I failed NCLEX and my score report did not tell me what to change.',
+  'I keep narrowing questions down to two and choosing the wrong one.',
+  'I read rationales every day, but my scores are still not moving.',
+  'I am scared to retake because I do not know why I missed the last attempt.',
+]
+
+const patternTypes = [
+  'Priority vs. true answer',
+  'Assessment vs. intervention',
+  'SATA overselecting',
+  'Delegation and scope',
+  'Safety and first action',
+  'Second-guessing',
+  'Content gap vs. reasoning gap',
+  'Passive rationale review',
+]
+
+const recoverySteps = [
+  {
+    title: 'Start with the Retake Recovery Check',
+    body: 'Answer a focused set of questions about your failed attempt, current study habits, retake timeline, and the question types that keep hurting you.',
+  },
+  {
+    title: 'Complete a diagnostic set',
+    body: 'Work through original NCLEX-style questions designed to expose reasoning patterns like priority, SATA, delegation, safety, and first-action thinking.',
+  },
+  {
+    title: 'Review each Answer Autopsy',
+    body: 'For missed answers, ForgeNursing explains why the wrong answer was tempting, what cue was missed, and what pattern caused the mistake.',
+  },
+  {
+    title: 'Follow your Fix Plan',
+    body: 'Get a 7-day or 14-day retake plan based on your pattern map, then retest the same weak reasoning areas before your next attempt.',
+  },
+]
+
+const includedFeatures = [
+  'Free Retake Recovery Check',
+  'Diagnostic question sets',
+  'Answer Autopsies for missed questions',
+  'Mistake Pattern Map',
+  '7-day and 14-day Fix Plans',
+  'Weekly Retake Readiness Reports',
+]
+
+async function captureLandingView() {
+  try {
+    const posthog = (await import('posthog-js')).default
+    posthog.capture('retake_landing_page_viewed', {
+      source: 'homepage',
+      positioning: 'nclex_retake_recovery',
+    })
+  } catch {}
+}
 
 export default function HomePage() {
-  // Structured Data (JSON-LD) for SEO
   useEffect(() => {
+    captureLandingView()
+
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://forgenursing.com'
 
     const organizationSchema = {
@@ -22,40 +80,29 @@ export default function HomePage() {
       name: 'ForgeNursing',
       url: baseUrl,
       logo: `${baseUrl}/logo.png`,
-      description: 'Clinical judgment trainer for nursing students using ADPIE framework',
-      sameAs: [],
+      description: 'NCLEX retake recovery tool for diagnosing missed-answer patterns before a retake.',
       contactPoint: {
         '@type': 'ContactPoint',
         contactType: 'Customer Service',
-      }
+      },
     }
 
     const softwareApplicationSchema = {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
-      name: 'ForgeNursing',
+      name: 'ForgeNursing Retake Recovery',
       applicationCategory: 'EducationalApplication',
       operatingSystem: 'Web',
       offers: {
         '@type': 'Offer',
-        price: '9.99',
+        price: '19.99',
         priceCurrency: 'USD',
         priceValidUntil: '2026-12-31',
         availability: 'https://schema.org/InStock',
-        url: `${baseUrl}/signup`
+        url: `${baseUrl}/pricing`,
       },
-      description: 'Clinical judgment trainer that helps nursing students practice from their materials, find the thinking error behind missed answers, and retest weak spots.',
-      featureList: [
-        'Mistake-type feedback',
-        'NCLEX-style practice quizzes from your materials',
-        'General NCLEX practice questions',
-        'AI tutor support for missed answers',
-        'ADPIE clinical reasoning support',
-        'Weakness-focused practice',
-        'BSN, ADN, LPN, MSN program support',
-        '7-day free trial',
-        'Founding Student pricing'
-      ]
+      description: 'ForgeNursing helps NCLEX retakers diagnose why they missed questions, map mistake patterns, and build a focused retake plan.',
+      featureList: includedFeatures,
     }
 
     const faqSchema = {
@@ -64,40 +111,35 @@ export default function HomePage() {
       mainEntity: [
         {
           '@type': 'Question',
-          name: 'What is ForgeNursing?',
+          name: 'Who is ForgeNursing for?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'ForgeNursing is a clinical judgment trainer for nursing students. It helps students practice NCLEX-style questions, understand why they missed an answer, and fix the reasoning pattern behind the mistake.'
-          }
+            text: 'ForgeNursing is built for NCLEX retakers and students whose scores are stuck because they do not know what mistake pattern to fix next.',
+          },
         },
         {
           '@type': 'Question',
-          name: 'What makes Forge different from other NCLEX prep tools?',
+          name: 'Does ForgeNursing guarantee a passing NCLEX result?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Most tools stop at rationales. ForgeNursing maps the thinking error behind a missed answer — such as priority, safety, assessment, delegation, medication, or therapeutic communication — then helps students practice that weakness again.'
-          }
+            text: 'No. ForgeNursing does not guarantee an exam outcome. It helps retakers identify missed-answer patterns and build a clearer recovery plan.',
+          },
         },
         {
           '@type': 'Question',
-          name: 'Do I need to upload my own materials?',
+          name: 'Is ForgeNursing a question bank?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Forge works best when you upload your syllabus, textbooks, lecture notes, or study guides. It can also provide general NCLEX-style practice when you do not have materials uploaded.'
-          }
+            text: 'No. ForgeNursing is a retake recovery and diagnostic tool. It uses targeted diagnostic questions and missed-answer analysis to show why answers are being missed.',
+          },
         },
-        {
-          '@type': 'Question',
-          name: 'Does ForgeNursing have a free trial?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes. ForgeNursing includes a 7-day free trial. After the trial, the Founding Student Plan is $9.99 per month or $79 per year. Cancel anytime.'
-          }
-        }
-      ]
+      ],
     }
 
     const addSchema = (schema: object, id: string) => {
+      const existing = document.getElementById(id)
+      if (existing) existing.remove()
+
       const script = document.createElement('script')
       script.type = 'application/ld+json'
       script.id = id
@@ -105,241 +147,268 @@ export default function HomePage() {
       document.head.appendChild(script)
     }
 
-    const existingOrg = document.getElementById('organization-schema')
-    const existingApp = document.getElementById('software-application-schema')
-    const existingFaq = document.getElementById('faq-schema')
-
-    if (existingOrg) existingOrg.remove()
-    if (existingApp) existingApp.remove()
-    if (existingFaq) existingFaq.remove()
-
     addSchema(organizationSchema, 'organization-schema')
     addSchema(softwareApplicationSchema, 'software-application-schema')
     addSchema(faqSchema, 'faq-schema')
 
     return () => {
-      const org = document.getElementById('organization-schema')
-      const app = document.getElementById('software-application-schema')
-      const faq = document.getElementById('faq-schema')
-      if (org) org.remove()
-      if (app) app.remove()
-      if (faq) faq.remove()
-    }
-  }, [])
-
-  const [user, setUser] = useState<any>(null)
-  const [betaFull, setBetaFull] = useState(false)
-  const [spotsRemaining, setSpotsRemaining] = useState<number | null>(null)
-
-  useEffect(() => {
-    fetch('/api/beta-spots', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then(({ spotsRemaining, isFull }) => {
-        setSpotsRemaining(spotsRemaining)
-        setBetaFull(isFull)
-      })
-      .catch(() => {
-        // Fail safe: assume beta is full when fetch fails
-        setSpotsRemaining(0)
-        setBetaFull(true)
-      })
-  }, [])
-
-  useEffect(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.warn('[Landing Page] Supabase environment variables are missing - user detection disabled')
-      return
-    }
-
-    try {
-      const supabase = getBrowserClient()
-
-      supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
-        setUser(user)
-      }).catch((error: any) => {
-        console.error('[Landing Page] Error getting user:', error)
-      })
-    } catch (error) {
-      console.error('[Landing Page] Error creating Supabase client:', error)
+      document.getElementById('organization-schema')?.remove()
+      document.getElementById('software-application-schema')?.remove()
+      document.getElementById('faq-schema')?.remove()
     }
   }, [])
 
   return (
-    <main className="w-full bg-white">
-      {/* Section 1: Hero */}
-      <Hero user={user} betaFull={betaFull} />
-
-      {/* Section 2: The Problem — Sound familiar? */}
-      <BeliefValidation />
-
-      {/* Section 3: This is Forge. */}
-      <ThreeFeatures />
-
-      {/* Section 4: How Forge teaches clinical reasoning */}
-      <HowItClicks />
-
-      {/* Section 5: Build Confidence Before Exam Day */}
-      <section className="bg-[#F7F9FB] py-14 sm:py-18 md:py-20" aria-labelledby="confidence-heading">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-12">
-            <p className="text-xs font-bold text-[#0D8F9C] uppercase tracking-widest mb-3">
-              Confidence, Not Just Questions
-            </p>
-            <h2 id="confidence-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3">
-              Build Confidence Before Exam Day
-            </h2>
-            <p className="text-base sm:text-lg text-[#1E2D3D]/70 max-w-2xl mx-auto">
-              The goal is not more random questions. The goal is knowing exactly what to improve — and walking into your exam prepared.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div className="rounded-2xl border border-[#DDE5EE] bg-white p-6 text-center space-y-3">
-              <div className="w-12 h-12 rounded-xl bg-[#E0F4F6] flex items-center justify-center mx-auto">
-                <svg className="w-6 h-6 text-[#0D8F9C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+    <main className="w-full bg-white text-[#0B2545]">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#E0F4F6] via-white to-[#F7F9FB]" aria-labelledby="hero-heading">
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#0D8F9C] via-[#0BBCD4] to-[#0D8F9C]" />
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+          <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full border border-[#0D8F9C]/30 bg-white/85 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#0D8F9C] shadow-sm sm:text-xs">
+                NCLEX Retake Recovery
+              </p>
+              <h1 id="hero-heading" className="mt-5 text-3xl font-extrabold leading-[1.12] tracking-tight text-[#0B2545] sm:text-5xl lg:text-6xl">
+                Failed NCLEX and don’t know what to fix before your retake?
+              </h1>
+              <p className="mt-5 max-w-2xl text-base leading-8 text-[#1E2D3D]/75 sm:text-xl">
+                ForgeNursing helps NCLEX retakers find the mistake patterns behind missed answers, so your next study plan is not just “do more questions.”
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/retake-recovery-check"
+                  className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-5 py-3 text-base font-bold text-white shadow-lg shadow-[#0D8F9C]/20 transition hover:bg-[#0a7d88] sm:px-6"
+                >
+                  Start Free Retake Check
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+                <Link
+                  href="/how-it-works"
+                  className="inline-flex min-h-[52px] items-center justify-center rounded-xl border border-[#DDE5EE] bg-white px-5 py-3 text-base font-bold text-[#0B2545] transition hover:border-[#0D8F9C] hover:text-[#0D8F9C] sm:px-6"
+                >
+                  See How It Works
+                </Link>
               </div>
-              <h3 className="font-bold text-[#0B2545]">Find Weak Patterns</h3>
-              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
-                Forge identifies the clinical judgment patterns behind your missed answers — not just which questions you got wrong.
+              <p className="mt-4 text-sm leading-6 text-[#1E2D3D]/60">
+                No pass guarantees. No shame. Just a clearer plan for what to fix next.
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[#DDE5EE] bg-white p-6 text-center space-y-3">
-              <div className="w-12 h-12 rounded-xl bg-[#E0F4F6] flex items-center justify-center mx-auto">
-                <svg className="w-6 h-6 text-[#0D8F9C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className="hidden rounded-[2rem] border border-[#DDE5EE] bg-white p-5 shadow-2xl shadow-[#0B2545]/10 sm:p-6 lg:block">
+              <div className="rounded-3xl bg-[#F7F9FB] p-5 sm:p-6">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">Your Retake Snapshot</p>
+                <div className="mt-5 space-y-4">
+                  <SnapshotRow title="Likely top risk" body="Priority vs. true answer" icon={<Target className="h-8 w-8 text-[#0D8F9C]" />} />
+                  <SnapshotRow title="Second pattern" body="Narrowed to two, picked wrong" icon={<FileSearch className="h-8 w-8 text-[#0D8F9C]" />} />
+                  <div className="rounded-2xl border border-[#0D8F9C]/25 bg-[#E0F4F6] p-4">
+                    <p className="text-sm font-bold text-[#0B2545]">Next focus</p>
+                    <p className="mt-1 text-sm text-[#1E2D3D]/70">
+                      Stop treating every miss like a content gap. Diagnose the decision pattern first.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h3 className="font-bold text-[#0B2545]">Practice With Purpose</h3>
-              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
-                Short focused drills target your specific weak patterns — so every question you practice actually moves you forward.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-[#DDE5EE] bg-white p-6 text-center space-y-3">
-              <div className="w-12 h-12 rounded-xl bg-[#E0F4F6] flex items-center justify-center mx-auto">
-                <svg className="w-6 h-6 text-[#0D8F9C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-[#0B2545]">Retest Your Weaknesses</h3>
-              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
-                Forge retests the patterns you missed so you can see real progress — not just more scores to worry about.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-[#DDE5EE] bg-white p-6 text-center space-y-3">
-              <div className="w-12 h-12 rounded-xl bg-[#E0F4F6] flex items-center justify-center mx-auto">
-                <svg className="w-6 h-6 text-[#0D8F9C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-[#0B2545]">Walk Into Exam Day Prepared</h3>
-              <p className="text-sm text-[#1E2D3D]/70 leading-relaxed">
-                Leave each session knowing what you improved — so you build real confidence, not just hope.
-              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section 6: Pricing */}
-      <section className="bg-white py-14 sm:py-18 md:py-20" aria-labelledby="pricing-heading">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-12">
-            <p className="text-xs font-bold text-[#0D8F9C] uppercase tracking-widest mb-3">
-              Founding Student Plan
-            </p>
-            <h2 id="pricing-heading" className="font-display text-3xl sm:text-4xl md:text-[2.75rem] text-[#0B2545] mb-3">
-              Start free. Then choose monthly or annual.
+      <section className="bg-white py-12 sm:py-16" aria-labelledby="problem-heading">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">The real retake problem</p>
+            <h2 id="problem-heading" className="mt-3 text-2xl font-extrabold leading-tight text-[#0B2545] sm:text-4xl">
+              Doing more questions is not always the answer.
             </h2>
-            <p className="text-base sm:text-lg text-[#1E2D3D]/70">
-              Full ForgeNursing access — clinical judgment practice, mistake-type feedback, and tutor support for missed answers. Cancel anytime.
+            <p className="mt-4 text-base leading-8 text-[#1E2D3D]/70 sm:text-lg">
+              If you failed NCLEX, your next attempt needs more than another pile of practice questions. You need to know whether you are missing content, priority, SATA, delegation, first-action thinking, or changing answers too often.
             </p>
           </div>
 
-          {/* What's included */}
-          <div className="max-w-2xl mx-auto mb-10 bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl p-6">
-            <p className="text-xs font-bold text-[#0B2545] uppercase tracking-widest mb-4">All plans include</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {[
-                'NCLEX-style practice quizzes',
-                'Questions from your uploaded materials',
-                'General NCLEX practice when you need it',
-                'Mistake-type feedback',
-                'AI tutor support for missed answers',
-                'ADPIE clinical reasoning support',
-                'Weakness-focused practice',
-                'BSN, ADN, LPN, MSN program support',
-              ].map((item) => (
-                <div key={item} className="flex items-start gap-2 text-sm text-[#1E2D3D]">
-                  <Check className="w-4 h-4 text-[#0D8F9C] mt-0.5 flex-shrink-0" />
-                  <span className="leading-snug">{item}</span>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            {painPoints.map((point) => (
+              <div key={point} className="rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 sm:p-5">
+                <div className="flex gap-3">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#0D8F9C]" />
+                  <p className="text-sm font-bold leading-6 text-[#1E2D3D] sm:text-base">“{point}”</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#F7F9FB] py-12 sm:py-16" aria-labelledby="diagnose-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">The new ForgeNursing</p>
+            <h2 id="diagnose-heading" className="mt-3 text-2xl font-extrabold leading-tight text-[#0B2545] sm:text-4xl">
+              Diagnose why you missed — not just what you missed.
+            </h2>
+            <p className="mt-4 text-base leading-8 text-[#1E2D3D]/70 sm:text-lg">
+              Most rationales explain the correct answer. ForgeNursing shows the mistake pattern behind the wrong answer, then turns that pattern into a focused retake plan.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            <FeatureCard
+              icon={<ClipboardCheck className="h-7 w-7" />}
+              title="Retake Recovery Check"
+              body="Start with a fast assessment of your failed attempt, study habits, weak question types, and retake timeline."
+            />
+            <FeatureCard
+              icon={<FileSearch className="h-7 w-7" />}
+              title="Answer Autopsy"
+              body="When you miss a diagnostic question, see why your answer was tempting, what cue you missed, and what reasoning pattern caused it."
+            />
+            <FeatureCard
+              icon={<Map className="h-7 w-7" />}
+              title="Mistake Pattern Map"
+              body="Track recurring patterns like priority vs. true answer, SATA overselecting, delegation, first action, and second-guessing."
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-12 sm:py-16" aria-labelledby="steps-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">Miss → Autopsy → Pattern → Fix Plan → Retest</p>
+              <h2 id="steps-heading" className="mt-3 text-2xl font-extrabold leading-tight text-[#0B2545] sm:text-4xl">
+                A recovery workflow built for one retake window.
+              </h2>
+              <p className="mt-4 text-base leading-8 text-[#1E2D3D]/70 sm:text-lg">
+                ForgeNursing is not another endless monthly study app. It is a 90-day retake recovery pass designed to help you find the pattern, fix the pattern, and retest the pattern.
+              </p>
+            </div>
+            <div className="space-y-3 sm:space-y-4">
+              {recoverySteps.map((step, index) => (
+                <div key={step.title} className="rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 sm:p-6">
+                  <div className="flex gap-4">
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#0D8F9C] text-sm font-bold text-white">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-[#0B2545] sm:text-lg">{step.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-[#1E2D3D]/70">{step.body}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto">
-            {/* Monthly */}
-            <a
-              href="/signup?plan=monthly"
-              className="bg-[#F7F9FB] border border-[#DDE5EE] rounded-2xl p-6 hover:border-[#0D8F9C] transition-colors text-left group"
-            >
-              <h3 className="font-bold text-[#0B2545] mb-1">Monthly</h3>
-              <div className="mb-3">
-                <span className="text-3xl font-bold text-[#0B2545]">$9.99</span>
-                <span className="text-sm text-[#1E2D3D]/60"> / month</span>
-              </div>
-              <p className="text-xs text-[#1E2D3D]/60 mb-4">Flexible, cancel anytime</p>
-              <span className="text-xs font-semibold text-[#0D8F9C] group-hover:underline">
-                Start 7-day free trial →
-              </span>
-            </a>
-
-            {/* Annual */}
-            <a
-              href="/signup?plan=annual"
-              className="bg-[#E0F4F6] border-2 border-[#0D8F9C] rounded-2xl p-6 hover:bg-[#d0ecef] transition-colors text-left relative group"
-            >
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0D8F9C] text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold">
-                Best Value
-              </span>
-              <h3 className="font-bold text-[#0B2545] mb-1 mt-2">Annual</h3>
-              <div className="mb-1">
-                <span className="text-3xl font-bold text-[#0B2545]">$79</span>
-                <span className="text-sm text-[#1E2D3D]/60"> / year</span>
-              </div>
-              <p className="text-xs text-[#0D8F9C] font-semibold mb-1">Save 34% vs monthly</p>
-              <p className="text-xs text-[#1E2D3D]/60 mb-4">Best value for a full year</p>
-              <span className="text-xs font-semibold text-[#0D8F9C] group-hover:underline">
-                Start 7-day free trial →
-              </span>
-            </a>
-          </div>
-          <p className="max-w-2xl mx-auto text-center text-xs text-[#1E2D3D]/45 mt-6 leading-relaxed">
-            ForgeNursing is a study aid. Subscription purchase does not guarantee passing any course, exam, NCLEX®, licensing exam, or certification.
-          </p>
         </div>
       </section>
 
-      {/* Section 7: Final CTA */}
-      <ClosingCTA betaFull={betaFull} />
+      <section className="bg-[#F7F9FB] py-12 sm:py-16" aria-labelledby="patterns-heading">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">What gets tracked</p>
+            <h2 id="patterns-heading" className="mt-3 text-2xl font-extrabold leading-tight text-[#0B2545] sm:text-4xl">
+              Your missed answers become a pattern map.
+            </h2>
+            <p className="mt-4 text-base leading-8 text-[#1E2D3D]/70 sm:text-lg">
+              A score tells you what happened. Your mistake pattern tells you what to change before the next attempt.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {patternTypes.map((pattern) => (
+              <div key={pattern} className="rounded-2xl border border-[#DDE5EE] bg-white p-4 text-sm font-bold text-[#0B2545] shadow-sm">
+                {pattern}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      {/* Disclaimer */}
-      <section className="bg-[#F7F9FB] py-8 sm:py-10" aria-label="Disclaimer">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xs text-[#1E2D3D]/50 leading-relaxed">
-            <span className="hidden sm:inline">ForgeNursing provides AI-generated NCLEX-style study tools for educational practice and clinical reasoning. It supplements, but does not replace, instruction, clinical training, official licensure preparation materials, or faculty guidance. NCLEX® is a registered trademark of the National Council of State Boards of Nursing, Inc. ForgeNursing is not affiliated with, endorsed by, or sponsored by NCSBN.</span>
-            <span className="sm:hidden">AI-generated NCLEX-style study aid. Not affiliated with NCSBN. No exam outcome guaranteed.</span>
+      <section className="bg-white py-12 sm:py-16" aria-labelledby="pricing-heading">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-[2rem] border border-[#0D8F9C]/25 bg-gradient-to-br from-[#E0F4F6] via-white to-[#F7F9FB] p-5 shadow-xl shadow-[#0B2545]/8 sm:p-8 lg:p-10">
+            <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">90-Day Retake Recovery Pass</p>
+                <h2 id="pricing-heading" className="mt-3 text-2xl font-extrabold leading-tight text-[#0B2545] sm:text-4xl">
+                  $19.99 for one focused recovery window.
+                </h2>
+                <p className="mt-4 text-base leading-8 text-[#1E2D3D]/70 sm:text-lg">
+                  Built for retakers who need a clearer plan before the next attempt — not another endless subscription.
+                </p>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <Link href="/retake-recovery-check" className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-5 py-3 font-bold text-white transition hover:bg-[#0a7d88] sm:px-6">
+                    Start Free Recovery Check
+                    <ArrowRight className="h-5 w-5" />
+                  </Link>
+                  <Link href="/pricing" className="inline-flex min-h-[50px] items-center justify-center rounded-xl border border-[#DDE5EE] bg-white px-5 py-3 font-bold text-[#0B2545] transition hover:border-[#0D8F9C] hover:text-[#0D8F9C] sm:px-6">
+                    View Pass Details
+                  </Link>
+                </div>
+              </div>
+              <div className="rounded-3xl border border-[#DDE5EE] bg-white p-5 shadow-sm">
+                <p className="text-sm font-bold text-[#0B2545]">Included in the pass</p>
+                <div className="mt-4 space-y-3">
+                  {includedFeatures.map((feature) => (
+                    <div key={feature} className="flex items-start gap-3 text-sm text-[#1E2D3D]/75">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#0D8F9C]" />
+                      <span>{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#0B2545] py-12 text-white sm:py-16" aria-labelledby="final-cta-heading">
+        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+          <RotateCcw className="mx-auto h-9 w-9 text-[#0BBCD4]" />
+          <h2 id="final-cta-heading" className="mt-5 text-2xl font-extrabold leading-tight text-white sm:text-4xl">
+            Before you retake, know why you picked the wrong one.
+          </h2>
+          <p className="mt-4 text-base leading-8 text-white/75 sm:text-lg">
+            Start with a free recovery check. If ForgeNursing does not help you see your miss patterns more clearly, you will know quickly.
+          </p>
+          <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link href="/retake-recovery-check" className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-bold text-[#0B2545] transition hover:bg-white/90 sm:px-6">
+              Start Free Retake Check
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+            <Link href="/faq" className="inline-flex min-h-[50px] items-center justify-center rounded-xl border border-white/25 px-5 py-3 font-bold text-white transition hover:bg-white/10 sm:px-6">
+              Read FAQ
+            </Link>
+          </div>
+          <p className="mt-6 text-xs leading-5 text-white/55">
+            ForgeNursing is an educational study aid. It is not affiliated with NCSBN and does not guarantee exam outcomes.
           </p>
         </div>
       </section>
     </main>
+  )
+}
+
+function SnapshotRow({ title, body, icon }: { title: string; body: string; icon: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-[#DDE5EE] bg-white p-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-bold text-[#0B2545]">{title}</p>
+          <p className="text-sm text-[#1E2D3D]/65">{body}</p>
+        </div>
+        {icon}
+      </div>
+    </div>
+  )
+}
+
+function FeatureCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
+  return (
+    <div className="rounded-3xl border border-[#DDE5EE] bg-white p-5 shadow-sm sm:p-6">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E0F4F6] text-[#0D8F9C]">
+        {icon}
+      </div>
+      <h3 className="mt-5 text-xl font-bold text-[#0B2545]">{title}</h3>
+      <p className="mt-3 text-sm leading-6 text-[#1E2D3D]/70">{body}</p>
+    </div>
   )
 }

@@ -14,8 +14,13 @@ export default function QuizQuestion({
 }: QuizQuestionProps) {
   return (
     <div className="space-y-4 pb-56 sm:pb-8">
-      <div className="rounded-lg border border-gray-200 p-4">
-        <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>{stem}</p>
+      <div className="space-y-2">
+        <div className="inline-flex rounded-full bg-[#E0F4F6] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#0D8F9C]">
+          Retake Diagnostic Question
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>{stem}</p>
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -25,7 +30,7 @@ export default function QuizQuestion({
             <button
               key={opt.label}
               onClick={() => onSelect(opt.label)}
-              className="w-full rounded-lg border-2 p-3 text-left text-sm transition-all"
+              className="w-full rounded-xl border-2 p-3 text-left text-sm transition-all"
               style={{
                 borderColor: isSelected ? '#0D8F9C' : '#E5E7EB',
                 backgroundColor: isSelected ? '#E0F4F6' : 'white',
@@ -33,14 +38,14 @@ export default function QuizQuestion({
                 color: '#0B2545',
               }}
             >
-              <span className="font-semibold">{opt.label})</span> {opt.text}
+              <span className="font-bold">{opt.label})</span> {opt.text}
             </button>
           )
         })}
       </div>
 
       <p className="text-center text-[10px] leading-snug text-gray-400">
-        AI-generated NCLEX-style practice • Educational use only
+        Pick the best NCLEX answer. Forge will show the Answer Autopsy after you submit.
       </p>
 
       <div className="h-28 sm:hidden" aria-hidden="true" />
@@ -52,7 +57,7 @@ export default function QuizQuestion({
           className="w-full rounded-lg text-white font-semibold text-base transition-all disabled:opacity-40 shadow-sm"
           style={{ backgroundColor: selectedAnswer ? '#0D8F9C' : '#9CA3AF', minHeight: '56px' }}
         >
-          {submitting ? 'Submitting...' : 'Submit Answer'}
+          {submitting ? 'Submitting...' : 'Submit for Answer Autopsy'}
         </button>
       </div>
     </div>

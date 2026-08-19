@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, BarChart3, Brain, CheckCircle2, Compass, Loader2, Target, TrendingUp } from 'lucide-react'
+import { ArrowRight, BarChart3, CheckCircle2, Compass, Loader2, Map, Target, TrendingUp } from 'lucide-react'
 
 type MistakeTypeRow = {
   mistake_type: string
@@ -54,7 +54,7 @@ function practiceProgress(attempted: number) {
   return Math.min(100, Math.max(8, attempted * 18))
 }
 
-export default function ClinicalJudgmentMapPage() {
+export default function MistakePatternMapPage() {
   const router = useRouter()
   const [data, setData] = useState<JudgmentMapData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -63,22 +63,8 @@ export default function ClinicalJudgmentMapPage() {
   useEffect(() => {
     try {
       const posthog = require('posthog-js').default
-      posthog.capture('readiness_map_opened')
+      posthog.capture('mistake_pattern_map_opened')
     } catch {}
-
-    const handleBeforeUnload = () => {
-      try {
-        const posthog = require('posthog-js').default
-        posthog.capture('readiness_map_abandoned', {
-          had_data: !!data,
-          time_on_page_ms: Date.now() - pageLoadTime,
-        })
-      } catch {}
-    }
-
-    const pageLoadTime = Date.now()
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
 
   useEffect(() => {
@@ -93,14 +79,14 @@ export default function ClinicalJudgmentMapPage() {
 
         if (!response.ok) {
           const body = await response.json().catch(() => ({}))
-          throw new Error(body.error || 'Failed to load your Readiness Map')
+          throw new Error(body.error || 'Failed to load your Mistake Pattern Map')
         }
 
         const map = await response.json()
         setData(map)
       } catch (err: any) {
-        console.error('[JudgmentMap] load error:', err)
-        setError(err.message || 'Failed to load your Readiness Map')
+        console.error('[MistakePatternMap] load error:', err)
+        setError(err.message || 'Failed to load your Mistake Pattern Map')
       } finally {
         setLoading(false)
       }
@@ -114,7 +100,7 @@ export default function ClinicalJudgmentMapPage() {
       <div className="min-h-screen bg-[#F7F9FB] flex items-center justify-center px-4">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: '#0D8F9C' }} />
-          <p className="text-sm text-slate-500">Building your Clinical Judgment Map...</p>
+          <p className="text-sm text-slate-500">Building your Mistake Pattern Map...</p>
         </div>
       </div>
     )
@@ -138,24 +124,24 @@ export default function ClinicalJudgmentMapPage() {
   }
 
   const hasAnyData = data.summary.total_attempted > 0
-  const topRows = data.mistake_types.slice(0, 6)
+  const topRows = data.mistake_types.slice(0, 8)
   const mapProgress = Math.min(100, Math.max(10, data.summary.total_attempted * 8))
 
   return (
     <div className="min-h-screen bg-[#F7F9FB] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-6 pb-16">
-        <header className="space-y-2">
+      <div className="max-w-6xl mx-auto space-y-6 pb-16">
+        <header className="rounded-[2rem] border border-[#DDE5EE] bg-white p-5 shadow-sm sm:p-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E0F4F6] border border-[#0D8F9C]/20">
-            <Brain className="w-4 h-4" style={{ color: '#0D8F9C' }} />
+            <Map className="w-4 h-4" style={{ color: '#0D8F9C' }} />
             <span className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0B2545' }}>
-              Your Readiness Map
+              Mistake Pattern Map
             </span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: '#0B2545' }}>
-            Know what to improve before exam day.
+          <h1 className="mt-4 text-3xl sm:text-4xl font-bold" style={{ color: '#0B2545' }}>
+            See why you are missing before you retake.
           </h1>
-          <p className="text-base text-slate-600 max-w-2xl">
-            Forge tracks your weak patterns so you can practice with purpose — not just do more random questions.
+          <p className="mt-2 text-base text-slate-600 max-w-3xl leading-7">
+            Your score tells you what happened. This map tracks what kind of misses are repeating: priority, SATA, delegation, safety, assessment, second-guessing, or content gaps.
           </p>
         </header>
 
@@ -163,7 +149,7 @@ export default function ClinicalJudgmentMapPage() {
           <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 p-5 sm:p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4 mb-5">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Confidence Builder</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Recovery stage</p>
                 <h2 className="text-2xl font-bold" style={{ color: '#0B2545' }}>{data.confidence_builder.stage}</h2>
               </div>
               <div className="w-12 h-12 rounded-2xl bg-[#E0F4F6] flex items-center justify-center">
@@ -184,10 +170,10 @@ export default function ClinicalJudgmentMapPage() {
           </div>
 
           <div className="rounded-2xl bg-white border border-slate-200 p-5 sm:p-6 shadow-sm">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Map Progress</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Map evidence</p>
             <div className="text-4xl font-bold mb-1" style={{ color: '#0B2545' }}>{data.summary.total_attempted}</div>
             <p className="text-sm text-slate-500 mb-4">
-              questions helping Forge learn your patterns
+              answered questions feeding this map
             </p>
             <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
               <div
@@ -196,7 +182,7 @@ export default function ClinicalJudgmentMapPage() {
               />
             </div>
             <p className="text-xs text-slate-400 mt-2">
-              More answers make your recommendations sharper.
+              At 5+ answered questions, Forge can make a sharper first recommendation.
             </p>
           </div>
         </section>
@@ -204,7 +190,7 @@ export default function ClinicalJudgmentMapPage() {
         <section className="rounded-2xl bg-[#0B2545] p-5 sm:p-6 text-white shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-center">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-white/50 mb-2">Suggested focus</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-white/50 mb-2">Suggested retake focus</p>
               <h2 className="text-2xl font-bold mb-2 text-white">{data.recommendation.title}</h2>
               <p className="text-sm text-white/75 leading-relaxed max-w-2xl">
                 {data.recommendation.message}
@@ -217,7 +203,7 @@ export default function ClinicalJudgmentMapPage() {
               onClick={() => router.push('/quiz')}
               className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-[#0B2545] text-sm font-bold hover:bg-slate-100 transition-colors"
             >
-              {data.summary.enough_data ? 'Practice This Focus' : 'Start Building Confidence'}
+              {data.summary.enough_data ? 'Practice This Pattern' : 'Start Baseline Diagnostic'}
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -228,16 +214,16 @@ export default function ClinicalJudgmentMapPage() {
             <div className="w-14 h-14 rounded-2xl bg-[#E0F4F6] flex items-center justify-center mx-auto mb-4">
               <Compass className="w-7 h-7" style={{ color: '#0D8F9C' }} />
             </div>
-            <h2 className="text-xl font-bold mb-2" style={{ color: '#0B2545' }}>Your map starts with your first answers.</h2>
+            <h2 className="text-xl font-bold mb-2" style={{ color: '#0B2545' }}>Your map starts with a diagnostic.</h2>
             <p className="text-sm text-slate-600 mb-5 max-w-md mx-auto">
-              Take a few practice questions. Forge will begin identifying the thinking patterns to train next.
+              Answer a few questions. Forge will begin identifying the missed-answer patterns to train before your next attempt.
             </p>
             <button
               onClick={() => router.push('/quiz')}
               className="px-5 py-3 rounded-xl text-white font-semibold"
               style={{ backgroundColor: '#0D8F9C' }}
             >
-              Start Practice
+              Start Retake Diagnostic
             </button>
           </section>
         )}
@@ -245,18 +231,18 @@ export default function ClinicalJudgmentMapPage() {
         {hasAnyData && (
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <PatternCard
-              label="Area to strengthen"
+              label="Top pattern to fix"
               icon={<Target className="w-5 h-5 text-white" />}
-              title={data.top_weakness?.mistake_type || 'Keep practicing'}
+              title={data.top_weakness?.mistake_type || 'Keep building the map'}
               stat={data.top_weakness ? trendLabel(data.top_weakness.trend) : 'Building'}
-              body={data.top_weakness?.explanation || 'Forge will identify your next area to strengthen as you answer more questions.'}
+              body={data.top_weakness?.explanation || 'Forge will identify your next area to strengthen as you answer more diagnostic questions.'}
             />
             <PatternCard
-              label="Strong area"
+              label="Stronger signal"
               icon={<BarChart3 className="w-5 h-5 text-white" />}
-              title={data.strongest_area?.mistake_type || 'Building'}
+              title={data.strongest_area?.mistake_type || 'Still building'}
               stat={data.strongest_area ? trendLabel(data.strongest_area.trend) : 'Building'}
-              body={data.strongest_area?.explanation || 'Your strong areas will appear after a few more questions.'}
+              body={data.strongest_area?.explanation || 'Your stronger areas will appear after a few more answers.'}
             />
           </section>
         )}
@@ -264,9 +250,9 @@ export default function ClinicalJudgmentMapPage() {
         {topRows.length > 0 && (
           <section className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-5 sm:p-6 border-b border-slate-100">
-              <h2 className="text-xl font-bold" style={{ color: '#0B2545' }}>Areas To Strengthen</h2>
+              <h2 className="text-xl font-bold" style={{ color: '#0B2545' }}>Tracked Miss Patterns</h2>
               <p className="text-sm text-slate-500 mt-1">
-                These are the clinical judgment patterns Forge suggests you focus on next.
+                These patterns are based on the answers you have submitted so far.
               </p>
             </div>
             <div className="divide-y divide-slate-100">
@@ -281,7 +267,7 @@ export default function ClinicalJudgmentMapPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold" style={{ color: '#0D8F9C' }}>{trendLabel(item.trend)}</div>
-                      <div className="text-xs text-slate-400">{item.attempted} practiced</div>
+                      <div className="text-xs text-slate-400">{item.attempted} answered</div>
                     </div>
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -291,7 +277,7 @@ export default function ClinicalJudgmentMapPage() {
                     />
                   </div>
                   <div className="mt-2 text-xs text-slate-500">
-                    {item.missed > 0 ? `${item.missed} answer${item.missed === 1 ? '' : 's'} showed this as a pattern to train.` : 'This pattern is looking strong so far.'}
+                    {item.missed > 0 ? `${item.missed} answer${item.missed === 1 ? '' : 's'} showed this as a pattern to review.` : 'This pattern is looking strong so far.'}
                   </div>
                 </div>
               ))}

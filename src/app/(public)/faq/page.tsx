@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ChevronDown, ArrowLeft, HelpCircle } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowLeft, ArrowRight, ChevronDown, HelpCircle } from 'lucide-react'
 
 interface FAQItem {
   question: string
@@ -12,72 +11,78 @@ interface FAQItem {
 
 const faqs: FAQItem[] = [
   {
-    question: 'What is ForgeNursing?',
-    answer: 'ForgeNursing is an AI-powered clinical reasoning tutor that helps nursing students prepare for NCLEX by turning their lecture notes and textbooks into step-by-step clinical reasoning guidance. It helps students understand prioritization, safety protocols, and clinical judgment.'
+    question: 'What is ForgeNursing now?',
+    answer: 'ForgeNursing is an NCLEX retake recovery tool. It helps retakers identify the mistake patterns behind missed answers, then turns those patterns into a focused retake plan.',
   },
   {
-    question: 'How does ForgeNursing help with NCLEX prep?',
-    answer: 'ForgeNursing uses your own course materials to provide step-by-step clinical reasoning guidance. It helps you think through NCLEX-style questions using frameworks like ABCs, Maslow\'s hierarchy, and safety protocols. Instead of just giving answers, it teaches you how to reason through prioritization and clinical decisions.'
+    question: 'Who is ForgeNursing for?',
+    answer: 'ForgeNursing is built for students who failed NCLEX, students preparing for a retake, and students whose scores are stuck because they keep missing the same kinds of questions without knowing why.',
   },
   {
-    question: 'Do I need to upload my own materials?',
-    answer: 'Yes, ForgeNursing works best when you upload your syllabus, textbooks, and lecture notes. This ensures the AI tutor aligns with your specific nursing program\'s curriculum and teaching style.'
+    question: 'Is ForgeNursing another NCLEX question bank?',
+    answer: 'No. ForgeNursing is not trying to replace large question banks. It uses diagnostic question sets and missed-answer analysis to help you understand why you are missing questions before your next attempt.',
   },
   {
-    question: 'Is there a free trial?',
-    answer: 'Yes, ForgeNursing offers a 7-day free trial. You can start using the platform immediately and cancel anytime during the trial period without being charged.'
+    question: 'What is the Retake Recovery Check?',
+    answer: 'The Retake Recovery Check is a free starting assessment. It asks about your failed attempt, study habits, retake timeline, and the question types that keep hurting you, then gives a starting snapshot of likely mistake patterns.',
   },
   {
-    question: 'What makes ForgeNursing different from other NCLEX prep tools?',
-    answer: 'ForgeNursing focuses on teaching clinical reasoning and prioritization using your own materials, rather than generic question banks. It provides step-by-step guidance that helps you understand the "why" behind clinical decisions, not just memorizing answers.'
+    question: 'What is an Answer Autopsy?',
+    answer: 'An Answer Autopsy explains why a wrong answer was tempting, what cue may have been missed, what reasoning pattern caused the mistake, and how to approach a similar question next time.',
+  },
+  {
+    question: 'What mistake patterns does ForgeNursing track?',
+    answer: 'ForgeNursing focuses on patterns like priority vs. true answer, assessment vs. intervention, SATA overselecting, delegation and scope, safety and first action, second-guessing, content gaps, and passive rationale review.',
+  },
+  {
+    question: 'How does ForgeNursing help after I already failed?',
+    answer: 'After a failed attempt, many students study harder without changing the actual pattern behind their misses. ForgeNursing helps you see whether the issue is content, priority, SATA, delegation, first-action thinking, second-guessing, or rationale review habits.',
+  },
+  {
+    question: 'Can ForgeNursing guarantee that I pass NCLEX next time?',
+    answer: 'No. No study tool can guarantee an NCLEX result. ForgeNursing is an educational study aid that helps you build a clearer recovery plan based on missed-answer patterns.',
+  },
+  {
+    question: 'Can I use ForgeNursing with UWorld, Archer, ATI, HESI, Bootcamp, or Simple Nursing?',
+    answer: 'Yes. Keep using your main prep resource. ForgeNursing is the recovery layer that helps diagnose the patterns behind missed answers and organize what to fix next.',
+  },
+  {
+    question: 'Should I paste full questions from UWorld, ATI, Archer, HESI, or other tools?',
+    answer: 'No. To respect third-party copyrights, do not paste full questions or rationales from other platforms. If you use an outside missed question, summarize the situation and rationale in your own words.',
   },
   {
     question: 'How much does ForgeNursing cost?',
-    answer: 'ForgeNursing offers three plans: Monthly ($24.99/month), Semester ($89 for 4 months, ~$22.25/month), and Annual ($199/year, ~$16.58/month). All plans include a 7-day free trial with full access to all features.'
+    answer: 'ForgeNursing is being repositioned around a 90-Day Retake Recovery Pass for $19.99. The pass is designed for one focused retake preparation window instead of an open-ended monthly subscription.',
   },
   {
-    question: 'Can I cancel my subscription anytime?',
-    answer: 'Yes, you can cancel your subscription at any time. If you cancel during the 7-day free trial, you won\'t be charged. After the trial, you can cancel anytime and your access will continue until the end of your billing period.'
+    question: 'What is included in the 90-Day Retake Recovery Pass?',
+    answer: 'The pass includes the Retake Recovery Check, diagnostic question sets, Answer Autopsies, a Mistake Pattern Map, 7-day and 14-day Fix Plans, and Weekly Retake Readiness Reports.',
   },
   {
-    question: 'What features are included in my subscription?',
-    answer: 'All plans include: step-by-step clinical reasoning guidance, Clinical Studio (NCLEX-style simulations), strict testing mode, key concepts & evidence review, support for your uploaded textbooks, and progress insights & history.'
+    question: 'Is this medical advice?',
+    answer: 'No. ForgeNursing is an educational study aid for exam preparation and clinical judgment practice. It is not medical advice and should not be used for patient care decisions.',
   },
-  {
-    question: 'How do I upload my course materials?',
-    answer: 'After signing up, you can upload your materials through the Classes section. Simply create a class, then drag and drop your PDFs, PowerPoints, or other documents. The AI will process them and use them to provide personalized guidance.'
-  },
-  {
-    question: 'Is my data secure?',
-    answer: 'Yes, we take data security seriously. All uploaded materials and study sessions are encrypted and stored securely. We never share your personal information or study data with third parties.'
-  },
-  {
-    question: 'Can I use ForgeNursing on my phone or tablet?',
-    answer: 'Yes, ForgeNursing is a web-based application that works on any device with a modern web browser, including phones, tablets, and computers.'
-  },
-  {
-    question: 'Does ForgeNursing replace my NCLEX prep course?',
-    answer: 'No, ForgeNursing is designed to supplement your existing NCLEX prep resources and nursing education. It helps you develop clinical reasoning skills using your own course materials, but should be used alongside your program\'s curriculum and other prep resources.'
-  }
 ]
 
 export default function FAQPage() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   useEffect(() => {
-    // Add FAQ structured data
     const faqSchema = {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: faqs.map(faq => ({
+      mainEntity: faqs.map((faq) => ({
         '@type': 'Question',
         name: faq.question,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: faq.answer
-        }
-      }))
+          text: faq.answer,
+        },
+      })),
     }
+
+    const existing = document.getElementById('faq-schema')
+    if (existing) existing.remove()
 
     const script = document.createElement('script')
     script.type = 'application/ld+json'
@@ -86,85 +91,94 @@ export default function FAQPage() {
     document.head.appendChild(script)
 
     return () => {
-      const existingScript = document.getElementById('faq-schema')
-      if (existingScript) existingScript.remove()
+      document.getElementById('faq-schema')?.remove()
     }
   }, [])
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main className="min-h-screen bg-white text-[#0B2545]">
+      <section className="bg-gradient-to-br from-[#E0F4F6] via-white to-[#F7F9FB] py-12 sm:py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-bold text-[#0D8F9C] hover:text-[#0a7d88] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20">
+          <div className="mt-8 flex items-center gap-3 mb-3">
+            <div className="p-2 bg-[#0D8F9C] rounded-xl shadow-lg shadow-[#0D8F9C]/20">
               <HelpCircle className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">
-              Frequently Asked Questions
-            </h1>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0D8F9C]">FAQ</p>
           </div>
-          <p className="text-slate-600 text-lg">
-            Everything you need to know about ForgeNursing
+          <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight text-[#0B2545]">
+            Questions about NCLEX Retake Recovery
+          </h1>
+          <p className="mt-4 text-lg leading-8 text-[#1E2D3D]/70">
+            Clear answers about what ForgeNursing is, what it is not, and how the 90-day retake recovery pass works.
           </p>
         </div>
-      </div>
+      </section>
 
-      {/* FAQ Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
-            >
-              <button
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full flex items-center justify-between gap-4 p-6 text-left hover:bg-slate-50/50 transition-colors"
+      <section className="bg-white py-12 sm:py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div
+                key={faq.question}
+                className="bg-white border border-[#DDE5EE] rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
               >
-                <h2 className="text-lg font-semibold text-slate-900 flex-1">
-                  {faq.question}
-                </h2>
-                <ChevronDown
-                  className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform duration-200 ${
-                    openIndex === index ? 'transform rotate-180' : ''
-                  }`}
-                />
-              </button>
-              {openIndex === index && (
-                <div className="px-6 pb-6 pt-0">
-                  <p className="text-slate-600 leading-relaxed">
-                    {faq.answer}
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                  className="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left hover:bg-[#F7F9FB] transition-colors"
+                >
+                  <h2 className="text-base sm:text-lg font-bold text-[#0B2545] flex-1">
+                    {faq.question}
+                  </h2>
+                  <ChevronDown
+                    className={`w-5 h-5 text-[#0D8F9C] flex-shrink-0 transition-transform duration-200 ${
+                      openIndex === index ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                {openIndex === index && (
+                  <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-0">
+                    <p className="text-[#1E2D3D]/70 leading-7">
+                      {faq.answer}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
 
-        {/* Still have questions? */}
-        <div className="mt-12 text-center p-8 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200/60 rounded-2xl">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">
-            Still have questions?
-          </h2>
-          <p className="text-slate-600 mb-6">
-            We're here to help! Start your free trial and see how ForgeNursing can help you master NCLEX prioritization.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transform hover:scale-105 active:scale-95"
-          >
-            Start Your 7-Day Free Trial
-          </Link>
+          <div className="mt-12 text-center p-8 bg-[#0B2545] rounded-[2rem] text-white">
+            <h2 className="font-display text-3xl font-bold mb-3">
+              Start with the free recovery check.
+            </h2>
+            <p className="text-white/75 mb-6 leading-7">
+              You do not have to pay before you see whether the new ForgeNursing direction makes sense for your retake plan.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-3">
+              <Link
+                href="/retake-recovery-check"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#0B2545] rounded-xl font-bold hover:bg-white/90 transition-all duration-200"
+              >
+                Start Free Check
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center justify-center px-6 py-3 border border-white/25 text-white rounded-xl font-bold hover:bg-white/10 transition-all duration-200"
+              >
+                View $19.99 Pass
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     </main>
   )
 }

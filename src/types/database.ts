@@ -59,6 +59,7 @@ export interface Database {
           trial_ends_at: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          tier_type: string | null
           created_at: string
           updated_at: string
         }
@@ -68,6 +69,7 @@ export interface Database {
           trial_ends_at?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          tier_type?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -77,6 +79,7 @@ export interface Database {
           trial_ends_at?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          tier_type?: string | null
           created_at?: string
           updated_at?: string
         }

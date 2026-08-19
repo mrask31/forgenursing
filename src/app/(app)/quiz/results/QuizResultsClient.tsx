@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { ArrowRight, ClipboardCheck, FileSearch, Loader2, Map as MapIcon, Target } from 'lucide-react'
 
 interface QuizQuestion {
   id: string
@@ -22,12 +23,6 @@ interface QuizQuestion {
   retest_focus?: string | null
 }
 
-interface CategoryBreakdown {
-  category: string
-  correct: number
-  total: number
-}
-
 interface MistakeBreakdown {
   mistakeType: string
   missed: number
@@ -43,36 +38,24 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 function fallbackMistakeType(category: string | null | undefined) {
   if (category === 'Psychosocial Integrity') return 'Therapeutic communication'
   if (category === 'Pharmacological Therapies') return 'Medication reasoning'
-  if (category === 'Safety and Infection Control') return 'Safety'
-  if (category === 'Delegation') return 'Delegation'
+  if (category === 'Safety and Infection Control') return 'Safety / immediate risk'
+  if (category === 'Delegation') return 'Delegation / scope'
   if (category === 'Reduction of Risk Potential') return 'Lab / diagnostic interpretation'
-  if (category === 'Management of Care' || category === 'Priority Setting') return 'Priority-setting'
+  if (category === 'Management of Care' || category === 'Priority Setting') return 'Priority vs. true answer'
   if (category === 'Health Promotion and Maintenance') return 'Patient education'
-  if (category === 'Physiological Adaptation') return 'Assessment-first'
-  return 'Clinical judgment'
+  if (category === 'Physiological Adaptation') return 'Assessment vs. intervention'
+  return 'Clinical judgment pattern'
 }
 
 function patternExplanation(mistakeType: string) {
-  switch (mistakeType) {
-    case 'Priority-setting':
-      return 'You may be choosing a reasonable action that helps later instead of the action that matters first.'
-    case 'Safety':
-      return 'You may be missing the choice that prevents harm or reduces immediate risk.'
-    case 'Assessment-first':
-      return 'You may be jumping to an intervention before gathering the data needed to act safely.'
-    case 'Therapeutic communication':
-      return 'You may be teaching, explaining, or reassuring before acknowledging the client’s concern.'
-    case 'Delegation':
-      return 'You may be missing scope of practice, client stability, or RN accountability cues.'
-    case 'Medication reasoning':
-      return 'You may be missing a medication safety cue, adverse effect, contraindication, or expected outcome.'
-    case 'Lab / diagnostic interpretation':
-      return 'You may be missing the abnormal data point that changes the priority.'
-    case 'Patient education':
-      return 'You may be missing the safest teaching priority for what the patient must do next.'
-    default:
-      return 'You missed a clinical judgment pattern worth reviewing before your next quiz.'
-  }
+  if (mistakeType.includes('Priority')) return 'You may be choosing an answer that is true, but not the safest or highest-priority first action.'
+  if (mistakeType.includes('Safety')) return 'You may be missing the option that prevents harm or reduces immediate risk.'
+  if (mistakeType.includes('Assessment')) return 'You may be mixing up when to assess first versus when the situation already requires action.'
+  if (mistakeType.includes('Therapeutic')) return 'You may be teaching, explaining, or reassuring before acknowledging the client’s concern.'
+  if (mistakeType.includes('Delegation')) return 'You may need to separate RN responsibility from tasks that can be safely delegated.'
+  if (mistakeType.includes('Medication')) return 'You may be missing a medication safety cue, adverse effect, contraindication, or expected outcome.'
+  if (mistakeType.includes('Lab')) return 'You may be missing the abnormal data point that changes the priority.'
+  return 'This is a missed-answer pattern worth reviewing before your next retake practice set.'
 }
 
 export default function QuizResultsClient() {
@@ -84,28 +67,13 @@ export default function QuizResultsClient() {
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [reviewingId, setReviewingId] = useState<string | null>(null)
+  const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null)
   const [fixingQuestionId, setFixingQuestionId] = useState<string | null>(null)
   const [fixWeaknessError, setFixWeaknessError] = useState<string | null>(null)
 
-  const captureResultsEvent = (eventName: string, extra: Record<string, any> = {}) => {
-    try {
-      const posthog = require('posthog-js').default
-      posthog.capture(eventName, {
-        session_id: sessionId,
-        quiz_mode: session?.quiz_mode ?? null,
-        score: session?.score ?? null,
-        total_questions: questions.length,
-        missed_count: questions.filter(q => !q.is_correct && q.user_answer).length,
-        source: 'quiz_results',
-        ...extra,
-      })
-    } catch {}
-  }
-
   useEffect(() => {
     if (!sessionId) {
-      setLoadError('Missing quiz session.')
+      setLoadError('Missing diagnostic session.')
       setLoading(false)
       return
     }
@@ -125,7 +93,7 @@ export default function QuizResultsClient() {
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}))
-          throw new Error(data.error || 'Failed to load results')
+          throw new Error(data.error || 'Failed to load recovery report')
         }
 
         const data = await response.json()
@@ -133,7 +101,7 @@ export default function QuizResultsClient() {
         setQuestions(data.questions ?? [])
         try {
           const posthog = require('posthog-js').default
-          posthog.capture('quiz_results_viewed', {
+          posthog.capture('retake_recovery_report_viewed', {
             session_id: sessionId,
             quiz_mode: data.session?.quiz_mode ?? null,
             score: data.session?.score ?? null,
@@ -143,7 +111,7 @@ export default function QuizResultsClient() {
         } catch {}
       } catch (error: any) {
         console.error('[QuizResults] Load error:', error)
-        setLoadError(error?.message || 'Failed to load results')
+        setLoadError(error?.message || 'Failed to load recovery report')
       } finally {
         setLoading(false)
       }
@@ -154,52 +122,42 @@ export default function QuizResultsClient() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500">Loading results...</p>
+      <div className="flex min-h-screen items-center justify-center bg-[#F7F9FB]">
+        <div className="text-center text-gray-500">
+          <Loader2 className="mx-auto mb-3 h-6 w-6 animate-spin text-[#0D8F9C]" />
+          Loading recovery report...
+        </div>
       </div>
     )
   }
 
   if (loadError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 text-center">
-        <p className="text-gray-500">{loadError}</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center bg-[#F7F9FB]">
+        <p className="text-gray-600">{loadError}</p>
         <button onClick={() => window.location.reload()} className="rounded-lg text-white font-semibold px-5 py-3" style={{ backgroundColor: '#0D8F9C' }}>
           Try Again
         </button>
-        <Link href="/quiz" className="underline" style={{ color: '#0D8F9C' }}>Start a new quiz</Link>
+        <Link href="/quiz" className="underline" style={{ color: '#0D8F9C' }}>Start a new diagnostic</Link>
       </div>
     )
   }
 
   if (!session || questions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <p className="text-gray-500">No results found.</p>
-        <Link href="/quiz" className="underline" style={{ color: '#0D8F9C' }}>Start a new quiz</Link>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F7F9FB]">
+        <p className="text-gray-500">No recovery report found.</p>
+        <Link href="/quiz" className="underline" style={{ color: '#0D8F9C' }}>Start a new diagnostic</Link>
       </div>
     )
   }
 
-  const score = session.score ?? questions.filter(q => q.is_correct).length
   const total = questions.length
-  const pct = Math.round((score / total) * 100)
   const missed = questions.filter(q => !q.is_correct && q.user_answer)
+  const correct = questions.filter(q => q.is_correct).length
   const isTargetedDrill = session.quiz_mode === 'targeted_drill'
   const isDiagnostic = session.quiz_mode === 'diagnostic'
   const targetPattern = session.target_mistake_type || questions[0]?.mistake_type || null
-
-  const catMap = new Map<string, { correct: number; total: number }>()
-  questions.forEach(q => {
-    if (!q.nclex_category) return
-    const entry = catMap.get(q.nclex_category) ?? { correct: 0, total: 0 }
-    entry.total++
-    if (q.is_correct) entry.correct++
-    catMap.set(q.nclex_category, entry)
-  })
-  const categories: CategoryBreakdown[] = Array.from(catMap.entries()).map(
-    ([category, { correct, total }]) => ({ category, correct, total })
-  )
 
   const mistakeMap = new Map<string, number>()
   missed.forEach(q => {
@@ -211,12 +169,7 @@ export default function QuizResultsClient() {
     .sort((a, b) => b.missed - a.missed)
   const topMistake = mistakeBreakdown[0]
 
-  const handleViewJudgmentMap = (buttonLocation: string) => {
-    captureResultsEvent('judgment_map_cta_clicked', { button_location: buttonLocation })
-    router.push('/readiness')
-  }
-
-  const handleFixWeakness = async (q: QuizQuestion) => {
+  const handleOpenCoach = async (q: QuizQuestion) => {
     if (!sessionId || fixingQuestionId) return
     setFixWeaknessError(null)
     setFixingQuestionId(q.id)
@@ -225,23 +178,12 @@ export default function QuizResultsClient() {
       const mistakeType = q.mistake_type || fallbackMistakeType(q.nclex_category)
       try {
         const posthog = require('posthog-js').default
-        posthog.capture('fix_weakness_clicked', {
+        posthog.capture('answer_autopsy_coach_clicked', {
           session_id: sessionId,
           question_id: q.id,
           question_index: q.question_index,
           nclex_category: q.nclex_category,
-          source: 'results_screen',
-          user_answer: q.user_answer,
-          correct_answer: q.correct_answer,
-          mistake_type: mistakeType,
-          retest_focus: q.retest_focus ?? null,
-        })
-        posthog.capture('dig_deeper_clicked', {
-          session_id: sessionId,
-          question_id: q.id,
-          question_index: q.question_index,
-          nclex_category: q.nclex_category,
-          source: 'results_screen',
+          source: 'recovery_report',
           user_answer: q.user_answer,
           correct_answer: q.correct_answer,
           mistake_type: mistakeType,
@@ -257,226 +199,183 @@ export default function QuizResultsClient() {
       })
 
       if (!response.ok) {
-        console.error('[QuizResults] Fix weakness handoff failed:', await response.text())
-        setFixWeaknessError('Could not open tutor. Please try again.')
+        setFixWeaknessError('Could not open the Answer Autopsy Coach. Please try again.')
         return
       }
 
       const data = await response.json()
       if (!data.chatId) {
-        setFixWeaknessError('Could not open tutor. Please try again.')
+        setFixWeaknessError('Could not open the Answer Autopsy Coach. Please try again.')
         return
       }
 
       router.push(`/tutor?sessionId=${data.chatId}`)
     } catch (error) {
-      console.error('[QuizResults] Fix weakness error:', error)
-      setFixWeaknessError('Could not open tutor. Please try again.')
+      console.error('[QuizResults] Autopsy coach error:', error)
+      setFixWeaknessError('Could not open the Answer Autopsy Coach. Please try again.')
     } finally {
       setFixingQuestionId(null)
     }
   }
 
   return (
-    <div className="min-h-screen px-4 py-6 pb-40 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div className="space-y-6 pb-24">
-        <h1 className="text-2xl font-bold text-center" style={{ color: '#0B2545' }}>
-          {isTargetedDrill ? 'Focused Drill Complete 🎯' : isDiagnostic ? 'Diagnostic Complete 🧭' : 'Quiz Complete! 🎉'}
-        </h1>
+    <div className="min-h-screen bg-[#F7F9FB] px-4 py-6 pb-36 sm:px-6 lg:px-8" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      <div className="mx-auto max-w-5xl space-y-6">
+        <header className="rounded-[2rem] border border-[#DDE5EE] bg-white p-5 shadow-sm sm:p-6">
+          <p className="inline-flex rounded-full bg-[#E0F4F6] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#0D8F9C]">
+            Retake Recovery Report
+          </p>
+          <h1 className="mt-4 text-3xl font-bold" style={{ color: '#0B2545' }}>
+            {isTargetedDrill ? 'Focused pattern drill complete' : isDiagnostic ? 'Baseline retake diagnostic complete' : 'Diagnostic set complete'}
+          </h1>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#1E2D3D]/70">
+            This report is not a pass prediction. It shows what your answers suggest you should fix before the next NCLEX attempt.
+          </p>
+        </header>
 
-        <div className="rounded-xl border border-gray-200 p-5 text-center space-y-3">
-          {isTargetedDrill ? (
-            <>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>Pattern trained</p>
-              <p className="text-3xl font-bold" style={{ color: '#0B2545' }}>{targetPattern || 'Clinical judgment'}</p>
-              <p className="text-sm text-gray-600">
-                You completed {total} focused question{total === 1 ? '' : 's'} and gave Forge more signal for your Readiness Map.
-              </p>
-            </>
-          ) : isDiagnostic ? (
-            <>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>Map started</p>
-              <p className="text-3xl font-bold" style={{ color: '#0B2545' }}>{total} questions</p>
-              <p className="text-sm text-gray-600">
-                Forge used this diagnostic to start finding the clinical judgment patterns to train next.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="text-4xl font-bold" style={{ color: '#0D8F9C' }}>{score} / {total}</p>
-              <div className="w-full h-3 rounded-full bg-gray-200">
-                <div className="h-3 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: '#0D8F9C' }} />
-              </div>
-              <p className="text-sm text-gray-500">{pct}%</p>
-            </>
-          )}
-          <p className="text-[11px] leading-snug text-gray-400">
-            Scores reflect AI-generated practice questions for study only and do not predict exam performance.
-          </p>
-        </div>
+        <section className="grid gap-4 md:grid-cols-3">
+          <MetricCard label="Questions answered" value={String(total)} body="More answers sharpen your pattern map." />
+          <MetricCard label="Correct in this set" value={`${correct}/${total}`} body="Useful, but the pattern matters more than the score." />
+          <MetricCard label="Misses to analyze" value={String(missed.length)} body="Each miss becomes an Answer Autopsy signal." />
+        </section>
 
-        <div className="rounded-xl border border-[#0D8F9C]/20 bg-[#E0F4F6]/30 p-4 space-y-2">
-          <p className="text-sm font-semibold" style={{ color: '#0B2545' }}>
-            Forge is helping identify the patterns that may be costing you points.
-          </p>
-          <p className="text-xs text-gray-600 leading-relaxed">
-            The goal is not more questions. The goal is understanding what to improve before exam day.
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
-            What Forge learned
-          </p>
-          <p className="text-sm text-gray-700 leading-relaxed">
-            {isTargetedDrill
-              ? `This drill trained ${targetPattern || 'your next focus'} and updated your Readiness Map.`
-              : isDiagnostic
-                ? 'This diagnostic started your Readiness Map. Forge will use your answers to recommend what to practice next.'
-                : 'This quiz updated your Readiness Map. Forge uses each answer to find your weak patterns.'}
-          </p>
-          {topMistake && (
-            <div className="rounded-lg bg-white border border-[#DDE5EE] p-3 space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
-                Forge detected a pattern
-              </p>
-              <p className="text-base font-bold" style={{ color: '#0B2545' }}>{topMistake.mistakeType}</p>
-              <p className="text-xs text-gray-500">
-                This pattern may be costing you points on NCLEX questions.
-              </p>
-            </div>
-          )}
-          <button
-            onClick={() => {
-              try {
-                const posthog = require('posthog-js').default
-                posthog.capture('readiness_map_cta_clicked', {
-                  session_id: sessionId,
-                  source: 'quiz_results',
-                  top_mistake_type: topMistake?.mistakeType || null,
-                  is_targeted_drill: isTargetedDrill,
-                  is_diagnostic: isDiagnostic,
-                })
-              } catch {}
-              router.push('/readiness')
-            }}
-            className="w-full rounded-lg text-white font-semibold text-sm"
-            style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
-          >
-            {topMistake ? 'See What\'s Costing You Points \u2192' : 'See What To Practice Next \u2192'}
-          </button>
-        </div>
-
-        {topMistake && (
-          <div className="rounded-xl p-5 text-white space-y-3" style={{ backgroundColor: '#0B2545' }}>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
-              {isDiagnostic ? 'First pattern Forge noticed' : 'Your Weak Pattern'}
-            </p>
+        <section className="rounded-[2rem] border border-[#DDE5EE] bg-white p-5 shadow-sm sm:p-6">
+          <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <p className="text-sm text-white/70">Pattern to keep training</p>
-              <p className="text-2xl font-bold">{topMistake.mistakeType}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0D8F9C]">What Forge learned</p>
+              <h2 className="mt-2 text-2xl font-bold" style={{ color: '#0B2545' }}>
+                {topMistake ? topMistake.mistakeType : targetPattern || 'No major miss pattern in this set'}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-[#1E2D3D]/70">
+                {topMistake
+                  ? patternExplanation(topMistake.mistakeType)
+                  : isTargetedDrill
+                    ? `This set gave Forge more signal on ${targetPattern || 'your current focus'}.`
+                    : 'You answered this set without enough repeated misses to identify a dominant pattern yet.'}
+              </p>
             </div>
-            <p className="text-sm text-white/85 leading-relaxed">
-              {patternExplanation(topMistake.mistakeType)}
-            </p>
-            <p className="text-xs text-white/50">
-              {topMistake.missed} answer{topMistake.missed === 1 ? '' : 's'} showed this pattern. See where it appears on your Readiness Map.
-            </p>
+            <button
+              onClick={() => router.push('/readiness')}
+              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#0B2545] px-5 py-3 text-sm font-bold text-white"
+            >
+              <MapIcon className="h-4 w-4" />
+              View Mistake Pattern Map
+            </button>
           </div>
-        )}
+        </section>
 
         {mistakeBreakdown.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Patterns to Train</h2>
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-              {mistakeBreakdown.map(item => (
-                <div key={item.mistakeType} className="flex items-center justify-between gap-3">
-                  <span className="text-sm" style={{ color: '#0B2545' }}>{item.mistakeType}</span>
-                  <span className="text-xs rounded-full px-2 py-1 bg-gray-100 text-gray-500">
-                    {item.missed} to train
-                  </span>
+          <section className="rounded-[2rem] border border-[#DDE5EE] bg-white p-5 shadow-sm sm:p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0D8F9C]">Miss patterns from this set</p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {mistakeBreakdown.map((item) => (
+                <div key={item.mistakeType} className="rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold" style={{ color: '#0B2545' }}>{item.mistakeType}</h3>
+                      <p className="mt-1 text-xs leading-5 text-[#1E2D3D]/60">{patternExplanation(item.mistakeType)}</p>
+                    </div>
+                    <span className="rounded-full bg-[#E0F4F6] px-2 py-1 text-xs font-bold text-[#0D8F9C]">
+                      {item.missed} miss{item.missed === 1 ? '' : 'es'}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
-        {categories.length > 0 && !isTargetedDrill && !isDiagnostic && (
-          <div className="space-y-3">
-            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Performance by Category</h2>
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-              {categories.map(cat => {
-                const catPct = Math.round((cat.correct / cat.total) * 100)
-                return (
-                  <div key={cat.category} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span style={{ color: '#0B2545' }}>{cat.category}</span>
-                      <span className="text-gray-500">{cat.correct}/{cat.total} {catPct}%</span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-gray-200">
-                      <div className="h-2 rounded-full" style={{ width: `${catPct}%`, backgroundColor: '#0D8F9C' }} />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {fixWeaknessError && <p className="text-xs text-red-600">{fixWeaknessError}</p>}
-
-        {missed.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Questions to Review</h2>
-            <div className="rounded-xl border border-gray-200 divide-y divide-gray-100">
-              {missed.map(q => {
+        <section className="rounded-[2rem] border border-[#DDE5EE] bg-white p-5 shadow-sm sm:p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0D8F9C]">Answer Autopsies</p>
+          <div className="mt-4 space-y-3">
+            {missed.length === 0 ? (
+              <div className="rounded-2xl border border-green-100 bg-green-50 p-4">
+                <p className="font-bold text-green-900">No missed answers in this set.</p>
+                <p className="mt-1 text-sm text-green-800">Keep building the map with another diagnostic set.</p>
+              </div>
+            ) : (
+              missed.map((q) => {
                 const mistakeType = q.mistake_type || fallbackMistakeType(q.nclex_category)
+                const expanded = expandedQuestionId === q.id
                 return (
-                  <div key={q.id} className="p-4 space-y-2">
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>{mistakeType}</p>
-                      <p className="text-sm" style={{ color: '#0B2545' }}>
-                        <span className="font-medium">Q{q.question_index + 1}</span> · {q.question_stem.slice(0, 80)}...
-                      </p>
-                    </div>
-
-                    {reviewingId === q.id && (
-                      <div className="rounded-lg p-3 text-sm space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
-                        <p><span className="font-medium">Your answer:</span> {q.user_answer}</p>
-                        <p><span className="font-medium">Correct:</span> {q.correct_answer}</p>
-                        {q.reasoning_trap && <p><span className="font-medium">Trap:</span> {q.reasoning_trap}</p>}
-                        {q.fix_instruction && <p><span className="font-medium">Fix:</span> {q.fix_instruction}</p>}
-                        <p className="text-gray-600">{q.rationale_correct}</p>
+                  <div key={q.id} className="rounded-2xl border border-[#DDE5EE] bg-[#F7F9FB] p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E0F4F6] text-[#0D8F9C]">
+                        <FileSearch className="h-5 w-5" />
                       </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <button onClick={() => setReviewingId(reviewingId === q.id ? null : q.id)} className="px-3 py-1.5 rounded text-sm font-medium border" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}>
-                        {reviewingId === q.id ? 'Hide' : 'Review'}
-                      </button>
-                      <button type="button" onClick={() => handleFixWeakness(q)} disabled={fixingQuestionId === q.id} className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
-                        {fixingQuestionId === q.id ? 'Opening…' : 'Train Pattern →'}
-                      </button>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold" style={{ color: '#0B2545' }}>Question {q.question_index + 1}: {mistakeType}</p>
+                        <p className="mt-1 text-xs leading-5 text-[#1E2D3D]/60">{patternExplanation(mistakeType)}</p>
+                        {expanded && (
+                          <div className="mt-3 space-y-3 rounded-xl border border-[#DDE5EE] bg-white p-3 text-sm leading-6 text-[#1E2D3D]/75">
+                            <p><span className="font-bold text-[#0B2545]">You picked:</span> {q.user_answer}</p>
+                            <p><span className="font-bold text-[#0B2545]">Correct:</span> {q.correct_answer}</p>
+                            {q.reasoning_trap && <p><span className="font-bold text-[#0B2545]">Trap:</span> {q.reasoning_trap}</p>}
+                            {q.fix_instruction && <p><span className="font-bold text-[#0B2545]">Fix:</span> {q.fix_instruction}</p>}
+                          </div>
+                        )}
+                        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedQuestionId(expanded ? null : q.id)}
+                            className="min-h-[40px] rounded-lg border border-[#DDE5EE] bg-white px-3 py-2 text-xs font-bold text-[#0B2545]"
+                          >
+                            {expanded ? 'Hide autopsy' : 'View autopsy'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenCoach(q)}
+                            disabled={fixingQuestionId === q.id}
+                            className="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-[#0D8F9C] px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
+                          >
+                            {fixingQuestionId === q.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
+                            Open Coach
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )
-              })}
-            </div>
+              })
+            )}
           </div>
-        )}
+          {fixWeaknessError && <p className="mt-3 text-xs text-red-600">{fixWeaknessError}</p>}
+        </section>
 
-        <div className="space-y-3 pt-2">
-          <button onClick={() => router.push('/quiz')} className="w-full rounded-lg text-white font-semibold text-base" style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}>
-            {isTargetedDrill ? 'Start Another Practice' : isDiagnostic ? 'Start Recommended Practice' : 'Start New Quiz'}
+        <div className="grid gap-3 sm:grid-cols-3">
+          <button
+            onClick={() => router.push('/quiz')}
+            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-4 py-3 text-sm font-bold text-white"
+          >
+            <ClipboardCheck className="h-4 w-4" />
+            Next Diagnostic
           </button>
-          <button onClick={() => handleViewJudgmentMap('bottom_button')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '56px' }}>
-            See My Weak Patterns
+          <button
+            onClick={() => router.push('/readiness')}
+            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-[#DDE5EE] bg-white px-4 py-3 text-sm font-bold text-[#0B2545]"
+          >
+            <MapIcon className="h-4 w-4" />
+            Pattern Map
           </button>
-          <button onClick={() => router.push('/entry')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#DDE5EE', color: '#0B2545', minHeight: '56px' }}>
-            Back to Study Options
+          <button
+            onClick={() => router.push('/entry')}
+            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-[#DDE5EE] bg-white px-4 py-3 text-sm font-bold text-[#0B2545]"
+          >
+            Recovery Home
+            <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+function MetricCard({ label, value, body }: { label: string; value: string; body: string }) {
+  return (
+    <div className="rounded-2xl border border-[#DDE5EE] bg-white p-5 shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0D8F9C]">{label}</p>
+      <p className="mt-2 text-3xl font-bold" style={{ color: '#0B2545' }}>{value}</p>
+      <p className="mt-1 text-xs leading-5 text-[#1E2D3D]/60">{body}</p>
     </div>
   )
 }

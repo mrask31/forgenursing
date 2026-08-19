@@ -16,13 +16,13 @@ type PatternStats = {
 function fallbackMistakeType(category?: string | null) {
   if (category === 'Psychosocial Integrity') return 'Therapeutic communication'
   if (category === 'Pharmacological Therapies') return 'Medication reasoning'
-  if (category === 'Safety and Infection Control') return 'Safety'
-  if (category === 'Delegation') return 'Delegation'
+  if (category === 'Safety and Infection Control') return 'Safety / immediate risk'
+  if (category === 'Delegation') return 'Delegation / scope'
   if (category === 'Reduction of Risk Potential') return 'Lab / diagnostic interpretation'
-  if (category === 'Management of Care' || category === 'Priority Setting') return 'Priority-setting'
+  if (category === 'Management of Care' || category === 'Priority Setting') return 'Priority vs. true answer'
   if (category === 'Health Promotion and Maintenance') return 'Patient education'
-  if (category === 'Physiological Adaptation') return 'Assessment-first'
-  return 'Clinical judgment'
+  if (category === 'Physiological Adaptation') return 'Assessment vs. intervention'
+  return 'Clinical judgment pattern'
 }
 
 function accuracy(correct: number, attempted: number) {
@@ -31,28 +31,15 @@ function accuracy(correct: number, attempted: number) {
 }
 
 function explainFocus(mistakeType: string) {
-  switch (mistakeType) {
-    case 'Assessment-first':
-      return 'Practice noticing when the safest move is to gather more data before acting.'
-    case 'Priority-setting':
-      return 'Practice choosing which action protects the client first when more than one answer sounds right.'
-    case 'Safety':
-      return 'Practice catching the answer that prevents harm before anything else.'
-    case 'Medication reasoning':
-      return 'Practice connecting medication cues to expected effects, adverse effects, and safety risks.'
-    case 'Therapeutic communication':
-      return 'Practice responding to feelings before teaching, explaining, or reassuring.'
-    case 'Delegation':
-      return 'Practice matching the task to scope, client stability, and RN judgment.'
-    case 'Lab / diagnostic interpretation':
-      return 'Practice connecting abnormal data to the clinical risk it creates.'
-    case 'Patient education':
-      return 'Practice choosing the teaching point that keeps the patient safe.'
-    case 'Pathophysiology / knowledge gap':
-      return 'Practice connecting the body process to the nursing action.'
-    default:
-      return 'Practice the clinical judgment pattern Forge is seeing in your recent answers.'
-  }
+  if (mistakeType.includes('Assessment')) return 'Practice deciding when to assess first versus when the question already gives enough data to act.'
+  if (mistakeType.includes('Priority')) return 'Practice choosing which answer is safest and first when more than one option sounds clinically true.'
+  if (mistakeType.includes('Safety')) return 'Practice catching the answer that prevents harm or reduces immediate risk before anything else.'
+  if (mistakeType.includes('Medication')) return 'Practice connecting medication cues to effects, adverse effects, contraindications, and safety risks.'
+  if (mistakeType.includes('Therapeutic')) return 'Practice responding to feelings before teaching, explaining, or reassuring.'
+  if (mistakeType.includes('Delegation')) return 'Practice matching tasks to scope, client stability, and RN accountability.'
+  if (mistakeType.includes('Lab')) return 'Practice connecting abnormal data to the clinical risk it creates.'
+  if (mistakeType.includes('Patient education')) return 'Practice choosing the teaching point that keeps the patient safe after discharge or self-care.'
+  return 'Practice the missed-answer pattern Forge is seeing in your recent diagnostic answers.'
 }
 
 export async function GET() {
@@ -79,7 +66,7 @@ export async function GET() {
 
     if (error) {
       console.error('[Fix Plan] Query error:', error)
-      return NextResponse.json({ error: 'Failed to build fix plan' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to build retake fix plan' }, { status: 500 })
     }
 
     const answered = rows ?? []
@@ -117,40 +104,40 @@ export async function GET() {
       : patterns.sort((a, b) => b.missed - a.missed)[0] ?? null
 
     const hasPersonalPlan = totalAttempted >= MIN_ATTEMPTS_FOR_PERSONAL_PLAN && !!topFocus
-    const focus = hasPersonalPlan ? topFocus!.mistake_type : 'Find your clinical judgment pattern'
+    const focus = hasPersonalPlan ? topFocus!.mistake_type : 'Find your first retake risk pattern'
 
     const steps = hasPersonalPlan
       ? [
           {
             title: `Train ${focus}`,
             body: explainFocus(focus),
-            action: 'Start a 3-question focused drill',
+            action: 'Start a 3-question focused pattern drill',
           },
           {
-            title: 'Review one miss visually',
-            body: 'Use Show Me Visually on one missed answer so the reasoning becomes easier to see.',
-            action: 'Use Show Me Visually after a missed answer',
+            title: 'Review one miss with an Answer Autopsy',
+            body: 'After a missed answer, look for why your choice felt right and what cue made it lose.',
+            action: 'Use the Answer Autopsy Coach after a miss',
           },
           {
-            title: 'Retest the pattern',
-            body: 'Finish by retesting the same pattern so Forge can update your map.',
+            title: 'Retest the same pattern',
+            body: 'Do not just move to a new topic. Retest the same reasoning pattern so Forge can update your map.',
             action: 'Retest this pattern',
           },
         ]
       : [
           {
-            title: 'Take a 5-question diagnostic',
-            body: 'Forge needs a few answers to find the clinical judgment pattern to train first.',
+            title: 'Take a 5-question retake diagnostic',
+            body: 'Forge needs a few answers to identify the missed-answer pattern to train first.',
             action: 'Start your diagnostic',
           },
           {
-            title: 'Read the Quick Why',
-            body: 'After each answer, focus on the key cue and why the tempting answer pulls students in.',
-            action: 'Use Quick Why feedback',
+            title: 'Read each Answer Autopsy',
+            body: 'For every miss, focus on the cue, the tempting answer, and the decision rule — not just the correct option.',
+            action: 'Review the autopsy after each question',
           },
           {
-            title: 'Build your first map',
-            body: 'Your answers create the first version of your Clinical Judgment Map.',
+            title: 'Build your first Mistake Pattern Map',
+            body: 'Your answers create the first version of your retake recovery map.',
             action: 'See what Forge noticed',
           },
         ]
@@ -159,8 +146,8 @@ export async function GET() {
       has_personal_plan: hasPersonalPlan,
       total_attempted: totalAttempted,
       focus,
-      focus_explanation: hasPersonalPlan ? explainFocus(focus) : 'Take a short diagnostic so Forge can learn how you answer and find what to train first.',
-      cta_label: hasPersonalPlan ? `Start ${focus} Drill` : 'Start 5-Question Diagnostic',
+      focus_explanation: hasPersonalPlan ? explainFocus(focus) : 'Take a short diagnostic so Forge can learn how you answer and find what to train first before your next attempt.',
+      cta_label: hasPersonalPlan ? `Train ${focus}` : 'Start 5-Question Retake Diagnostic',
       cta_href: '/quiz',
       steps,
       top_pattern: topFocus,

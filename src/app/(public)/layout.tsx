@@ -8,28 +8,25 @@ export const revalidate = 0
 
 export const metadata: Metadata = {
   title: {
-    default: 'ForgeNursing | AI Tutor for NCLEX Prep & Clinical Reasoning',
+    default: 'ForgeNursing | NCLEX Retake Recovery',
     template: '%s | ForgeNursing'
   },
-  description: 'Studying hard but still stuck on NCLEX questions? ForgeNursing turns your lecture notes and textbooks into step-by-step clinical reasoning — so prioritization finally clicks. Free 7-day trial.',
+  description: 'Failed NCLEX and do not know what to fix? ForgeNursing helps retakers identify missed-answer patterns, review Answer Autopsies, and build a focused retake plan.',
   keywords: [
-    'NCLEX prep',
-    'NCLEX preparation',
-    'nursing tutor',
-    'AI nursing tutor',
-    'clinical reasoning',
-    'nursing school',
-    'NCLEX study guide',
+    'NCLEX retake',
+    'failed NCLEX',
+    'NCLEX retake recovery',
+    'NCLEX retake plan',
+    'NCLEX missed questions',
+    'NCLEX answer rationale',
+    'NCLEX priority questions',
+    'NCLEX SATA questions',
+    'NCLEX delegation questions',
+    'NCLEX study plan after failing',
+    'NCLEX mistake patterns',
     'nursing exam prep',
     'clinical judgment',
     'nursing prioritization',
-    'NCLEX questions',
-    'nursing education',
-    'RN exam prep',
-    'LPN exam prep',
-    'nursing study tool',
-    'step-by-step clinical reasoning',
-    'nursing AI assistant'
   ],
   authors: [{ name: 'ForgeNursing' }],
   creator: 'ForgeNursing',
@@ -48,21 +45,21 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: '/',
     siteName: 'ForgeNursing',
-    title: 'ForgeNursing | AI Tutor for NCLEX Prep & Clinical Reasoning',
-    description: 'Studying hard but still stuck on NCLEX questions? ForgeNursing turns your lecture notes and textbooks into step-by-step clinical reasoning — so prioritization finally clicks. Free 7-day trial.',
+    title: 'ForgeNursing | NCLEX Retake Recovery',
+    description: 'Failed NCLEX and do not know what to fix? ForgeNursing helps retakers find the mistake patterns behind missed answers before the next attempt.',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'ForgeNursing - AI Tutor for NCLEX Prep',
+        alt: 'ForgeNursing - NCLEX Retake Recovery',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ForgeNursing | AI Tutor for NCLEX Prep & Clinical Reasoning',
-    description: 'Studying hard but still stuck on NCLEX questions? ForgeNursing turns your lecture notes and textbooks into step-by-step clinical reasoning — so prioritization finally clicks.',
+    title: 'ForgeNursing | NCLEX Retake Recovery',
+    description: 'Know why you picked the wrong one before you retake NCLEX.',
     images: ['/og-image.jpg'],
   },
   robots: {
@@ -75,10 +72,6 @@ export const metadata: Metadata = {
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
-  },
-  verification: {
-    // Add Google Search Console verification when available
-    // google: 'your-verification-code',
   },
 }
 
@@ -93,4 +86,3 @@ export default function PublicRouteLayout({
     </AppShell>
   )
 }
-

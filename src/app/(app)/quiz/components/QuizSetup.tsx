@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, BookOpen, Brain, ClipboardList, Compass, Target } from 'lucide-react'
+import { ArrowRight, BookOpen, ClipboardCheck, Compass, FileSearch, Target } from 'lucide-react'
 
 const NCLEX_CATEGORIES = [
   'All Categories',
@@ -35,7 +35,7 @@ interface QuizSetupProps {
   onResume?: () => void
 }
 
-type TrainingMode = 'recommended' | 'documents' | 'topic' | 'general'
+type TrainingMode = 'diagnostic' | 'recommended' | 'topic' | 'documents'
 
 type JudgmentMapSummary = {
   summary?: {
@@ -51,10 +51,10 @@ type JudgmentMapSummary = {
 }
 
 export default function QuizSetup({
-  hasDocuments, sourceType, setSourceType, category, setCategory,
+  hasDocuments, setSourceType, category, setCategory,
   onStart, loading, resumeSession, onResume,
 }: QuizSetupProps) {
-  const [mode, setMode] = useState<TrainingMode>('recommended')
+  const [mode, setMode] = useState<TrainingMode>('diagnostic')
   const [judgmentMap, setJudgmentMap] = useState<JudgmentMapSummary | null>(null)
 
   useEffect(() => {
@@ -81,26 +81,19 @@ export default function QuizSetup({
     if (nextMode === 'documents') {
       setSourceType('document')
       setCategory('All Categories')
+      return
     }
-    if (nextMode === 'general' || nextMode === 'recommended') {
-      setSourceType('generic')
-      setCategory('All Categories')
-    }
-    if (nextMode === 'topic') {
-      setSourceType('generic')
-    }
+    setSourceType('generic')
+    if (nextMode !== 'topic') setCategory('All Categories')
   }
 
   const enoughMapData = Boolean(judgmentMap?.summary?.enough_data)
   const nextFocus = judgmentMap?.recommendation?.mistake_type ?? null
-  const recommendationTitle = enoughMapData && nextFocus
-    ? `Practice ${nextFocus}`
-    : 'Build your first pattern map'
   const recommendationMessage = enoughMapData && judgmentMap?.recommendation?.message
     ? judgmentMap.recommendation.message
-    : 'Answer a few questions so Forge can learn your missed-answer patterns and recommend what to train next.'
+    : 'Take a baseline diagnostic first. Forge needs a few answers before it can tell which miss pattern needs the most attention.'
 
-  const handleStart = () => {
+  const startFromMode = () => {
     if (mode === 'documents' && !hasDocuments) return
 
     if (mode === 'recommended' && enoughMapData && nextFocus) {
@@ -113,60 +106,59 @@ export default function QuizSetup({
       return
     }
 
-    onStart({
-      quizMode: 'standard',
-      totalQuestions: 10,
-    })
-  }
-
-  const handleRecommendedStart = (event: React.MouseEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-    setMode('recommended')
-    setSourceType('generic')
-    setCategory('All Categories')
-
-    if (enoughMapData && nextFocus) {
-      onStart({
-        quizMode: 'targeted_drill',
-        targetMistakeType: nextFocus,
-        targetFocus: judgmentMap?.recommendation?.explanation ?? recommendationMessage,
-        totalQuestions: 3,
-      })
+    if (mode === 'diagnostic') {
+      onStart({ quizMode: 'standard', totalQuestions: 5 })
       return
     }
 
-    onStart({
-      quizMode: 'standard',
-      totalQuestions: 10,
-    })
+    if (mode === 'topic') {
+      onStart({ quizMode: 'standard', totalQuestions: 10 })
+      return
+    }
+
+    onStart({ quizMode: 'standard', totalQuestions: 10 })
   }
 
-  const questionCountLabel = mode === 'recommended' && enoughMapData && nextFocus
-    ? '3-question focused drill · ~3 minutes'
-    : mode === 'documents'
-      ? '10 questions from your materials'
-      : '10 questions · ~8 minutes'
+  const questionCountLabel =
+    mode === 'recommended' && enoughMapData && nextFocus
+      ? '3-question pattern drill · ~3 minutes'
+      : mode === 'diagnostic'
+        ? '5-question retake diagnostic · ~5 minutes'
+        : mode === 'documents'
+          ? '10 questions from your uploaded material'
+          : '10-question focused topic set · ~8 minutes'
+
+  const buttonLabel = loading
+    ? 'Starting...'
+    : mode === 'recommended' && enoughMapData && nextFocus
+      ? `Train ${nextFocus}`
+      : mode === 'recommended'
+        ? 'Start Baseline Diagnostic'
+        : mode === 'diagnostic'
+          ? 'Start 5-Question Retake Diagnostic'
+          : mode === 'documents'
+            ? 'Practice From My Materials'
+            : 'Start Focused Topic Set'
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-5 px-4 py-6">
+    <div className="w-full max-w-2xl mx-auto space-y-5 px-4 py-6">
       <div className="space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E0F4F6] border border-[#0D8F9C]/20">
-          <Brain className="w-4 h-4" style={{ color: '#0D8F9C' }} />
+          <ClipboardCheck className="w-4 h-4" style={{ color: '#0D8F9C' }} />
           <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#0B2545' }}>
-            Practice Questions
+            Retake Diagnostic Sets
           </span>
         </div>
-        <h1 className="text-2xl font-bold" style={{ color: '#0B2545' }}>What do you want to fix today?</h1>
-        <p className="text-sm text-gray-500 leading-relaxed">
-          Forge learns from your missed answers and helps you train the clinical judgment patterns that cost you points.
+        <h1 className="text-3xl font-bold" style={{ color: '#0B2545' }}>Find the pattern behind the miss.</h1>
+        <p className="text-sm text-gray-600 leading-relaxed max-w-xl">
+          These sets are built for NCLEX retakers. The goal is not just a score — it is finding whether your misses come from priority, SATA, delegation, safety, second-guessing, or content gaps.
         </p>
       </div>
 
       {resumeSession && onResume && (
         <div className="rounded-xl p-4 border border-[#0D8F9C]/20 bg-[#E0F4F6] space-y-3">
           <p className="text-sm font-semibold" style={{ color: '#0B2545' }}>
-            Resume your quiz: {resumeSession.current_question_index}/{resumeSession.total_questions} complete
+            Resume your recovery set: {resumeSession.current_question_index}/{resumeSession.total_questions} complete
           </p>
           <div className="flex gap-2">
             <button
@@ -177,7 +169,7 @@ export default function QuizSetup({
               Resume
             </button>
             <button
-              onClick={handleStart}
+              onClick={startFromMode}
               className="flex-1 px-3 py-2.5 rounded-lg text-sm font-semibold border"
               style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}
             >
@@ -187,55 +179,52 @@ export default function QuizSetup({
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="grid gap-3 md:grid-cols-2">
+        <TrainingCard
+          selected={mode === 'diagnostic'}
+          icon={<Compass className="w-5 h-5" />}
+          eyebrow="Start here"
+          title="5-Question Retake Diagnostic"
+          body="A short diagnostic set to start your Mistake Pattern Map and expose what to fix first."
+          footer="Best first step after a failed attempt or when scores feel stuck."
+          onClick={() => selectMode('diagnostic')}
+        />
+
         <TrainingCard
           selected={mode === 'recommended'}
           icon={<Target className="w-5 h-5" />}
-          eyebrow="Recommended"
-          title={recommendationTitle}
+          eyebrow="Based on your map"
+          title={enoughMapData && nextFocus ? `Train ${nextFocus}` : 'Build your first pattern map'}
           body={recommendationMessage}
-          footer={enoughMapData && nextFocus ? 'Starts a 3-question focused drill from your Judgment Map.' : 'Forge needs a few answers to personalize this.'}
-          actionLabel={mode === 'recommended' ? (enoughMapData && nextFocus ? 'Start 3-Question Drill' : 'Start Recommended Practice') : undefined}
-          actionLoading={loading}
-          onAction={handleRecommendedStart}
+          footer={enoughMapData && nextFocus ? 'Starts a focused drill on your current miss pattern.' : 'Forge needs enough answers before this becomes personalized.'}
           onClick={() => selectMode('recommended')}
+        />
+
+        <TrainingCard
+          selected={mode === 'topic'}
+          icon={<FileSearch className="w-5 h-5" />}
+          eyebrow="Focused review"
+          title="Choose a NCLEX Area"
+          body="Pick safety, management of care, pharmacology, psychosocial, risk reduction, or another category."
+          footer="Useful when your score report named a broad weak area."
+          onClick={() => selectMode('topic')}
         />
 
         <TrainingCard
           selected={mode === 'documents'}
           disabled={!hasDocuments}
           icon={<BookOpen className="w-5 h-5" />}
-          eyebrow="Class exam prep"
-          title="Practice From My Notes"
-          body="Use your uploaded slides, study guides, or class material to generate NCLEX-style questions."
-          footer={hasDocuments ? 'Best when studying for a specific class exam.' : 'Upload notes first to unlock this mode.'}
+          eyebrow="Optional support"
+          title="Use My Course Materials"
+          body="Generate NCLEX-style practice from uploaded slides, notes, or study guides."
+          footer={hasDocuments ? 'Helpful for class remediation or content gaps.' : 'Upload notes first to unlock this mode.'}
           onClick={() => selectMode('documents')}
-        />
-
-        <TrainingCard
-          selected={mode === 'topic'}
-          icon={<Compass className="w-5 h-5" />}
-          eyebrow="Focused drill"
-          title="Choose a Topic"
-          body="Pick Pharm, Safety, Delegation, Psychosocial Integrity, or another NCLEX area."
-          footer="Good when you already know what you want to practice."
-          onClick={() => selectMode('topic')}
-        />
-
-        <TrainingCard
-          selected={mode === 'general'}
-          icon={<ClipboardList className="w-5 h-5" />}
-          eyebrow="Balanced practice"
-          title="General NCLEX Practice"
-          body="Start a balanced quiz across common NCLEX-style categories."
-          footer="Good when you just need reps."
-          onClick={() => selectMode('general')}
         />
       </div>
 
       {mode === 'topic' && (
         <div className="space-y-2 rounded-xl bg-white border border-gray-200 p-4">
-          <p className="text-sm font-semibold" style={{ color: '#0B2545' }}>Choose your focus area</p>
+          <p className="text-sm font-semibold" style={{ color: '#0B2545' }}>Choose your score-report area</p>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -251,31 +240,31 @@ export default function QuizSetup({
 
       {!hasDocuments && mode === 'documents' && (
         <div className="rounded-lg p-3 text-sm" style={{ backgroundColor: '#E0F4F6' }}>
-          <p className="font-medium" style={{ color: '#0B2545' }}>Upload your course materials for personalized questions.</p>
+          <p className="font-medium" style={{ color: '#0B2545' }}>Upload materials only if you want class-specific practice.</p>
           <Link href="/binder" className="underline text-sm font-medium" style={{ color: '#0D8F9C' }}>
-            Upload in Binder →
+            Upload in Course Materials →
           </Link>
         </div>
       )}
 
-      <div className="space-y-1">
-        <p className="text-sm text-gray-400">{questionCountLabel}</p>
-        <p className="text-[11px] leading-snug text-gray-400">
-          AI-generated NCLEX-style practice questions for educational study and clinical reasoning. Results do not guarantee exam performance.
+      <div className="rounded-xl border border-[#DDE5EE] bg-white p-4">
+        <p className="text-sm font-bold" style={{ color: '#0B2545' }}>{questionCountLabel}</p>
+        <p className="mt-1 text-[11px] leading-snug text-gray-500">
+          AI-generated NCLEX-style practice for educational study only. This does not predict or guarantee exam performance.
         </p>
       </div>
 
       <button
-        onClick={handleStart}
+        onClick={startFromMode}
         disabled={loading || (mode === 'documents' && !hasDocuments)}
         className="w-full rounded-lg text-white font-semibold text-base transition-all disabled:opacity-50"
         style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}
       >
-        {loading ? 'Starting...' : mode === 'recommended' && enoughMapData && nextFocus ? 'Start 3-Question Drill' : mode === 'recommended' ? 'Start Recommended Practice' : mode === 'documents' ? 'Practice From Notes' : mode === 'topic' ? 'Start Focused Drill' : 'Start General Quiz'}
+        {buttonLabel}
       </button>
 
       <Link href="/readiness" className="block text-center text-sm font-semibold" style={{ color: '#0D8F9C' }}>
-        View my Judgment Map →
+        View my Mistake Pattern Map →
       </Link>
     </div>
   )
@@ -289,9 +278,6 @@ function TrainingCard({
   title,
   body,
   footer,
-  actionLabel,
-  actionLoading = false,
-  onAction,
   onClick,
 }: {
   selected: boolean
@@ -301,9 +287,6 @@ function TrainingCard({
   title: string
   body: string
   footer: string
-  actionLabel?: string
-  actionLoading?: boolean
-  onAction?: (event: React.MouseEvent) => void
   onClick: () => void
 }) {
   return (
@@ -329,22 +312,6 @@ function TrainingCard({
           <h3 className="text-sm font-bold mb-1" style={{ color: '#0B2545' }}>{title}</h3>
           <p className="text-xs text-gray-600 leading-relaxed mb-2">{body}</p>
           <p className="text-[11px] text-gray-400 leading-snug">{footer}</p>
-          {actionLabel && onAction && (
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={onAction}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  onAction(event as unknown as React.MouseEvent)
-                }
-              }}
-              className="mt-3 inline-flex w-full items-center justify-center rounded-lg px-3 py-2.5 text-sm font-bold text-white"
-              style={{ backgroundColor: '#0D8F9C', minHeight: '44px' }}
-            >
-              {actionLoading ? 'Starting...' : actionLabel}
-            </span>
-          )}
         </div>
         {selected && <ArrowRight className="w-4 h-4 flex-shrink-0 mt-1" style={{ color: '#0D8F9C' }} />}
       </div>
