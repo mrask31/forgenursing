@@ -15,9 +15,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   return (
     <div className="min-h-screen-dynamic bg-[#F7F9FB] flex flex-col">
       <nav className="sticky top-0 z-40 border-b border-[#DDE5EE] bg-white/95 shadow-sm backdrop-blur flex-shrink-0 safe-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 sm:h-18 gap-4">
-            <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group flex-shrink-0">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16 sm:h-18 gap-2 sm:gap-4">
+            <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group flex-shrink min-w-0">
               <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#0D8F9C] rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200 flex-shrink-0">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <rect x="1" y="10" width="3" height="6" rx="1" fill="white"/>
@@ -26,7 +26,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   <rect x="14.5" y="1" width="3" height="15" rx="1" fill="white"/>
                 </svg>
               </div>
-              <span className="font-bold text-lg sm:text-xl">
+              <span className="font-bold text-base sm:text-xl truncate">
                 <span className="text-[#0B2545]">Forge</span><span className="text-[#0BBCD4]">Nursing</span>
               </span>
             </Link>
@@ -43,11 +43,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               ))}
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
               {pathname !== '/login' && (
                 <Link
                   href="/login"
-                  className="hidden sm:flex px-4 py-2 text-[#0B2545] hover:text-[#0D8F9C] text-xs sm:text-sm font-semibold transition-colors min-h-[40px] items-center border border-[#DDE5EE] hover:border-[#0D8F9C] rounded-lg"
+                  className="flex px-3 sm:px-4 py-2 text-[#0B2545] hover:text-[#0D8F9C] text-xs sm:text-sm font-bold transition-colors min-h-[40px] items-center border border-[#DDE5EE] hover:border-[#0D8F9C] rounded-lg bg-white"
                 >
                   Log In
                 </Link>
@@ -56,9 +56,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               {pathname !== '/retake-recovery-check' && (
                 <Link
                   href="/retake-recovery-check"
-                  className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#0D8F9C] text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-[#0a7d88] transition-colors min-h-[40px] sm:min-h-[44px] flex items-center shadow-sm"
+                  className="px-3 sm:px-5 py-2 sm:py-2.5 bg-[#0D8F9C] text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-[#0a7d88] transition-colors min-h-[40px] sm:min-h-[44px] flex items-center shadow-sm whitespace-nowrap"
                 >
-                  Start Free Check
+                  <span className="hidden xs:inline">Start Free Check</span>
+                  <span className="xs:hidden">Free Check</span>
                 </Link>
               )}
             </div>
