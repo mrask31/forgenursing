@@ -218,14 +218,7 @@ export function scoreTrap(answers: SessionAnswer[]): TrapResult {
 // ============================================================================
 
 function buildShareText(trapDisplay: string | null, score: number, total: number): string {
-  if (!trapDisplay) {
-    return `I got ${score}/${total} on the NCLEX Answer Trap Check — no obvious trap detected.\nFind yours: forgenursing.com/answer-trap-check`;
-  }
-  const explanation = TRAP_EXPLANATIONS[
-    Object.keys(TRAP_DISPLAY_MAP).find(k => TRAP_DISPLAY_MAP[k] === trapDisplay) ?? ''
-  ];
-  const shortDesc = explanation?.explanation?.replace('You may tend to ', 'I tend to ') ?? '';
-  return `My first NCLEX Answer Trap signal: ${trapDisplay}\n${shortDesc}\nFind yours: forgenursing.com/answer-trap-check`;
+  return `I practiced ${total} NCLEX-style questions with ForgeNursing and got ${score} correct.${trapDisplay ? ` Suggested review focus: ${trapDisplay}.` : ''} This short check is not an exam-readiness assessment.\nTry it: forgenursing.com/answer-trap-check`;
 }
 
 // ============================================================================

@@ -101,7 +101,7 @@ export default function TrapFeedback({
           {!is_correct && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-1">
-                Why your answer was tempting
+                Compare your choice
               </p>
               <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
                 {why_wrong_short}

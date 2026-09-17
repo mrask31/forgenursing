@@ -6,10 +6,11 @@ import type { TrapResult } from '@/lib/answer-trap'
 
 interface TrapAllCorrectProps {
   result: TrapResult
+  sessionId: string | null
   anonymousId: string | null
 }
 
-export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectProps) {
+export default function TrapAllCorrect({ result, sessionId, anonymousId }: TrapAllCorrectProps) {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -58,6 +59,12 @@ export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectPr
       })
     } catch {}
 
+    try {
+      if (sessionId && anonymousId) {
+        localStorage.setItem('answer_trap_session_id', sessionId)
+        localStorage.setItem('answer_trap_anonymous_id', anonymousId)
+      }
+    } catch {}
     window.location.href = '/signup'
   }
 
@@ -80,7 +87,7 @@ export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectPr
             No obvious trap from this short check.
           </h1>
           <p className="text-sm text-slate-600 leading-relaxed max-w-sm mx-auto">
-            You got {result.score}/{result.total} correct. These 3 questions didn't reveal a clear Answer Trap pattern — which is a good sign.
+            You got {result.score}/{result.total} correct. These 3 questions didn't reveal a clear Answer Trap pattern — on this sample.
           </p>
         </div>
 
@@ -90,7 +97,7 @@ export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectPr
             What this means
           </p>
           <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
-            Three questions is a short sample. Your Answer Traps may show up with harder questions or different NCLEX categories. Most students discover their pattern after 10-15 questions.
+            Three questions is a short sample. Your Answer Traps may show up with harder questions or different NCLEX categories. A short sample cannot establish a reliable pattern or predict an exam result.
           </p>
           <div className="rounded-lg bg-[#F7F9FB] border border-[#DDE5EE] p-4">
             <p className="text-sm font-medium leading-relaxed" style={{ color: '#0B2545' }}>

@@ -84,13 +84,13 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
         {/* Result header */}
         <div className="text-center space-y-2">
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-            Your first Answer Trap signal
+            A suggested practice focus
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: '#0B2545' }}>
             {result.detected_trap_display}
           </h1>
           <p className="text-sm text-slate-500">
-            {result.score}/{result.total} correct — the pattern that showed up first
+            {result.score}/{result.total} correct — a starting focus from this short sample
           </p>
         </div>
 
@@ -101,16 +101,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
               What this means
             </p>
             <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
-              {result.trap_explanation}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-2">
-              Why the wrong answer felt right
-            </p>
-            <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
-              {result.trap_why_tempting}
+              This focus comes from a missed question. Three questions cannot establish a recurring pattern or explain why you chose an answer.
             </p>
           </div>
 

@@ -14,23 +14,23 @@ export default function TrapLanding({ onStart, loading }: TrapLandingProps) {
         {/* Brand */}
         <div className="space-y-2">
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#0D8F9C' }}>
-            Down To Two by ForgeNursing
+            ForgeNursing
           </p>
           <p className="text-[10px] uppercase tracking-wide text-slate-400">
-            The NCLEX Decision Trainer
+            A starting point for your NCLEX-RN retake
           </p>
         </div>
 
         {/* Headline */}
         <div className="space-y-4">
           <h1 className="text-3xl sm:text-4xl font-bold leading-tight" style={{ color: '#0B2545' }}>
-            Still getting NCLEX questions down to two answers… and picking the wrong one?
+            Start with three questions.
           </h1>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-md mx-auto">
-            It might not be a knowledge problem. It might be a pattern.
+            Take a small step toward your next attempt.
           </p>
           <p className="text-sm text-slate-500 leading-relaxed max-w-md mx-auto">
-            Answer 3 quick NCLEX-style questions. Down To Two will find the first signal of your Answer Trap — the reasoning pattern behind the miss.
+            Try three NCLEX-style questions, review your choices, and get a suggested starting focus. This short check cannot diagnose why you missed an answer.
           </p>
         </div>
 
@@ -47,7 +47,7 @@ export default function TrapLanding({ onStart, loading }: TrapLandingProps) {
               Loading...
             </>
           ) : (
-            'Find My Answer Trap'
+            'Start free practice'
           )}
         </button>
 

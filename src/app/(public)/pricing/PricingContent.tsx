@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { STANDARD_OFFER } from '@/lib/offer'
 import { useRouter } from 'next/navigation'
 import { Check, ArrowRight, Loader2 } from 'lucide-react'
 
@@ -48,7 +49,7 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
           <h1 className="text-2xl font-bold text-slate-900 mb-2">You're subscribed</h1>
           <p className="text-slate-600 mb-6">Your ForgeNursing subscription is active. You have full access to everything.</p>
           <button
-            onClick={() => router.push('/tutor')}
+            onClick={() => router.push('/entry')}
             className="w-full px-6 py-3 bg-teal-600 text-white rounded-xl font-medium hover:bg-teal-700 transition-colors"
           >
             Go to ForgeNursing →
@@ -116,11 +117,11 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
                 <>
                   <span className="text-4xl font-bold text-teal-700">$7.99</span>
                   <span className="text-lg text-slate-500"> / month</span>
-                  <span className="ml-2 text-sm text-slate-400 line-through">$9.99</span>
+                  <span className="ml-2 text-sm text-slate-400 line-through">${STANDARD_OFFER.monthly}</span>
                 </>
               ) : (
                 <>
-                  <span className="text-4xl font-bold text-slate-900">$9.99</span>
+                  <span className="text-4xl font-bold text-slate-900">${STANDARD_OFFER.monthly}</span>
                   <span className="text-lg text-slate-600"> / month</span>
                 </>
               )}
@@ -192,11 +193,11 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
                 <>
                   <span className="text-4xl font-bold text-teal-700">$59</span>
                   <span className="text-lg text-slate-500"> / year</span>
-                  <span className="ml-2 text-sm text-slate-400 line-through">$79</span>
+                  <span className="ml-2 text-sm text-slate-400 line-through">${STANDARD_OFFER.annual}</span>
                 </>
               ) : (
                 <>
-                  <span className="text-4xl font-bold text-slate-900">$79</span>
+                  <span className="text-4xl font-bold text-slate-900">${STANDARD_OFFER.annual}</span>
                   <span className="text-lg text-slate-600"> / year</span>
                 </>
               )}
@@ -247,7 +248,7 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
           <p className="text-xs text-slate-500 mt-3">
             {isBeta
               ? 'Founder rate is yours permanently as long as you stay subscribed.'
-              : 'Start free, then $9.99/month. Cancel anytime.'}
+              : `Start free, then $${STANDARD_OFFER.monthly}/month. Cancel anytime.`}
           </p>
         </div>
 

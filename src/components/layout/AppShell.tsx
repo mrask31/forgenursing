@@ -1,5 +1,6 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { ReactNode, useState, useEffect } from 'react'
 import { DensityProvider } from '@/contexts/DensityContext'
 import Sidebar from '@/components/layout/Sidebar'
@@ -15,6 +16,8 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, variant = 'app' }: AppShellProps) {
+  const pathname = usePathname()
+  const needsStudySetup = ['/tutor', '/classes', '/binder', '/library'].some(path => pathname.startsWith(path))
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [programTrack, setProgramTrack] = useState<string | null>(null)
   const [graduationYear, setGraduationYear] = useState<number | null>(null)
@@ -24,7 +27,9 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
   const [programLevel, setProgramLevel] = useState<'LPN' | 'ADN' | 'BSN' | 'MSN' | null>(null)
 
   useEffect(() => {
-    if (variant !== 'app') return
+    setShowPHIModal(false)
+    setShowProgramModal(false)
+    if (variant !== 'app' || !needsStudySetup) return
     
     const loadProfile = async () => {
       try {
@@ -67,7 +72,7 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
     }
 
     loadProfile()
-  }, [variant])
+  }, [variant, needsStudySetup])
 
   const handlePHIAcknowledge = async () => {
     if (!userId) return

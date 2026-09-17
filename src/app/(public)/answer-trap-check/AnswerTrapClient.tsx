@@ -259,7 +259,7 @@ export default function AnswerTrapClient() {
 
       {phase === 'results' && result && (
         result.all_correct ? (
-          <TrapAllCorrect
+          <TrapAllCorrect sessionId={sessionId}
             result={result}
             anonymousId={anonymousId}
           />

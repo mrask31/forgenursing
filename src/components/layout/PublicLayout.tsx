@@ -2,73 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { X } from 'lucide-react'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [showBetaBanner, setShowBetaBanner] = useState(false)
-  const [spotsRemaining, setSpotsRemaining] = useState<number | null>(null)
-  const [betaFull, setBetaFull] = useState(false)
-
-  // Fetch beta spots for the banner
-  useEffect(() => {
-    fetch('/api/beta-spots', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then(({ spotsRemaining, isFull }) => {
-        setSpotsRemaining(spotsRemaining)
-        setBetaFull(isFull)
-      })
-      .catch(() => {
-        // Fail safe: assume beta is full when fetch fails
-        setSpotsRemaining(0)
-        setBetaFull(true)
-      })
-  }, [])
-
-  // Show beta banner unless dismissed this session or beta is full
-  useEffect(() => {
-    if (betaFull) {
-      setShowBetaBanner(false)
-      return
-    }
-    if (typeof window !== 'undefined') {
-      const dismissed = sessionStorage.getItem('forge-beta-banner-dismissed')
-      if (!dismissed) setShowBetaBanner(true)
-    }
-  }, [betaFull])
-
   return (
     <div className="min-h-screen-dynamic bg-[#F7F9FB] flex flex-col">
-      {/* Beta Tester Recruitment Banner — hidden when beta is full */}
-      {showBetaBanner && !betaFull && (
-        <div className="w-full bg-[#0D8F9C] text-white text-center text-xs sm:text-sm py-2.5 px-4 relative flex-shrink-0 z-50">
-          <span className="inline-flex items-center gap-2 flex-wrap justify-center">
-            Free beta —{' '}
-            <strong data-testid="beta-counter">
-              {spotsRemaining !== null ? spotsRemaining : '...'} spot{spotsRemaining !== 1 ? 's' : ''} remaining
-            </strong>
-            . No credit card needed.
-            <Link
-              href="/signup?plan=monthly"
-              className="inline-flex items-center gap-1 px-3 py-1 bg-white text-[#0D8F9C] rounded-full text-xs font-bold hover:bg-white/90 transition-colors"
-            >
-              Claim Your Spot →
-            </Link>
-          </span>
-          <button
-            onClick={() => {
-              setShowBetaBanner(false)
-              sessionStorage.setItem('forge-beta-banner-dismissed', 'true')
-            }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/20 transition-colors"
-            aria-label="Dismiss banner"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Top Navigation */}
       <nav className="sticky top-0 z-40 border-b border-[#DDE5EE] bg-white shadow-sm flex-shrink-0 safe-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -104,7 +42,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   href="/signup"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#0D8F9C] text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-[#0a7d88] transition-colors min-h-[40px] sm:min-h-[44px] flex items-center shadow-sm"
                 >
-                  {betaFull ? 'Start Free Trial' : 'Join Free Beta'}
+                  Start Free Trial
                 </Link>
               )}
             </div>
@@ -122,6 +60,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 text-xs sm:text-sm text-[#1E2D3D]">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-center sm:items-start">
+              <Link href="/pricing" className="hover:text-[#0D8F9C]">Pricing</Link>
               <Link href="/faq" className="hover:text-[#0D8F9C] transition-colors font-medium">
                 FAQ
               </Link>

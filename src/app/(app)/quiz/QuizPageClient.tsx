@@ -58,6 +58,7 @@ export default function QuizPageClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const directSessionId = searchParams.get('sessionId')
+  const returnSessionId = searchParams.get('returnSessionId')
 
   const [phase, setPhase] = useState<Phase>('setup')
   const [hasDocuments, setHasDocuments] = useState(false)
@@ -125,6 +126,7 @@ export default function QuizPageClient() {
   }, [sourceType, category, sessionTotalQuestions])
 
   const generateQuestion = useCallback(async (sessId: string, index: number) => {
+    setCurrentIndex(index)
     setPhase('loading')
     setError(null)
     setSelectedAnswer(null)
@@ -156,7 +158,7 @@ export default function QuizPageClient() {
       prefetchQuestions(sessId, index + 1, 2)
     } catch (err: any) {
       setError(err.message || 'Failed to generate question. Please try again.')
-      setPhase('setup')
+      setPhase('question')
     }
   }, [sourceType, category, prefetchQuestions])
 
@@ -187,6 +189,7 @@ export default function QuizPageClient() {
           : null
 
         if (directSession) {
+          if (directSession.status === 'completed') { router.replace(`/quiz/results?sessionId=${directSession.id}`); return }
           setSessionId(directSession.id)
           setSessionTotalQuestions(directSession.total_questions || 10)
           setCurrentQuizMode(directSession.quiz_mode || 'standard')
@@ -388,13 +391,13 @@ export default function QuizPageClient() {
       setQuestionStartTime(Date.now())
       setResumeSession(null)
       setPhase('question')
-      router.replace(`/quiz?sessionId=${session.id}`)
+      router.replace(`/quiz?sessionId=${session.id}&returnSessionId=${encodeURIComponent(returnSessionId || sessionId)}`)
     } catch (err: any) {
       setError(err.message || 'Failed to create targeted retest')
     } finally {
       setRetestingWeakness(false)
     }
-  }, [currentQuestion, sessionId, retestingWeakness, currentIndex, answerResult, router])
+  }, [currentQuestion, sessionId, retestingWeakness, currentIndex, answerResult, router, returnSessionId])
 
   const handleNext = useCallback(async () => {
     if (!sessionId) return
@@ -413,15 +416,16 @@ export default function QuizPageClient() {
         })
       } catch {}
 
-      router.push(`/quiz/results?sessionId=${sessionId}`)
+      router.push(`/quiz/results?sessionId=${sessionId}${returnSessionId ? `&returnSessionId=${encodeURIComponent(returnSessionId)}` : ''}`)
       return
     }
 
     await generateQuestion(sessionId, nextIndex)
-  }, [sessionId, currentIndex, sessionTotalQuestions, answerResult, sourceType, currentQuizMode, router, generateQuestion])
+  }, [sessionId, currentIndex, sessionTotalQuestions, answerResult, sourceType, currentQuizMode, router, generateQuestion, returnSessionId])
 
   return (
     <div className="min-h-screen px-4 py-6 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      {error && sessionId && !currentQuestion && <button className="mb-4 rounded-lg bg-[#0D8F9C] px-4 py-3 text-white" onClick={() => generateQuestion(sessionId, currentIndex)}>Retry this question</button>}
       {error && (
         <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
           {error}

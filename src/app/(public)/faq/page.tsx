@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { STANDARD_OFFER } from '@/lib/offer'
 import Link from 'next/link'
 import { ChevronDown, ArrowLeft, HelpCircle } from 'lucide-react'
 import { useState } from 'react'
@@ -11,54 +12,14 @@ interface FAQItem {
 }
 
 const faqs: FAQItem[] = [
-  {
-    question: 'What is ForgeNursing?',
-    answer: 'ForgeNursing is an AI-powered clinical reasoning tutor that helps nursing students prepare for NCLEX by turning their lecture notes and textbooks into step-by-step clinical reasoning guidance. It helps students understand prioritization, safety protocols, and clinical judgment.'
-  },
-  {
-    question: 'How does ForgeNursing help with NCLEX prep?',
-    answer: 'ForgeNursing uses your own course materials to provide step-by-step clinical reasoning guidance. It helps you think through NCLEX-style questions using frameworks like ABCs, Maslow\'s hierarchy, and safety protocols. Instead of just giving answers, it teaches you how to reason through prioritization and clinical decisions.'
-  },
-  {
-    question: 'Do I need to upload my own materials?',
-    answer: 'Yes, ForgeNursing works best when you upload your syllabus, textbooks, and lecture notes. This ensures the AI tutor aligns with your specific nursing program\'s curriculum and teaching style.'
-  },
-  {
-    question: 'Is there a free trial?',
-    answer: 'Yes, ForgeNursing offers a 7-day free trial. You can start using the platform immediately and cancel anytime during the trial period without being charged.'
-  },
-  {
-    question: 'What makes ForgeNursing different from other NCLEX prep tools?',
-    answer: 'ForgeNursing focuses on teaching clinical reasoning and prioritization using your own materials, rather than generic question banks. It provides step-by-step guidance that helps you understand the "why" behind clinical decisions, not just memorizing answers.'
-  },
-  {
-    question: 'How much does ForgeNursing cost?',
-    answer: 'ForgeNursing offers three plans: Monthly ($24.99/month), Semester ($89 for 4 months, ~$22.25/month), and Annual ($199/year, ~$16.58/month). All plans include a 7-day free trial with full access to all features.'
-  },
-  {
-    question: 'Can I cancel my subscription anytime?',
-    answer: 'Yes, you can cancel your subscription at any time. If you cancel during the 7-day free trial, you won\'t be charged. After the trial, you can cancel anytime and your access will continue until the end of your billing period.'
-  },
-  {
-    question: 'What features are included in my subscription?',
-    answer: 'All plans include: step-by-step clinical reasoning guidance, Clinical Studio (NCLEX-style simulations), strict testing mode, key concepts & evidence review, support for your uploaded textbooks, and progress insights & history.'
-  },
-  {
-    question: 'How do I upload my course materials?',
-    answer: 'After signing up, you can upload your materials through the Classes section. Simply create a class, then drag and drop your PDFs, PowerPoints, or other documents. The AI will process them and use them to provide personalized guidance.'
-  },
-  {
-    question: 'Is my data secure?',
-    answer: 'Yes, we take data security seriously. All uploaded materials and study sessions are encrypted and stored securely. We never share your personal information or study data with third parties.'
-  },
-  {
-    question: 'Can I use ForgeNursing on my phone or tablet?',
-    answer: 'Yes, ForgeNursing is a web-based application that works on any device with a modern web browser, including phones, tablets, and computers.'
-  },
-  {
-    question: 'Does ForgeNursing replace my NCLEX prep course?',
-    answer: 'No, ForgeNursing is designed to supplement your existing NCLEX prep resources and nursing education. It helps you develop clinical reasoning skills using your own course materials, but should be used alongside your program\'s curriculum and other prep resources.'
-  }
+  { question: 'Who is ForgeNursing for?', answer: 'The main practice plan is designed for people preparing for another NCLEX-RN attempt. Existing study tools remain available under More study tools.' },
+  { question: 'What will I do in a session?', answer: 'Answer a short set of questions, review the explanation for your selected answer, and use a fresh question to practice after a miss. You can open the tutor from a question for more help.' },
+  { question: 'Do I need a Candidate Performance Report or course uploads?', answer: 'No. You can optionally enter the Below, Near, or Above ratings from your Candidate Performance Report to guide a starting category. You can start practice without a report or uploads.' },
+  { question: 'How much does ForgeNursing cost?', answer: `The standard plan is $${STANDARD_OFFER.monthly} per month or $${STANDARD_OFFER.annual} per year, following a ${STANDARD_OFFER.trialDays}-day free trial. No credit card is required to start the trial. Existing founder and subscriber terms are preserved.` },
+  { question: 'Will I be charged automatically after the free trial?', answer: 'You do not enter a card to create your trial account. To continue after the trial, choose a paid subscription. Paid subscriptions renew according to the terms shown at checkout; you can manage cancellation in your account.' },
+  { question: 'Does ForgeNursing predict or guarantee a pass?', answer: 'No. Practice results describe the questions you answered. They are not a validated NCLEX readiness score, and ForgeNursing cannot diagnose why an exam attempt was unsuccessful.' },
+  { question: 'Does it replace my prep course or nursing references?', answer: 'ForgeNursing supports your existing preparation. AI-generated questions and explanations can contain errors. Check uncertain clinical information against trusted nursing references and use a comprehensive preparation plan.' },
+  { question: 'Can I use it on my phone?', answer: 'Yes. ForgeNursing works in a modern browser on your phone, tablet, or computer.' },
 ]
 
 export default function FAQPage() {

@@ -1,3 +1,4 @@
+import { selectedAnswerComparison } from '@/lib/practice-progress';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { AnswerFeedback } from '@/lib/answer-trap';
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     const questionIds = session.questions as string[];
-    if (!questionIds.includes(question_id)) {
+    if (!Number.isInteger(question_index) || questionIds[question_index] !== question_id) {
       return NextResponse.json(
         { error: 'Question not part of this session' },
         { status: 400 }
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
       // Re-fetch and return the feedback (idempotent)
       const { data: question } = await supabase
         .from('answer_trap_questions')
-        .select('correct_answer, trap_type, trap_display_name, key_cue, why_correct_short, why_wrong_short, one_line_fix')
+        .select('options, correct_answer, trap_type, trap_display_name, key_cue, why_correct_short, why_wrong_short, one_line_fix')
         .eq('id', question_id)
         .single();
 
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
         trap_display_name: question.trap_display_name,
         key_cue: question.key_cue,
         why_correct_short: question.why_correct_short,
-        why_wrong_short: question.why_wrong_short,
+        why_wrong_short: selectedAnswerComparison(alreadyAnswered.selected_answer, question.options, question.correct_answer),
         one_line_fix: question.one_line_fix,
       };
 
@@ -91,7 +92,7 @@ export async function POST(req: NextRequest) {
     // Fetch the question to check the answer
     const { data: question, error: questionError } = await supabase
       .from('answer_trap_questions')
-      .select('correct_answer, trap_type, trap_display_name, key_cue, why_correct_short, why_wrong_short, one_line_fix')
+      .select('options, correct_answer, trap_type, trap_display_name, key_cue, why_correct_short, why_wrong_short, one_line_fix')
       .eq('id', question_id)
       .single();
 
@@ -139,7 +140,7 @@ export async function POST(req: NextRequest) {
       trap_display_name: question.trap_display_name,
       key_cue: question.key_cue,
       why_correct_short: question.why_correct_short,
-      why_wrong_short: question.why_wrong_short,
+      why_wrong_short: selectedAnswerComparison(selected_answer, question.options, question.correct_answer),
       one_line_fix: question.one_line_fix,
     };
 

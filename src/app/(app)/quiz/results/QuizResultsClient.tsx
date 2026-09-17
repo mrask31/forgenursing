@@ -79,6 +79,8 @@ export default function QuizResultsClient() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const sessionId = searchParams.get('sessionId')
+  const returnSessionId = searchParams.get('returnSessionId')
+  const safeReturnSessionId = returnSessionId && /^[0-9a-f-]{36}$/i.test(returnSessionId) ? returnSessionId : null
 
   const [session, setSession] = useState<any>(null)
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
@@ -280,8 +282,9 @@ export default function QuizResultsClient() {
   return (
     <div className="min-h-screen px-4 py-6 pb-40 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <div className="space-y-6 pb-24">
+        {safeReturnSessionId && <a href={`/quiz?sessionId=${safeReturnSessionId}`} className="block rounded-xl border border-teal-300 bg-teal-50 p-4 text-center font-bold text-[#087986]">Return to your original practice session →</a>}
         <h1 className="text-2xl font-bold text-center" style={{ color: '#0B2545' }}>
-          {isTargetedDrill ? 'Focused Drill Complete 🎯' : isDiagnostic ? 'Diagnostic Complete 🧭' : 'Quiz Complete! 🎉'}
+          {isTargetedDrill ? 'Focused Drill Complete 🎯' : isDiagnostic ? 'Practice Complete' : 'Practice Complete'}
         </h1>
 
         <div className="rounded-xl border border-gray-200 p-5 text-center space-y-3">
@@ -290,7 +293,7 @@ export default function QuizResultsClient() {
               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>Pattern trained</p>
               <p className="text-3xl font-bold" style={{ color: '#0B2545' }}>{targetPattern || 'Clinical judgment'}</p>
               <p className="text-sm text-gray-600">
-                You completed {total} focused question{total === 1 ? '' : 's'} and gave Forge more signal for your Readiness Map.
+                You completed {total} focused question{total === 1 ? '' : 's'} and gave Forge more signal for your practice progress.
               </p>
             </>
           ) : isDiagnostic ? (
@@ -298,7 +301,7 @@ export default function QuizResultsClient() {
               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>Map started</p>
               <p className="text-3xl font-bold" style={{ color: '#0B2545' }}>{total} questions</p>
               <p className="text-sm text-gray-600">
-                Forge used this diagnostic to start finding the clinical judgment patterns to train next.
+                Your answers give you a starting point for review. A short session cannot establish a stable pattern.
               </p>
             </>
           ) : (
@@ -317,7 +320,7 @@ export default function QuizResultsClient() {
 
         <div className="rounded-xl border border-[#0D8F9C]/20 bg-[#E0F4F6]/30 p-4 space-y-2">
           <p className="text-sm font-semibold" style={{ color: '#0B2545' }}>
-            Forge is helping identify the patterns that may be costing you points.
+            Review a missed answer, then try a fresh question.
           </p>
           <p className="text-xs text-gray-600 leading-relaxed">
             The goal is not more questions. The goal is understanding what to improve before exam day.
@@ -326,23 +329,23 @@ export default function QuizResultsClient() {
 
         <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 space-y-3">
           <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
-            What Forge learned
+            Your session summary
           </p>
           <p className="text-sm text-gray-700 leading-relaxed">
             {isTargetedDrill
-              ? `This drill trained ${targetPattern || 'your next focus'} and updated your Readiness Map.`
+              ? `This drill trained ${targetPattern || 'your next focus'} and updated your practice progress.`
               : isDiagnostic
-                ? 'This diagnostic started your Readiness Map. Forge will use your answers to recommend what to practice next.'
-                : 'This quiz updated your Readiness Map. Forge uses each answer to find your weak patterns.'}
+                ? 'This diagnostic started your practice progress. Forge will use your answers to recommend what to practice next.'
+                : 'This quiz updated your practice progress. Forge uses each answer to find your weak patterns.'}
           </p>
           {topMistake && (
             <div className="rounded-lg bg-white border border-[#DDE5EE] p-3 space-y-1">
               <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
-                Forge detected a pattern
+                Suggested review focus
               </p>
               <p className="text-base font-bold" style={{ color: '#0B2545' }}>{topMistake.mistakeType}</p>
               <p className="text-xs text-gray-500">
-                This pattern may be costing you points on NCLEX questions.
+                This focus appears in missed practice answers. It does not identify the cause of an exam result.
               </p>
             </div>
           )}
@@ -377,10 +380,10 @@ export default function QuizResultsClient() {
               <p className="text-2xl font-bold">{topMistake.mistakeType}</p>
             </div>
             <p className="text-sm text-white/85 leading-relaxed">
-              {patternExplanation(topMistake.mistakeType)}
+              Review the explanation for each missed answer in this focus. An answer alone cannot tell us why you chose it.
             </p>
             <p className="text-xs text-white/50">
-              {topMistake.missed} answer{topMistake.missed === 1 ? '' : 's'} showed this pattern. See where it appears on your Readiness Map.
+              {topMistake.missed} answer{topMistake.missed === 1 ? '' : 's'} showed this pattern. See where it appears on your practice progress.
             </p>
           </div>
         )}
@@ -466,7 +469,7 @@ export default function QuizResultsClient() {
         )}
 
         <div className="space-y-3 pt-2">
-          <button onClick={() => router.push('/quiz')} className="w-full rounded-lg text-white font-semibold text-base" style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}>
+          <button onClick={() => router.push('/entry')} className="w-full rounded-lg text-white font-semibold text-base" style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}>
             {isTargetedDrill ? 'Start Another Practice' : isDiagnostic ? 'Start Recommended Practice' : 'Start New Quiz'}
           </button>
           <button onClick={() => handleViewJudgmentMap('bottom_button')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '56px' }}>

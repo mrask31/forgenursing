@@ -61,9 +61,7 @@ test.describe('Navigation Smoke Tests', () => {
         const foundContent = expectedContent.some(text => 
           pageContent.includes(text)
         );
-        expect(foundContent).toBeTruthy(
-          `Route ${route} should contain one of: ${expectedContent.join(', ')}`
-        );
+        expect(foundContent, `Route ${route} should contain one of: ${expectedContent.join(', ')}`).toBeTruthy();
       }
     }
   });
@@ -87,9 +85,7 @@ test.describe('Navigation Smoke Tests', () => {
         const foundContent = expectedContent.some(text => 
           pageContent.includes(text)
         );
-        expect(foundContent).toBeTruthy(
-          `Route ${route} should contain one of: ${expectedContent.join(', ')}`
-        );
+        expect(foundContent, `Route ${route} should contain one of: ${expectedContent.join(', ')}`).toBeTruthy();
       }
     }
   });
@@ -152,9 +148,7 @@ test.describe('Navigation Smoke Tests', () => {
       const foundContent = item.expectedContent.some(text => 
         pageContent.includes(text)
       );
-      expect(foundContent).toBeTruthy(
-        `After navigating to ${item.href}, page should contain one of: ${item.expectedContent.join(', ')}`
-      );
+      expect(foundContent, `After navigating to ${item.href}, page should contain one of: ${item.expectedContent.join(', ')}`).toBeTruthy();
     }
   });
 

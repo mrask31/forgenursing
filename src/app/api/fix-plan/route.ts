@@ -108,13 +108,13 @@ export async function GET() {
     }
 
     const patterns = Array.from(map.values())
-    const eligible = patterns.filter(pattern => pattern.attempted >= 2)
+    const eligible = patterns.filter(pattern => pattern.attempted >= 2 && pattern.missed > 0)
     const topFocus = eligible.length > 0
       ? eligible.sort((a, b) => {
           if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy
           return b.missed - a.missed
         })[0]
-      : patterns.sort((a, b) => b.missed - a.missed)[0] ?? null
+      : patterns.filter(pattern => pattern.missed > 0).sort((a, b) => b.missed - a.missed)[0] ?? null
 
     const hasPersonalPlan = totalAttempted >= MIN_ATTEMPTS_FOR_PERSONAL_PLAN && !!topFocus
     const focus = hasPersonalPlan ? topFocus!.mistake_type : 'Find your clinical judgment pattern'
@@ -127,9 +127,9 @@ export async function GET() {
             action: 'Start a 3-question focused drill',
           },
           {
-            title: 'Review one miss visually',
-            body: 'Use Show Me Visually on one missed answer so the reasoning becomes easier to see.',
-            action: 'Use Show Me Visually after a missed answer',
+            title: 'Review your selected answer',
+            body: 'Compare your selected option with its explanation and the key cue.',
+            action: 'Ask the tutor if you need more help',
           },
           {
             title: 'Retest the pattern',
@@ -139,7 +139,7 @@ export async function GET() {
         ]
       : [
           {
-            title: 'Take a 5-question diagnostic',
+            title: 'Take a 5-question practice session',
             body: 'Forge needs a few answers to find the clinical judgment pattern to train first.',
             action: 'Start your diagnostic',
           },
@@ -160,7 +160,7 @@ export async function GET() {
       total_attempted: totalAttempted,
       focus,
       focus_explanation: hasPersonalPlan ? explainFocus(focus) : 'Take a short diagnostic so Forge can learn how you answer and find what to train first.',
-      cta_label: hasPersonalPlan ? `Start ${focus} Drill` : 'Start 5-Question Diagnostic',
+      cta_label: hasPersonalPlan ? `Start ${focus} Drill` : 'Start 5 Questions',
       cta_href: '/quiz',
       steps,
       top_pattern: topFocus,

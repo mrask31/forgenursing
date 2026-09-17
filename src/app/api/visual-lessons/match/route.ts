@@ -129,7 +129,7 @@ export async function GET(req: NextRequest) {
 
     const best = ranked[0]
 
-    if (!best || best.score <= 0) {
+    if (!best || best.score <= 1) {
       return NextResponse.json({ lesson: null, matched: false })
     }
 

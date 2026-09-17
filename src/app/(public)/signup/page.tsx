@@ -14,7 +14,7 @@ export default function SignupPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null)
-  const [betaAvailable, setBetaAvailable] = useState<boolean | null>(null)
+  const betaAvailable = false
   const router = useRouter()
 
   // Track if GA4 sign_up event has been fired to prevent duplicate events
@@ -47,14 +47,6 @@ export default function SignupPage() {
     
     checkExistingAuth()
   }, [router, supabase])
-
-  // Fetch beta availability
-  useEffect(() => {
-    fetch('/api/beta-spots')
-      .then((r) => r.json())
-      .then(({ isFull }) => setBetaAvailable(!isFull))
-      .catch(() => setBetaAvailable(false))
-  }, [])
 
   // Store plan parameter from URL in localStorage
   useEffect(() => {
@@ -133,6 +125,7 @@ export default function SignupPage() {
       const signupPromise = supabase.auth.signUp({
         email,
         password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       })
       
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -195,65 +188,12 @@ export default function SignupPage() {
         }
       }
       
-      // Set trial period (or beta access) and trigger welcome email (non-blocking)
-      try {
-        const trialRes = await fetch('/api/auth/set-trial', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: data.user.id }),
-        })
-        const trialData = await trialRes.json()
-
-        try {
-          const posthog = (await import('posthog-js')).default
-          if (trialData.isBeta && trialData.betaExpiresAt) {
-            posthog.capture('trial_started', {
-              source: 'signup_set_trial',
-              access_type: 'beta',
-              is_beta: true,
-              beta_expires_at: trialData.betaExpiresAt,
-              plan: plan || null,
-              trial_days: 90,
-            })
-            posthog.capture('beta_access_started', {
-              source: 'signup_set_trial',
-              beta_expires_at: trialData.betaExpiresAt,
-              plan: plan || null,
-            })
-          } else if (trialData.trialEndsAt) {
-            posthog.capture('trial_started', {
-              source: 'signup_set_trial',
-              access_type: 'standard_trial',
-              is_beta: false,
-              trial_ends_at: trialData.trialEndsAt,
-              plan: plan || null,
-              trial_days: 7,
-            })
-          } else if (!trialRes.ok) {
-            posthog.capture('trial_start_failed', {
-              source: 'signup_set_trial',
-              status: trialRes.status,
-              plan: plan || null,
-            })
-          }
-        } catch {}
-
-        if (trialData.isBeta && trialData.betaExpiresAt) {
-          // Store beta welcome for display in the app
-          localStorage.setItem('forgenursing-beta-welcome', trialData.betaExpiresAt)
-        }
-      } catch (trialError) {
-        // Don't block signup if trial setting fails
-        console.error('[Signup] Failed to set trial:', trialError)
-        try {
-          const posthog = (await import('posthog-js')).default
-          posthog.capture('trial_start_failed', {
-            source: 'signup_set_trial_exception',
-            plan: plan || null,
-          })
-        } catch {}
+      if (!data.session) {
+        setLoading(false)
+        setMessage({ text: 'Check your email to confirm your account, then sign in on this browser to continue with your saved practice result.', type: 'success' })
+        return
       }
-      
+
       // Check for session (with email verification disabled, should have immediate session)
       setLoading(false)
       
@@ -376,7 +316,7 @@ export default function SignupPage() {
                     <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                       2
                     </div>
-                    <p><strong className="text-slate-900">Upload your study guide</strong> — Forge builds NCLEX practice from your exact material</p>
+                    <p><strong className="text-slate-900">Set your starting focus</strong> — Begin a short practice session. No uploads needed.</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
@@ -396,7 +336,7 @@ export default function SignupPage() {
               {/* Header - Compact */}
               <div className="text-center mb-4">
                 <div className="mb-2 inline-flex items-center rounded-full bg-[#E0F4F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#0D8F9C]">
-                  Used by nursing students preparing for NCLEX
+                  Focused practice for your NCLEX-RN retake
                 </div>
                 <h1 className="text-lg font-semibold text-slate-900 mb-1">
                   Start your free 7-day trial

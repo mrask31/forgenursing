@@ -97,18 +97,19 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   }
 
   const mainNav = [
-    { label: 'Clinical Tutor', href: '/tutor', icon: MessageSquare },
-    ...(quizFirstEnabled ? [{ label: 'Practice Questions', href: '/quiz', icon: ClipboardList }] : []),
-    { label: 'Judgment Map', href: '/readiness', icon: BarChart3, badge: true },
-    { label: 'My Courses', href: '/classes', icon: GraduationCap },
+    { label: 'Practice', href: '/entry', icon: ClipboardList },
+    { label: 'Progress', href: '/readiness', icon: BarChart3 },
+    { label: 'Account', href: '/settings', icon: Settings },
   ]
-
   const clinicalTools = [
+    { label: 'Clinical Tutor', href: '/tutor', icon: MessageSquare },
+    { label: 'My Courses', href: '/classes', icon: GraduationCap },
     { label: 'Med Dictionary', href: '/dictionary', icon: BookOpen },
   ]
 
   const isActive = (href: string, label: string) => {
     if (pathname === href) return true
+    if (href === '/entry' && pathname.startsWith('/quiz')) return true
     if (href === '/classes' && pathname.startsWith('/classes')) return true
     if (href === '/dictionary' && pathname.startsWith('/dictionary')) return true
     if (href === '/readiness' && pathname.startsWith('/readiness') && label === 'Judgment Map') return true
@@ -164,18 +165,14 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
                 >
                   <Icon className="h-[18px] w-[18px]" />
                   <span>{item.label}</span>
-                  {item.badge && (
-                    <span className="ml-auto w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-                  )}
+
                 </Link>
               )
             })}
           </div>
 
-          <div>
-            <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
-              Clinical Tools
-            </p>
+          <details>
+            <summary className="px-3 mb-2 text-sm cursor-pointer">More study tools</summary>
             <div className="space-y-1">
               {clinicalTools.map((item) => {
                 const active = isActive(item.href, item.label)
@@ -199,7 +196,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
                 )
               })}
             </div>
-          </div>
+          </details>
 
           <div>
             <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
