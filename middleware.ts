@@ -208,19 +208,7 @@ export async function middleware(request: NextRequest) {
         const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
 
         if (userHasAccess) {
-          // Quiz-first routing: only when quiz_first_enabled = true
-          if (quizFirstEnabled === true) {
-            if (defaultEntryPath === 'quiz') {
-              return NextResponse.redirect(new URL('/quiz', request.url))
-            } else if (defaultEntryPath === 'tutor') {
-              return NextResponse.redirect(new URL('/tutor', request.url))
-            } else {
-              // No saved preference — show entry choice screen
-              return NextResponse.redirect(new URL('/entry', request.url))
-            }
-          }
-          // Default: quiz_first_enabled = false or not present → /tutor (existing behavior)
-          return NextResponse.redirect(new URL('/tutor', request.url))
+          return NextResponse.redirect(new URL('/entry', request.url))
         } else {
           // No active subscription, redirect to payment required
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
@@ -245,7 +233,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // CRITICAL: Check subscription status for protected routes
-    if (isProtectedRoute && user) {
+    if (isProtectedRoute && user && pathname !== '/settings') {
       try {
         // Use service role key to bypass RLS for subscription status check
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY

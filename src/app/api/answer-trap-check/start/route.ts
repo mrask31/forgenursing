@@ -1,3 +1,4 @@
+import { DEMO_LESSONS, publicDemoQuestion } from '@/lib/demo-lessons';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { hashIp, RATE_LIMIT_MAX_SESSIONS_PER_HOUR } from '@/lib/answer-trap';
@@ -54,71 +55,18 @@ export async function POST(req: NextRequest) {
       // Empty body is fine
     }
 
-    // Select 3 questions from different trap types for variety
-    const { data: allQuestions, error: questionsError } = await supabase
+    // Keep the free sample small: every option has an explanation and a related retry.
+    const { data: bank, error: questionsError } = await supabase
       .from('answer_trap_questions')
-      .select('id, trap_type')
-      .eq('is_active', true);
-
-    if (questionsError || !allQuestions || allQuestions.length < 3) {
-      console.error('[AnswerTrapCheck/start] Not enough questions:', questionsError);
-      return NextResponse.json(
-        { error: 'Not enough questions available. Please try again later.' },
-        { status: 503 }
-      );
-    }
-
-    // Group by trap_type, pick one random question per type, then select 3 diverse types
-    const byTrap: Record<string, string[]> = {};
-    for (const q of allQuestions) {
-      if (!byTrap[q.trap_type]) byTrap[q.trap_type] = [];
-      byTrap[q.trap_type].push(q.id);
-    }
-
-    const trapTypes = Object.keys(byTrap);
-    // Shuffle trap types
-    for (let i = trapTypes.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [trapTypes[i], trapTypes[j]] = [trapTypes[j], trapTypes[i]];
-    }
-
-    // Pick one random question from each of the first 3 trap types
-    const selectedIds: string[] = [];
-    for (let i = 0; i < Math.min(3, trapTypes.length); i++) {
-      const ids = byTrap[trapTypes[i]];
-      const randomId = ids[Math.floor(Math.random() * ids.length)];
-      selectedIds.push(randomId);
-    }
-
-    // If we somehow have fewer than 3 trap types, fill from remaining questions
-    if (selectedIds.length < 3) {
-      const remaining = allQuestions
-        .filter(q => !selectedIds.includes(q.id))
-        .map(q => q.id);
-      while (selectedIds.length < 3 && remaining.length > 0) {
-        const idx = Math.floor(Math.random() * remaining.length);
-        selectedIds.push(remaining.splice(idx, 1)[0]);
-      }
-    }
-
-    // Fetch full question data for selected IDs (only public fields)
-    const { data: questions, error: fetchError } = await supabase
-      .from('answer_trap_questions')
-      .select('id, question_stem, options')
-      .in('id', selectedIds);
-
-    if (fetchError || !questions || questions.length < 3) {
-      console.error('[AnswerTrapCheck/start] Failed to fetch questions:', fetchError);
-      return NextResponse.json(
-        { error: 'Failed to load questions. Please try again.' },
-        { status: 500 }
-      );
-    }
-
-    // Shuffle the questions order
-    for (let i = questions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [questions[i], questions[j]] = [questions[j], questions[i]];
+      .select('id, question_stem')
+      .eq('is_active', true)
+      .in('question_stem', DEMO_LESSONS.map(lesson => lesson.sourceStem));
+    const questions = DEMO_LESSONS.map((lesson, index) => {
+      const row = bank?.find(q => q.question_stem === lesson.sourceStem);
+      return row ? publicDemoQuestion(lesson.initial, row.id, index) : null;
+    }).filter((q): q is PublicQuestion => q !== null);
+    if (questionsError || questions.length !== DEMO_LESSONS.length) {
+      return NextResponse.json({ error: 'Practice is temporarily unavailable. Please try again.' }, { status: 503 });
     }
 
     // Generate anonymous session ID

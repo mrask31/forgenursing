@@ -11,6 +11,7 @@ interface MobileNavProps {
 export default function MobileNav({ open, onClose }: MobileNavProps) {
   return (
     <>
+      {open && <>
       {/* Backdrop - Only visible when drawer is open */}
       <div
         className={`
@@ -25,7 +26,7 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
       {/* Drawer - Slides in from left */}
       <aside
         className={`
-          fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] 
+          fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw]
           bg-[#0B2545]
           border-r border-[#1E2D3D]
           transform transition-transform duration-300 ease-in-out
@@ -48,9 +49,10 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
 
         {/* Sidebar Content */}
         <div className="pt-2">
-          <Sidebar onNavigate={onClose} />
+          <Sidebar onNavigate={onClose} secondaryOnly />
         </div>
       </aside>
+      </>}
     </>
   )
 }

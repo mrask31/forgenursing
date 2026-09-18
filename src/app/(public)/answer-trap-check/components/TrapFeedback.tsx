@@ -10,6 +10,9 @@ interface TrapFeedbackProps {
   totalQuestions: number
   onNext: () => void
   isLast: boolean
+  loading?: boolean
+  isRetry?: boolean
+  onRetry?: () => void
 }
 
 export default function TrapFeedback({
@@ -19,17 +22,20 @@ export default function TrapFeedback({
   totalQuestions,
   onNext,
   isLast,
+  loading = false,
+  isRetry = false,
+  onRetry,
 }: TrapFeedbackProps) {
   const { is_correct, correct_answer, trap_display_name, key_cue, why_correct_short, why_wrong_short, one_line_fix } = feedback
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8">
-      <div className="max-w-lg w-full mx-auto flex-1 flex flex-col">
+    <div className="flex flex-col px-4 py-6 sm:py-8">
+      <div className="max-w-lg w-full mx-auto flex flex-col">
         {/* Progress */}
         <div className="mb-6 space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-400">
             <span className="font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
-              Question {questionNumber} of {totalQuestions}
+              {isRetry ? 'Related retry' : `Question ${questionNumber} of ${totalQuestions}`}
             </span>
             <span>Feedback</span>
           </div>
@@ -47,7 +53,7 @@ export default function TrapFeedback({
         {/* Correct/Incorrect banner */}
         <div
           className="rounded-xl p-4 text-white mb-5"
-          style={{ backgroundColor: is_correct ? '#22C55E' : '#EF4444' }}
+          style={{ backgroundColor: is_correct ? '#087F5B' : '#9A3412' }}
         >
           <div className="flex items-center gap-2">
             {is_correct ? (
@@ -56,23 +62,23 @@ export default function TrapFeedback({
               <XCircle className="w-5 h-5 flex-shrink-0" />
             )}
             <p className="font-bold text-base">
-              {is_correct ? 'Correct!' : 'Not quite.'}
+              {is_correct ? (isRetry ? 'Correct on the related question.' : 'Correct.') : 'Let’s review this choice.'}
             </p>
           </div>
           {!is_correct && (
             <p className="mt-2 text-sm text-white/90">
-              You chose {selectedAnswer}. The better answer was {correct_answer}.
+              You chose {selectedAnswer}. The correct answer is {correct_answer}.
             </p>
           )}
         </div>
 
         {/* Feedback card */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 flex-1">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
           {/* Trap type badge (only on incorrect) */}
           {!is_correct && (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEF2F2] border border-red-100">
               <span className="text-[10px] font-bold uppercase tracking-wide text-red-600">
-                {trap_display_name}
+                {trap_display_name.replace(/ Trap$/, '')}
               </span>
             </div>
           )}
@@ -90,7 +96,7 @@ export default function TrapFeedback({
           {/* Why correct works */}
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-1">
-              {is_correct ? 'Why you got it' : 'Why the better answer works'}
+              Why this answer fits
             </p>
             <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
               {why_correct_short}
@@ -101,7 +107,7 @@ export default function TrapFeedback({
           {!is_correct && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-1">
-                Why your answer was tempting
+                Why your choice doesn’t fit
               </p>
               <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
                 {why_wrong_short}
@@ -109,10 +115,10 @@ export default function TrapFeedback({
             </div>
           )}
 
-          {/* Think like a nurse */}
+          {/* Take it to the next question */}
           <div className="rounded-lg bg-[#F7F9FB] border border-[#DDE5EE] p-3">
             <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-1">
-              Think like a nurse
+              Take it to the next question
             </p>
             <p className="text-sm font-medium leading-relaxed" style={{ color: '#0B2545' }}>
               {one_line_fix}
@@ -120,14 +126,24 @@ export default function TrapFeedback({
           </div>
         </div>
 
+        {feedback.sources && <details className="mt-4 text-xs text-slate-600">
+          <summary className="cursor-pointer py-2 font-semibold">References for this explanation</summary>
+          <ul className="mt-2 space-y-2">{feedback.sources.map(source => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="underline text-[#087986]">{source.title}</a></li>)}</ul>
+        </details>}
+        {isRetry && <p className="mt-4 text-sm text-slate-600">{is_correct ? 'You applied the lesson to a new question.' : 'Review the distinction above and revisit this topic in your next session.'} This exercise is separate from your original score.</p>}
+        {onRetry && <div className="mt-5 rounded-xl bg-teal-50 p-4">
+          <p className="font-semibold text-[#0B2545]">Put it into practice.</p>
+          <p className="mt-1 text-sm text-slate-600">A new question on the same topic. No account needed.</p>
+          <button onClick={onRetry} disabled={loading} className="mt-3 w-full min-h-12 rounded-xl bg-[#0D8F9C] px-4 py-3 font-semibold text-white disabled:opacity-50">{loading ? 'Loading…' : 'Try a related question'}</button>
+        </div>}
         {/* Next button */}
         <div className="mt-6 pb-4">
           <button
             onClick={onNext}
-            className="w-full rounded-xl text-white font-semibold text-base"
-            style={{ backgroundColor: '#0D8F9C', minHeight: '52px' }}
+            disabled={loading}
+            className={`w-full min-h-12 rounded-xl px-4 py-3 font-semibold disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D8F9C] ${onRetry ? 'text-sm text-slate-600 underline underline-offset-4 hover:text-[#087986]' : 'bg-[#0D8F9C] text-base text-white hover:bg-[#087986]'}`}
           >
-            {isLast ? 'See My Answer Trap Result' : 'Next Question →'}
+            {loading ? 'Loading…' : onRetry ? (isLast ? 'Skip retry and see results' : 'Skip retry and continue') : isLast ? 'See my practice result' : 'Next question →'}
           </button>
         </div>
       </div>

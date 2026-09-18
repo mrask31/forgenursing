@@ -3,16 +3,17 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, BarChart3, GraduationCap, BookOpen, Settings, LogOut, ChevronUp, ClipboardList } from 'lucide-react'
+import { MessageSquare, BarChart3, GraduationCap, BookOpen, Settings, LogOut, ChevronUp, ClipboardList, Home } from 'lucide-react'
 import { getBrowserClient, resetBrowserClient } from '@/lib/supabase/client'
 import { clearSupabaseStorage } from '@/lib/auth-utils'
 import HistoryButton from './HistoryButton'
 
 interface SidebarProps {
   onNavigate?: () => void
+  secondaryOnly?: boolean
 }
 
-export default function Sidebar({ onNavigate }: SidebarProps = {}) {
+export default function Sidebar({ onNavigate, secondaryOnly = false }: SidebarProps = {}) {
   const pathname = usePathname()
   const [preferredName, setPreferredName] = useState<string | null>(null)
   const [programTrack, setProgramTrack] = useState<string | null>(null)
@@ -97,18 +98,20 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   }
 
   const mainNav = [
-    { label: 'Clinical Tutor', href: '/tutor', icon: MessageSquare },
-    ...(quizFirstEnabled ? [{ label: 'Practice Questions', href: '/quiz', icon: ClipboardList }] : []),
-    { label: 'Judgment Map', href: '/readiness', icon: BarChart3, badge: true },
-    { label: 'My Courses', href: '/classes', icon: GraduationCap },
+    { label: 'Home', href: '/entry', icon: Home },
+    { label: 'Practice', href: '/quiz', icon: ClipboardList },
+    { label: 'Progress', href: '/readiness', icon: BarChart3 },
+    { label: 'Account', href: '/settings', icon: Settings },
   ]
-
   const clinicalTools = [
+    { label: 'Clinical Tutor', href: '/tutor', icon: MessageSquare },
+    { label: 'My Courses', href: '/classes', icon: GraduationCap },
     { label: 'Med Dictionary', href: '/dictionary', icon: BookOpen },
   ]
 
   const isActive = (href: string, label: string) => {
     if (pathname === href) return true
+    if (href === '/entry') return pathname === '/entry'
     if (href === '/classes' && pathname.startsWith('/classes')) return true
     if (href === '/dictionary' && pathname.startsWith('/dictionary')) return true
     if (href === '/readiness' && pathname.startsWith('/readiness') && label === 'Judgment Map') return true
@@ -146,13 +149,14 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
 
         <nav className="flex-1 space-y-6">
           <div className="space-y-1">
-            {mainNav.map((item) => {
+            {(secondaryOnly ? [] : mainNav).map((item) => {
               const active = isActive(item.href, item.label)
               const Icon = item.icon
               return (
                 <Link
                   key={item.label}
                   href={item.href}
+                  aria-current={active ? 'page' : undefined}
                   onClick={onNavigate}
                   className={`
                     group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-150
@@ -164,18 +168,14 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
                 >
                   <Icon className="h-[18px] w-[18px]" />
                   <span>{item.label}</span>
-                  {item.badge && (
-                    <span className="ml-auto w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-                  )}
+
                 </Link>
               )
             })}
           </div>
 
-          <div>
-            <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
-              Clinical Tools
-            </p>
+          <details>
+            <summary className="px-3 mb-2 text-sm cursor-pointer">More study tools</summary>
             <div className="space-y-1">
               {clinicalTools.map((item) => {
                 const active = isActive(item.href, item.label)
@@ -199,16 +199,17 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
                 )
               })}
             </div>
-          </div>
+          </details>
 
-          <div>
-            <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
-              Session
-            </p>
+          <details>
+            <summary className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
+              Tutor history
+            </summary>
             <div className="space-y-1">
               <HistoryButton onNavigate={onNavigate} />
             </div>
-          </div>
+          </details>
+          <a href="mailto:support@forgenursing.com" className="block px-3 py-3 text-sm text-slate-300 underline">Contact support</a>
         </nav>
 
         <div className="mt-auto pt-5 border-t border-white/10 relative" ref={profileMenuRef}>

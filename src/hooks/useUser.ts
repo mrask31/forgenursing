@@ -52,81 +52,47 @@ export function useUser(): UseUserReturn {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const loadFromServerStatus = async () => {
-    const response = await withTimeout(
-      fetch('/api/subscription/status', {
-        credentials: 'include',
-        cache: 'no-store',
-      }),
-      5000,
-      'USER_STATUS_TIMEOUT'
-    )
-
-    if (!response.ok) {
-      setUser(null)
-      setProfile(null)
-      return
-    }
-
-    const data = await response.json().catch(() => null)
-    if (!data?.user_id) {
-      setUser(null)
-      setProfile(null)
-      return
-    }
-
-    setUser(makeServerUser(data.user_id, data.email))
-    setProfile(data.profile ?? null)
-  }
-
   useEffect(() => {
     let cancelled = false
+    let request = 0
+    let authReload: ReturnType<typeof setTimeout> | undefined
     const supabase = getBrowserClient()
-
-    const loadUser = async () => {
+    async function loadUser() {
+      const current = ++request
       try {
-        await loadFromServerStatus()
+        const response = await withTimeout(fetch('/api/subscription/status', {
+          credentials: 'include', cache: 'no-store',
+        }), 5000, 'USER_STATUS_TIMEOUT')
+        const data = response.ok ? await response.json() : null
+        if (cancelled || current !== request) return
+        setUser(data?.user_id ? makeServerUser(data.user_id, data.email) : null)
+        setProfile(data?.profile ?? null)
       } catch (error) {
+        if (cancelled || current !== request) return
         console.error('[useUser] Server status load failed:', error)
-        if (!cancelled) {
-          setUser(null)
-          setProfile(null)
-        }
+        setUser(null)
+        setProfile(null)
       } finally {
-        if (!cancelled) setIsLoading(false)
+        if (!cancelled && current === request) setIsLoading(false)
       }
     }
-
-    loadUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, session: Session | null) => {
-      try {
-        if (!session?.user) {
-          await loadFromServerStatus()
-          return
-        }
-
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('subscription_status, trial_ends_at, stripe_customer_id, stripe_subscription_id, is_beta, beta_expires_at')
-          .eq('id', session.user.id)
-          .single()
-
-        setUser(session.user)
-        setProfile(profileData)
-      } catch (error) {
-        console.error('[useUser] Auth change reload failed:', error)
-        try {
-          await loadFromServerStatus()
-        } catch {
-          setUser(null)
-          setProfile(null)
-        }
+    void loadUser()
+    // Return immediately: Supabase auth notifications can hold its session lock.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, _session: Session | null) => {
+      if (event === 'INITIAL_SESSION') return
+      clearTimeout(authReload)
+      if (event === 'SIGNED_OUT') {
+        ++request
+        setUser(null)
+        setProfile(null)
+        setIsLoading(false)
+        return
       }
+      authReload = setTimeout(() => { if (!cancelled) void loadUser() }, 0)
     })
-
     return () => {
       cancelled = true
+      clearTimeout(authReload)
       subscription.unsubscribe()
     }
   }, [])

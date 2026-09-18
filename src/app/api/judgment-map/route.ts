@@ -1,19 +1,12 @@
+import { normalizePracticeFocus } from '@/lib/practice-focus'
+import { practiceTrend, practiceStage } from '@/lib/practice-progress'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getEntitlementForUser } from '@/lib/entitlement'
 
 const MIN_ATTEMPTS_FOR_RECOMMENDATION = 5
 
-const POSITIVE_STAGE_ORDER = [
-  'Building',
-  'Improving',
-  'Getting Stronger',
-  'Sharpening',
-  'Ready Habits Forming',
-] as const
-
-type ConfidenceStage = typeof POSITIVE_STAGE_ORDER[number]
-type PatternTrend = 'building' | 'improving' | 'steady'
+type PatternTrend = import('@/lib/practice-progress').PracticeTrend
 
 type MistakeTypeRow = {
   mistake_type: string
@@ -65,14 +58,6 @@ function explainPattern(mistakeType: string) {
   }
 }
 
-function chooseConfidenceStage(totalAttempted: number, correctedPatterns: number, overallAccuracy: number): ConfidenceStage {
-  if (totalAttempted < 5) return 'Building'
-  if (correctedPatterns >= 5 && overallAccuracy >= 75) return 'Ready Habits Forming'
-  if (correctedPatterns >= 3 && overallAccuracy >= 65) return 'Sharpening'
-  if (correctedPatterns >= 1 || overallAccuracy >= 55) return 'Getting Stronger'
-  return 'Improving'
-}
-
 export async function GET() {
   try {
     const supabase = createClient()
@@ -115,7 +100,7 @@ export async function GET() {
     }>()
 
     for (const row of answered as any[]) {
-      const mistakeType = row.mistake_type || fallbackMistakeType(row.nclex_category)
+      const mistakeType = normalizePracticeFocus(row.mistake_type || fallbackMistakeType(row.nclex_category))
       const entry = map.get(mistakeType) ?? {
         attempted: 0,
         correct: 0,
@@ -146,15 +131,7 @@ export async function GET() {
       const recentSorted = entry.recent
         .filter(item => item.answered_at)
         .sort((a, b) => new Date(b.answered_at!).getTime() - new Date(a.answered_at!).getTime())
-      const recentThree = recentSorted.slice(0, 3)
-      const earlierThree = recentSorted.slice(3, 6)
-      const recentAccuracy = roundAccuracy(recentThree.filter(item => item.is_correct).length, recentThree.length)
-      const earlierAccuracy = roundAccuracy(earlierThree.filter(item => item.is_correct).length, earlierThree.length)
-      const trend: PatternTrend = recentThree.length >= 2 && earlierThree.length >= 2 && recentAccuracy > earlierAccuracy
-        ? 'improving'
-        : accuracy >= 70
-          ? 'steady'
-          : 'building'
+      const trend = practiceTrend(recentSorted.filter(item => typeof item.is_correct === 'boolean').map(item => item.is_correct === true))
 
       return {
         mistake_type,
@@ -170,40 +147,41 @@ export async function GET() {
       return a.accuracy - b.accuracy
     })
 
-    const eligibleWeaknesses = mistakeTypes.filter(item => item.attempted >= 2)
+    const eligibleWeaknesses = mistakeTypes.filter(item => item.attempted >= 2 && item.missed > 0)
     const topWeakness = eligibleWeaknesses.length > 0
       ? [...eligibleWeaknesses].sort((a, b) => {
           if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy
           return b.missed - a.missed
         })[0]
-      : mistakeTypes[0] ?? null
+      : mistakeTypes.find(item => item.missed > 0) ?? null
 
-    const strongestArea = mistakeTypes.length > 0
-      ? [...mistakeTypes].sort((a, b) => {
+    const demonstratedAreas = mistakeTypes.filter(item => item.correct > 0)
+    const strongestArea = demonstratedAreas.length > 0
+      ? [...demonstratedAreas].sort((a, b) => {
           if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy
           return b.attempted - a.attempted
         })[0]
       : null
 
-    const correctedPatterns = mistakeTypes.filter(item => item.trend === 'improving' || item.accuracy >= 70).length
+    const correctedPatterns = mistakeTypes.filter(item => item.trend === 'improving').length
     const enoughData = totalAttempted >= MIN_ATTEMPTS_FOR_RECOMMENDATION
-    const confidenceStage = chooseConfidenceStage(totalAttempted, correctedPatterns, overallAccuracy)
+    const confidenceStage = practiceStage(totalAttempted, correctedPatterns)
 
     const recommendedMistakeType = enoughData && topWeakness ? topWeakness.mistake_type : null
     const recommendation = enoughData && topWeakness
       ? {
           type: 'next_focus',
           title: `Train ${topWeakness.mistake_type}`,
-          message: `${topWeakness.mistake_type} is your next growth pattern. A short drill will help Forge strengthen this area.`,
+          message: `${topWeakness.mistake_type} includes missed practice answers. Review them, then try a fresh question.`,
           mistake_type: topWeakness.mistake_type,
           explanation: explainPattern(topWeakness.mistake_type),
         }
       : {
           type: 'baseline',
-          title: 'Build your first pattern map',
-          message: 'Answer a few more questions so Forge can learn how you miss and recommend the right practice.',
+          title: 'Continue broad practice',
+          message: 'Continue a short mixed session. A few answers cannot establish a stable pattern.',
           mistake_type: null,
-          explanation: 'Every answered question helps Forge understand what to train next.',
+          explanation: 'Practice results describe these questions only; they do not predict an NCLEX result.',
         }
 
     return NextResponse.json({
@@ -220,7 +198,7 @@ export async function GET() {
           : 'You are building your first clinical judgment pattern map.',
         positive_signals: [
           totalAttempted > 0 ? `${totalAttempted} question${totalAttempted === 1 ? '' : 's'} answered` : 'Ready to start building your map',
-          correctedPatterns > 0 ? `${correctedPatterns} pattern${correctedPatterns === 1 ? '' : 's'} showing progress` : 'Every missed question helps Forge choose what to train next',
+          correctedPatterns > 0 ? `${correctedPatterns} area${correctedPatterns === 1 ? '' : 's'} with higher accuracy in the latest 3 answers than the previous 3` : 'Every missed question helps Forge choose what to train next',
           topWeakness ? `${topWeakness.mistake_type} identified as a next focus` : 'Forge will identify your next focus soon',
         ],
       },

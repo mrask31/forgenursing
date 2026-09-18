@@ -1,3 +1,4 @@
+import { checkoutSubscriptionStatus } from '@/lib/checkout-validation'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
@@ -62,7 +63,7 @@ async function processWebhookEvent(
         }
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-        const status = subscription.status === 'trialing' ? 'trialing' : 'active'
+        const status = checkoutSubscriptionStatus(subscription.status)
 
         const priceId = subscription.items?.data?.[0]?.price?.id || ''
         const tierType = mapPriceIdToTierType(priceId)

@@ -42,6 +42,8 @@ export interface PublicQuestion {
 }
 
 export interface AnswerFeedback {
+  sources?: { title: string; url: string }[];
+  retry_available?: boolean;
   is_correct: boolean;
   correct_answer: string;
   trap_type: string;
@@ -60,6 +62,7 @@ export interface SessionAnswer {
 }
 
 export interface TrapResult {
+  review_topics?: string[];
   score: number;
   total: number;
   all_correct: boolean;
@@ -76,19 +79,19 @@ export interface TrapResult {
 // ============================================================================
 
 const TRAP_DISPLAY_MAP: Record<string, string> = {
-  'Assessment-first': 'Assessment Trap',
-  'Priority-setting': 'Priority Trap',
-  'Safety': 'Safety Trap',
-  'Delegation': 'Delegation Trap',
-  'Medication reasoning': 'Medication Trap',
-  'Therapeutic communication': 'Communication Trap',
-  'Lab / diagnostic interpretation': 'Lab Trap',
-  'Patient education': 'Teaching Trap',
-  'Pathophysiology / knowledge gap': 'Content Trap',
+  'Assessment-first': 'Assessing a change',
+  'Priority-setting': 'Recognizing urgent symptoms',
+  'Safety': 'Safety decisions',
+  'Delegation': 'Delegating routine care',
+  'Medication reasoning': 'Medication reasoning',
+  'Therapeutic communication': 'Therapeutic communication',
+  'Lab / diagnostic interpretation': 'Lab interpretation',
+  'Patient education': 'Patient teaching',
+  'Pathophysiology / knowledge gap': 'Clinical concepts',
 };
 
 export function trapDisplayName(mistakeType: string): string {
-  return TRAP_DISPLAY_MAP[mistakeType] ?? 'Clinical Judgment Trap';
+  return TRAP_DISPLAY_MAP[mistakeType] ?? 'Clinical judgment';
 }
 
 // ============================================================================
@@ -206,8 +209,9 @@ export function scoreTrap(answers: SessionAnswer[]): TrapResult {
     all_correct: false,
     detected_trap: dominantTrap,
     detected_trap_display: display,
-    trap_explanation: explanation.explanation,
-    trap_why_tempting: explanation.why_tempting,
+    review_topics: Array.from(new Set(missed.map(answer => trapDisplayName(answer.trap_type)))),
+    trap_explanation: `${display} appeared in a missed question in this session.`,
+    trap_why_tempting: null,
     trap_what_to_practice: explanation.what_to_practice,
     share_text: buildShareText(display, correct, total),
   };
@@ -218,14 +222,7 @@ export function scoreTrap(answers: SessionAnswer[]): TrapResult {
 // ============================================================================
 
 function buildShareText(trapDisplay: string | null, score: number, total: number): string {
-  if (!trapDisplay) {
-    return `I got ${score}/${total} on the NCLEX Answer Trap Check — no obvious trap detected.\nFind yours: forgenursing.com/answer-trap-check`;
-  }
-  const explanation = TRAP_EXPLANATIONS[
-    Object.keys(TRAP_DISPLAY_MAP).find(k => TRAP_DISPLAY_MAP[k] === trapDisplay) ?? ''
-  ];
-  const shortDesc = explanation?.explanation?.replace('You may tend to ', 'I tend to ') ?? '';
-  return `My first NCLEX Answer Trap signal: ${trapDisplay}\n${shortDesc}\nFind yours: forgenursing.com/answer-trap-check`;
+  return `I practiced ${total} NCLEX-style questions with ForgeNursing and got ${score} correct.${trapDisplay ? ` Suggested review focus: ${trapDisplay}.` : ''} This short check is not an exam-readiness assessment.\nTry it: forgenursing.com/answer-trap-check`;
 }
 
 // ============================================================================

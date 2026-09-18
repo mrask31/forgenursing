@@ -55,6 +55,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!session.completed_at) return NextResponse.json({ error: 'Complete the check first' }, { status: 409 });
+    if (session.user_id && session.user_id !== user.id) return NextResponse.json({ error: 'Result belongs to another account' }, { status: 409 });
+
     // Already claimed
     if (session.user_id) {
       return NextResponse.json({
@@ -65,10 +68,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Attach user_id
-    const { error: updateError } = await supabase
+    const { data: claimed, error: updateError } = await supabase
       .from('answer_trap_sessions')
       .update({ user_id: user.id })
-      .eq('id', session_id);
+      .eq('id', session_id)
+      .is('user_id', null)
+      .select('id');
 
     if (updateError) {
       console.error('[AnswerTrapCheck/claim] Update error:', updateError);
@@ -77,6 +82,8 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
+
+    if (!claimed?.length) return NextResponse.json({ error: 'Result was claimed concurrently; retry to confirm ownership' }, { status: 409 });
 
     return NextResponse.json({
       success: true,

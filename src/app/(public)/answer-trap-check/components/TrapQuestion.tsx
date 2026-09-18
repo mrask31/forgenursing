@@ -11,6 +11,7 @@ interface TrapQuestionProps {
   onSelectAnswer: (answer: string) => void
   onSubmit: () => void
   loading: boolean
+  isRetry?: boolean
 }
 
 export default function TrapQuestion({
@@ -21,17 +22,18 @@ export default function TrapQuestion({
   onSelectAnswer,
   onSubmit,
   loading,
+  isRetry = false,
 }: TrapQuestionProps) {
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8">
-      <div className="max-w-lg w-full mx-auto flex-1 flex flex-col">
+    <div className="flex flex-col px-4 py-6 sm:py-8">
+      <div className="max-w-lg w-full mx-auto flex flex-col">
         {/* Progress */}
         <div className="mb-6 space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-400">
             <span className="font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
-              Question {questionNumber} of {totalQuestions}
+              {isRetry ? 'Apply what you learned' : `Question ${questionNumber} of ${totalQuestions}`}
             </span>
-            <span>Answer Trap Check</span>
+            <span>{isRetry ? 'Related retry' : 'Practice'}</span>
           </div>
           <div className="w-full h-1.5 rounded-full bg-slate-100">
             <div
@@ -52,13 +54,15 @@ export default function TrapQuestion({
         </div>
 
         {/* Options */}
-        <div className="space-y-3 flex-1">
+        <div className="space-y-3">
           {question.options.map((option) => {
             const isSelected = selectedAnswer === option.label
             return (
               <button
                 key={option.label}
                 onClick={() => onSelectAnswer(option.label)}
+                aria-pressed={isSelected}
+                disabled={loading}
                 className={`w-full text-left rounded-xl border-2 p-4 transition-all ${
                   isSelected
                     ? 'border-[#0D8F9C] bg-[#E0F4F6]'

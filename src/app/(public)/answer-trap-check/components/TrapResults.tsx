@@ -72,28 +72,29 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
   }
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8">
+    <div className="flex flex-col px-4 py-6 sm:py-8">
       <div className="max-w-lg w-full mx-auto space-y-6">
         {/* Brand */}
         <div className="text-center">
           <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#0D8F9C' }}>
-            Down To Two by ForgeNursing
+            ForgeNursing
           </p>
         </div>
 
         {/* Result header */}
         <div className="text-center space-y-2">
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-            Your first Answer Trap signal
+            Topics to revisit from this session
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: '#0B2545' }}>
-            {result.detected_trap_display}
+            Your practice recap
           </h1>
           <p className="text-sm text-slate-500">
-            {result.score}/{result.total} correct — the pattern that showed up first
+            {result.score}/{result.total} correct on the original questions
           </p>
         </div>
 
+        <ul className="flex flex-wrap justify-center gap-2">{(result.review_topics || [result.detected_trap_display || 'Clinical judgment']).map(topic => <li key={topic} className="rounded-full bg-teal-50 px-3 py-2 text-sm text-[#087986]">{topic}</li>)}</ul>
         {/* Explanation card */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-4">
           <div>
@@ -101,16 +102,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
               What this means
             </p>
             <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
-              {result.trap_explanation}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-2">
-              Why the wrong answer felt right
-            </p>
-            <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
-              {result.trap_why_tempting}
+              These topics appeared in questions you missed. Choose one to revisit in your next session.
             </p>
           </div>
 
@@ -147,13 +139,13 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
         <div className="rounded-2xl p-5 sm:p-6 text-white space-y-4" style={{ backgroundColor: '#0B2545' }}>
           <div className="space-y-2">
             <p className="text-xs font-bold uppercase tracking-wide text-white/50">
-              Keep training this pattern
+              Keep practicing
             </p>
             <p className="text-base font-bold text-white">
-              Create a free account to keep practicing this pattern with focused drills.
+              Save this result and start your free seven-day trial.
             </p>
             <p className="text-sm text-white/70 leading-relaxed">
-              ForgeNursing uses focused drills and mistake-type feedback to help you train the {result.detected_trap_display} pattern until it clicks.
+              Keep your result, choose a study focus, and continue with short practice sessions.
             </p>
           </div>
           <button
@@ -168,7 +160,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
 
         {/* Disclaimer */}
         <p className="text-[10px] text-center text-slate-500 leading-relaxed max-w-sm mx-auto">
-          This is a first signal from 3 questions — not a definitive assessment. More practice gives Forge a clearer picture of your patterns. Results do not predict NCLEX outcomes.
+          Three questions are a starting point, not a definitive assessment. Results do not predict NCLEX outcomes.
         </p>
       </div>
     </div>

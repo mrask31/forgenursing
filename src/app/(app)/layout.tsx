@@ -35,7 +35,7 @@ export default function AppRouteLayout({
 
   const isUnguarded = UNGUARDED_PATHS.some(p => pathname.startsWith(p))
   const authCheckComplete = !isLoading || accessCheckTimedOut
-  const shouldRedirectToCheckout = !isUnguarded && authCheckComplete && !!user && !hasAccess
+  const shouldRedirectToCheckout = !isUnguarded && pathname !== '/settings' && authCheckComplete && !!user && !hasAccess
   const shouldRedirectToLogin = !isUnguarded && authCheckComplete && !user
 
   useEffect(() => {

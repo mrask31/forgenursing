@@ -6,10 +6,11 @@ import type { TrapResult } from '@/lib/answer-trap'
 
 interface TrapAllCorrectProps {
   result: TrapResult
+  sessionId: string | null
   anonymousId: string | null
 }
 
-export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectProps) {
+export default function TrapAllCorrect({ result, sessionId, anonymousId }: TrapAllCorrectProps) {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -58,16 +59,22 @@ export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectPr
       })
     } catch {}
 
+    try {
+      if (sessionId && anonymousId) {
+        localStorage.setItem('answer_trap_session_id', sessionId)
+        localStorage.setItem('answer_trap_anonymous_id', anonymousId)
+      }
+    } catch {}
     window.location.href = '/signup'
   }
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8">
+    <div className="flex flex-col px-4 py-6 sm:py-8">
       <div className="max-w-lg w-full mx-auto space-y-6">
         {/* Brand */}
         <div className="text-center">
           <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#0D8F9C' }}>
-            Down To Two by ForgeNursing
+            ForgeNursing
           </p>
         </div>
 
@@ -77,10 +84,10 @@ export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectPr
             <Trophy className="w-8 h-8" style={{ color: '#0D8F9C' }} />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#0B2545' }}>
-            No obvious trap from this short check.
+            You completed your starter check.
           </h1>
           <p className="text-sm text-slate-600 leading-relaxed max-w-sm mx-auto">
-            You got {result.score}/{result.total} correct. These 3 questions didn't reveal a clear Answer Trap pattern — which is a good sign.
+            You got {result.score}/{result.total} correct on this sample.
           </p>
         </div>
 
@@ -90,11 +97,11 @@ export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectPr
             What this means
           </p>
           <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
-            Three questions is a short sample. Your Answer Traps may show up with harder questions or different NCLEX categories. Most students discover their pattern after 10-15 questions.
+            Three questions are a short sample. Keep practicing across different NCLEX categories. This result does not establish mastery or predict an exam result.
           </p>
           <div className="rounded-lg bg-[#F7F9FB] border border-[#DDE5EE] p-4">
             <p className="text-sm font-medium leading-relaxed" style={{ color: '#0B2545' }}>
-              A longer practice session with Forge can find patterns that a 3-question check might miss.
+              A new practice session gives you more questions and explanations to review.
             </p>
           </div>
         </div>
@@ -125,10 +132,10 @@ export default function TrapAllCorrect({ result, anonymousId }: TrapAllCorrectPr
               Go deeper
             </p>
             <p className="text-base font-bold text-white">
-              Find your Answer Traps with a full practice session.
+              Save your result and continue practicing.
             </p>
             <p className="text-sm text-white/70 leading-relaxed">
-              Create a free account to take longer quizzes, get your full Answer Trap Map, and practice with focused drills.
+              Start a free seven-day trial to use your practice plan, explanations, and progress history.
             </p>
           </div>
           <button
