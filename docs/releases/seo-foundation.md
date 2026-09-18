@@ -3,7 +3,7 @@
 ## Scope
 
 - A shared metadata helper gives every public page a unique title, description, self-referencing production canonical, Open Graph metadata, and Twitter card. Removes duplicated brand suffixes and outdated upload-first positioning.
-- Adds a generated 1200×630 PNG sharing image at /opengraph-image. No external asset service required.
+- Adds a generated 1200×630 PNG sharing image at /share-image. No external asset service required.
 - Sitemap includes Pricing and excludes account/transaction screens. Omits fabricated per-build last-modified dates. robots.txt advertises the canonical production sitemap.
 - Login, signup, checkout, password recovery, and authenticated app screens declare noindex. Authentication and access checks remain unchanged; the app layout now wraps its existing client component with server metadata.
 - Replaces the old /nclex-practice landing content with a server-rendered study-guide hub and adds a public footer link. Existing article URLs remain intact. Updates article calls to action and removes claims that a three-question sample diagnoses reasoning patterns.

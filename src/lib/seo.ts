@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const SITE_URL = 'https://forgenursing.com'
-export const SHARE_IMAGE = { url: '/opengraph-image', width: 1200, height: 630, alt: 'ForgeNursing — NCLEX-RN retake practice' }
+export const SHARE_IMAGE = { url: `${SITE_URL}/share-image`, width: 1200, height: 630, alt: 'ForgeNursing — NCLEX-RN retake practice' }
 
 export function pageMetadata(title: string, description: string, path: string, index = true): Metadata {
   return {
