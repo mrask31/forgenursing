@@ -14,7 +14,7 @@ export default function HomePage() {
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1.2fr_1fr] lg:items-center">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#6EE0DE]">For your next NCLEX-RN attempt</p>
-          <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-[1.12] sm:text-5xl lg:text-6xl">Your next attempt deserves a clearer plan.</h1>
+          <h1 className="mt-5 max-w-2xl text-4xl font-bold text-white leading-[1.12] sm:text-5xl lg:text-6xl">Your next attempt deserves a clearer plan.</h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">Preparing again can feel overwhelming. Start small: practice a few questions, understand your choices, and work on what needs attention.</p>
           <Link href="/answer-trap-check" className="mt-8 inline-flex min-h-12 items-center gap-3 rounded-xl bg-[#6EE0DE] px-6 py-4 font-bold text-[#0B2545] hover:bg-teal-200">Try 3 free practice questions <ArrowRight className="h-5 w-5" /></Link>
           <p className="mt-3 text-sm text-slate-300">No account. No credit card. A starting point, not a pass prediction.</p>
