@@ -233,7 +233,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // CRITICAL: Check subscription status for protected routes
-    if (isProtectedRoute && user) {
+    if (isProtectedRoute && user && pathname !== '/settings') {
       try {
         // Use service role key to bypass RLS for subscription status check
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY

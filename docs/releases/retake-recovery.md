@@ -64,3 +64,5 @@ Still required before calling the release fully verified: signed-in browser inte
 - Question and feedback actions follow the content with less empty space. Results keep actual scores, selected-answer explanations, related-question actions, and clear navigation; repeated pattern-summary panels are removed.
 - Progress links to completed sessions for review. Account shows the actual trial expiry, respects active beta access, links to subscription options, and provides subscription support. This does not add automated subscription management.
 - Production billing and stored learning records are unchanged. Signed-in browser verification still requires a secure browser login; authenticated API checks from the preceding release remain documented above.
+
+Browser sign-in exposed that expired users were redirected away from Account. `/settings` now requires authentication but not a subscription; practice routes and API entitlement checks retain their existing restrictions. No subscription dates or statuses were changed.
