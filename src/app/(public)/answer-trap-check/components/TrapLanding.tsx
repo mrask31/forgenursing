@@ -9,8 +9,8 @@ interface TrapLandingProps {
 
 export default function TrapLanding({ onStart, loading }: TrapLandingProps) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-      <div className="max-w-lg w-full text-center space-y-8">
+    <div className="flex flex-col items-center px-4 py-10 sm:py-16">
+      <div className="max-w-lg w-full text-center space-y-6">
         {/* Brand */}
         <div className="space-y-2">
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#0D8F9C' }}>
@@ -30,7 +30,7 @@ export default function TrapLanding({ onStart, loading }: TrapLandingProps) {
             Take a small step toward your next attempt.
           </p>
           <p className="text-sm text-slate-500 leading-relaxed max-w-md mx-auto">
-            Try three NCLEX-style questions, review your choices, and get a suggested starting focus. This short check cannot diagnose why you missed an answer.
+            Answer three NCLEX-style questions. For each miss, see why your choice doesn’t fit and try an optional related question to apply the lesson.
           </p>
         </div>
 
@@ -52,11 +52,11 @@ export default function TrapLanding({ onStart, loading }: TrapLandingProps) {
         </button>
 
         {/* Trust signals */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-xs text-slate-400">
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-400">
           <span>3 questions</span>
-          <span className="hidden sm:inline">·</span>
+          <span className="inline">·</span>
           <span>No account required</span>
-          <span className="hidden sm:inline">·</span>
+          <span className="inline">·</span>
           <span>Free</span>
         </div>
 

@@ -31,3 +31,12 @@ This release focuses ForgeNursing on a short, repeatable practice routine for NC
 5. Verify event collection and measure starter-check completion, signup, first practice session, repeat use, and paid conversion. This release does not claim validated conversion or learning outcomes.
 
 Rollback: revert the release commit. No database migration or billing migration is required. Added non-security preference metadata can remain without changing old application behavior.
+
+## Demo refinement — September 18
+
+- The free sample now uses three authored question pairs: potassium interpretation, delegation, and urgent symptoms. Every distractor has its own explanation. Existing database question IDs remain the session identifiers; no bank mutation or schema migration is required. Other bank items are excluded from new public samples.
+- Each original miss offers an optional related question before signup. The retry endpoint verifies the anonymous session credential, membership, and an original miss. It returns no answer key before submission and never rewrites the original score. Retry outcomes are explicitly visit-only; only the original check is claimed after signup.
+- Mobile question and feedback containers fit their content; removed full-screen minimum heights and flex spacers. Buttons follow the answers. Errors preserve the current phase.
+- Homepage describes the teaching loop; repeated limitations and legacy terms removed from the main sales copy. Results list topics from missed questions rather than claiming a diagnosed pattern.
+- 27 focused regression tests pass, including content coverage, retry access, answer-key exclusion, and score separation. TypeScript passes.
+- Content references: Merck Manual hyperkalemia/hypokalemia, NCSBN National Guidelines for Nursing Delegation, NHS heart attack symptoms. Links appear with each explanation. Reference checking is not independent nursing-educator validation; that release check remains open.

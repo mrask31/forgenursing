@@ -8,7 +8,7 @@ import TrapResults from './components/TrapResults'
 import TrapAllCorrect from './components/TrapAllCorrect'
 import type { PublicQuestion, AnswerFeedback, TrapResult } from '@/lib/answer-trap'
 
-type Phase = 'landing' | 'question' | 'feedback' | 'results'
+type Phase = 'landing' | 'question' | 'feedback' | 'retry-question' | 'retry-feedback' | 'results'
 
 export default function AnswerTrapClient() {
   const [phase, setPhase] = useState<Phase>('landing')
@@ -21,6 +21,48 @@ export default function AnswerTrapClient() {
   const [result, setResult] = useState<TrapResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const [retryQuestion, setRetryQuestion] = useState<PublicQuestion | null>(null)
+  const [retryAnswer, setRetryAnswer] = useState<string | null>(null)
+  const [retryFeedback, setRetryFeedback] = useState<AnswerFeedback | null>(null)
+  const [retryOutcomes, setRetryOutcomes] = useState<Record<string, { topic: string; correct: boolean }>>({})
+
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }) }, [phase, currentIndex])
+
+  async function handleRelatedRetry(submit = false) {
+    if (loading || !questions[currentIndex] || (submit && !retryAnswer)) return
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/answer-trap-check/retry', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId, anonymous_id: anonymousId,
+          question_id: questions[currentIndex].id, ...(submit ? { selected_answer: retryAnswer } : {}) }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Could not load the related question.')
+      if (submit) {
+        setRetryFeedback(data.feedback)
+        setRetryOutcomes(previous => ({ ...previous, [questions[currentIndex].id]: {
+          topic: data.feedback.trap_display_name, correct: data.feedback.is_correct,
+        } }))
+        setPhase('retry-feedback')
+      } else {
+        setRetryQuestion(data.question)
+        setRetryAnswer(null)
+        setPhase('retry-question')
+      }
+      try {
+        const posthog = require('posthog-js').default
+        posthog.capture(submit ? 'practice_retry_answered' : 'practice_retry_started', {
+          question_id: questions[currentIndex].id,
+          ...(submit ? { is_correct: data.feedback.is_correct } : {}),
+        })
+      } catch {}
+    } catch (err: any) {
+      setError(err.message || 'Please try again.')
+    } finally { setLoading(false) }
+  }
 
   // Fire page view event
   useEffect(() => {
@@ -193,43 +235,9 @@ export default function AnswerTrapClient() {
     }
   }, [currentIndex, questions.length, sessionId, anonymousId, currentFeedback])
 
-  const handleRetry = useCallback(() => {
-    setError(null)
-    setPhase('landing')
-    setSessionId(null)
-    setAnonymousId(null)
-    setQuestions([])
-    setCurrentIndex(0)
-    setSelectedAnswer(null)
-    setCurrentFeedback(null)
-    setResult(null)
-  }, [])
-
-  // Error display
-  if (error) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto">
-            <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          </div>
-          <p className="text-sm text-slate-700">{error}</p>
-          <button
-            onClick={handleRetry}
-            className="px-5 py-3 rounded-xl text-white font-semibold text-sm"
-            style={{ backgroundColor: '#0D8F9C' }}
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-white" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+    <div className="bg-white" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      {error && <div role="alert" className="mx-auto max-w-lg px-4 pt-5 text-sm text-red-800">{error} Your place is kept; try the action again.</div>}
       {phase === 'landing' && (
         <TrapLanding onStart={handleStart} loading={loading} />
       )}
@@ -254,9 +262,25 @@ export default function AnswerTrapClient() {
           totalQuestions={questions.length}
           onNext={handleNextAfterFeedback}
           isLast={currentIndex >= questions.length - 1}
+          loading={loading}
+          onRetry={currentFeedback.retry_available ? () => handleRelatedRetry() : undefined}
         />
       )}
 
+      {phase === 'retry-question' && retryQuestion && <>
+        <TrapQuestion question={retryQuestion} questionNumber={currentIndex + 1} totalQuestions={questions.length}
+          selectedAnswer={retryAnswer} onSelectAnswer={setRetryAnswer} onSubmit={() => handleRelatedRetry(true)} loading={loading} isRetry />
+        <button onClick={handleNextAfterFeedback} disabled={loading} className="mx-auto mb-6 block min-h-11 px-4 text-sm text-slate-600 underline">Skip retry and continue</button>
+      </>}
+      {phase === 'retry-feedback' && retryFeedback && <TrapFeedback feedback={retryFeedback} selectedAnswer={retryAnswer!}
+        questionNumber={currentIndex + 1} totalQuestions={questions.length} onNext={handleNextAfterFeedback}
+        isLast={currentIndex >= questions.length - 1} loading={loading} isRetry />}
+      {phase === 'results' && Object.keys(retryOutcomes).length > 0 && <div className="mx-auto max-w-lg px-4 pt-6">
+        <div className="rounded-xl bg-teal-50 p-4"><h2 className="font-bold text-lg">Your related-question practice</h2>
+          <ul className="mt-2 space-y-2 text-sm">{Object.entries(retryOutcomes).map(([id, outcome]) => <li key={id}>{outcome.topic}: {outcome.correct ? 'correct on the related question' : 'worth another review'}.</li>)}</ul>
+          <p className="mt-3 text-xs text-slate-600">Practice after feedback, shown separately from your original score. This retry summary is for this visit only.</p>
+        </div>
+      </div>}
       {phase === 'results' && result && (
         result.all_correct ? (
           <TrapAllCorrect sessionId={sessionId}

@@ -72,7 +72,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
   }
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8">
+    <div className="flex flex-col px-4 py-6 sm:py-8">
       <div className="max-w-lg w-full mx-auto space-y-6">
         {/* Brand */}
         <div className="text-center">
@@ -84,16 +84,17 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
         {/* Result header */}
         <div className="text-center space-y-2">
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-            A suggested practice focus
+            Topics to revisit from this session
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: '#0B2545' }}>
-            {result.detected_trap}
+            Your practice recap
           </h1>
           <p className="text-sm text-slate-500">
-            {result.score}/{result.total} correct — a starting focus from this short sample
+            {result.score}/{result.total} correct on the original questions
           </p>
         </div>
 
+        <ul className="flex flex-wrap justify-center gap-2">{(result.review_topics || [result.detected_trap_display || 'Clinical judgment']).map(topic => <li key={topic} className="rounded-full bg-teal-50 px-3 py-2 text-sm text-[#087986]">{topic}</li>)}</ul>
         {/* Explanation card */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-4">
           <div>
@@ -101,7 +102,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
               What this means
             </p>
             <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
-              This focus comes from a missed question. Three questions cannot establish a recurring pattern or explain why you chose an answer.
+              These topics appeared in questions you missed. Choose one to revisit in your next session.
             </p>
           </div>
 
@@ -144,7 +145,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
               Save this result and start your free seven-day trial.
             </p>
             <p className="text-sm text-white/70 leading-relaxed">
-              Your saved check gives your practice plan a starting focus. Review explanations and try fresh questions.
+              Keep your result, choose a study focus, and continue with short practice sessions.
             </p>
           </div>
           <button

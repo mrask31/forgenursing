@@ -69,7 +69,7 @@ export default function TrapAllCorrect({ result, sessionId, anonymousId }: TrapA
   }
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8">
+    <div className="flex flex-col px-4 py-6 sm:py-8">
       <div className="max-w-lg w-full mx-auto space-y-6">
         {/* Brand */}
         <div className="text-center">

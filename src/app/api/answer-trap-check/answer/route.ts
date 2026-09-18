@@ -1,3 +1,4 @@
+import { demoLesson, demoFeedback } from '@/lib/demo-lessons';
 import { selectedAnswerComparison } from '@/lib/practice-progress';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
       // Re-fetch and return the feedback (idempotent)
       const { data: question } = await supabase
         .from('answer_trap_questions')
-        .select('options, correct_answer, trap_type, trap_display_name, key_cue, why_correct_short, why_wrong_short, one_line_fix')
+        .select('question_stem, options, correct_answer, trap_type, trap_display_name, key_cue, why_correct_short, why_wrong_short, one_line_fix')
         .eq('id', question_id)
         .single();
 
@@ -75,7 +76,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Question not found' }, { status: 404 });
       }
 
-      const feedback: AnswerFeedback = {
+      const lesson = demoLesson(question.question_stem);
+      const feedback: AnswerFeedback = lesson ? demoFeedback(lesson, alreadyAnswered.selected_answer) : {
         is_correct: alreadyAnswered.is_correct,
         correct_answer: question.correct_answer,
         trap_type: question.trap_type,
@@ -92,7 +94,7 @@ export async function POST(req: NextRequest) {
     // Fetch the question to check the answer
     const { data: question, error: questionError } = await supabase
       .from('answer_trap_questions')
-      .select('options, correct_answer, trap_type, trap_display_name, key_cue, why_correct_short, why_wrong_short, one_line_fix')
+      .select('question_stem, options, correct_answer, trap_type, trap_display_name, key_cue, why_correct_short, why_wrong_short, one_line_fix')
       .eq('id', question_id)
       .single();
 
@@ -103,7 +105,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const is_correct = selected_answer === question.correct_answer;
+    const lesson = demoLesson(question.question_stem);
+    const is_correct = selected_answer === (lesson?.initial.correct_answer ?? question.correct_answer);
 
     // Append answer to session
     const newAnswer = {
@@ -133,7 +136,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Return feedback
-    const feedback: AnswerFeedback = {
+    const feedback: AnswerFeedback = lesson ? demoFeedback(lesson, selected_answer) : {
       is_correct,
       correct_answer: question.correct_answer,
       trap_type: question.trap_type,
