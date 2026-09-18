@@ -717,7 +717,7 @@ FORMATTING RULES:
     let result;
     try {
       result = await streamText({
-        model: anthropic('claude-sonnet-4-20250514') as any,
+        model: anthropic('claude-sonnet-4-6') as any,
         maxTokens: 1200,
         messages: processedMessages,
         system: systemPrompt,

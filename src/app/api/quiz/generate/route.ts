@@ -491,7 +491,7 @@ export async function POST(req: NextRequest) {
           : '';
 
         const { text } = await generateText({
-          model: anthropic('claude-sonnet-4-20250514') as any,
+          model: anthropic('claude-sonnet-4-6') as any,
           maxTokens: 1800,
           prompt: prompt + retryHint,
         });
