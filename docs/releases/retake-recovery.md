@@ -78,3 +78,11 @@ TypeScript passed for this pass. Browser, live account, and clinical validation 
 ## Final flow review
 
 Clears the prior question before generating another, blocks new-session starts until saved practice has loaded, surfaces session-loading failures, and exposes correct as well as missed answers in saved review. Corrected the results-screen “Try a related question” action, which still opened the tutor, to create a related retry with a return link to the original session. TypeScript and 27 focused recovery tests pass.
+
+
+### Verification on the completed flow
+
+- Preview for code commit `64e04d3` reached READY. TypeScript passed; 27 focused recovery tests passed.
+- Signed-in browser: Home loads; Account renders the correct account/access instead of the timeout; Progress initially shows three sessions; the suggested-practice link selects the matching focus and displays the unfinished-session warning; saved review includes correct and missed answers, and a correct answer expands to its full explanation. Owner answers and unfinished session were not modified.
+- Live dummy-account API flow: two new questions generated without answer keys in the prompt response; both answers scored; duplicate submissions could not rewrite answers; completed results saved; a new related retry generated and was answered; progress updated. Account, recommendations, unique focus labels, and prior saved results also passed.
+- Limits: this was desktop browser verification plus authenticated API testing, not a complete mobile browser or paid checkout audit. Clinical accuracy requires separate review. Generation requests took tens of seconds in this environment. No production deployment.
