@@ -177,7 +177,7 @@ export default function QuizPageClient() {
         .eq('user_id', user.id)
         .limit(1)
       setHasDocuments((docs?.length ?? 0) > 0)
-      if ((docs?.length ?? 0) > 0) setSourceType('document')
+      // Uploaded materials are an explicit secondary practice option.
 
       try {
         const res = await fetch('/api/quiz/sessions')

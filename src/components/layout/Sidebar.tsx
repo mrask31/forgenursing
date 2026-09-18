@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, BarChart3, GraduationCap, BookOpen, Settings, LogOut, ChevronUp, ClipboardList } from 'lucide-react'
+import { MessageSquare, BarChart3, GraduationCap, BookOpen, Settings, LogOut, ChevronUp, ClipboardList, Home } from 'lucide-react'
 import { getBrowserClient, resetBrowserClient } from '@/lib/supabase/client'
 import { clearSupabaseStorage } from '@/lib/auth-utils'
 import HistoryButton from './HistoryButton'
@@ -97,7 +97,8 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   }
 
   const mainNav = [
-    { label: 'Practice', href: '/entry', icon: ClipboardList },
+    { label: 'Home', href: '/entry', icon: Home },
+    { label: 'Practice', href: '/quiz', icon: ClipboardList },
     { label: 'Progress', href: '/readiness', icon: BarChart3 },
     { label: 'Account', href: '/settings', icon: Settings },
   ]
@@ -109,7 +110,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
 
   const isActive = (href: string, label: string) => {
     if (pathname === href) return true
-    if (href === '/entry' && pathname.startsWith('/quiz')) return true
+    if (href === '/entry') return pathname === '/entry'
     if (href === '/classes' && pathname.startsWith('/classes')) return true
     if (href === '/dictionary' && pathname.startsWith('/dictionary')) return true
     if (href === '/readiness' && pathname.startsWith('/readiness') && label === 'Judgment Map') return true
@@ -154,6 +155,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
                 <Link
                   key={item.label}
                   href={item.href}
+                  aria-current={active ? 'page' : undefined}
                   onClick={onNavigate}
                   className={`
                     group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-150
@@ -198,14 +200,14 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
             </div>
           </details>
 
-          <div>
-            <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
-              Session
-            </p>
+          <details>
+            <summary className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]/60">
+              Tutor history
+            </summary>
             <div className="space-y-1">
               <HistoryButton onNavigate={onNavigate} />
             </div>
-          </div>
+          </details>
         </nav>
 
         <div className="mt-auto pt-5 border-t border-white/10 relative" ref={profileMenuRef}>

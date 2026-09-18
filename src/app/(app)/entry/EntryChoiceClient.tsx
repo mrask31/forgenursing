@@ -7,6 +7,7 @@ import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
 import { CPR_CATEGORIES, DIFFICULTIES, EMPTY_RETAKE_PLAN, cprPracticeCategory, type RetakePlan } from '@/lib/retake-plan'
 
 type StarterCheck = { score: number; total_questions: number; detected_trap: string | null }
+type Session = { id: string; status: string; current_question_index: number; total_questions: number; score: number }
 type Focus = { has_personal_plan: boolean; focus: string; focus_explanation: string }
 
 export default function EntryChoiceClient() {
@@ -14,6 +15,7 @@ export default function EntryChoiceClient() {
   const [plan, setPlan] = useState<RetakePlan>(EMPTY_RETAKE_PLAN)
   const [check, setCheck] = useState<StarterCheck | null>(null)
   const [focus, setFocus] = useState<Focus | null>(null)
+  const [sessions, setSessions] = useState<Session[]>([])
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -36,10 +38,12 @@ export default function EntryChoiceClient() {
           setClaimNotice('Your starter check has not been saved yet. Retry the handoff below; you can still practice.')
         }
       }
-      const [planResponse, focusResponse] = await Promise.all([fetch('/api/retake-plan', { cache: 'no-store' }), fetch('/api/fix-plan', { cache: 'no-store' })])
+      const [planResponse, focusResponse, sessionsResponse] = await Promise.all([fetch('/api/retake-plan', { cache: 'no-store' }), fetch('/api/fix-plan', { cache: 'no-store' }), fetch('/api/quiz/sessions', { cache: 'no-store' })])
       if (!planResponse.ok) throw new Error('Your plan could not load. Please retry.')
       const saved = await planResponse.json()
-      setPlan(saved.plan); setCheck(saved.check); setEditing(!saved.plan.completed)
+      setPlan(saved.plan); setCheck(saved.check); setEditing(false)
+      if (sessionsResponse.ok) setSessions((await sessionsResponse.json()).sessions || [])
+      else if (sessionsResponse.status !== 402) throw new Error('Your saved sessions could not load. Please retry before starting practice.')
       if (focusResponse.ok) setFocus(await focusResponse.json())
       else if (focusResponse.status === 402) { router.push('/pricing'); return }
       else throw new Error('Your practice history could not load. Please retry.')
@@ -59,6 +63,8 @@ export default function EntryChoiceClient() {
     finally { setBusy(false) }
   }
 
+  const resume = sessions.find(session => session.status === 'in_progress')
+  const lastCompleted = sessions.find(session => session.status === 'completed')
   const practiceFocus = focus?.has_personal_plan ? focus.focus : check?.detected_trap
   const reportCategory = cprPracticeCategory(plan)
   async function startPractice() {
@@ -79,12 +85,13 @@ export default function EntryChoiceClient() {
 
   if (loading) return <div className="p-10 flex items-center gap-3" role="status"><Loader2 className="h-5 w-5 animate-spin" /> Loading your practice plan…</div>
   return <div className="mx-auto w-full max-w-3xl px-5 py-8 sm:py-12 text-[#0B2545]">
-    <p className="text-xs font-bold uppercase tracking-widest text-[#0D8F9C]">Your next attempt starts here</p>
-    <h1 className="mt-3 text-3xl sm:text-4xl font-bold">One useful session at a time.</h1>
+    <p className="text-xs font-bold uppercase tracking-widest text-[#0D8F9C]">Your study home</p>
+    <h1 className="mt-3 text-3xl sm:text-4xl font-bold">Your next step is a short session.</h1>
     <p className="mt-3 text-slate-600">Practice a few questions, understand your choices, then try the skill again.</p>
     {error && <div role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-red-800">{error} <button onClick={load} className="underline font-semibold">Retry loading</button></div>}
     {claimNotice && <div role="status" className="mt-5 rounded-xl bg-teal-50 p-4 text-sm">{claimNotice} {claimNotice.includes('not been') && <button onClick={load} className="underline">Retry handoff</button>}</div>}
     {check && <p className="mt-4 text-sm text-slate-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Starter check saved: {check.score}/{check.total_questions}. A starting point, not a readiness score.</p>}
+    {!plan.completed && !editing && <button onClick={() => setEditing(true)} className="mt-5 text-sm font-semibold text-[#087986] underline">Add your exam date or performance report (optional)</button>}
     {editing ? <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 space-y-5">
       <div><h2 className="text-xl font-bold">Make this plan yours</h2><p className="mt-2 text-sm text-slate-600">These details are optional. This plan focuses on NCLEX-RN preparation.</p></div>
       <label className="block text-sm font-semibold">Target exam date <span className="font-normal text-slate-500">(optional)</span><input type="date" value={plan.targetDate} onChange={e => setPlan({ ...plan, targetDate: e.target.value })} className="mt-2 block w-full rounded-lg border border-slate-300 p-3" /></label>
@@ -94,13 +101,15 @@ export default function EntryChoiceClient() {
       <button disabled={busy} onClick={savePlan} className="rounded-xl bg-[#0D8F9C] px-6 py-3 font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : 'Save and continue'}</button>
       <button disabled={busy} onClick={() => setEditing(false)} className="ml-4 py-3 text-sm underline">Skip for now</button>
     </section> : <>
-      <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      {resume && <section className="mt-8 rounded-2xl bg-[#0B2545] p-6 text-white"><p className="text-xs uppercase tracking-widest text-teal-200">Pick up where you left off</p><h2 className="mt-3 text-xl font-bold text-white">Your practice is saved.</h2><p className="mt-2 text-slate-200">{resume.current_question_index} of {resume.total_questions} questions completed.</p><Link href={`/quiz?sessionId=${resume.id}`} className="mt-5 inline-flex rounded-xl bg-white px-5 py-3 font-bold text-[#0B2545]">Resume session →</Link></section>}
+      {!resume && <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
         <p className="text-xs font-bold uppercase tracking-widest text-[#0D8F9C]">Today’s practice</p>
         <h2 className="mt-3 text-2xl font-bold">{practiceFocus || reportCategory || 'Start with five questions'}</h2>
         <p className="mt-3 text-slate-600">{practiceFocus ? 'A focus drawn from missed practice answers. Try three questions and review each choice.' : reportCategory ? 'A starting category from your report. Try five questions to see what needs review.' : 'A short mixed session gives you a starting point. You do not need to upload anything.'}</p>
         {plan.targetDate && <p className="mt-4 text-sm text-slate-500">Your target: {plan.targetDate}. This is a planning date, not a readiness assessment.</p>}
-        <button onClick={startPractice} disabled={busy || !!error} className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-5 py-3 font-bold text-white hover:bg-[#087986] disabled:opacity-50">{busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowRight className="h-5 w-5" />}{busy ? 'Starting…' : `Start ${practiceFocus ? '3' : '5'} questions`}</button>
-      </section>
+        <button onClick={startPractice} disabled={busy || !!error} className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-5 py-3 font-bold text-white hover:bg-[#087986] disabled:opacity-50">{busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowRight className="h-5 w-5" />}{busy ? 'Starting…' : `Start today’s ${practiceFocus ? '3' : '5'} questions`}</button>
+      </section>}
+      {lastCompleted && <Link href={`/quiz/results?sessionId=${lastCompleted.id}`} className="mt-5 block rounded-xl border border-slate-200 bg-white p-5"><span className="font-bold">Review your last session →</span><p className="mt-1 text-sm text-slate-600">{lastCompleted.score}/{lastCompleted.total_questions} correct · Revisit the explanations whenever you need.</p></Link>}
       <ol className="mt-6 grid gap-4 sm:grid-cols-3">{[['Practice', 'Take your time with a short set.'], ['Understand', 'Compare your choice with the explanation. Ask the tutor if you need more help.'], ['Try again', 'Use a fresh question after a miss, then check your practice history.']].map(([title, body], i) => <li key={title} className="rounded-xl bg-slate-100 p-4"><p className="font-bold">{i + 1}. {title}</p><p className="mt-2 text-sm text-slate-600">{body}</p></li>)}</ol>
       <div className="mt-6 flex flex-wrap gap-5 text-sm font-semibold"><button onClick={() => setEditing(true)} className="underline">Edit plan details</button><Link href="/readiness" className="underline">View progress</Link><Link href="/quiz" className="underline">Other practice options</Link></div>
       <p className="mt-6 text-xs text-slate-500">AI-assisted practice supports your study resources. Explanations can be wrong; check uncertain clinical details against trusted nursing references. Practice results do not predict passing.</p>

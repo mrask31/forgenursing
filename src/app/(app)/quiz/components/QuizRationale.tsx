@@ -148,18 +148,18 @@ export default function QuizRationale({
   }
 
   return (
-    <div className="space-y-4 pb-48 sm:pb-8">
+    <div className="space-y-4 pb-6">
       <div
         className="rounded-xl p-4 text-white"
-        style={{ backgroundColor: isCorrect ? '#22C55E' : '#EF4444' }}
+        style={{ backgroundColor: isCorrect ? '#15803D' : '#9A3412' }}
       >
         <p className="font-bold text-base">
-          {isCorrect ? '✓ Correct!' : '✗ Missed this one'}
+          {isCorrect ? '✓ Correct!' : 'Let’s review this choice.'}
         </p>
         {!isCorrect && (
           <div className="mt-2 space-y-1 text-sm">
             <p>You chose: <span className="font-semibold">{userAnswer}{userOptionText ? ` — ${userOptionText}` : ''}</span></p>
-            <p>Better answer: <span className="font-semibold">{correctAnswer}{correctOptionText ? ` — ${correctOptionText}` : ''}</span></p>
+            <p>Correct answer: <span className="font-semibold">{correctAnswer}{correctOptionText ? ` — ${correctOptionText}` : ''}</span></p>
           </div>
         )}
         {isCorrect && (
@@ -179,7 +179,7 @@ export default function QuizRationale({
         )}
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">
-            {isCorrect ? 'Why you got it' : 'Why the better answer works'}
+            {isCorrect ? 'Why this answer fits' : 'Why this answer fits'}
           </p>
           <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
             {whyCorrectShort || rationaleCorrect}
@@ -195,32 +195,11 @@ export default function QuizRationale({
         )}
         {oneLineFix && (
           <div className="rounded-lg bg-[#F7F9FB] border border-[#DDE5EE] p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">Think like a nurse</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">Put it into practice</p>
             <p className="text-sm font-medium leading-relaxed" style={{ color: '#0B2545' }}>{oneLineFix}</p>
           </div>
         )}
       </div>
-
-      {showMistakeMap && (
-        <div className="rounded-xl p-4 text-white" style={{ backgroundColor: '#0B2545' }}>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1">
-            Question practice focus
-          </p>
-          <p className="text-lg font-bold mb-2">{displayedMistakeType}</p>
-          {reasoningTrap && (
-            <div className="mb-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-1">The trap</p>
-              <p className="text-sm leading-relaxed text-white/90">{reasoningTrap}</p>
-            </div>
-          )}
-          {fixInstruction && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-1">How to fix it</p>
-              <p className="text-sm leading-relaxed text-white/90">{fixInstruction}</p>
-            </div>
-          )}
-        </div>
-      )}
 
       <button
         type="button"
@@ -243,22 +222,11 @@ export default function QuizRationale({
           {!isCorrect && rationaleIncorrect[userAnswer] && (
             <div>
               <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#EF4444' }}>
-                Why {userAnswer} pulled you in
+                Why {userAnswer} does not fit
               </p>
               <p className="text-sm text-gray-700 leading-relaxed">{rationaleIncorrect[userAnswer]}</p>
             </div>
           )}
-        </div>
-      )}
-
-      {showMistakeMap && retestFocus && (
-        <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4">
-          <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#0D8F9C' }}>
-            Next move
-          </p>
-          <p className="text-sm text-gray-700 leading-relaxed">
-            Practice this pattern next: <span className="font-semibold" style={{ color: '#0B2545' }}>{retestFocus}</span>
-          </p>
         </div>
       )}
 
@@ -275,12 +243,12 @@ export default function QuizRationale({
         <p className="text-xs text-red-600">{digDeeperError}</p>
       )}
 
-      <div className="sticky bottom-0 z-20 bg-white px-1 pt-3 pb-6 sm:static sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-2">
+      <div className="bg-white pt-3 pb-4">
         <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-3 sm:border-0 sm:p-0">
           <button
             onClick={onNext}
-            className="w-full rounded-lg text-white font-semibold text-base transition-all shadow-sm"
-            style={{ backgroundColor: '#0D8F9C', minHeight: '52px' }}
+            className="w-full rounded-lg border font-semibold text-base transition-all"
+            style={{ color: !isCorrect && onRetestWeakness ? "#0B2545" : "white", backgroundColor: !isCorrect && onRetestWeakness ? 'white' : '#0D8F9C', minHeight: '52px' }}
           >
             {isLast ? 'See Results' : 'Next Question →'}
           </button>
@@ -293,7 +261,7 @@ export default function QuizRationale({
               className="block w-full rounded-lg text-white text-center font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#0D8F9C', minHeight: '44px' }}
             >
-              {isRetestingWeakness ? 'Building Retest…' : 'Retest this pattern →'}
+              {isRetestingWeakness ? 'Building Retest…' : 'Try a related question →'}
             </button>
           )}
 
@@ -305,7 +273,7 @@ export default function QuizRationale({
               className="block w-full rounded-lg border text-center font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}
             >
-              {isDiggingDeeper ? 'Opening Tutor…' : 'Fix with Tutor →'}
+              {isDiggingDeeper ? 'Opening Tutor…' : 'Talk through this with the tutor →'}
             </button>
           )}
         </div>

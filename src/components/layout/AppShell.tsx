@@ -7,7 +7,8 @@ import Sidebar from '@/components/layout/Sidebar'
 import MobileNav from '@/components/layout/MobileNav'
 import { PHIAcknowledgmentModal } from '@/components/phi-acknowledgment-modal'
 import { ProgramSelectionModal } from '@/components/program-selection-modal'
-import { Menu } from 'lucide-react'
+import Link from 'next/link'
+import { Menu, Home, ClipboardList, BarChart3, Settings } from 'lucide-react'
 import { getBrowserClient } from '@/lib/supabase/client'
 
 interface AppShellProps {
@@ -30,7 +31,7 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
     setShowPHIModal(false)
     setShowProgramModal(false)
     if (variant !== 'app' || !needsStudySetup) return
-    
+
     const loadProfile = async () => {
       try {
   const supabase = getBrowserClient()
@@ -55,7 +56,7 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
           if (profile.program_level) {
             setProgramLevel(profile.program_level as 'LPN' | 'ADN' | 'BSN' | 'MSN')
           }
-          
+
           // Step 1: Show PHI modal if user hasn't acknowledged yet
           if (!profile.phi_acknowledged_at) {
             setShowPHIModal(true)
@@ -90,7 +91,7 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
       }
 
       setShowPHIModal(false)
-      
+
       // After PHI acknowledgment, check if program_level needs to be set
       if (!programLevel) {
         setShowProgramModal(true)
@@ -138,10 +139,10 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
       <div className="h-screen-dynamic bg-[var(--gray-50)] flex flex-col lg:flex-row overflow-hidden">
         {/* PHI Acknowledgment Modal - Step 1 */}
         <PHIAcknowledgmentModal open={showPHIModal} onAcknowledge={handlePHIAcknowledge} />
-        
+
         {/* Program Selection Modal - Step 2 */}
         <ProgramSelectionModal open={showProgramModal} onComplete={handleProgramSelection} />
-        
+
         {/* Mobile Header Bar - Sticky, only on mobile */}
         <header className="lg:hidden sticky top-0 z-50 bg-[#0B2545] border-b border-[#1E2D3D] flex-shrink-0 safe-t">
           <div className="flex items-center justify-between px-4 py-3">
@@ -155,9 +156,9 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
             <div className="flex items-center gap-2.5">
               <div className="w-2 h-2 rounded-full bg-[#0BBCD4]"></div>
               <span className="text-lg font-bold text-white tracking-tight">
-                {programTrack && graduationYear 
+                {programTrack && graduationYear
                   ? `${programTrack} • Class of ${graduationYear}`
-                  : programTrack 
+                  : programTrack
                     ? programTrack
                     : 'ForgeNursing'}
               </span>
@@ -170,12 +171,19 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
         <aside className="hidden lg:flex lg:w-64 xl:w-72 flex-shrink-0 bg-[#0B2545] border-r border-[#1E2D3D] h-screen-dynamic overflow-y-auto">
           <Sidebar />
         </aside>
-        
+
         {/* Main Content Area */}
-        <main className="flex-1 min-w-0 h-screen-dynamic overflow-y-auto bg-[var(--gray-50)] flex flex-col">
+        <main className="flex-1 min-w-0 min-h-0 overflow-y-auto pb-20 lg:pb-0 bg-[var(--gray-50)] flex flex-col">
           {children}
         </main>
 
+        <nav aria-label="Main navigation" className="fixed bottom-0 inset-x-0 z-40 grid grid-cols-4 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
+          {[{ label: 'Home', href: '/entry', icon: Home }, { label: 'Practice', href: '/quiz', icon: ClipboardList }, { label: 'Progress', href: '/readiness', icon: BarChart3 }, { label: 'Account', href: '/settings', icon: Settings }].map(item => {
+            const active = pathname === item.href || (item.href === '/quiz' && pathname.startsWith('/quiz/'))
+            const Icon = item.icon
+            return <Link key={item.href} href={item.href} aria-current={active ? 'page' : undefined} className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-semibold ${active ? 'bg-teal-50 text-[#087986]' : 'text-slate-600'}`}><Icon aria-hidden="true" className="h-5 w-5" />{item.label}</Link>
+          })}
+        </nav>
         {/* Mobile Navigation Drawer */}
         <MobileNav open={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
       </div>

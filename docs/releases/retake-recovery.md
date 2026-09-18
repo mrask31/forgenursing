@@ -55,3 +55,12 @@ Tested the hosted preview through authenticated HTTP requests using a dedicated 
 - All 27 focused regressions and TypeScript passed after the model replacement; the Vercel preview build passed.
 
 Still required before calling the release fully verified: signed-in browser interaction, Stripe test-mode checkout/webhook, production email redirect configuration, event collection, and independent nursing-educator review. The dummy account remains labeled as a test account with its original trial and no paid subscription.
+
+## Signed-in experience refinement
+
+- Home, Practice, Progress, Account are distinct navigation destinations, with a persistent four-item mobile navigation bar. The closed mobile drawer no longer leaves hidden controls in the tab order.
+- Home prioritizes resuming unfinished practice, offers the last completed session, and makes optional plan setup nonblocking. Session-history failures prevent accidentally starting over.
+- Practice offers one five-question start action, mixed or topic selection, and uploaded notes as a secondary option. Existing documents no longer silently change the default question source. Starting a new set explains what happens to unfinished practice.
+- Question and feedback actions follow the content with less empty space. Results keep actual scores, selected-answer explanations, related-question actions, and clear navigation; repeated pattern-summary panels are removed.
+- Progress links to completed sessions for review. Account shows the actual trial expiry, respects active beta access, links to subscription options, and provides subscription support. This does not add automated subscription management.
+- Production billing and stored learning records are unchanged. Signed-in browser verification still requires a secure browser login; authenticated API checks from the preceding release remain documented above.

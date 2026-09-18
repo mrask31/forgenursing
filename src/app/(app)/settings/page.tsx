@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Brain, CreditCard, Loader2, Settings, Target, User } from 'lucide-react'
+import { isBetaActive } from '@/lib/subscription-access'
 import { getBrowserClient } from '@/lib/supabase/client'
 
 type Profile = {
+  is_beta: boolean | null
+  beta_expires_at: string | null
   preferred_name: string | null
   program_track: string | null
   program_level: string | null
@@ -43,7 +46,8 @@ function formatStatus(value?: string | null) {
 
 function accessLabel(profile: Profile | null) {
   if (profile?.subscription_status === 'active') return 'Subscription active'
-  if (profile?.subscription_status === 'trialing') return `Trial active through ${formatDate(profile.trial_ends_at)}`
+  if (isBetaActive(profile?.is_beta, profile?.beta_expires_at)) return `Beta access through ${formatDate(profile?.beta_expires_at)}`
+  if (profile?.subscription_status === 'trialing') return profile.trial_ends_at && new Date(profile.trial_ends_at).getTime() > Date.now() ? `Trial ends ${formatDate(profile.trial_ends_at)}` : 'Your trial has ended'
   if (profile?.subscription_status === 'expired') return 'Subscription needed'
   if (profile?.subscription_status === 'past_due') return 'Payment update needed'
   return 'Not available'
@@ -84,7 +88,7 @@ export default function SettingsPage() {
         const profileResult: any = await withTimeout(
           supabase
             .from('profiles')
-            .select('preferred_name, program_track, program_level, graduation_date, subscription_status, trial_ends_at, default_entry_path')
+            .select('is_beta, beta_expires_at, preferred_name, program_track, program_level, graduation_date, subscription_status, trial_ends_at, default_entry_path')
             .eq('id', user.id)
             .single(),
           7000
@@ -92,7 +96,7 @@ export default function SettingsPage() {
 
         if (profileResult.error) {
           console.error('[Settings] profile load error:', profileResult.error)
-          setProfile(null)
+          setError('Your account details could not load. Please retry.')
           return
         }
 
@@ -145,11 +149,11 @@ export default function SettingsPage() {
         <header>
           <div className="inline-flex items-center gap-2 rounded-full border border-[#0D8F9C]/20 bg-[#E0F4F6] px-3 py-1.5">
             <Settings className="h-4 w-4 text-[#0D8F9C]" />
-            <span className="text-xs font-bold uppercase tracking-wide text-[#0B2545]">Settings</span>
+            <span className="text-xs font-bold uppercase tracking-wide text-[#0B2545]">Account</span>
           </div>
-          <h1 className="mt-3 text-3xl font-bold text-[#0B2545] sm:text-4xl">Account settings</h1>
+          <h1 className="mt-3 text-3xl font-bold text-[#0B2545] sm:text-4xl">Your account</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">
-            View your ForgeNursing account, study profile, and access status.
+            Your trial, subscription, and study preferences in one place.
           </p>
         </header>
 
@@ -159,20 +163,21 @@ export default function SettingsPage() {
             <SettingRow label="Name" value={profile?.preferred_name || 'Student Account'} />
           </SettingsCard>
 
-          <SettingsCard icon={<Brain className="h-5 w-5" />} title="Study profile">
-            <SettingRow label="Program" value={profile?.program_track || profile?.program_level || 'RN Track'} />
-            <SettingRow label="Graduation" value={formatDate(profile?.graduation_date)} />
-            <SettingRow label="Default start" value={formatEntryPath(profile?.default_entry_path)} />
+          <SettingsCard icon={<Brain className="h-5 w-5" />} title="Your study plan">
+            <p className="text-sm text-slate-600">Update your exam date, preparation notes, or Candidate Performance Report ratings from Home.</p>
+            <Link href="/entry" className="inline-block py-2 font-semibold text-[#087986] underline">Open my study plan →</Link>
           </SettingsCard>
 
           <SettingsCard icon={<CreditCard className="h-5 w-5" />} title="Access">
-            <SettingRow label="Status" value={formatStatus(profile?.subscription_status)} />
+
             <SettingRow label="Access" value={accessLabel(profile)} />
+            {profile?.subscription_status !== 'active' && <Link href="/pricing" className="block rounded-xl bg-[#0D8F9C] px-4 py-3 text-center font-bold text-white">View subscription options</Link>}
+            <a href="mailto:support@forgenursing.com?subject=Subscription%20help" className="inline-block py-2 text-sm font-semibold text-[#087986] underline">Get help changing or canceling a subscription</a>
           </SettingsCard>
 
           <SettingsCard icon={<Target className="h-5 w-5" />} title="Quick links">
             <Link href="/quiz" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Practice Questions →</Link>
-            <Link href="/readiness" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Judgment Map →</Link>
+            <Link href="/readiness" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Practice progress →</Link>
             <a href="mailto:support@forgenursing.com" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Contact Support →</a>
           </SettingsCard>
         </section>

@@ -280,39 +280,17 @@ export default function QuizResultsClient() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-6 pb-40 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div className="space-y-6 pb-24">
+    <div className="px-5 py-8 pb-8 w-full max-w-3xl mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      <div className="space-y-6">
         {safeReturnSessionId && <a href={`/quiz?sessionId=${safeReturnSessionId}`} className="block rounded-xl border border-teal-300 bg-teal-50 p-4 text-center font-bold text-[#087986]">Return to your original practice session →</a>}
         <h1 className="text-2xl font-bold text-center" style={{ color: '#0B2545' }}>
           {isTargetedDrill ? 'Focused Drill Complete 🎯' : isDiagnostic ? 'Practice Complete' : 'Practice Complete'}
         </h1>
 
         <div className="rounded-xl border border-gray-200 p-5 text-center space-y-3">
-          {isTargetedDrill ? (
-            <>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>Pattern trained</p>
-              <p className="text-3xl font-bold" style={{ color: '#0B2545' }}>{targetPattern || 'Clinical judgment'}</p>
-              <p className="text-sm text-gray-600">
-                You completed {total} focused question{total === 1 ? '' : 's'} and gave Forge more signal for your practice progress.
-              </p>
-            </>
-          ) : isDiagnostic ? (
-            <>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>Map started</p>
-              <p className="text-3xl font-bold" style={{ color: '#0B2545' }}>{total} questions</p>
-              <p className="text-sm text-gray-600">
-                Your answers give you a starting point for review. A short session cannot establish a stable pattern.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="text-4xl font-bold" style={{ color: '#0D8F9C' }}>{score} / {total}</p>
-              <div className="w-full h-3 rounded-full bg-gray-200">
-                <div className="h-3 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: '#0D8F9C' }} />
-              </div>
-              <p className="text-sm text-gray-500">{pct}%</p>
-            </>
-          )}
+          <p className="text-xs font-bold uppercase tracking-widest text-[#087986]">Session saved</p>
+          <p className="text-4xl font-bold text-[#0B2545]">{score} / {total}</p>
+          <p className="text-sm text-slate-600">Correct answers in this session</p>
           <p className="text-[11px] leading-snug text-gray-400">
             Scores reflect AI-generated practice questions for study only and do not predict exam performance.
           </p>
@@ -320,89 +298,12 @@ export default function QuizResultsClient() {
 
         <div className="rounded-xl border border-[#0D8F9C]/20 bg-[#E0F4F6]/30 p-4 space-y-2">
           <p className="text-sm font-semibold" style={{ color: '#0B2545' }}>
-            Review a missed answer, then try a fresh question.
+            {missed.length ? 'Review a missed answer, then try a fresh question.' : 'You answered every question correctly in this set.'}
           </p>
           <p className="text-xs text-gray-600 leading-relaxed">
-            The goal is not more questions. The goal is understanding what to improve before exam day.
+            Take one useful lesson into your next session. You can come back to these results from Progress.
           </p>
         </div>
-
-        <div className="rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-4 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
-            Your session summary
-          </p>
-          <p className="text-sm text-gray-700 leading-relaxed">
-            {isTargetedDrill
-              ? `This drill trained ${targetPattern || 'your next focus'} and updated your practice progress.`
-              : isDiagnostic
-                ? 'This diagnostic started your practice progress. Forge will use your answers to recommend what to practice next.'
-                : 'This quiz updated your practice progress. Forge uses each answer to find your weak patterns.'}
-          </p>
-          {topMistake && (
-            <div className="rounded-lg bg-white border border-[#DDE5EE] p-3 space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
-                Suggested review focus
-              </p>
-              <p className="text-base font-bold" style={{ color: '#0B2545' }}>{topMistake.mistakeType}</p>
-              <p className="text-xs text-gray-500">
-                This focus appears in missed practice answers. It does not identify the cause of an exam result.
-              </p>
-            </div>
-          )}
-          <button
-            onClick={() => {
-              try {
-                const posthog = require('posthog-js').default
-                posthog.capture('readiness_map_cta_clicked', {
-                  session_id: sessionId,
-                  source: 'quiz_results',
-                  top_mistake_type: topMistake?.mistakeType || null,
-                  is_targeted_drill: isTargetedDrill,
-                  is_diagnostic: isDiagnostic,
-                })
-              } catch {}
-              router.push('/readiness')
-            }}
-            className="w-full rounded-lg text-white font-semibold text-sm"
-            style={{ backgroundColor: '#0B2545', minHeight: '44px' }}
-          >
-            {topMistake ? 'See What\'s Costing You Points \u2192' : 'See What To Practice Next \u2192'}
-          </button>
-        </div>
-
-        {topMistake && (
-          <div className="rounded-xl p-5 text-white space-y-3" style={{ backgroundColor: '#0B2545' }}>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
-              {isDiagnostic ? 'First pattern Forge noticed' : 'Your Weak Pattern'}
-            </p>
-            <div>
-              <p className="text-sm text-white/70">Pattern to keep training</p>
-              <p className="text-2xl font-bold">{topMistake.mistakeType}</p>
-            </div>
-            <p className="text-sm text-white/85 leading-relaxed">
-              Review the explanation for each missed answer in this focus. An answer alone cannot tell us why you chose it.
-            </p>
-            <p className="text-xs text-white/50">
-              {topMistake.missed} answer{topMistake.missed === 1 ? '' : 's'} showed this pattern. See where it appears on your practice progress.
-            </p>
-          </div>
-        )}
-
-        {mistakeBreakdown.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Patterns to Train</h2>
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-              {mistakeBreakdown.map(item => (
-                <div key={item.mistakeType} className="flex items-center justify-between gap-3">
-                  <span className="text-sm" style={{ color: '#0B2545' }}>{item.mistakeType}</span>
-                  <span className="text-xs rounded-full px-2 py-1 bg-gray-100 text-gray-500">
-                    {item.missed} to train
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {categories.length > 0 && !isTargetedDrill && !isDiagnostic && (
           <div className="space-y-3">
@@ -439,16 +340,17 @@ export default function QuizResultsClient() {
                     <div className="space-y-1">
                       <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>{mistakeType}</p>
                       <p className="text-sm" style={{ color: '#0B2545' }}>
-                        <span className="font-medium">Q{q.question_index + 1}</span> · {q.question_stem.slice(0, 80)}...
+                        <span className="font-medium">Q{q.question_index + 1}</span> · {reviewingId === q.id ? q.question_stem : `${q.question_stem.slice(0, 100)}${q.question_stem.length > 100 ? "…" : ""}`}
                       </p>
                     </div>
 
                     {reviewingId === q.id && (
                       <div className="rounded-lg p-3 text-sm space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
-                        <p><span className="font-medium">Your answer:</span> {q.user_answer}</p>
-                        <p><span className="font-medium">Correct:</span> {q.correct_answer}</p>
-                        {q.reasoning_trap && <p><span className="font-medium">Trap:</span> {q.reasoning_trap}</p>}
-                        {q.fix_instruction && <p><span className="font-medium">Fix:</span> {q.fix_instruction}</p>}
+                        <p><span className="font-medium">Your answer:</span> {q.user_answer} — {q.options.find(option => option.label === q.user_answer)?.text}</p>
+                        <p><span className="font-medium">Correct:</span> {q.correct_answer} — {q.options.find(option => option.label === q.correct_answer)?.text}</p>
+                        {q.user_answer && q.rationale_incorrect?.[q.user_answer] && <p><span className="font-medium">Why your choice does not fit:</span> {q.rationale_incorrect[q.user_answer]}</p>}
+
+                        {q.fix_instruction && <p><span className="font-medium">Takeaway:</span> {q.fix_instruction}</p>}
                         <p className="text-gray-600">{q.rationale_correct}</p>
                       </div>
                     )}
@@ -458,7 +360,7 @@ export default function QuizResultsClient() {
                         {reviewingId === q.id ? 'Hide' : 'Review'}
                       </button>
                       <button type="button" onClick={() => handleFixWeakness(q)} disabled={fixingQuestionId === q.id} className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
-                        {fixingQuestionId === q.id ? 'Opening…' : 'Train Pattern →'}
+                        {fixingQuestionId === q.id ? 'Opening…' : 'Try a related question →'}
                       </button>
                     </div>
                   </div>
@@ -470,14 +372,12 @@ export default function QuizResultsClient() {
 
         <div className="space-y-3 pt-2">
           <button onClick={() => router.push('/entry')} className="w-full rounded-lg text-white font-semibold text-base" style={{ backgroundColor: '#0D8F9C', minHeight: '56px' }}>
-            {isTargetedDrill ? 'Start Another Practice' : isDiagnostic ? 'Start Recommended Practice' : 'Start New Quiz'}
+            Back to Home
           </button>
           <button onClick={() => handleViewJudgmentMap('bottom_button')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '56px' }}>
-            See My Weak Patterns
+            View progress
           </button>
-          <button onClick={() => router.push('/entry')} className="w-full rounded-lg font-semibold text-base border-2" style={{ borderColor: '#DDE5EE', color: '#0B2545', minHeight: '56px' }}>
-            Back to Study Options
-          </button>
+
         </div>
       </div>
     </div>
