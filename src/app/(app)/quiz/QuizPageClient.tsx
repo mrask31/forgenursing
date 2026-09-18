@@ -65,6 +65,8 @@ export default function QuizPageClient() {
   const [sourceType, setSourceType] = useState<'document' | 'generic'>('generic')
   const [category, setCategory] = useState('All Categories')
   const [loading, setLoading] = useState(false)
+  const [initializing, setInitializing] = useState(true)
+  const [initializationFailed, setInitializationFailed] = useState(false)
   const [retestingWeakness, setRetestingWeakness] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -129,6 +131,7 @@ export default function QuizPageClient() {
     setCurrentIndex(index)
     setPhase('loading')
     setError(null)
+    setCurrentQuestion(null)
     setSelectedAnswer(null)
     setAnswerResult(null)
 
@@ -167,9 +170,10 @@ export default function QuizPageClient() {
     initRef.current = true
 
     const init = async () => {
+      try {
       const supabase = getBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) throw new Error('Please log in again to load your saved practice.')
 
       const { data: docs } = await supabase
         .from('documents')
@@ -181,7 +185,7 @@ export default function QuizPageClient() {
 
       try {
         const res = await fetch('/api/quiz/sessions')
-        if (!res.ok) return
+        if (!res.ok) throw new Error('Your saved practice could not load. Please retry before starting a new session.')
 
         const { sessions } = await res.json()
         const directSession = directSessionId
@@ -212,11 +216,16 @@ export default function QuizPageClient() {
           return
         }
 
+        if (directSessionId) throw new Error('This session is unavailable. Open Home to choose your saved practice.')
         const inProgress = sessions?.find((s: any) => s.status === 'in_progress')
         if (inProgress) setResumeSession(inProgress)
-      } catch {}
+      } catch (err) { throw err }
+      } catch (err) {
+        setInitializationFailed(true)
+        setError(err instanceof Error ? err.message : 'Your saved practice could not load.')
+      } finally { setInitializing(false) }
     }
-    init()
+    void init()
   }, [directSessionId, generateQuestion, sourceType, category])
 
   const handleStart = useCallback(async (options?: StartOptions) => {
@@ -427,12 +436,14 @@ export default function QuizPageClient() {
     <div className="min-h-screen px-4 py-6 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       {error && sessionId && !currentQuestion && <button className="mb-4 rounded-lg bg-[#0D8F9C] px-4 py-3 text-white" onClick={() => generateQuestion(sessionId, currentIndex)}>Retry this question</button>}
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+        <div role="alert" className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
           {error}
           <button onClick={() => setError(null)} className="ml-2 underline">Dismiss</button>
         </div>
       )}
 
+      {initializing && <p role="status" className="mb-4 text-sm text-slate-600">Loading your saved practice…</p>}
+      {initializationFailed && <button onClick={() => window.location.reload()} className="mb-4 underline">Retry loading saved practice</button>}
       {phase === 'setup' && (
         <QuizSetup
           hasDocuments={hasDocuments}
@@ -441,7 +452,7 @@ export default function QuizPageClient() {
           category={category}
           setCategory={setCategory}
           onStart={handleStart}
-          loading={loading}
+          loading={loading || initializing || initializationFailed}
           resumeSession={resumeSession}
           onResume={handleResume}
         />

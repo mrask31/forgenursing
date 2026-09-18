@@ -73,3 +73,8 @@ Browser sign-in exposed that expired users were redirected away from Account. `/
 Flow and feature-purpose decisions are recorded in `docs/product/retaker-flow.md`. Home distinguishes related retries, instructions collapse for returning users, unused setup questions are removed, Practice offers suggested focus directly, Progress initially shows three sessions, and mobile drawer no longer duplicates the four tabs. Focus formatting is normalized consistently across recommendations and progress; both use up to 500 answers. Account now has an authenticated, uncached, own-profile endpoint independent of study entitlement, and the browser auth callback returns immediately.
 
 TypeScript passed for this pass. Browser, live account, and clinical validation remain pending; no production deployment. The Account change addresses an observed code-level loading risk but the reported symptom has not yet been reproduced and verified after the fix.
+
+
+## Final flow review
+
+Clears the prior question before generating another, blocks new-session starts until saved practice has loaded, surfaces session-loading failures, and exposes correct as well as missed answers in saved review. Corrected the results-screen “Try a related question” action, which still opened the tutor, to create a related retry with a return link to the original session. TypeScript and 27 focused recovery tests pass.

@@ -238,7 +238,7 @@ export default function QuizResultsClient() {
           mistake_type: mistakeType,
           retest_focus: q.retest_focus ?? null,
         })
-        posthog.capture('dig_deeper_clicked', {
+        posthog.capture('retest_weakness_clicked', {
           session_id: sessionId,
           question_id: q.id,
           question_index: q.question_index,
@@ -251,7 +251,7 @@ export default function QuizResultsClient() {
         })
       } catch {}
 
-      const response = await fetch('/api/quiz/dig-deeper', {
+      const response = await fetch('/api/quiz/retest-weakness', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -260,20 +260,20 @@ export default function QuizResultsClient() {
 
       if (!response.ok) {
         console.error('[QuizResults] Fix weakness handoff failed:', await response.text())
-        setFixWeaknessError('Could not open tutor. Please try again.')
+        setFixWeaknessError('Could not open a related question. Please try again.')
         return
       }
 
       const data = await response.json()
-      if (!data.chatId) {
-        setFixWeaknessError('Could not open tutor. Please try again.')
+      if (!data.session?.id) {
+        setFixWeaknessError('Could not open a related question. Please try again.')
         return
       }
 
-      router.push(`/tutor?sessionId=${data.chatId}`)
+      router.push(`/quiz?sessionId=${data.session.id}&returnSessionId=${encodeURIComponent(safeReturnSessionId || sessionId || '')}`)
     } catch (error) {
       console.error('[QuizResults] Fix weakness error:', error)
-      setFixWeaknessError('Could not open tutor. Please try again.')
+      setFixWeaknessError('Could not open a related question. Please try again.')
     } finally {
       setFixingQuestionId(null)
     }
@@ -329,18 +329,18 @@ export default function QuizResultsClient() {
 
         {fixWeaknessError && <p className="text-xs text-red-600">{fixWeaknessError}</p>}
 
-        {missed.length > 0 && (
+        {questions.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Questions to Review</h2>
+            <h2 className="text-base font-bold" style={{ color: '#0B2545' }}>Review your answers</h2>
             <div className="rounded-xl border border-gray-200 divide-y divide-gray-100">
-              {missed.map(q => {
+              {[...questions].sort((a, b) => Number(a.is_correct) - Number(b.is_correct) || a.question_index - b.question_index).map(q => {
                 const mistakeType = q.mistake_type || fallbackMistakeType(q.nclex_category)
                 return (
                   <div key={q.id} className="p-4 space-y-2">
                     <div className="space-y-1">
                       <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>{mistakeType}</p>
                       <p className="text-sm" style={{ color: '#0B2545' }}>
-                        <span className="font-medium">Q{q.question_index + 1}</span> · {reviewingId === q.id ? q.question_stem : `${q.question_stem.slice(0, 100)}${q.question_stem.length > 100 ? "…" : ""}`}
+                        <span className="font-medium">Q{q.question_index + 1} · {q.is_correct ? 'Correct' : 'Review'}</span> · {reviewingId === q.id ? q.question_stem : `${q.question_stem.slice(0, 100)}${q.question_stem.length > 100 ? "…" : ""}`}
                       </p>
                     </div>
 
@@ -348,7 +348,7 @@ export default function QuizResultsClient() {
                       <div className="rounded-lg p-3 text-sm space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
                         <p><span className="font-medium">Your answer:</span> {q.user_answer} — {q.options.find(option => option.label === q.user_answer)?.text}</p>
                         <p><span className="font-medium">Correct:</span> {q.correct_answer} — {q.options.find(option => option.label === q.correct_answer)?.text}</p>
-                        {q.user_answer && q.rationale_incorrect?.[q.user_answer] && <p><span className="font-medium">Why your choice does not fit:</span> {q.rationale_incorrect[q.user_answer]}</p>}
+                        {!q.is_correct && q.user_answer && q.rationale_incorrect?.[q.user_answer] && <p><span className="font-medium">Why your choice does not fit:</span> {q.rationale_incorrect[q.user_answer]}</p>}
 
                         {q.fix_instruction && <p><span className="font-medium">Takeaway:</span> {q.fix_instruction}</p>}
                         <p className="text-gray-600">{q.rationale_correct}</p>
@@ -359,9 +359,9 @@ export default function QuizResultsClient() {
                       <button onClick={() => setReviewingId(reviewingId === q.id ? null : q.id)} className="px-3 py-1.5 rounded text-sm font-medium border" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}>
                         {reviewingId === q.id ? 'Hide' : 'Review'}
                       </button>
-                      <button type="button" onClick={() => handleFixWeakness(q)} disabled={fixingQuestionId === q.id} className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
+                      {!q.is_correct && <button type="button" onClick={() => handleFixWeakness(q)} disabled={fixingQuestionId === q.id} className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
                         {fixingQuestionId === q.id ? 'Opening…' : 'Try a related question →'}
-                      </button>
+                      </button>}
                     </div>
                   </div>
                 )
