@@ -74,7 +74,7 @@ export default function TrapAllCorrect({ result, sessionId, anonymousId }: TrapA
         {/* Brand */}
         <div className="text-center">
           <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#0D8F9C' }}>
-            Down To Two by ForgeNursing
+            ForgeNursing
           </p>
         </div>
 
@@ -84,10 +84,10 @@ export default function TrapAllCorrect({ result, sessionId, anonymousId }: TrapA
             <Trophy className="w-8 h-8" style={{ color: '#0D8F9C' }} />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#0B2545' }}>
-            No obvious trap from this short check.
+            You completed your starter check.
           </h1>
           <p className="text-sm text-slate-600 leading-relaxed max-w-sm mx-auto">
-            You got {result.score}/{result.total} correct. These 3 questions didn't reveal a clear Answer Trap pattern — on this sample.
+            You got {result.score}/{result.total} correct on this sample.
           </p>
         </div>
 
@@ -97,11 +97,11 @@ export default function TrapAllCorrect({ result, sessionId, anonymousId }: TrapA
             What this means
           </p>
           <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
-            Three questions is a short sample. Your Answer Traps may show up with harder questions or different NCLEX categories. A short sample cannot establish a reliable pattern or predict an exam result.
+            Three questions are a short sample. Keep practicing across different NCLEX categories. This result does not establish mastery or predict an exam result.
           </p>
           <div className="rounded-lg bg-[#F7F9FB] border border-[#DDE5EE] p-4">
             <p className="text-sm font-medium leading-relaxed" style={{ color: '#0B2545' }}>
-              A longer practice session with Forge can find patterns that a 3-question check might miss.
+              A new practice session gives you more questions and explanations to review.
             </p>
           </div>
         </div>
@@ -132,10 +132,10 @@ export default function TrapAllCorrect({ result, sessionId, anonymousId }: TrapA
               Go deeper
             </p>
             <p className="text-base font-bold text-white">
-              Find your Answer Traps with a full practice session.
+              Save your result and continue practicing.
             </p>
             <p className="text-sm text-white/70 leading-relaxed">
-              Create a free account to take longer quizzes, get your full Answer Trap Map, and practice with focused drills.
+              Start a free seven-day trial to use your practice plan, explanations, and progress history.
             </p>
           </div>
           <button

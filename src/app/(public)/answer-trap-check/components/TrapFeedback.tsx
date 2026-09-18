@@ -127,7 +127,7 @@ export default function TrapFeedback({
             className="w-full rounded-xl text-white font-semibold text-base"
             style={{ backgroundColor: '#0D8F9C', minHeight: '52px' }}
           >
-            {isLast ? 'See My Answer Trap Result' : 'Next Question →'}
+            {isLast ? 'See my practice result' : 'Next Question →'}
           </button>
         </div>
       </div>

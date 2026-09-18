@@ -77,7 +77,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
         {/* Brand */}
         <div className="text-center">
           <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#0D8F9C' }}>
-            Down To Two by ForgeNursing
+            ForgeNursing
           </p>
         </div>
 
@@ -87,7 +87,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
             A suggested practice focus
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold" style={{ color: '#0B2545' }}>
-            {result.detected_trap_display}
+            {result.detected_trap}
           </h1>
           <p className="text-sm text-slate-500">
             {result.score}/{result.total} correct — a starting focus from this short sample
@@ -138,13 +138,13 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
         <div className="rounded-2xl p-5 sm:p-6 text-white space-y-4" style={{ backgroundColor: '#0B2545' }}>
           <div className="space-y-2">
             <p className="text-xs font-bold uppercase tracking-wide text-white/50">
-              Keep training this pattern
+              Keep practicing
             </p>
             <p className="text-base font-bold text-white">
-              Create a free account to keep practicing this pattern with focused drills.
+              Save this result and start your free seven-day trial.
             </p>
             <p className="text-sm text-white/70 leading-relaxed">
-              ForgeNursing uses focused drills and mistake-type feedback to help you train the {result.detected_trap_display} pattern until it clicks.
+              Your saved check gives your practice plan a starting focus. Review explanations and try fresh questions.
             </p>
           </div>
           <button
@@ -159,7 +159,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
 
         {/* Disclaimer */}
         <p className="text-[10px] text-center text-slate-500 leading-relaxed max-w-sm mx-auto">
-          This is a first signal from 3 questions — not a definitive assessment. More practice gives Forge a clearer picture of your patterns. Results do not predict NCLEX outcomes.
+          Three questions are a starting point, not a definitive assessment. Results do not predict NCLEX outcomes.
         </p>
       </div>
     </div>

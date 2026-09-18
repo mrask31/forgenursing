@@ -20,7 +20,7 @@ This release focuses ForgeNursing on a short, repeatable practice routine for NC
 - 16 focused regression tests cover trial authentication/read-only behavior, saved-check ownership and concurrent claims, optional preference validation, report-category prioritization, and honest progress comparisons.
 - TypeScript check passes (includes correction of three pre-existing Playwright assertion signatures that blocked compilation).
 - The repository-wide Vitest run has existing failures unrelated to this release: two PHI scripts do not register Vitest tests; the system prompt test still expects a retired six-section format. Image PHI checks also require a configured Gemini key. Those tests and the tutor system prompt were not changed.
-- Public-page browser review and hosted-preview status are recorded in the PR.
+- Vercel preview build succeeded. Browser review verified the homepage, the public three-question check (including selected-option feedback), its result screen, and navigation to signup. A headline contrast issue found during review was fixed. Authenticated end-to-end and mobile-viewport checks remain pending.
 
 ## Before production release
 

@@ -244,8 +244,8 @@ export default function SignupPage() {
                   <BookOpen className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-900 text-sm mb-1">Learn from your materials</div>
-                  <div className="text-xs text-slate-600">Upload your notes and textbooks</div>
+                  <div className="font-semibold text-slate-900 text-sm mb-1">A clearer starting point</div>
+                  <div className="text-xs text-slate-600">Short practice sessions, no uploads needed</div>
                 </div>
               </div>
               <div className="flex items-start gap-3 text-left">
@@ -253,8 +253,8 @@ export default function SignupPage() {
                   <GraduationCap className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-900 text-sm mb-1">Build clinical reasoning</div>
-                  <div className="text-xs text-slate-600">Step-by-step NCLEX-style preparation</div>
+                  <div className="font-semibold text-slate-900 text-sm mb-1">Understand your choices</div>
+                  <div className="text-xs text-slate-600">Review explanations and try again</div>
                 </div>
               </div>
               <div className="flex items-start gap-3 text-left">

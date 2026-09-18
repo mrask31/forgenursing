@@ -31,7 +31,7 @@ export default function TrapQuestion({
             <span className="font-bold uppercase tracking-wide" style={{ color: '#0D8F9C' }}>
               Question {questionNumber} of {totalQuestions}
             </span>
-            <span>Answer Trap Check</span>
+            <span>Practice check</span>
           </div>
           <div className="w-full h-1.5 rounded-full bg-slate-100">
             <div
