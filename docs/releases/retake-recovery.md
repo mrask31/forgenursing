@@ -40,3 +40,18 @@ Rollback: revert the release commit. No database migration or billing migration 
 - Homepage describes the teaching loop; repeated limitations and legacy terms removed from the main sales copy. Results list topics from missed questions rather than claiming a diagnosed pattern.
 - 27 focused regression tests pass, including content coverage, retry access, answer-key exclusion, and score separation. TypeScript passes.
 - Content references: Merck Manual hyperkalemia/hypokalemia, NCSBN National Guidelines for Nursing Delegation, NHS heart attack symptoms. Links appear with each explanation. Reference checking is not independent nursing-educator validation; that release check remains open.
+
+## Dummy-account release checks — September 18
+
+Tested the hosted preview through authenticated HTTP requests using a dedicated reserved-domain dummy account. Browser checks cover the public flow; this is not a claim of signed-in browser end-to-end coverage.
+
+- Signup returned a session immediately and provisioned a seven-day trial. Password login and a later fresh login passed. Email confirmation is not required by the observed project configuration, so that path was not tested.
+- Optional preferences persisted. A completed public check attached to the dummy account; repeating the claim was idempotent. Both remained available after fresh login.
+- Found a release blocker: Anthropic returned 404 for retired `claude-sonnet-4-20250514`. Replaced the four remaining calls (practice, retest, tutor, image explanation) with `claude-sonnet-4-6`, the documented replacement: https://platform.claude.com/docs/en/about-claude/model-deprecations.
+- On commit `0c41207`, two generated practice questions returned no answer key, saved answers, resisted repeat-answer score changes, and completed with retrievable results. A fresh related retest generated and completed. Progress counted three answers and marked the sample insufficient for a stable pattern. Tutor text streaming passed. Image explanation was not exercised.
+- The all-wrong test revealed an inappropriate strongest-area label. Progress now requires at least one correct answer before including a topic in that field.
+- Expiring only the dummy account's trial blocked practice with 402. Calling the trial endpoint did not restore access. Temporarily setting its subscription status active granted access despite the expired trial. Original trial status and date were restored. This tests entitlement logic, not Stripe payments or webhooks.
+- Subscription lookup returned no subscription; checkout rejected a missing price. No real checkout or charge was created.
+- All 27 focused regressions and TypeScript passed after the model replacement; the Vercel preview build passed.
+
+Still required before calling the release fully verified: signed-in browser interaction, Stripe test-mode checkout/webhook, production email redirect configuration, event collection, and independent nursing-educator review. The dummy account remains labeled as a test account with its original trial and no paid subscription.

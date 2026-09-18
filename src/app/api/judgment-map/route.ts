@@ -154,8 +154,9 @@ export async function GET() {
         })[0]
       : mistakeTypes.find(item => item.missed > 0) ?? null
 
-    const strongestArea = mistakeTypes.length > 0
-      ? [...mistakeTypes].sort((a, b) => {
+    const demonstratedAreas = mistakeTypes.filter(item => item.correct > 0)
+    const strongestArea = demonstratedAreas.length > 0
+      ? [...demonstratedAreas].sort((a, b) => {
           if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy
           return b.attempted - a.attempted
         })[0]
