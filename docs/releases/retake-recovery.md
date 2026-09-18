@@ -94,4 +94,10 @@ Found and corrected: legacy semester configuration could block the two current p
 
 Stripe read-only catalog verification confirms active USD 9.99/month and USD 79/year prices in ForgeNursing's live account. Authored public demo explanations were checked against their linked Merck potassium references, NCSBN delegation guidance, and NHS heart attack guidance. This is source verification, not independent clinician certification or a review of every dynamically generated question.
 
-Remaining release limits: the browser exposes no mobile viewport/device emulation controls; keyboard zoom did not change the viewport. Only a live Stripe account is connected, so no sandbox payment-to-webhook transaction has been completed. Production release stays on hold until the outstanding checks are completed; conditional deployment authorization is recorded from the user.
+### Live checkout verification and release decision
+
+The user clarified that no sandbox connection is in use. A sandbox is not required for the limited no-charge checks performed here. Both current plans created live Stripe Checkout sessions for the reserved-domain QA account. Stripe independently returned USD 999/month and USD 7900/year, subscription mode, the correct QA client reference, and the preview's expected success/cancel URLs. Both sessions remain unpaid with no subscription or invoice. An unconfigured price was rejected with 400. No payment was submitted.
+
+The earlier sandbox-only release hold is superseded by this live handoff verification, webhook code review, and passing access/status regression tests. Existing conditional production authorization applies. Historical pending-check statements above describe earlier checkpoints, not additional mandatory gates.
+
+Verification limits remain explicit: no completed payment-to-webhook transaction, no automated mobile viewport interaction (the available browser has no device emulation controls), and no independent clinician certification. Desktop browser, authenticated practice APIs, source review of the authored demo, hosted build, TypeScript, and 30 focused tests passed. These results support release with those limits; they do not establish full end-to-end coverage of every feature.
