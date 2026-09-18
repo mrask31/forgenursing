@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const isPractice = pathname === '/answer-trap-check'
   return (
     <div className="min-h-screen-dynamic bg-[#F7F9FB] flex flex-col">
       {/* Top Navigation */}
@@ -57,7 +58,16 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
       {/* Footer */}
       <footer className="border-t border-[#DDE5EE] bg-white mt-auto flex-shrink-0 pb-safe-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {isPractice ? (
+          <div className="mx-auto max-w-lg px-4 py-3 text-xs text-slate-500">
+            <nav aria-label="Practice footer" className="flex flex-wrap items-center justify-center gap-x-6">
+              <Link href="/terms" className="inline-flex min-h-11 items-center hover:text-[#087986]">Terms</Link>
+              <Link href="/privacy" className="inline-flex min-h-11 items-center hover:text-[#087986]">Privacy</Link>
+              <a href="mailto:support@forgenursing.com" className="inline-flex min-h-11 items-center hover:text-[#087986]">Support</a>
+            </nav>
+            <p className="text-center text-[10px]">© 2026 MJR Intelligence Group LLC</p>
+          </div>
+        ) : <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 text-xs sm:text-sm text-[#1E2D3D]">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-center sm:items-start">
               <Link href="/pricing" className="hover:text-[#0D8F9C]">Pricing</Link>
@@ -78,7 +88,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <p>© 2026 MJR Intelligence Group LLC</p>
             </div>
           </div>
-        </div>
+        </div>}
       </footer>
     </div>
   )

@@ -132,7 +132,7 @@ export default function TrapFeedback({
         </details>}
         {isRetry && <p className="mt-4 text-sm text-slate-600">{is_correct ? 'You applied the lesson to a new question.' : 'Review the distinction above and revisit this topic in your next session.'} This exercise is separate from your original score.</p>}
         {onRetry && <div className="mt-5 rounded-xl bg-teal-50 p-4">
-          <p className="font-semibold text-[#0B2545]">Try that distinction now.</p>
+          <p className="font-semibold text-[#0B2545]">Put it into practice.</p>
           <p className="mt-1 text-sm text-slate-600">A new question on the same topic. No account needed.</p>
           <button onClick={onRetry} disabled={loading} className="mt-3 w-full min-h-12 rounded-xl bg-[#0D8F9C] px-4 py-3 font-semibold text-white disabled:opacity-50">{loading ? 'Loading…' : 'Try a related question'}</button>
         </div>}
@@ -141,8 +141,7 @@ export default function TrapFeedback({
           <button
             onClick={onNext}
             disabled={loading}
-            className="w-full rounded-xl text-white font-semibold text-base"
-            style={{ backgroundColor: '#0D8F9C', minHeight: '52px' }}
+            className={`w-full min-h-12 rounded-xl px-4 py-3 font-semibold disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D8F9C] ${onRetry ? 'text-sm text-slate-600 underline underline-offset-4 hover:text-[#087986]' : 'bg-[#0D8F9C] text-base text-white hover:bg-[#087986]'}`}
           >
             {loading ? 'Loading…' : onRetry ? (isLast ? 'Skip retry and see results' : 'Skip retry and continue') : isLast ? 'See my practice result' : 'Next question →'}
           </button>
