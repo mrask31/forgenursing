@@ -1,22 +1,7 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo'
 import SeoHelpPage from '../_components/SeoHelpPage'
 
-export const metadata: Metadata = {
-  title: 'NCLEX Priority vs Assessment Questions | ForgeNursing',
-  description:
-    'Learn how to tell when an NCLEX-style question wants assessment first versus immediate priority action.',
-  alternates: {
-    canonical: '/nclex-priority-vs-assessment',
-  },
-  openGraph: {
-    title: 'NCLEX Priority vs Assessment Questions',
-    description:
-      'A practical guide to separating assessment-first decisions from priority action decisions on NCLEX-style questions.',
-    url: '/nclex-priority-vs-assessment',
-    siteName: 'ForgeNursing',
-    type: 'article',
-  },
-}
+export const metadata = pageMetadata("NCLEX Priority vs. Assessment Questions", "Practice distinguishing assessment questions from urgent action questions using the information in an NCLEX-style scenario.", "/nclex-priority-vs-assessment")
 
 export default function Page() {
   return (

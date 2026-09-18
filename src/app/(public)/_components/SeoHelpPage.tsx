@@ -75,7 +75,7 @@ export default function SeoHelpPage({
               href={primaryCtaHref}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#0a7d88]"
             >
-              Find My Answer Trap
+              Try 3 free questions
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
@@ -89,6 +89,7 @@ export default function SeoHelpPage({
       </section>
 
       <article className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+        <p className="mb-6 text-sm leading-relaxed text-slate-600">By ForgeNursing · Study guidance for NCLEX-RN preparation. Review clinical details with your nursing references. A missed practice answer alone cannot explain an unsuccessful exam attempt.</p>
         <div className="space-y-8">
           {sections.map((section) => (
             <section
@@ -159,19 +160,19 @@ export default function SeoHelpPage({
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/55">
             Free check
           </p>
-          <h2 className="mb-3 text-2xl font-bold">Find the Answer Trap behind your misses.</h2>
+          <h2 className="mb-3 text-2xl font-bold">Practice, review, and try the skill again.</h2>
           <p className="mb-6 max-w-2xl text-sm leading-7 text-white/80">
-            Take three NCLEX-style questions and get a first signal for the reasoning pattern that may be costing you points. No account required to start.
+            Answer three NCLEX-style questions, review an explanation for your choice, and try an optional related question after a miss. No account required.
           </p>
           <Link
             href={primaryCtaHref}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0D8F9C] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0a7d88]"
           >
-            Find My Answer Trap
+            Try 3 free questions
             <ArrowRight className="h-4 w-4" />
           </Link>
           <p className="mt-5 text-xs leading-6 text-white/55">
-            ForgeNursing is a study tool. These pages and the Answer Trap Check do not predict NCLEX outcomes or guarantee exam readiness.
+            ForgeNursing is a study tool. These guides and the practice sample do not predict NCLEX outcomes or guarantee exam readiness.
           </p>
         </section>
 

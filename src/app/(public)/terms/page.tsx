@@ -1,3 +1,5 @@
+import { pageMetadata } from '@/lib/seo'
+export const metadata = pageMetadata("Terms of Service", "Read the terms for using ForgeNursing study tools, free trials, and subscriptions.", "/terms")
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-[var(--gray-50)]">

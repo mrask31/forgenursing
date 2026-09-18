@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { STANDARD_OFFER } from '@/lib/offer'
 import Link from 'next/link'
 import { ChevronDown, ArrowLeft, HelpCircle } from 'lucide-react'
@@ -25,35 +24,15 @@ const faqs: FAQItem[] = [
 export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
-  useEffect(() => {
-    // Add FAQ structured data
-    const faqSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: faqs.map(faq => ({
-        '@type': 'Question',
-        name: faq.question,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: faq.answer
-        }
-      }))
-    }
 
-    const script = document.createElement('script')
-    script.type = 'application/ld+json'
-    script.id = 'faq-schema'
-    script.text = JSON.stringify(faqSchema)
-    document.head.appendChild(script)
-
-    return () => {
-      const existingScript = document.getElementById('faq-schema')
-      if (existingScript) existingScript.remove()
-    }
-  }, [])
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(faq => ({
+          '@type': 'Question', name: faq.question, acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+        })),
+      }) }} />
       {/* Header */}
       <div className="bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

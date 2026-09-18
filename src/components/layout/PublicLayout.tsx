@@ -70,6 +70,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         ) : <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 text-xs sm:text-sm text-[#1E2D3D]">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-center sm:items-start">
+              <Link href="/nclex-practice" className="hover:text-[#0D8F9C]">Study guides</Link>
               <Link href="/pricing" className="hover:text-[#0D8F9C]">Pricing</Link>
               <Link href="/faq" className="hover:text-[#0D8F9C] transition-colors font-medium">
                 FAQ

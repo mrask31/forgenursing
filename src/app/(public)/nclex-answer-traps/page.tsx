@@ -1,29 +1,14 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo'
 import SeoHelpPage from '../_components/SeoHelpPage'
 
-export const metadata: Metadata = {
-  title: 'NCLEX Answer Traps: Why Wrong Answers Feel Right | ForgeNursing',
-  description:
-    'Learn the common NCLEX Answer Traps behind missed questions, including assessment, priority, safety, delegation, medication, and content traps.',
-  alternates: {
-    canonical: '/nclex-answer-traps',
-  },
-  openGraph: {
-    title: 'NCLEX Answer Traps: Why Wrong Answers Feel Right',
-    description:
-      'ForgeNursing explains the reasoning traps that can make wrong NCLEX answers feel right.',
-    url: '/nclex-answer-traps',
-    siteName: 'ForgeNursing',
-    type: 'article',
-  },
-}
+export const metadata = pageMetadata("Common NCLEX Answer Traps", "Explore common mistakes when comparing NCLEX answer choices and build a useful review routine for your next NCLEX-RN attempt.", "/nclex-answer-traps")
 
 export default function Page() {
   return (
     <SeoHelpPage
       eyebrow="Answer Trap guide"
       title="The NCLEX Answer Traps that make wrong answers feel right"
-      subtitle="An Answer Trap is the reasoning pattern behind a miss. It helps explain why an option looked safe, caring, or logical in the moment but was not the best answer for the scenario."
+      subtitle="An answer trap is a useful way to describe a tempting choice. Reviewing the question can help you understand the distinction; one wrong answer cannot establish why you missed it."
       primaryCtaHref="/answer-trap-check?ref=seo_answer_traps"
       sections={[
         {
@@ -31,7 +16,7 @@ export default function Page() {
           title: 'Do not only ask what topic you missed. Ask what trap pulled you in.',
           body: [
             'Two students can miss the same cardiac question for different reasons. One may not know the content. Another may know the content but choose an intervention before assessing the unstable cue.',
-            'That is why pattern tracking matters. The topic tells you what chapter to review. The Answer Trap tells you how your decision broke down.',
+            'That is why pattern tracking matters. The topic tells you what chapter to review. Reviewing your choice can help you describe what you overlooked.',
           ],
           bullets: [
             'Assessment Trap: acting before gathering the data needed to act safely.',
@@ -63,7 +48,7 @@ export default function Page() {
           eyebrow: 'Practice method',
           title: 'Name the trap, then drill the pattern.',
           body: [
-            'If you miss a delegation question, doing random pharmacology questions will not fix the decision pattern. The fastest practice loop is to identify the trap, study the rule, and immediately practice that same type of decision again.',
+            'If you miss a delegation question, doing random pharmacology questions will not fix the decision pattern. One useful practice loop is to identify the trap, study the rule, and immediately practice that same type of decision again.',
             'ForgeNursing uses the Answer Trap language to help students turn a missed question into a next practice target.',
           ],
           bullets: [

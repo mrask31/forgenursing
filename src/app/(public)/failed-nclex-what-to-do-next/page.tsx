@@ -1,22 +1,7 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo'
 import SeoHelpPage from '../_components/SeoHelpPage'
 
-export const metadata: Metadata = {
-  title: 'Failed the NCLEX? What to Do Next | ForgeNursing',
-  description:
-    'A pattern-based NCLEX recovery plan for students who failed and need to understand what to study next without guessing.',
-  alternates: {
-    canonical: '/failed-nclex-what-to-do-next',
-  },
-  openGraph: {
-    title: 'Failed the NCLEX? What to Do Next',
-    description:
-      'Learn how to review a failed NCLEX attempt by identifying patterns behind missed questions, not just redoing random content.',
-    url: '/failed-nclex-what-to-do-next',
-    siteName: 'ForgeNursing',
-    type: 'article',
-  },
-}
+export const metadata = pageMetadata("Failed the NCLEX? What to Do Next", "Plan your next NCLEX-RN attempt: review your Candidate Performance Report, choose a study focus, and learn from missed practice questions.", "/failed-nclex-what-to-do-next")
 
 export default function Page() {
   return (
@@ -64,7 +49,7 @@ export default function Page() {
             'The goal is to reduce repeat misses. If you keep missing the same way, changing the number of questions is less important than changing the review loop after each miss.',
           ],
           bullets: [
-            'Day 1: identify your top Answer Trap signal.',
+            'Day 1: review your report and choose one topic to revisit.',
             'Days 2-4: practice focused questions in that pattern.',
             'Day 5: retest the pattern with mixed questions.',
             'Day 6: review why tempting answers pulled you in.',

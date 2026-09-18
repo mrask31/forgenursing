@@ -1,15 +1,16 @@
+import { pageMetadata } from '@/lib/seo'
 import Link from 'next/link'
 import { ArrowRight, Check, RotateCcw } from 'lucide-react'
 import { STANDARD_OFFER } from '@/lib/offer'
-import type { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: 'ForgeNursing | A clearer plan for your NCLEX-RN retake',
-  description: 'Preparing for the NCLEX-RN again? Start with a short practice check, understand your choices, and build a focused study routine. No uploads required.',
-}
+export const metadata = pageMetadata("NCLEX-RN Retake Practice", "Preparing for the NCLEX-RN again? Try three free questions, understand your choices, and build a focused study routine. No account needed for the sample.", "/")
 
 export default function HomePage() {
   return <div className="text-[#0B2545]">
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@graph': [
+      { '@type': 'Organization', '@id': 'https://forgenursing.com/#organization', name: 'ForgeNursing', url: 'https://forgenursing.com', email: 'support@forgenursing.com' },
+      { '@type': 'WebSite', '@id': 'https://forgenursing.com/#website', name: 'ForgeNursing', url: 'https://forgenursing.com', publisher: { '@id': 'https://forgenursing.com/#organization' } }
+    ] }) }} />
     <section className="bg-[#0B2545] text-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 sm:px-8 sm:py-16 lg:grid-cols-[1.2fr_1fr] lg:items-center">
         <div>
