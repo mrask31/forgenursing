@@ -1,3 +1,5 @@
+import { pageMetadata } from '@/lib/seo'
+export const metadata = pageMetadata("Privacy Policy", "Learn how ForgeNursing collects, uses, and protects account and study information.", "/privacy")
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-[var(--gray-50)]">

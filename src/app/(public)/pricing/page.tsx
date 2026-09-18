@@ -1,3 +1,5 @@
+import { pageMetadata } from '@/lib/seo'
+export const metadata = pageMetadata("Pricing and 7-Day Free Trial", "Try ForgeNursing free for 7 days without a credit card. Continue NCLEX-RN retake practice for $9.99/month or $79/year.", "/pricing")
 import { createClient } from '@/lib/supabase/server'
 import PricingContent from './PricingContent'
 

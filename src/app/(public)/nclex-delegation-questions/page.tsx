@@ -1,22 +1,7 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo'
 import SeoHelpPage from '../_components/SeoHelpPage'
 
-export const metadata: Metadata = {
-  title: 'NCLEX Delegation Questions: Scope, Stability, Complexity | ForgeNursing',
-  description:
-    'Learn how to approach NCLEX delegation questions by checking scope of practice, client stability, task complexity, and supervision needs.',
-  alternates: {
-    canonical: '/nclex-delegation-questions',
-  },
-  openGraph: {
-    title: 'NCLEX Delegation Questions: Scope, Stability, Complexity',
-    description:
-      'A practical guide to the Delegation Trap on NCLEX-style questions.',
-    url: '/nclex-delegation-questions',
-    siteName: 'ForgeNursing',
-    type: 'article',
-  },
-}
+export const metadata = pageMetadata("NCLEX Delegation Questions", "Review how patient stability, task requirements, and staff responsibilities shape NCLEX-style delegation questions.", "/nclex-delegation-questions")
 
 export default function Page() {
   return (

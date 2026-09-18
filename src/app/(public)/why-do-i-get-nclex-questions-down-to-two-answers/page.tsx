@@ -1,22 +1,7 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '@/lib/seo'
 import SeoHelpPage from '../_components/SeoHelpPage'
 
-export const metadata: Metadata = {
-  title: 'Why Do I Get NCLEX Questions Down to Two Answers? | ForgeNursing',
-  description:
-    'Learn why NCLEX-style questions often come down to two tempting answers and how to identify the Answer Trap behind the miss.',
-  alternates: {
-    canonical: '/why-do-i-get-nclex-questions-down-to-two-answers',
-  },
-  openGraph: {
-    title: 'Why Do I Get NCLEX Questions Down to Two Answers?',
-    description:
-      'ForgeNursing explains the reasoning pattern behind getting stuck between two NCLEX answers and picking the wrong one.',
-    url: '/why-do-i-get-nclex-questions-down-to-two-answers',
-    siteName: 'ForgeNursing',
-    type: 'article',
-  },
-}
+export const metadata = pageMetadata("Stuck Between Two NCLEX Answers?", "Learn a practical way to compare two NCLEX answer choices, review the decisive clue, and use your missed questions to guide further practice.", "/why-do-i-get-nclex-questions-down-to-two-answers")
 
 export default function Page() {
   return (
