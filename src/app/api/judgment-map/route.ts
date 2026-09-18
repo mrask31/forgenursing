@@ -1,3 +1,4 @@
+import { normalizePracticeFocus } from '@/lib/practice-focus'
 import { practiceTrend, practiceStage } from '@/lib/practice-progress'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
@@ -99,7 +100,7 @@ export async function GET() {
     }>()
 
     for (const row of answered as any[]) {
-      const mistakeType = row.mistake_type || fallbackMistakeType(row.nclex_category)
+      const mistakeType = normalizePracticeFocus(row.mistake_type || fallbackMistakeType(row.nclex_category))
       const entry = map.get(mistakeType) ?? {
         attempted: 0,
         correct: 0,

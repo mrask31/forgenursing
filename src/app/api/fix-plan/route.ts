@@ -1,3 +1,4 @@
+import { normalizePracticeFocus } from '@/lib/practice-focus'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getEntitlementForUser } from '@/lib/entitlement'
@@ -75,7 +76,7 @@ export async function GET() {
       .eq('quiz_sessions.user_id', user.id)
       .not('answered_at', 'is', null)
       .order('answered_at', { ascending: false })
-      .limit(250)
+      .limit(500)
 
     if (error) {
       console.error('[Fix Plan] Query error:', error)
@@ -87,7 +88,7 @@ export async function GET() {
     const map = new Map<string, PatternStats>()
 
     for (const row of answered as any[]) {
-      const mistakeType = row.mistake_type || fallbackMistakeType(row.nclex_category)
+      const mistakeType = normalizePracticeFocus(row.mistake_type || fallbackMistakeType(row.nclex_category))
       const existing = map.get(mistakeType) ?? {
         mistake_type: mistakeType,
         attempted: 0,

@@ -66,3 +66,10 @@ Still required before calling the release fully verified: signed-in browser inte
 - Production billing and stored learning records are unchanged. Signed-in browser verification still requires a secure browser login; authenticated API checks from the preceding release remain documented above.
 
 Browser sign-in exposed that expired users were redirected away from Account. `/settings` now requires authentication but not a subscription; practice routes and API entitlement checks retain their existing restrictions. No subscription dates or statuses were changed.
+
+
+## Retaker flow restoration — September 18
+
+Flow and feature-purpose decisions are recorded in `docs/product/retaker-flow.md`. Home distinguishes related retries, instructions collapse for returning users, unused setup questions are removed, Practice offers suggested focus directly, Progress initially shows three sessions, and mobile drawer no longer duplicates the four tabs. Focus formatting is normalized consistently across recommendations and progress; both use up to 500 answers. Account now has an authenticated, uncached, own-profile endpoint independent of study entitlement, and the browser auth callback returns immediately.
+
+TypeScript passed for this pass. Browser, live account, and clinical validation remain pending; no production deployment. The Account change addresses an observed code-level loading risk but the reported symptom has not yet been reproduced and verified after the fix.

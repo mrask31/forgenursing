@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Brain, CreditCard, Loader2, Settings, Target, User } from 'lucide-react'
 import { isBetaActive } from '@/lib/subscription-access'
-import { getBrowserClient } from '@/lib/supabase/client'
 
 type Profile = {
   is_beta: boolean | null
@@ -27,40 +26,14 @@ function formatDate(value?: string | null) {
   }
 }
 
-function formatEntryPath(value?: string | null) {
-  if (value === '/quiz') return 'Practice Questions'
-  if (value === '/tutor') return 'Clinical Tutor'
-  if (value === '/readiness') return 'Judgment Map'
-  if (value === '/entry' || !value) return 'Study Options'
-  return value.replace(/^\//, '').replace(/-/g, ' ')
-}
-
-function formatStatus(value?: string | null) {
-  if (!value) return 'Not available'
-  if (value === 'active') return 'Active'
-  if (value === 'trialing') return 'Trialing'
-  if (value === 'expired') return 'Expired'
-  if (value === 'past_due') return 'Past due'
-  return value.charAt(0).toUpperCase() + value.slice(1)
-}
-
 function accessLabel(profile: Profile | null) {
   if (profile?.subscription_status === 'active') return 'Subscription active'
   if (isBetaActive(profile?.is_beta, profile?.beta_expires_at)) return `Beta access through ${formatDate(profile?.beta_expires_at)}`
   if (profile?.subscription_status === 'trialing') return profile.trial_ends_at && new Date(profile.trial_ends_at).getTime() > Date.now() ? `Trial ends ${formatDate(profile.trial_ends_at)}` : 'Your trial has ended'
   if (profile?.subscription_status === 'expired') return 'Subscription needed'
+  if (profile?.subscription_status === 'canceled') return 'Subscription canceled'
   if (profile?.subscription_status === 'past_due') return 'Payment update needed'
   return 'Not available'
-}
-
-function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('TIMEOUT')), ms)
-    Promise.resolve(promise)
-      .then(resolve)
-      .catch(reject)
-      .finally(() => clearTimeout(timer))
-  })
 }
 
 export default function SettingsPage() {
@@ -69,52 +42,35 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const [reload, setReload] = useState(0)
   useEffect(() => {
-    const load = async () => {
-      setLoading(true)
-      setError(null)
+    let disposed = false
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
+    setLoading(true)
+    setError(null)
+    async function load() {
       try {
-        const supabase = getBrowserClient()
-        const userResult: any = await withTimeout(supabase.auth.getUser(), 5000)
-        const user = userResult.data?.user
-
-        if (!user) {
-          setError('Please log in again to view settings.')
-          return
-        }
-
-        setEmail(user.email ?? null)
-
-        const profileResult: any = await withTimeout(
-          supabase
-            .from('profiles')
-            .select('is_beta, beta_expires_at, preferred_name, program_track, program_level, graduation_date, subscription_status, trial_ends_at, default_entry_path')
-            .eq('id', user.id)
-            .single(),
-          7000
-        )
-
-        if (profileResult.error) {
-          console.error('[Settings] profile load error:', profileResult.error)
-          setError('Your account details could not load. Please retry.')
-          return
-        }
-
-        setProfile(profileResult.data as Profile)
+        const response = await fetch('/api/account', { cache: 'no-store', signal: controller.signal })
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.error || 'Your account could not load.')
+        if (!controller.signal.aborted) { setEmail(data.email); setProfile(data.profile) }
       } catch (err) {
-        console.error('[Settings] load error:', err)
-        setError('Settings took too long to load. Please refresh and try again.')
+        if (disposed) return
+        if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Your account could not load.')
+        else setError('Your account took too long to load. Please retry.')
       } finally {
-        setLoading(false)
+        clearTimeout(timeout)
+        if (!disposed) setLoading(false)
       }
     }
-
-    load()
-  }, [])
+    void load()
+    return () => { disposed = true; clearTimeout(timeout); controller.abort() }
+  }, [reload])
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F7F9FB] flex items-center justify-center px-4">
+      <div className="min-h-[50vh] bg-[#F7F9FB] flex items-center justify-center px-4">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#0D8F9C]" />
           <p className="text-sm text-slate-500">Loading settings...</p>
@@ -125,13 +81,13 @@ export default function SettingsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#F7F9FB] flex items-center justify-center px-4">
+      <div className="min-h-[50vh] bg-[#F7F9FB] flex items-center justify-center px-4">
         <div className="max-w-md w-full rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
           <Settings className="w-10 h-10 mx-auto mb-4 text-[#0D8F9C]" />
           <h1 className="text-xl font-bold text-[#0B2545] mb-2">Settings unavailable</h1>
           <p className="text-sm text-slate-600 mb-5">{error}</p>
           <div className="flex flex-col gap-3">
-            <button onClick={() => window.location.reload()} className="rounded-xl bg-[#0D8F9C] px-5 py-3 text-sm font-bold text-white">
+            <button onClick={() => setReload(value => value + 1)} className="rounded-xl bg-[#0D8F9C] px-5 py-3 text-sm font-bold text-white">
               Try Again
             </button>
             <Link href="/login" className="rounded-xl border border-[#DDE5EE] px-5 py-3 text-sm font-bold text-[#0B2545]">
@@ -175,9 +131,7 @@ export default function SettingsPage() {
             <a href="mailto:support@forgenursing.com?subject=Subscription%20help" className="inline-block py-2 text-sm font-semibold text-[#087986] underline">Get help changing or canceling a subscription</a>
           </SettingsCard>
 
-          <SettingsCard icon={<Target className="h-5 w-5" />} title="Quick links">
-            <Link href="/quiz" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Practice Questions →</Link>
-            <Link href="/readiness" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Practice progress →</Link>
+          <SettingsCard icon={<Target className="h-5 w-5" />} title="Help">
             <a href="mailto:support@forgenursing.com" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Contact Support →</a>
           </SettingsCard>
         </section>

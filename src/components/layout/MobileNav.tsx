@@ -49,7 +49,7 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
 
         {/* Sidebar Content */}
         <div className="pt-2">
-          <Sidebar onNavigate={onClose} />
+          <Sidebar onNavigate={onClose} secondaryOnly />
         </div>
       </aside>
       </>}

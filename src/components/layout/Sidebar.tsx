@@ -10,9 +10,10 @@ import HistoryButton from './HistoryButton'
 
 interface SidebarProps {
   onNavigate?: () => void
+  secondaryOnly?: boolean
 }
 
-export default function Sidebar({ onNavigate }: SidebarProps = {}) {
+export default function Sidebar({ onNavigate, secondaryOnly = false }: SidebarProps = {}) {
   const pathname = usePathname()
   const [preferredName, setPreferredName] = useState<string | null>(null)
   const [programTrack, setProgramTrack] = useState<string | null>(null)
@@ -148,7 +149,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
 
         <nav className="flex-1 space-y-6">
           <div className="space-y-1">
-            {mainNav.map((item) => {
+            {(secondaryOnly ? [] : mainNav).map((item) => {
               const active = isActive(item.href, item.label)
               const Icon = item.icon
               return (
@@ -208,6 +209,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
               <HistoryButton onNavigate={onNavigate} />
             </div>
           </details>
+          <a href="mailto:support@forgenursing.com" className="block px-3 py-3 text-sm text-slate-300 underline">Contact support</a>
         </nav>
 
         <div className="mt-auto pt-5 border-t border-white/10 relative" ref={profileMenuRef}>
