@@ -34,36 +34,13 @@ export async function startStripeCheckout(plan: Plan) {
 
   // Log price IDs for debugging (first 10 chars only for security)
 
-  // Validate that price IDs are unique
-  const uniquePriceIds = new Set(Object.values(PRICE_IDS).filter(Boolean))
-  if (uniquePriceIds.size < Object.keys(PRICE_IDS).length) {
-    console.error('[Stripe Checkout] WARNING: Duplicate price IDs detected!', {
-      monthly: PRICE_IDS.monthly,
-      semester: PRICE_IDS.semester,
-      annual: PRICE_IDS.annual,
-    })
-    await captureCheckoutEvent('checkout_configuration_error', {
-      source: 'stripe_client',
-      plan,
-      checkout_type: 'standard',
-      error_type: 'duplicate_price_ids',
-    })
-    alert(`Pricing configuration error: Duplicate price IDs detected. Please check your environment variables. All three plans (monthly, semester, annual) must have unique Stripe price IDs.`)
-    return
+  // Missing legacy semester configuration must not block monthly or annual checkout.
+  const availablePrices = Object.values(PRICE_IDS).filter(Boolean)
+  if (new Set(availablePrices).size !== availablePrices.length) {
+    throw new Error('Subscription plans are temporarily unavailable. Please contact support.')
   }
 
-  if (!priceId) {
-    console.error('Missing Stripe price ID for plan:', plan)
-    console.error('Available price IDs:', PRICE_IDS)
-    await captureCheckoutEvent('checkout_configuration_error', {
-      source: 'stripe_client',
-      plan,
-      checkout_type: 'standard',
-      error_type: 'missing_price_id',
-    })
-    alert(`Pricing configuration error: Missing price ID for ${plan} plan. Please check your environment variables.`)
-    return
-  }
+  if (!priceId) throw new Error('This subscription plan is temporarily unavailable. Please contact support.')
 
   try {
     const res = await fetch('/api/stripe/checkout', {

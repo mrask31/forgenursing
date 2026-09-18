@@ -1,3 +1,4 @@
+import { checkoutSubscriptionStatus } from '@/lib/checkout-validation'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { Resend } from 'resend'
@@ -196,7 +197,7 @@ async function processWebhookEvent(
 
         // Get subscription details
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-        const status = subscription.status === 'trialing' ? 'trialing' : 'active'
+        const status = checkoutSubscriptionStatus(subscription.status)
 
         // Determine tier_type from the Stripe price ID
         const priceId = subscription.items?.data?.[0]?.price?.id || ''
@@ -225,6 +226,8 @@ async function processWebhookEvent(
             error: `Failed to update profile: ${updateError.message}`
           }
         }
+
+        if (status !== 'active' && status !== 'trialing') return { success: true }
 
         // Send subscription confirmation email
         const customerEmail = session.customer_details?.email || session.customer_email

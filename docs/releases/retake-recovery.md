@@ -86,3 +86,12 @@ Clears the prior question before generating another, blocks new-session starts u
 - Signed-in browser: Home loads; Account renders the correct account/access instead of the timeout; Progress initially shows three sessions; the suggested-practice link selects the matching focus and displays the unfinished-session warning; saved review includes correct and missed answers, and a correct answer expands to its full explanation. Owner answers and unfinished session were not modified.
 - Live dummy-account API flow: two new questions generated without answer keys in the prompt response; both answers scored; duplicate submissions could not rewrite answers; completed results saved; a new related retry generated and was answered; progress updated. Account, recommendations, unique focus labels, and prior saved results also passed.
 - Limits: this was desktop browser verification plus authenticated API testing, not a complete mobile browser or paid checkout audit. Clinical accuracy requires separate review. Generation requests took tens of seconds in this environment. No production deployment.
+
+
+## Final release gate — payment hardening
+
+Found and corrected: legacy semester configuration could block the two current plans; the standard checkout endpoint accepted arbitrary Stripe price IDs; checkout completion mapped non-trial subscription statuses to active. Checkout now requires a configured price, rejects already-active accounts, and reflects actual subscription status before granting access or sending confirmation. TypeScript and 30 focused tests pass.
+
+Stripe read-only catalog verification confirms active USD 9.99/month and USD 79/year prices in ForgeNursing's live account. Authored public demo explanations were checked against their linked Merck potassium references, NCSBN delegation guidance, and NHS heart attack guidance. This is source verification, not independent clinician certification or a review of every dynamically generated question.
+
+Remaining release limits: the browser exposes no mobile viewport/device emulation controls; keyboard zoom did not change the viewport. Only a live Stripe account is connected, so no sandbox payment-to-webhook transaction has been completed. Production release stays on hold until the outstanding checks are completed; conditional deployment authorization is recorded from the user.

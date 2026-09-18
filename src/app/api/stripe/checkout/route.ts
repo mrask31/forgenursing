@@ -1,3 +1,4 @@
+import { isConfiguredCheckoutPrice } from '@/lib/checkout-validation'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
@@ -71,6 +72,21 @@ export async function POST(req: Request) {
         { error: 'Price ID is required' },
         { status: 400 }
       )
+    }
+
+    const configuredPrices = [
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY,
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMESTER,
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL,
+    ]
+    if (!isConfiguredCheckoutPrice(priceId, configuredPrices)) {
+      return NextResponse.json({ error: 'This subscription plan is not available.' }, { status: 400 })
+    }
+    const { data: profile, error: profileError } = await supabase.from('profiles')
+      .select('subscription_status').eq('id', user.id).single()
+    if (profileError || !profile) return NextResponse.json({ error: 'Could not verify your subscription. Please retry.' }, { status: 503 })
+    if (profile.subscription_status === 'active') {
+      return NextResponse.json({ error: 'You already have an active subscription. Open Account for subscription help.' }, { status: 409 })
     }
 
     // 3. Build base URL for redirects (use request origin as fallback)
