@@ -1,4 +1,5 @@
 import { checkoutSubscriptionStatus } from '@/lib/checkout-validation'
+import { recordInvoicePayment } from '@/lib/analytics/stripe-payment'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { Resend } from 'resend'
@@ -161,6 +162,8 @@ async function processWebhookEvent(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     switch (event.type) {
+      case 'invoice.payment_succeeded':
+        return await recordInvoicePayment(event, supabase)
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         
