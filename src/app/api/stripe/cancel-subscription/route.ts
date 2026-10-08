@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { checkoutSubscriptionStatus } from '@/lib/checkout-validation'
 
 // Lazy initialization function for Stripe client
 function getStripeClient(): Stripe {
@@ -94,7 +95,9 @@ export async function POST(req: Request) {
       await adminClient
         .from('profiles')
         .update({
-          subscription_status: subscription.cancel_at_period_end ? 'canceled' : 'active',
+          // Scheduling cancellation does not end already-paid access. Stripe
+          // changes status when the subscription actually ends.
+          subscription_status: checkoutSubscriptionStatus(subscription.status),
         })
         .eq('id', user.id)
     }
