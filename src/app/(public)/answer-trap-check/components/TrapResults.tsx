@@ -102,7 +102,9 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
               What this means
             </p>
             <p className="text-sm leading-relaxed" style={{ color: '#0B2545' }}>
-              These topics appeared in questions you missed. Choose one to revisit in your next session.
+              {result.score === result.total
+                ? 'You answered all three original questions correctly. Keep practicing with new questions to build on this session.'
+                : 'These topics appeared in questions you missed. The guidance below suggests what to review next.'}
             </p>
           </div>
 

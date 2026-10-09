@@ -1,3 +1,4 @@
+import { STANDARD_OFFER } from '@/lib/offer'
 import { pageMetadata } from '@/lib/seo'
 export const metadata = pageMetadata("Terms of Service", "Read the terms for using ForgeNursing study tools, free trials, and subscriptions.", "/terms")
 export default function TermsPage() {
@@ -5,7 +6,7 @@ export default function TermsPage() {
     <div className="min-h-screen bg-[var(--gray-50)]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h1 className="text-4xl font-semibold text-[var(--navy)] mb-4">Terms of Service</h1>
-        <p className="text-sm text-[var(--gray-400)] mb-8">Last updated: March 25, 2026</p>
+        <p className="text-sm text-[var(--gray-400)] mb-8">Last updated: October 9, 2026</p>
 
         <div className="bg-white border border-[var(--gray-200)] rounded-xl p-8 shadow-sm space-y-8">
           {/* 1. Agreement to Terms */}
@@ -155,15 +156,14 @@ export default function TermsPage() {
               ForgeNursing offers the following subscription plans:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-[var(--gray-800)] leading-relaxed mb-4">
-              <li><strong>Monthly Access</strong> — $24.99/month</li>
-              <li><strong>Semester Access</strong> — $89.00 per semester (approximately 4 months)</li>
-              <li><strong>Annual Access</strong> — $199.00/year</li>
+              <li><strong>Monthly Access</strong> — ${STANDARD_OFFER.monthly}/month</li>
+              <li><strong>Annual Access</strong> — ${STANDARD_OFFER.annual}/year</li>
             </ul>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              <strong>Free Trial:</strong> Your subscription begins with a 7-day free trial. No credit card is required during the trial period. You may cancel at any time during the trial without being charged.
+              <strong>Free Trial:</strong> New accounts receive a {STANDARD_OFFER.trialDays}-day free trial. No credit card or payment is required to start. The trial does not automatically convert to a paid subscription. When it ends, you must choose a paid plan and complete checkout to continue using paid features. If you do not subscribe, you will not be charged.
             </p>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              <strong>Automatic Billing:</strong> After the trial period ends, your subscription will automatically renew at the selected plan rate unless you cancel before the trial ends.
+              <strong>Paid Subscriptions:</strong> You are charged only after choosing a paid plan and completing checkout. Once purchased, monthly subscriptions renew each month and annual subscriptions renew each year at the agreed rate until canceled. Selecting a plan before signup does not authorize a charge.
             </p>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
               <strong>Cancellation:</strong> You may cancel your subscription at any time through your account Settings page or by contacting us at{" "}
@@ -171,7 +171,7 @@ export default function TermsPage() {
               When you cancel, your subscription remains active until the end of your current billing period. You will not be charged for subsequent billing periods after cancellation.
             </p>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              <strong>No Refunds:</strong> Subscription fees are non-refundable after the free trial period ends, except as required by law. We do not provide refunds for partial subscription periods or unused portions of your subscription.
+              <strong>No Refunds:</strong> Paid subscription fees are non-refundable except as required by law. We do not provide refunds for partial subscription periods or unused portions of your subscription.
             </p>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
               <strong>Price Changes:</strong> We reserve the right to modify subscription prices at any time. Price changes will be communicated at least 30 days in advance via email and will apply to subsequent billing periods.

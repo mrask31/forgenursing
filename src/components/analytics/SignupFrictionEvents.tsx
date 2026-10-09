@@ -1,6 +1,7 @@
 'use client'
 
 import posthog from 'posthog-js'
+import { isValidSignupEmail } from '@/lib/signup-validation'
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 
@@ -134,6 +135,10 @@ function ensureSignupSubmitHint(startedAt: number) {
         key: 'missing_email',
         text: 'Enter your email address to start.',
       }
+    }
+
+    if (!isValidSignupEmail(email)) {
+      return { key: 'invalid_email', text: 'Enter a valid email address.' }
     }
 
     if (!password) {

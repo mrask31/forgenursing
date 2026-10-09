@@ -10,6 +10,7 @@ type Plan = 'monthly' | 'semester' | 'annual'
 interface PricingContentProps {
   isBeta: boolean
   isSubscribed: boolean
+  isSignedIn: boolean
 }
 
 async function startFounderCheckout(plan: Plan): Promise<void> {
@@ -33,9 +34,9 @@ async function startStandardCheckout(plan: Plan): Promise<void> {
   await startStripeCheckout(plan)
 }
 
-export default function PricingContent({ isBeta, isSubscribed }: PricingContentProps) {
+export default function PricingContent({ isBeta, isSubscribed, isSignedIn }: PricingContentProps) {
   const router = useRouter()
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<Plan>('monthly')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -64,7 +65,9 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
     setLoading(true)
     setError(null)
     try {
-      if (isBeta) {
+      if (!isSignedIn) {
+        router.push(`/signup?plan=${selectedPlan}`)
+      } else if (isBeta) {
         await startFounderCheckout(selectedPlan)
       } else {
         await startStandardCheckout(selectedPlan)
@@ -90,7 +93,7 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
 
         <div className="text-center mb-10 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-4">
-            {isBeta ? 'Your Founder Pricing' : 'Founding Student Plan'}
+            {isBeta ? 'Your Founder Pricing' : 'Study Plans'}
           </h1>
           <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto">
             {isBeta
@@ -100,11 +103,30 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
         </div>
 
         {/* Pricing Cards — 2 public plans (monthly + annual), semester only for beta */}
-        <div className={`grid grid-cols-1 ${isBeta ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2'} gap-6 sm:gap-8 max-w-4xl mx-auto mb-8`}>
+        <div role="radiogroup" aria-label="Subscription plan" onKeyDown={(event) => {
+          if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(event.key)) return
+          event.preventDefault()
+          const options = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]'))
+          const current = options.indexOf(document.activeElement as HTMLElement)
+          const direction = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1
+          const next = options[(current + direction + options.length) % options.length]
+          next?.focus()
+          next?.click()
+        }} className={`grid grid-cols-1 ${isBeta ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2'} gap-6 sm:gap-8 max-w-4xl mx-auto mb-8`}>
 
           {/* Monthly */}
           <div
             onClick={() => setSelectedPlan('monthly')}
+            role="radio"
+            aria-label="Monthly plan"
+            aria-checked={selectedPlan === 'monthly'}
+            tabIndex={selectedPlan === 'monthly' ? 0 : -1}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                setSelectedPlan('monthly')
+              }
+            }}
             className={`bg-white/80 backdrop-blur-sm border-2 rounded-2xl p-6 sm:p-8 shadow-lg cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
               selectedPlan === 'monthly'
                 ? 'border-teal-500 shadow-xl shadow-teal-500/30'
@@ -146,6 +168,16 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
           {isBeta && (
             <div
               onClick={() => setSelectedPlan('semester')}
+            role="radio"
+            aria-label="Semester plan"
+            aria-checked={selectedPlan === 'semester'}
+            tabIndex={selectedPlan === 'semester' ? 0 : -1}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                setSelectedPlan('semester')
+              }
+            }}
               className={`bg-gradient-to-br from-indigo-50/80 via-teal-50/80 to-indigo-50/80 backdrop-blur-sm border-2 rounded-2xl p-6 sm:p-8 shadow-xl relative cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
                 selectedPlan === 'semester'
                   ? 'border-teal-500 shadow-2xl shadow-teal-500/40'
@@ -176,6 +208,16 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
           {/* Annual — Best Value */}
           <div
             onClick={() => setSelectedPlan('annual')}
+            role="radio"
+            aria-label="Annual plan"
+            aria-checked={selectedPlan === 'annual'}
+            tabIndex={selectedPlan === 'annual' ? 0 : -1}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                setSelectedPlan('annual')
+              }
+            }}
             className={`bg-gradient-to-br from-indigo-50/80 via-teal-50/80 to-indigo-50/80 backdrop-blur-sm border-2 rounded-2xl p-6 sm:p-8 shadow-xl relative cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
               selectedPlan === 'annual'
                 ? 'border-teal-500 shadow-2xl shadow-teal-500/40'
@@ -211,7 +253,7 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
             <ul className="space-y-2.5 mb-6 text-sm text-slate-700">
               <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>12 months of unlimited access</span></li>
               <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>Best overall savings</span></li>
-              <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>Renews annually (reminders sent)</span></li>
+              <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>Paid subscriptions renew annually until canceled</span></li>
               {isBeta && <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span className="font-medium text-teal-700">Founder rate — locked forever</span></li>}
               {!isBeta && <li className="flex items-start gap-2"><span className="text-teal-600 mt-0.5">•</span><span>7-day free trial included</span></li>}
             </ul>
@@ -240,7 +282,7 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
               </>
             ) : (
               <>
-                {isBeta ? 'Lock In My Founder Rate' : 'Start Free Trial'}
+                {isBeta ? 'Lock In My Founder Rate' : isSignedIn ? 'Continue to Checkout' : 'Start Free Trial'}
                 <ArrowRight className="w-5 h-5 inline-block ml-2" />
               </>
             )}
@@ -248,7 +290,9 @@ export default function PricingContent({ isBeta, isSubscribed }: PricingContentP
           <p className="text-xs text-slate-500 mt-3">
             {isBeta
               ? 'Founder rate is yours permanently as long as you stay subscribed.'
-              : `Start free, then $${STANDARD_OFFER.monthly}/month. Cancel anytime.`}
+              : isSignedIn
+                ? `$${selectedPlan === 'annual' ? STANDARD_OFFER.annual + '/year' : STANDARD_OFFER.monthly + '/month'}. Renews until canceled.`
+                : `Start free, then $${selectedPlan === 'annual' ? STANDARD_OFFER.annual + '/year' : STANDARD_OFFER.monthly + '/month'} if you subscribe. No automatic charge after your trial.`}
           </p>
         </div>
 

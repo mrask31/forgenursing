@@ -270,7 +270,7 @@ export default function AnswerTrapClient() {
       {phase === 'retry-question' && retryQuestion && <>
         <TrapQuestion question={retryQuestion} questionNumber={currentIndex + 1} totalQuestions={questions.length}
           selectedAnswer={retryAnswer} onSelectAnswer={setRetryAnswer} onSubmit={() => handleRelatedRetry(true)} loading={loading} isRetry />
-        <button onClick={handleNextAfterFeedback} disabled={loading} className="mx-auto mb-6 block min-h-11 px-4 text-sm text-slate-600 underline">Skip retry and continue</button>
+        <button onClick={handleNextAfterFeedback} disabled={loading} className="mx-auto mb-6 block min-h-11 px-4 text-sm text-slate-600 underline">Continue →</button>
       </>}
       {phase === 'retry-feedback' && retryFeedback && <TrapFeedback feedback={retryFeedback} selectedAnswer={retryAnswer!}
         questionNumber={currentIndex + 1} totalQuestions={questions.length} onNext={handleNextAfterFeedback}
