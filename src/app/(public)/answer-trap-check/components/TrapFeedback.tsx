@@ -143,7 +143,7 @@ export default function TrapFeedback({
             disabled={loading}
             className={`w-full min-h-12 rounded-xl px-4 py-3 font-semibold disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D8F9C] ${onRetry ? 'text-sm text-slate-600 underline underline-offset-4 hover:text-[#087986]' : 'bg-[#0D8F9C] text-base text-white hover:bg-[#087986]'}`}
           >
-            {loading ? 'Loading…' : onRetry ? (isLast ? 'Skip retry and see results' : 'Skip retry and continue') : isLast ? 'See my practice result' : 'Next question →'}
+            {loading ? 'Loading…' : isLast ? 'See my result' : 'Continue →'}
           </button>
         </div>
       </div>

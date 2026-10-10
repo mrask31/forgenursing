@@ -24,5 +24,5 @@ export default async function PricingPage() {
     isSubscribed = profile?.subscription_status === 'active'
   }
 
-  return <PricingContent isBeta={isBeta} isSubscribed={isSubscribed} />
+  return <PricingContent isBeta={isBeta} isSubscribed={isSubscribed} isSignedIn={Boolean(user)} />
 }

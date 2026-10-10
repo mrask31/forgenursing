@@ -6,6 +6,7 @@ import { isDisposableEmailDomain } from '@/lib/disposable-email-domains'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import { isValidSignupEmail } from '@/lib/signup-validation'
 import { resolveEntryPath } from '@/lib/resolve-entry-path'
 
 export default function SignupPage() {
@@ -14,6 +15,8 @@ export default function SignupPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null)
+  const emailIsValid = isValidSignupEmail(email)
+  const showEmailError = email.length > 0 && !emailIsValid
   const betaAvailable = false
   const router = useRouter()
 
@@ -61,6 +64,14 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!isValidSignupEmail(email)) {
+      setMessage({ text: 'Enter a valid email address.', type: 'error' })
+      return
+    }
+    if (!acceptedTerms) {
+      setMessage({ text: 'Please accept the Terms and Privacy Policy to continue.', type: 'error' })
+      return
+    }
 
 
     setLoading(true)
@@ -123,7 +134,7 @@ export default function SignupPage() {
     try {
       // Add a manual timeout promise (30 seconds)
       const signupPromise = supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       })
@@ -147,7 +158,6 @@ export default function SignupPage() {
           errorMessage.includes('already exists') ||
           errorMessage.includes('user with this email address has already been registered') ||
           error.code === 'signup_disabled' ||
-          error.status === 422 ||
           (error.status === 400 && errorMessage.includes('already'))
         
         if (isEmailExists) {
@@ -369,6 +379,9 @@ export default function SignupPage() {
                       autoComplete="email"
                       placeholder="Email address"
                       data-testid="signup-email"
+                      aria-label="Email address"
+                      aria-invalid={showEmailError}
+                      aria-describedby={showEmailError ? 'signup-email-error' : undefined}
                       className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={email}
                       onChange={(e) => {
@@ -379,6 +392,9 @@ export default function SignupPage() {
                       required
                     />
                   </div>
+                  {showEmailError && (
+                    <p id="signup-email-error" role="status" className="text-sm text-red-700">Enter a valid email address.</p>
+                  )}
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
@@ -448,7 +464,7 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   data-testid="signup-submit"
-                  disabled={loading || !email || !password || !acceptedTerms}
+                  disabled={loading || !emailIsValid || password.length < 8 || !acceptedTerms}
                   className="w-full flex items-center justify-center gap-2 px-6 py-2.5 min-h-[44px] bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0A7A85] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {loading ? (
