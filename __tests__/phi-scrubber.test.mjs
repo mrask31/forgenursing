@@ -1,50 +1,11 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 /**
  * PHI Scrubber Unit Tests (JavaScript version)
  * 
  * Run with: node __tests__/phi-scrubber.test.mjs
  */
 
-import { scorePhiText } from '../src/app/api/_middleware/phi-scrubber.js'
-
-// Simple test runner
-let testsPassed = 0
-let testsFailed = 0
-
-function describe(name, fn) {
-  console.log(`\n${name}`)
-  fn()
-  console.log(`\n✓ ${testsPassed} passed, ✗ ${testsFailed} failed`)
-  if (testsFailed > 0) {
-    process.exit(1)
-  }
-}
-
-function it(name, fn) {
-  try {
-    fn()
-    console.log(`  ✓ ${name}`)
-    testsPassed++
-  } catch (error) {
-    console.log(`  ✗ ${name}`)
-    console.error(`    ${error.message}`)
-    testsFailed++
-  }
-}
-
-function expect(actual) {
-  return {
-    toBe(expected) {
-      if (actual !== expected) {
-        throw new Error(`Expected ${expected}, got ${actual}`)
-      }
-    },
-    toBeGreaterThan(expected) {
-      if (actual <= expected) {
-        throw new Error(`Expected ${actual} to be greater than ${expected}`)
-      }
-    }
-  }
-}
+import { scorePhiText } from '../src/app/api/_middleware/phi-scrubber'
 
 describe('PHI Scrubber - scorePhiText', () => {
   it('TEST 1: should score 1 for single fake name only (action: warn)', () => {

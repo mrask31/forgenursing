@@ -22,7 +22,7 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('uploaded materials ONLY');
   });
 
-  it('all outputs contain ADPIE framework and all 6 response format sections', () => {
+  it('all outputs contain ADPIE framework and the five ADPIE response sections', () => {
     const prompts = [
       buildSystemPrompt('LPN', 'tutor'),
       buildSystemPrompt('ADN', 'strict'),
@@ -35,13 +35,14 @@ describe('buildSystemPrompt', () => {
       expect(prompt).toContain('ADPIE Nursing Process');
       expect(prompt).toContain('Assessment → Diagnosis → Planning → Implementation → Evaluation');
 
-      // Check for all 6 response format sections
-      expect(prompt).toContain('1. ORIENT');
-      expect(prompt).toContain('2. THE MAP');
-      expect(prompt).toContain('3. REASONING');
-      expect(prompt).toContain('4. TRAP');
-      expect(prompt).toContain('5. YOUR MATERIALS');
-      expect(prompt).toContain('6. CHECK');
+      // Check for the five ADPIE response sections
+      expect(prompt).toContain('1. ### ORIENT');
+      expect(prompt).toContain('2. ### THE MAP');
+      expect(prompt).toContain('3. ### REASONING');
+      expect(prompt).toContain('4. ### TRAP');
+      expect(prompt).toContain('5. ### CHECK');
+      expect(prompt).toContain('QUESTION/QUIZ/PRACTICE → direct question format');
+      expect(prompt).toContain('Never force ADPIE');
     });
   });
 });

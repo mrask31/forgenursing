@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 /**
  * PHI Scrubber Unit Tests
  * 
@@ -7,50 +8,6 @@
  */
 
 import { scorePhiText, scorePhiImage } from '../src/app/api/_middleware/phi-scrubber'
-
-// Simple test runner
-let testsPassed = 0
-let testsFailed = 0
-
-function describe(name: string, fn: () => void | Promise<void>) {
-  console.log(`\n${name}`)
-  Promise.resolve(fn()).then(() => {
-    console.log(`\n✓ ${testsPassed} passed, ✗ ${testsFailed} failed`)
-  })
-}
-
-async function it(name: string, fn: () => void | Promise<void>) {
-  try {
-    await Promise.resolve(fn())
-    console.log(`  ✓ ${name}`)
-    testsPassed++
-  } catch (error) {
-    console.log(`  ✗ ${name}`)
-    console.error(`    ${error}`)
-    testsFailed++
-    process.exitCode = 1
-  }
-}
-
-function afterEach(fn: () => void) {
-  // Simple afterEach implementation for cleanup
-  fn()
-}
-
-function expect(actual: any) {
-  return {
-    toBe(expected: any) {
-      if (actual !== expected) {
-        throw new Error(`Expected ${expected}, got ${actual}`)
-      }
-    },
-    toBeGreaterThan(expected: any) {
-      if (actual <= expected) {
-        throw new Error(`Expected ${actual} to be greater than ${expected}`)
-      }
-    }
-  }
-}
 
 describe('PHI Scrubber - scorePhiText', () => {
   it('should score 1 for single fake name only (action: warn)', () => {
@@ -152,6 +109,8 @@ describe('PHI Scrubber - scorePhiText', () => {
 })
 
 describe('PHI Scrubber - scorePhiImage', () => {
+  beforeEach(() => vi.stubEnv('GEMINI_API_KEY', 'unit-test-placeholder'))
+  afterEach(() => vi.unstubAllEnvs())
   // Mock global fetch for testing
   const originalFetch = global.fetch
 
