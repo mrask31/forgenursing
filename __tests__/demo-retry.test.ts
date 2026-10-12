@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
-import { DEMO_LESSONS, demoFeedback, publicDemoQuestion } from '../src/lib/demo-lessons'
+import { DEMO_LESSONS, DEMO_SESSION_SIZE, selectDemoLessons, demoFeedback, publicDemoQuestion } from '../src/lib/demo-lessons'
 import { scoreTrap } from '../src/lib/answer-trap'
 const mocks = vi.hoisted(() => ({ create: vi.fn() }))
 vi.mock('@supabase/supabase-js', () => ({ createClient: mocks.create }))
@@ -20,6 +20,20 @@ function setup(session: unknown) {
 const eligible = { questions: [qid], answers: [{ question_id: qid, is_correct: false }], completed_at: null }
 beforeEach(() => { vi.resetAllMocks() })
 describe('demo teaching content', () => {
+  it('rotates eight reviewed lessons into three distinct questions without mutating the bank', () => {
+    expect(DEMO_LESSONS).toHaveLength(8)
+    const original = DEMO_LESSONS.map(lesson => lesson.sourceStem)
+    const selected = selectDemoLessons(() => 0)
+    expect(selected).toHaveLength(DEMO_SESSION_SIZE)
+    expect(new Set(selected.map(lesson => lesson.sourceStem)).size).toBe(3)
+    expect(DEMO_LESSONS.map(lesson => lesson.sourceStem)).toEqual(original)
+    expect(selectDemoLessons(() => 0.999).map(lesson => lesson.sourceStem)).toEqual(original.slice(0, 3))
+    expect(selected.map(lesson => lesson.sourceStem)).not.toEqual(original.slice(0, 3))
+    for (const lesson of DEMO_LESSONS.slice(3)) {
+      expect(lesson.sources.length).toBeGreaterThan(0)
+      for (const source of lesson.sources) expect(source.url).toMatch(/^https:\/\//)
+    }
+  })
   it('has a distinct explanation for every distractor and keeps answer keys private', () => {
     for (const lesson of DEMO_LESSONS) for (const item of [lesson.initial, lesson.retry]) {
       expect(item.options).toHaveLength(4)
