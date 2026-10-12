@@ -1,4 +1,4 @@
-import { DEMO_LESSONS, publicDemoQuestion } from '@/lib/demo-lessons';
+import { DEMO_LESSONS, selectDemoLessons, publicDemoQuestion } from '@/lib/demo-lessons';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { hashIp, RATE_LIMIT_MAX_SESSIONS_PER_HOUR } from '@/lib/answer-trap';
@@ -61,11 +61,12 @@ export async function POST(req: NextRequest) {
       .select('id, question_stem')
       .eq('is_active', true)
       .in('question_stem', DEMO_LESSONS.map(lesson => lesson.sourceStem));
-    const questions = DEMO_LESSONS.map((lesson, index) => {
+    const selectedLessons = selectDemoLessons();
+    const questions = selectedLessons.map((lesson, index) => {
       const row = bank?.find(q => q.question_stem === lesson.sourceStem);
       return row ? publicDemoQuestion(lesson.initial, row.id, index) : null;
     }).filter((q): q is PublicQuestion => q !== null);
-    if (questionsError || questions.length !== DEMO_LESSONS.length) {
+    if (questionsError || questions.length !== selectedLessons.length) {
       return NextResponse.json({ error: 'Practice is temporarily unavailable. Please try again.' }, { status: 503 });
     }
 

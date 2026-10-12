@@ -1,3 +1,4 @@
+import { ADDITIONAL_DEMO_LESSONS } from "./additional-demo-lessons";
 // Server-side demo content. Import only from API routes; never ship answer keys in client bundles.
 import type { AnswerFeedback, PublicQuestion } from './answer-trap';
 
@@ -235,8 +236,20 @@ export const DEMO_LESSONS: DemoLesson[] = [
       },
       "one_line_fix": "Apply urgency to the whole symptom pattern."
     }
-  }
+  },
+  ...ADDITIONAL_DEMO_LESSONS
 ];
+
+export const DEMO_SESSION_SIZE = 3;
+
+export function selectDemoLessons(random = Math.random): DemoLesson[] {
+  const pool = [...DEMO_LESSONS];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, DEMO_SESSION_SIZE);
+}
 
 export function demoLesson(stem: string) {
   return DEMO_LESSONS.find(lesson => lesson.sourceStem === stem);
