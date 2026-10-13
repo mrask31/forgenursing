@@ -1,5 +1,6 @@
 'use client'
 
+import { captureSample, campaignUrl } from '@/lib/analytics/measurement'
 import { useEffect, useState } from 'react'
 import { Copy, CheckCircle2, UserPlus } from 'lucide-react'
 import type { TrapResult } from '@/lib/answer-trap'
@@ -51,6 +52,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
   }
 
   const handleSignupClick = () => {
+    captureSample('trial_signup_started', { sample_session_id: sessionId, source: 'sample_results' }, `signup:${sessionId}`)
     try {
       const posthog = require('posthog-js').default
       posthog.capture('answer_trap_signup_clicked', {
@@ -68,7 +70,7 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
       } catch {}
     }
 
-    window.location.href = '/signup'
+    window.location.href = campaignUrl('/signup')
   }
 
   return (

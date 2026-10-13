@@ -1,5 +1,6 @@
 'use client'
 
+import { captureSample } from '@/lib/analytics/measurement'
 import posthog from 'posthog-js'
 import { isValidSignupEmail } from '@/lib/signup-validation'
 import { useEffect } from 'react'
@@ -255,6 +256,10 @@ function ensureSignupFormVisibilityTracker(startedAt: number) {
 
 export function SignupFrictionEvents() {
   const pathname = usePathname()
+
+  useEffect(() => {
+    if (pathname === '/signup') captureSample('trial_signup_page_viewed', { source: 'signup_page' })
+  }, [pathname])
 
   useEffect(() => {
     if (pathname === '/entry') {
