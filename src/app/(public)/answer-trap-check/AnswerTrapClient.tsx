@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { captureSample, measurementContext } from '@/lib/analytics/measurement'
 import TrapLanding from './components/TrapLanding'
 import TrapQuestion from './components/TrapQuestion'
 import TrapFeedback from './components/TrapFeedback'
@@ -33,6 +34,7 @@ export default function AnswerTrapClient() {
     if (loading || !questions[currentIndex] || (submit && !retryAnswer)) return
     setLoading(true)
     setError(null)
+    if (!submit) captureSample('related_retry_started', { question_id: questions[currentIndex].id, sample_session_id: sessionId })
     try {
       const res = await fetch('/api/answer-trap-check/retry', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -42,6 +44,7 @@ export default function AnswerTrapClient() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Could not load the related question.')
       if (submit) {
+        captureSample('question_answered', { question_id: questions[currentIndex].id, correct: data.feedback.is_correct, attempt: 2, sample_session_id: sessionId }, `retry:${sessionId}:${questions[currentIndex].id}`)
         setRetryFeedback(data.feedback)
         setRetryOutcomes(previous => ({ ...previous, [questions[currentIndex].id]: {
           topic: data.feedback.trap_display_name, correct: data.feedback.is_correct,
@@ -74,7 +77,12 @@ export default function AnswerTrapClient() {
     } catch {}
   }, [])
 
+  useEffect(() => {
+    if (phase === 'results' && result) captureSample('sample_completed', { score: `${result.score}/${result.total}`, score_correct: result.score, total: result.total, retry_correct_count: Object.values(retryOutcomes).filter(outcome => outcome.correct).length, sample_session_id: sessionId }, `result:${sessionId}`)
+  }, [phase, result, retryOutcomes, sessionId])
+
   const handleStart = useCallback(async () => {
+    captureSample('quiz_started')
     setLoading(true)
     setError(null)
 
@@ -85,15 +93,15 @@ export default function AnswerTrapClient() {
 
     try {
       // Collect UTM params from URL
-      const params = new URLSearchParams(window.location.search)
+      const attribution = measurementContext()
 
       const res = await fetch('/api/answer-trap-check/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          utm_source: params.get('utm_source'),
-          utm_medium: params.get('utm_medium'),
-          utm_campaign: params.get('utm_campaign'),
+          utm_source: attribution.utm_source || null,
+          utm_medium: attribution.utm_medium || null,
+          utm_campaign: attribution.utm_campaign || null,
           source_url: window.location.href,
         }),
       })
@@ -154,6 +162,7 @@ export default function AnswerTrapClient() {
       }
 
       const feedback: AnswerFeedback = await res.json()
+      captureSample('question_answered', { question_id: question.id, correct: feedback.is_correct, attempt: 1, sample_session_id: sessionId }, `answer:${sessionId}:${question.id}`)
       setCurrentFeedback(feedback)
       setPhase('feedback')
 

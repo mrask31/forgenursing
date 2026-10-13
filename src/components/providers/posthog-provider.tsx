@@ -5,6 +5,7 @@ import { PostHogProvider } from 'posthog-js/react'
 import { useEffect } from 'react'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 import { getBrowserClient } from '@/lib/supabase/client'
+import { measurementContext, QA_KEY } from '@/lib/analytics/measurement'
 import { syncAnalyticsIdentity } from '@/lib/analytics/identity'
 
 if (typeof window !== 'undefined') {
@@ -12,6 +13,7 @@ if (typeof window !== 'undefined') {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
     person_profiles: 'identified_only',
     capture_pageview: true,
+    before_send: (event) => event ? { ...event, properties: { ...event.properties, ...measurementContext() } } : event,
     session_recording: {
       maskAllInputs: true,
     },
@@ -28,6 +30,9 @@ export function PHProvider({ children }: { children: React.ReactNode }) {
     let trackedUserId: string | null = null
     const { data: { subscription } } = getBrowserClient().auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       const userId = session?.user.id || null
+      if (session?.user.email?.toLowerCase() === 'mrask30@gmail.com') {
+        try { localStorage.setItem(QA_KEY, '1') } catch {}
+      }
       try {
         previousUserId = syncAnalyticsIdentity(posthog, userId, previousUserId)
       } catch {
@@ -38,7 +43,7 @@ export function PHProvider({ children }: { children: React.ReactNode }) {
         trackedUserId = userId
         // Don't await Supabase work inside its auth callback. Analytics never
         // delays navigation or alters access; server verifies the trial.
-        void fetch('/api/analytics/trial', { method: 'POST', keepalive: true }).then(response => {
+        void fetch('/api/analytics/trial', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...measurementContext(), $session_id: posthog.get_session_id() }) }).then(response => {
           if (!response.ok && trackedUserId === userId) trackedUserId = null
         }).catch(() => { if (trackedUserId === userId) trackedUserId = null })
       }

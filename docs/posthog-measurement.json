@@ -1,0 +1,264 @@
+{
+  "project_id": 388925,
+  "public": {
+    "name": "ForgeNursing public reel traffic",
+    "queries": [
+      {
+        "name": "Visit to trial signup",
+        "query": {
+          "kind": "FunnelsQuery",
+          "series": [
+            {
+              "kind": "EventsNode",
+              "event": "$pageview"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "quiz_started",
+              "properties": [
+                {
+                  "key": "experience",
+                  "type": "event",
+                  "operator": "exact",
+                  "value": "free_sample"
+                }
+              ]
+            },
+            {
+              "kind": "EventsNode",
+              "event": "question_answered"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "sample_completed"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "trial_signup_started"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "trial_signup_page_viewed"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "trial_signup_completed"
+            }
+          ],
+          "dateRange": {
+            "date_from": "-30d"
+          },
+          "properties": [
+            {
+              "key": "site_host",
+              "type": "event",
+              "operator": "exact",
+              "value": "forgenursing.com"
+            }
+          ],
+          "filterTestAccounts": true,
+          "funnelsFilter": {
+            "funnelOrderType": "ordered",
+            "funnelAggregateByHogQL": "properties.$session_id",
+            "funnelWindowInterval": 1,
+            "funnelWindowIntervalUnit": "day"
+          }
+        }
+      },
+      {
+        "name": "Channel quality per visit",
+        "query": {
+          "kind": "FunnelsQuery",
+          "series": [
+            {
+              "kind": "EventsNode",
+              "event": "$pageview"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "quiz_started",
+              "properties": [
+                {
+                  "key": "experience",
+                  "type": "event",
+                  "operator": "exact",
+                  "value": "free_sample"
+                }
+              ]
+            },
+            {
+              "kind": "EventsNode",
+              "event": "question_answered"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "sample_completed"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "trial_signup_started"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "trial_signup_page_viewed"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "trial_signup_completed"
+            }
+          ],
+          "dateRange": {
+            "date_from": "-30d"
+          },
+          "properties": [
+            {
+              "key": "site_host",
+              "type": "event",
+              "operator": "exact",
+              "value": "forgenursing.com"
+            }
+          ],
+          "filterTestAccounts": true,
+          "funnelsFilter": {
+            "funnelOrderType": "ordered",
+            "funnelAggregateByHogQL": "properties.$session_id",
+            "funnelWindowInterval": 1,
+            "funnelWindowIntervalUnit": "day"
+          },
+          "breakdownFilter": {
+            "breakdown": "utm_source",
+            "breakdown_type": "event"
+          }
+        }
+      },
+      {
+        "name": "Reel quality per visit",
+        "query": {
+          "kind": "FunnelsQuery",
+          "series": [
+            {
+              "kind": "EventsNode",
+              "event": "$pageview"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "quiz_started",
+              "properties": [
+                {
+                  "key": "experience",
+                  "type": "event",
+                  "operator": "exact",
+                  "value": "free_sample"
+                }
+              ]
+            },
+            {
+              "kind": "EventsNode",
+              "event": "question_answered"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "sample_completed"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "trial_signup_started"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "trial_signup_page_viewed"
+            },
+            {
+              "kind": "EventsNode",
+              "event": "trial_signup_completed"
+            }
+          ],
+          "dateRange": {
+            "date_from": "-30d"
+          },
+          "properties": [
+            {
+              "key": "site_host",
+              "type": "event",
+              "operator": "exact",
+              "value": "forgenursing.com"
+            }
+          ],
+          "filterTestAccounts": true,
+          "funnelsFilter": {
+            "funnelOrderType": "ordered",
+            "funnelAggregateByHogQL": "properties.$session_id",
+            "funnelWindowInterval": 1,
+            "funnelWindowIntervalUnit": "day"
+          },
+          "breakdownFilter": {
+            "breakdown": "utm_campaign",
+            "breakdown_type": "event"
+          }
+        }
+      }
+    ]
+  },
+  "qa": {
+    "name": "ForgeNursing all traffic QA",
+    "query": {
+      "kind": "FunnelsQuery",
+      "series": [
+        {
+          "kind": "EventsNode",
+          "event": "$pageview"
+        },
+        {
+          "kind": "EventsNode",
+          "event": "quiz_started",
+          "properties": [
+            {
+              "key": "experience",
+              "type": "event",
+              "operator": "exact",
+              "value": "free_sample"
+            }
+          ]
+        },
+        {
+          "kind": "EventsNode",
+          "event": "question_answered"
+        },
+        {
+          "kind": "EventsNode",
+          "event": "sample_completed"
+        },
+        {
+          "kind": "EventsNode",
+          "event": "trial_signup_started"
+        },
+        {
+          "kind": "EventsNode",
+          "event": "trial_signup_page_viewed"
+        },
+        {
+          "kind": "EventsNode",
+          "event": "trial_signup_completed"
+        }
+      ],
+      "dateRange": {
+        "date_from": "-30d"
+      },
+      "properties": [
+        {
+          "key": "measurement_version",
+          "type": "event",
+          "operator": "exact",
+          "value": 1
+        }
+      ],
+      "filterTestAccounts": false,
+      "funnelsFilter": {
+        "funnelOrderType": "ordered",
+        "funnelAggregateByHogQL": "properties.$session_id",
+        "funnelWindowInterval": 1,
+        "funnelWindowIntervalUnit": "day"
+      }
+    }
+  }
+}
