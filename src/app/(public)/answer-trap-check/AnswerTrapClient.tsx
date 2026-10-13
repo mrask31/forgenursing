@@ -82,7 +82,7 @@ export default function AnswerTrapClient() {
   }, [phase, result, retryOutcomes, sessionId])
 
   const handleStart = useCallback(async () => {
-    captureSample('quiz_started', {}, `start:${Date.now()}`)
+    captureSample('quiz_started')
     setLoading(true)
     setError(null)
 

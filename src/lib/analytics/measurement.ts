@@ -13,7 +13,10 @@ export function resolveAttribution(previous: Attribution, url: string): Attribut
     if (value) incoming[key] = value.slice(0, 200)
   }
   // A newly tagged arrival replaces the prior campaign; untagged internal navigation preserves it.
-  if (incoming.utm_source || incoming.utm_campaign) return { ...incoming, landing_page: current.pathname }
+  if (incoming.utm_source || incoming.utm_campaign) {
+    const sameCampaign = campaignKeys.every(key => incoming[key] === previous[key])
+    return { ...incoming, landing_page: sameCampaign ? previous.landing_page || current.pathname : current.pathname }
+  }
   return { ...previous, landing_page: previous.landing_page || current.pathname }
 }
 

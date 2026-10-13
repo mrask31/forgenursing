@@ -15,6 +15,8 @@ describe('reel attribution and QA',()=>{
   expect(measurementContext()).toMatchObject({utm_source:'instagram',utm_campaign:'q05-ppe',landing_page:'/'})
   expect(campaignUrl('/signup?plan=annual')).toContain('plan=annual')
   expect(campaignUrl('/signup')).toContain('utm_campaign=q05-ppe')
+  window.location.href='https://forgenursing.com'+campaignUrl('/signup')
+  expect(measurementContext().landing_page).toBe('/')
  })
  it('replaces attribution for a new tagged arrival without retaining an old reel',()=>{
   expect(resolveAttribution({utm_source:'instagram',utm_campaign:'old'},'https://forgenursing.com/?utm_source=facebook')).toEqual({utm_source:'facebook',landing_page:'/'})
