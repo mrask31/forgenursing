@@ -1,0 +1,83 @@
+{
+  "status": "unreviewed",
+  "rubric_version": "0.2",
+  "distinction_id": "new-urgent-symptoms",
+  "generation_provenance": "unknown historical provenance",
+  "lesson": {
+    "sourceStem": "A nurse receives report on four patients. Which patient should the nurse assess FIRST? (A) Blood glucose 210 mg/dL scheduled for sliding-scale insulin. (B) Chest pain 8/10 with diaphoresis starting 20 minutes ago. (C) Surgical wound with moderate serous drainage. (D) Mild nausea after morning chemotherapy.",
+    "topic": "Recognizing urgent symptoms",
+    "trap_type": "Priority-setting",
+    "sources": [
+      {
+        "title": "NHS: Heart attack symptoms",
+        "url": "https://www.nhs.uk/conditions/heart-attack/"
+      }
+    ],
+    "initial": {
+      "question_stem": "Which patient should the nurse assess first?",
+      "options": [
+        {
+          "label": "A",
+          "text": "A stable patient with glucose 210 mg/dL and scheduled correction insulin"
+        },
+        {
+          "label": "B",
+          "text": "A patient with new chest pain and sweating"
+        },
+        {
+          "label": "C",
+          "text": "A stable patient with an unchanged amount of clear wound drainage"
+        },
+        {
+          "label": "D",
+          "text": "A patient with mild, expected nausea after chemotherapy and no other symptoms"
+        }
+      ],
+      "correct_answer": "B",
+      "key_cue": "The chest pain and sweating are new.",
+      "why_correct_short": "This combination can signal a heart attack and warrants urgent assessment.",
+      "rationales": {
+        "A": "The stated glucose finding needs follow-up, but the scenario describes no acute deterioration.",
+        "C": "The drainage is unchanged and the patient is stable; new chest symptoms take priority.",
+        "D": "Mild, expected nausea without other symptoms is less urgent than new chest pain and sweating."
+      },
+      "one_line_fix": "Look for a new, potentially time-sensitive threat among otherwise stable findings."
+    },
+    "retry": {
+      "question_stem": "Which patient needs the nurse’s immediate attention?",
+      "options": [
+        {
+          "label": "A",
+          "text": "A patient with new chest pressure, nausea, and sweating"
+        },
+        {
+          "label": "B",
+          "text": "A stable patient requesting discharge paperwork"
+        },
+        {
+          "label": "C",
+          "text": "A patient with unchanged chronic knee pain awaiting routine medication"
+        },
+        {
+          "label": "D",
+          "text": "A stable patient asking about tomorrow’s appointment"
+        }
+      ],
+      "correct_answer": "A",
+      "key_cue": "New chest pressure occurs with nausea and sweating.",
+      "why_correct_short": "These symptoms can accompany a heart attack and need urgent assessment.",
+      "rationales": {
+        "B": "Paperwork can wait while the nurse assesses new chest symptoms.",
+        "C": "Unchanged chronic pain needs care, but the new chest symptoms are more urgent.",
+        "D": "An appointment question can wait while the nurse assesses a possible emergency."
+      },
+      "one_line_fix": "Apply urgency to the whole symptom pattern."
+    }
+  },
+  "missing": [
+    "independent RN review",
+    "verified reference sections/dates",
+    "at least three reviewed delayed variants",
+    "reviewer approval bound to frozen packet hash"
+  ]
+}

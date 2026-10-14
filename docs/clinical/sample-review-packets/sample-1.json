@@ -1,0 +1,87 @@
+{
+  "status": "unreviewed",
+  "rubric_version": "0.2",
+  "distinction_id": "potassium-direction-ecg",
+  "generation_provenance": "unknown historical provenance",
+  "lesson": {
+    "sourceStem": "A patient is admitted with a serum potassium level of 6.2 mEq/L. Which ECG change should the nurse expect to see?",
+    "topic": "Potassium and ECG changes",
+    "trap_type": "Pathophysiology / knowledge gap",
+    "sources": [
+      {
+        "title": "Merck Manual: Hyperkalemia",
+        "url": "https://www.merckmanuals.com/professional/nephrology/electrolyte-disorders/hyperkalemia"
+      },
+      {
+        "title": "Merck Manual: Hypokalemia",
+        "url": "https://www.merckmanuals.com/professional/nephrology/electrolyte-disorders/hypokalemia"
+      }
+    ],
+    "initial": {
+      "question_stem": "A patient has a serum potassium level of 6.2 mEq/L. Which ECG finding is classically associated with this electrolyte abnormality?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Flattened T waves"
+        },
+        {
+          "label": "B",
+          "text": "Peaked T waves"
+        },
+        {
+          "label": "C",
+          "text": "Prolonged QT interval"
+        },
+        {
+          "label": "D",
+          "text": "ST segment depression"
+        }
+      ],
+      "correct_answer": "B",
+      "key_cue": "Potassium is elevated at 6.2 mEq/L.",
+      "why_correct_short": "Tall, peaked T waves are a classic hyperkalemia finding; ECG changes vary between patients.",
+      "rationales": {
+        "A": "Flattened T waves are associated with low potassium. This value is high.",
+        "C": "QT prolongation is not the classic finding here; hyperkalemia may shorten the QT interval.",
+        "D": "ST depression can occur with low potassium. Peaked T waves better fit this elevated value."
+      },
+      "one_line_fix": "Connect the direction of the potassium change to the ECG finding; ECG appearance alone cannot exclude a dangerous imbalance."
+    },
+    "retry": {
+      "question_stem": "A patient has a potassium level of 2.8 mEq/L. Which ECG finding best fits this result?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Tall, peaked T waves"
+        },
+        {
+          "label": "B",
+          "text": "A normal ECG excludes potassium-related risk"
+        },
+        {
+          "label": "C",
+          "text": "Flattened T waves with prominent U waves"
+        },
+        {
+          "label": "D",
+          "text": "A sine-wave pattern typical of severe hyperkalemia"
+        }
+      ],
+      "correct_answer": "C",
+      "key_cue": "This time potassium is low.",
+      "why_correct_short": "Flattened T waves and prominent U waves are associated with hypokalemia.",
+      "rationales": {
+        "A": "Peaked T waves fit high potassium, the opposite of this result.",
+        "B": "A normal ECG does not rule out risk from an abnormal potassium level.",
+        "D": "The option describes severe high potassium; this patient has low potassium."
+      },
+      "one_line_fix": "Read the value again before applying the previous question’s rule."
+    }
+  },
+  "missing": [
+    "independent RN review",
+    "verified reference sections/dates",
+    "at least three reviewed delayed variants",
+    "reviewer approval bound to frozen packet hash"
+  ]
+}

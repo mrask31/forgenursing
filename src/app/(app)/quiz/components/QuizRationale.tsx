@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Brain } from 'lucide-react'
 
 interface QuizRationaleProps {
+  reviewed?: boolean
+  sources?: {title:string;url:string}[]
   isCorrect: boolean
   userAnswer: string
   correctAnswer: string
@@ -51,7 +53,7 @@ function fallbackMistakeType(category: string) {
 }
 
 export default function QuizRationale({
-  isCorrect, userAnswer, correctAnswer, options, rationaleCorrect,
+  reviewed = false, sources = [], isCorrect, userAnswer, correctAnswer, options, rationaleCorrect,
   rationaleIncorrect, nclexCategory, difficulty, mistakeType, reasoningTrap,
   fixInstruction, retestFocus, keyCue, whyCorrectShort, oneLineFix,
   sessionId, questionId, questionIndex, onNext,
@@ -236,8 +238,10 @@ export default function QuizRationale({
       </div>
 
       <p className="text-center text-[10px] leading-snug text-gray-400">
-        AI-generated rationale • Educational use only
+        {reviewed ? 'Reviewed practice explanation • Educational use only' : 'AI-generated rationale • Educational use only'}
       </p>
+
+      {sources.length > 0 && <details><summary className="cursor-pointer text-sm font-semibold">Supporting references</summary><ul className="mt-2 space-y-2">{sources.map(source => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="text-sm underline">{source.title}</a></li>)}</ul></details>}
 
       {digDeeperError && (
         <p className="text-xs text-red-600">{digDeeperError}</p>
@@ -245,13 +249,7 @@ export default function QuizRationale({
 
       <div className="bg-white pt-3 pb-4">
         <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-3 sm:border-0 sm:p-0">
-          <button
-            onClick={onNext}
-            className="w-full rounded-lg border font-semibold text-base transition-all"
-            style={{ color: !isCorrect && onRetestWeakness ? "#0B2545" : "white", backgroundColor: !isCorrect && onRetestWeakness ? 'white' : '#0D8F9C', minHeight: '52px' }}
-          >
-            {isLast ? 'See Results' : 'Next Question →'}
-          </button>
+
 
           {!isCorrect && onRetestWeakness && (
             <button
@@ -264,6 +262,13 @@ export default function QuizRationale({
               {isRetestingWeakness ? 'Building Retest…' : 'Try a related question →'}
             </button>
           )}
+          <button
+            onClick={onNext}
+            className="w-full rounded-lg border font-semibold text-base transition-all"
+            style={{ color: !isCorrect && onRetestWeakness ? "#0B2545" : "white", backgroundColor: !isCorrect && onRetestWeakness ? 'white' : '#0D8F9C', minHeight: '52px' }}
+          >
+            {isLast ? 'See my result →' : 'Continue →'}
+          </button>
 
           {!isCorrect && (
             <button

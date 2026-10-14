@@ -1,0 +1,87 @@
+{
+  "status": "unreviewed",
+  "rubric_version": "0.2",
+  "distinction_id": "mealtime-insulin-food-availability",
+  "generation_provenance": "unknown historical provenance",
+  "lesson": {
+    "sourceStem": "A patient with type 1 diabetes has a prescribed subcutaneous mealtime dose of insulin lispro (Humalog). The nurse has checked glucose, confirmed the dose is appropriate under the order, and verified that the patient can eat. When should the premeal dose be administered?",
+    "topic": "Timing mealtime insulin",
+    "trap_type": "Medication reasoning",
+    "sources": [
+      {
+        "title": "DailyMed: Humalog (insulin lispro) prescribing information",
+        "url": "https://www.dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=c8ecbd7a-0e22-4fc7-a503-faa58c1b6f3f"
+      },
+      {
+        "title": "DailyMed: Humulin R prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=b519bd83-038c-4ec5-a231-a51ec5cc291f"
+      }
+    ],
+    "initial": {
+      "question_stem": "A patient with type 1 diabetes has a prescribed subcutaneous mealtime dose of insulin lispro (Humalog). The nurse has checked glucose, confirmed the dose is appropriate under the order, and verified that the patient can eat. When should the premeal dose be administered?",
+      "options": [
+        {
+          "label": "A",
+          "text": "30 to 60 minutes before the meal"
+        },
+        {
+          "label": "B",
+          "text": "Only if premeal glucose exceeds 200 mg/dL, regardless of the order"
+        },
+        {
+          "label": "C",
+          "text": "At bedtime regardless of meals"
+        },
+        {
+          "label": "D",
+          "text": "When the meal is available and the patient is ready to eat, within 15 minutes before the meal"
+        }
+      ],
+      "correct_answer": "D",
+      "key_cue": "The prescribed product is insulin lispro, and the patient is ready to eat.",
+      "why_correct_short": "Humalog’s labeled subcutaneous timing is within 15 minutes before a meal or immediately after a meal. For this premeal dose, ensure food is available and the patient is ready to eat.",
+      "rationales": {
+        "A": "This is too early for the specified lispro premeal dose. Regular human insulin has different labeled timing, approximately 30 minutes before meals.",
+        "B": "A scheduled mealtime dose is not governed by an invented 200 mg/dL cutoff. Follow the individual prescription, glucose result, and meal-intake plan.",
+        "C": "Mealtime lispro must be coordinated with food and the prescription. A basal or separately prescribed correction dose is a different purpose."
+      },
+      "one_line_fix": "Check the exact insulin product, order, glucose, and readiness to eat; rapid-acting products do not all have identical timing."
+    },
+    "retry": {
+      "question_stem": "A patient is prescribed subcutaneous Humulin R U-100 (regular human insulin) before meals. Glucose and the dose have been checked, the patient can eat, and meal delivery is reliable. What is its labeled premeal timing?",
+      "options": [
+        {
+          "label": "A",
+          "text": "At bedtime regardless of the meal"
+        },
+        {
+          "label": "B",
+          "text": "Approximately 30 minutes before the meal"
+        },
+        {
+          "label": "C",
+          "text": "Two hours after finishing the meal"
+        },
+        {
+          "label": "D",
+          "text": "Use the same timing for every insulin product"
+        }
+      ],
+      "correct_answer": "B",
+      "key_cue": "This product is regular human insulin, not insulin lispro.",
+      "why_correct_short": "Humulin R U-100 is labeled for subcutaneous administration approximately 30 minutes before a meal. Coordinate with the order and reliable meal availability.",
+      "rationales": {
+        "A": "A prescribed premeal dose is tied to that meal, not an unrelated bedtime schedule.",
+        "C": "Two hours after the meal does not match this product’s labeled premeal timing.",
+        "D": "Insulin formulations have different timing; the exact product matters."
+      },
+      "one_line_fix": "Identify the formulation before applying a timing rule."
+    }
+  },
+  "missing": [
+    "independent RN review",
+    "verified reference sections/dates",
+    "at least three reviewed delayed variants",
+    "reviewer approval bound to frozen packet hash"
+  ]
+}

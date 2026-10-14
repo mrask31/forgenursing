@@ -1,3 +1,4 @@
+import { demoDistinction } from './learning/demo-distinction';
 import { ADDITIONAL_DEMO_LESSONS } from "./additional-demo-lessons";
 // Server-side demo content. Import only from API routes; never ship answer keys in client bundles.
 import type { AnswerFeedback, PublicQuestion } from './answer-trap';
@@ -260,6 +261,7 @@ export function publicDemoQuestion(item: DemoItem, id: string, index = 0): Publi
 export function demoFeedback(lesson: DemoLesson, selected: string, retry = false): AnswerFeedback {
   const item = retry ? lesson.retry : lesson.initial;
   return {
+    distinction_id: demoDistinction(lesson.topic),
     is_correct: selected === item.correct_answer,
     correct_answer: item.correct_answer,
     trap_type: lesson.trap_type,

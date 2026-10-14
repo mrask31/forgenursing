@@ -1,0 +1,83 @@
+{
+  "status": "unreviewed",
+  "rubric_version": "0.2",
+  "distinction_id": "threatened-airway-cues",
+  "generation_provenance": "unknown historical provenance",
+  "lesson": {
+    "sourceStem": "The nurse has four assigned patients. Which patient should the nurse assess first?",
+    "topic": "Recognizing a threatened airway",
+    "trap_type": "Priority-setting",
+    "sources": [
+      {
+        "title": "Merck Manual Professional: Stridor",
+        "url": "https://www.merckmanuals.com/professional/pulmonary-disorders/symptoms-of-pulmonary-disorders/stridor"
+      }
+    ],
+    "initial": {
+      "question_stem": "The nurse has four assigned patients. Which patient should the nurse assess first?",
+      "options": [
+        {
+          "label": "A",
+          "text": "A patient with blood pressure 150/92 mm Hg and no symptoms"
+        },
+        {
+          "label": "B",
+          "text": "A postoperative patient with new inspiratory stridor"
+        },
+        {
+          "label": "C",
+          "text": "A stable patient with a stage 2 pressure injury requesting a scheduled dressing change"
+        },
+        {
+          "label": "D",
+          "text": "A patient with mild nausea after an antiemetic and no other symptoms"
+        }
+      ],
+      "correct_answer": "B",
+      "key_cue": "The postoperative patient has new inspiratory stridor.",
+      "why_correct_short": "New inspiratory stridor suggests upper-airway narrowing and may indicate an impending airway emergency. It takes priority over the stable findings listed.",
+      "rationales": {
+        "A": "The elevated blood pressure needs follow-up, but the scenario describes no acute symptoms or threatened airway.",
+        "C": "The dressing change is needed, but routine wound care can wait while the nurse assesses a possible airway emergency.",
+        "D": "Mild nausea without other symptoms is less urgent than new stridor."
+      },
+      "one_line_fix": "Prioritize a new, potentially time-sensitive threat over stable findings; seek immediate help when airway compromise is suspected."
+    },
+    "retry": {
+      "question_stem": "Which patient needs immediate nursing assessment?",
+      "options": [
+        {
+          "label": "A",
+          "text": "A recently extubated patient with new high-pitched inspiratory noise and difficulty breathing"
+        },
+        {
+          "label": "B",
+          "text": "A stable patient waiting for a routine dressing change"
+        },
+        {
+          "label": "C",
+          "text": "A patient with unchanged chronic back pain awaiting scheduled medication"
+        },
+        {
+          "label": "D",
+          "text": "A patient asking about tomorrow’s discharge time"
+        }
+      ],
+      "correct_answer": "A",
+      "key_cue": "The breathing change is new after extubation.",
+      "why_correct_short": "New stridor with difficulty breathing after extubation can signal upper-airway compromise and requires immediate assessment and escalation.",
+      "rationales": {
+        "B": "Routine wound care does not outrank new breathing difficulty.",
+        "C": "Unchanged chronic pain needs care, but the new breathing problem is more urgent.",
+        "D": "Discharge planning can wait during assessment of a possible airway emergency."
+      },
+      "one_line_fix": "Assess the whole breathing pattern and its timing; do not wait for a definitive diagnosis before escalating a threatened airway."
+    }
+  },
+  "missing": [
+    "independent RN review",
+    "verified reference sections/dates",
+    "at least three reviewed delayed variants",
+    "reviewer approval bound to frozen packet hash"
+  ]
+}

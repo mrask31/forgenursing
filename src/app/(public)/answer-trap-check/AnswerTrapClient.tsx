@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { captureLoop } from '@/lib/analytics/learning-loop'
+import { opportunityId } from '@/lib/learning/distinctions'
 import { captureSample, measurementContext } from '@/lib/analytics/measurement'
 import TrapLanding from './components/TrapLanding'
 import TrapQuestion from './components/TrapQuestion'
@@ -30,11 +32,22 @@ export default function AnswerTrapClient() {
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }) }, [phase, currentIndex])
 
+  function loopProps(distinction = currentFeedback?.distinction_id) {
+    return { experience: 'free_sample', sample_session_id: sessionId, retry_opportunity_id: opportunityId('free_sample', questions[currentIndex]?.id || '', sessionId),
+      distinction_id: distinction || null, distinction_status: distinction ? 'provisional' : 'unmapped' }
+  }
+  useEffect(() => {
+    if (phase === 'feedback' && currentFeedback?.retry_available && !currentFeedback.is_correct && questions[currentIndex]) {
+      captureLoop('related_retry_offered', {...loopProps(), question_id: questions[currentIndex].id, source_question_id: questions[currentIndex].id}, `${sessionId}:${questions[currentIndex].id}`)
+    }
+    if (phase === 'retry-question' && retryQuestion) captureLoop('related_retry_loaded', {...loopProps(retryQuestion.distinction_id), question_id: retryQuestion.id, source_question_id: questions[currentIndex].id}, `${sessionId}:${questions[currentIndex].id}`)
+  }, [phase, currentFeedback, retryQuestion, currentIndex, sessionId, questions])
+
   async function handleRelatedRetry(submit = false) {
     if (loading || !questions[currentIndex] || (submit && !retryAnswer)) return
     setLoading(true)
     setError(null)
-    if (!submit) captureSample('related_retry_started', { question_id: questions[currentIndex].id, sample_session_id: sessionId })
+    if (!submit) captureLoop('related_retry_started', { ...loopProps(), question_id: questions[currentIndex].id, source_question_id: questions[currentIndex].id }, `${sessionId}:${questions[currentIndex].id}`)
     try {
       const res = await fetch('/api/answer-trap-check/retry', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -44,7 +57,7 @@ export default function AnswerTrapClient() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Could not load the related question.')
       if (submit) {
-        captureSample('question_answered', { question_id: questions[currentIndex].id, correct: data.feedback.is_correct, attempt: 2, sample_session_id: sessionId }, `retry:${sessionId}:${questions[currentIndex].id}`)
+        captureLoop('question_answered', { ...loopProps(data.feedback.distinction_id), question_id: retryQuestion?.id || `${questions[currentIndex].id}-retry`, source_question_id: questions[currentIndex].id, correct: data.feedback.is_correct, attempt: 2, retry_eligible: false }, `retry:${sessionId}:${questions[currentIndex].id}`)
         setRetryFeedback(data.feedback)
         setRetryOutcomes(previous => ({ ...previous, [questions[currentIndex].id]: {
           topic: data.feedback.trap_display_name, correct: data.feedback.is_correct,
@@ -63,6 +76,7 @@ export default function AnswerTrapClient() {
         })
       } catch {}
     } catch (err: any) {
+      captureLoop('related_retry_failed', { ...loopProps(), source_question_id: questions[currentIndex].id, stage: submit ? 'answer' : 'load', error_code: 'request_failed' })
       setError(err.message || 'Please try again.')
     } finally { setLoading(false) }
   }
@@ -162,7 +176,7 @@ export default function AnswerTrapClient() {
       }
 
       const feedback: AnswerFeedback = await res.json()
-      captureSample('question_answered', { question_id: question.id, correct: feedback.is_correct, attempt: 1, sample_session_id: sessionId }, `answer:${sessionId}:${question.id}`)
+      captureLoop('question_answered', { experience: 'free_sample', sample_session_id: sessionId, retry_opportunity_id: opportunityId('free_sample', question.id, sessionId), distinction_id: feedback.distinction_id || null, distinction_status: feedback.distinction_id ? 'provisional' : 'unmapped', question_id: question.id, source_question_id: null, correct: feedback.is_correct, attempt: 1, retry_eligible: !feedback.is_correct && !!feedback.retry_available }, `answer:${sessionId}:${question.id}`)
       setCurrentFeedback(feedback)
       setPhase('feedback')
 

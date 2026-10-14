@@ -1,0 +1,83 @@
+{
+  "status": "unreviewed",
+  "rubric_version": "0.2",
+  "distinction_id": "uap-routine-stable-care",
+  "generation_provenance": "unknown historical provenance",
+  "lesson": {
+    "sourceStem": "An RN is delegating tasks to a licensed practical nurse (LPN) and an unlicensed assistive personnel (UAP). Which task is appropriate to delegate to the UAP?",
+    "topic": "Delegating routine care",
+    "trap_type": "Delegation",
+    "sources": [
+      {
+        "title": "NCSBN: National Guidelines for Nursing Delegation",
+        "url": "https://www.ncsbn.org/public-files/NGND-PosPaper_06.pdf"
+      }
+    ],
+    "initial": {
+      "question_stem": "A trained UAP may collect routine vital signs under facility policy but is not authorized to administer medications. Which task may the RN delegate?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Obtain scheduled vital signs on a stable patient"
+        },
+        {
+          "label": "B",
+          "text": "Assess new shortness of breath"
+        },
+        {
+          "label": "C",
+          "text": "Administer a scheduled oral medication"
+        },
+        {
+          "label": "D",
+          "text": "Teach a patient how to inject insulin"
+        }
+      ],
+      "correct_answer": "A",
+      "key_cue": "The patient is stable and the task is authorized.",
+      "why_correct_short": "Routine measurement fits this UAP’s stated training. The RN follows up on findings.",
+      "rationales": {
+        "B": "New symptoms require nursing assessment and judgment.",
+        "C": "Medication administration is outside this UAP’s stated authorization.",
+        "D": "Initial teaching requires nursing judgment."
+      },
+      "one_line_fix": "Check patient stability, task requirements, demonstrated competence, and local policy."
+    },
+    "retry": {
+      "question_stem": "A trained UAP can record routine intake and output under facility policy. Which task may the RN delegate for a stable patient?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Decide whether low urine output indicates dehydration"
+        },
+        {
+          "label": "B",
+          "text": "Teach fluid-restriction instructions"
+        },
+        {
+          "label": "C",
+          "text": "Evaluate whether the fluid plan is working"
+        },
+        {
+          "label": "D",
+          "text": "Measure and record urine output"
+        }
+      ],
+      "correct_answer": "D",
+      "key_cue": "The task is routine measurement for a stable patient.",
+      "why_correct_short": "Recording the amount fits the stated role; interpreting it remains with the nurse.",
+      "rationales": {
+        "A": "Interpreting the cause requires nursing judgment.",
+        "B": "Teaching the plan requires nursing judgment.",
+        "C": "Evaluating treatment requires nursing judgment."
+      },
+      "one_line_fix": "Distinguish collecting a measurement from interpreting its meaning."
+    }
+  },
+  "missing": [
+    "independent RN review",
+    "verified reference sections/dates",
+    "at least three reviewed delayed variants",
+    "reviewer approval bound to frozen packet hash"
+  ]
+}

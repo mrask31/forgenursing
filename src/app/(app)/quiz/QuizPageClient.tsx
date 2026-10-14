@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { captureLoop } from '@/lib/analytics/learning-loop'
+import { loopProperties } from '@/lib/learning/distinctions'
 import { getBrowserClient } from '@/lib/supabase/client'
 import QuizSetup from './components/QuizSetup'
 import QuizProgress from './components/QuizProgress'
@@ -18,6 +20,10 @@ type StartOptions = {
 }
 
 interface QuestionData {
+  distinction_id?: string | null
+  source_question_id?: string | null
+  learning_attempt?: number
+  clinical_content_id?: string | null
   id: string
   session_id: string
   question_index: number
@@ -36,6 +42,8 @@ interface QuestionData {
 }
 
 interface AnswerResult {
+  sources?: {title:string;url:string}[]
+  learning?: Record<string, any>
   correct_answer: string
   rationale_correct: string
   rationale_incorrect: Record<string, string>
@@ -306,6 +314,13 @@ export default function QuizPageClient() {
     await generateQuestion(resumeSession.id, resumeSession.current_question_index)
   }, [resumeSession, generateQuestion])
 
+  useEffect(() => {
+    if (!sessionId || !currentQuestion) return
+    const props = loopProperties(currentQuestion, sessionId)
+    if (phase === 'rationale' && answerResult?.learning?.retry_eligible) captureLoop('related_retry_offered', { ...props, source_question_id: currentQuestion.id }, currentQuestion.id)
+    if (phase === 'question' && currentQuestion.learning_attempt === 2) captureLoop('related_retry_loaded', props, currentQuestion.id)
+  }, [phase, sessionId, currentQuestion, answerResult])
+
   const handleSubmitAnswer = useCallback(async () => {
     if (!currentQuestion || !selectedAnswer || !sessionId) return
     setLoading(true)
@@ -322,6 +337,7 @@ export default function QuizPageClient() {
 
       if (!res.ok) throw new Error('Failed to submit answer')
       const result: AnswerResult = await res.json()
+      captureLoop('question_answered', { ...(result.learning || loopProperties(currentQuestion, sessionId)), correct: result.is_correct }, currentQuestion.id)
       setAnswerResult(result)
       setPhase('rationale')
 
@@ -348,6 +364,7 @@ export default function QuizPageClient() {
         })
       } catch {}
     } catch (err: any) {
+      if (currentQuestion.learning_attempt === 2) captureLoop('related_retry_failed', {...loopProperties(currentQuestion, sessionId), stage: 'answer', error_code: 'request_failed'})
       setError(err.message || 'Failed to submit answer')
     } finally {
       setLoading(false)
@@ -355,7 +372,8 @@ export default function QuizPageClient() {
   }, [currentQuestion, selectedAnswer, sessionId, currentIndex, questionStartTime, sourceType, sessionTotalQuestions, currentQuizMode, prefetchQuestions])
 
   const handleRetestWeakness = useCallback(async () => {
-    if (!currentQuestion || !sessionId || retestingWeakness) return
+    if (!currentQuestion || !sessionId || retestingWeakness || !answerResult?.learning?.retry_eligible) return
+    captureLoop('related_retry_started', { ...loopProperties(currentQuestion, sessionId), source_question_id: currentQuestion.id }, currentQuestion.id)
 
     setRetestingWeakness(true)
     setError(null)
@@ -402,6 +420,7 @@ export default function QuizPageClient() {
       setPhase('question')
       router.replace(`/quiz?sessionId=${session.id}&returnSessionId=${encodeURIComponent(returnSessionId || sessionId)}`)
     } catch (err: any) {
+      captureLoop('related_retry_failed', { ...loopProperties(currentQuestion, sessionId), stage: 'load', error_code: 'request_failed' })
       setError(err.message || 'Failed to create targeted retest')
     } finally {
       setRetestingWeakness(false)
@@ -483,6 +502,8 @@ export default function QuizPageClient() {
         <div className="space-y-5">
           <QuizProgress current={currentIndex} total={sessionTotalQuestions} />
           <QuizRationale
+            reviewed={!!currentQuestion.clinical_content_id}
+            sources={answerResult.sources}
             isCorrect={answerResult.is_correct}
             userAnswer={answerResult.user_answer}
             correctAnswer={answerResult.correct_answer}
@@ -503,7 +524,7 @@ export default function QuizPageClient() {
             questionId={currentQuestion.id}
             questionIndex={currentIndex}
             onNext={handleNext}
-            onRetestWeakness={handleRetestWeakness}
+            onRetestWeakness={answerResult.learning?.retry_eligible ? handleRetestWeakness : undefined}
             isRetestingWeakness={retestingWeakness}
             isLast={currentIndex >= sessionTotalQuestions - 1}
           />

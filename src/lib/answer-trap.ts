@@ -35,6 +35,7 @@ export interface AnswerTrapQuestion {
 
 /** Question as returned to the client (no answer/feedback fields) */
 export interface PublicQuestion {
+  distinction_id?: string | null;
   id: string;
   question_stem: string;
   options: { label: string; text: string }[];
@@ -42,6 +43,7 @@ export interface PublicQuestion {
 }
 
 export interface AnswerFeedback {
+  distinction_id?: string | null;
   sources?: { title: string; url: string }[];
   retry_available?: boolean;
   is_correct: boolean;

@@ -1,10 +1,16 @@
 'use client'
 
+import { captureLoop } from '@/lib/analytics/learning-loop'
+import { loopProperties } from '@/lib/learning/distinctions'
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface QuizQuestion {
+  distinction_id?: string | null
+  source_question_id?: string | null
+  learning_attempt?: number
+  clinical_content_id?: string | null
   id: string
   question_index: number
   question_stem: string
@@ -218,8 +224,14 @@ export default function QuizResultsClient() {
     router.push('/readiness')
   }
 
+  useEffect(() => {
+    if (!sessionId || !session || session.quiz_mode === 'retest') return
+    for (const q of questions) if (q.user_answer && !q.is_correct && q.learning_attempt !== 2) captureLoop('related_retry_offered', { ...loopProperties(q, sessionId), source_question_id: q.id, source: 'results_screen' }, q.id)
+  }, [questions, sessionId, session])
+
   const handleFixWeakness = async (q: QuizQuestion) => {
-    if (!sessionId || fixingQuestionId) return
+    if (!sessionId || fixingQuestionId || q.learning_attempt === 2 || session?.quiz_mode === 'retest') return
+    captureLoop('related_retry_started', { ...loopProperties(q, sessionId), source_question_id: q.id }, q.id)
     setFixWeaknessError(null)
     setFixingQuestionId(q.id)
 
@@ -260,19 +272,22 @@ export default function QuizResultsClient() {
 
       if (!response.ok) {
         console.error('[QuizResults] Fix weakness handoff failed:', await response.text())
-        setFixWeaknessError('Could not open a related question. Please try again.')
+        captureLoop('related_retry_failed', {...loopProperties(q, sessionId), stage: 'load', error_code: 'request_failed'})
+      setFixWeaknessError('Could not open a related question. Please try again.')
         return
       }
 
       const data = await response.json()
       if (!data.session?.id) {
-        setFixWeaknessError('Could not open a related question. Please try again.')
+        captureLoop('related_retry_failed', {...loopProperties(q, sessionId), stage: 'load', error_code: 'request_failed'})
+      setFixWeaknessError('Could not open a related question. Please try again.')
         return
       }
 
       router.push(`/quiz?sessionId=${data.session.id}&returnSessionId=${encodeURIComponent(safeReturnSessionId || sessionId || '')}`)
     } catch (error) {
       console.error('[QuizResults] Fix weakness error:', error)
+      captureLoop('related_retry_failed', {...loopProperties(q, sessionId), stage: 'load', error_code: 'request_failed'})
       setFixWeaknessError('Could not open a related question. Please try again.')
     } finally {
       setFixingQuestionId(null)
@@ -359,7 +374,7 @@ export default function QuizResultsClient() {
                       <button onClick={() => setReviewingId(reviewingId === q.id ? null : q.id)} className="px-3 py-1.5 rounded text-sm font-medium border" style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}>
                         {reviewingId === q.id ? 'Hide' : 'Review'}
                       </button>
-                      {!q.is_correct && <button type="button" onClick={() => handleFixWeakness(q)} disabled={fixingQuestionId === q.id} className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
+                      {!q.is_correct && q.learning_attempt !== 2 && session?.quiz_mode !== 'retest' && <button type="button" onClick={() => handleFixWeakness(q)} disabled={fixingQuestionId === q.id} className="px-3 py-1.5 rounded text-sm font-medium text-white flex items-center disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor: '#0B2545', minHeight: '44px' }}>
                         {fixingQuestionId === q.id ? 'Opening…' : 'Try a related question →'}
                       </button>}
                     </div>

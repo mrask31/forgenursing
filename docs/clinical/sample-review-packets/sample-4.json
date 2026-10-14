@@ -1,0 +1,83 @@
+{
+  "status": "unreviewed",
+  "rubric_version": "0.2",
+  "distinction_id": "digoxin-toxicity-cues",
+  "generation_provenance": "unknown historical provenance",
+  "lesson": {
+    "sourceStem": "An adult taking digoxin has a potassium level of 3.0 mEq/L. Which new finding most strongly suggests digoxin toxicity?",
+    "topic": "Digoxin toxicity",
+    "trap_type": "Medication reasoning",
+    "sources": [
+      {
+        "title": "DailyMed: Digoxin prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=ce62a741-a981-4880-8ce3-93269606a730"
+      }
+    ],
+    "initial": {
+      "question_stem": "An adult taking digoxin has a potassium level of 3.0 mEq/L. Which new finding most strongly suggests digoxin toxicity?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Increased appetite and weight gain"
+        },
+        {
+          "label": "B",
+          "text": "Seeing yellow-green halos around lights"
+        },
+        {
+          "label": "C",
+          "text": "Increased urine output"
+        },
+        {
+          "label": "D",
+          "text": "An unchanged pulse of 76/min"
+        }
+      ],
+      "correct_answer": "B",
+      "key_cue": "Potassium is low, and the visual disturbance is new.",
+      "why_correct_short": "Yellow-green color changes and halos are recognized digoxin adverse effects that raise concern for toxicity. Low potassium increases susceptibility; toxicity can occur at lower serum digoxin concentrations.",
+      "rationales": {
+        "A": "Loss of appetite, nausea, and vomiting are associated with toxicity; increased appetite is not the characteristic finding.",
+        "C": "Increased urine output alone is not a characteristic toxicity sign and may reflect another treatment or improved circulation.",
+        "D": "An unchanged pulse of 76/min does not suggest a new rhythm disturbance. New bradycardia or heart block would also warrant concern; it should not be dismissed as harmless."
+      },
+      "one_line_fix": "Connect new visual, gastrointestinal, or rhythm changes with medication and electrolyte risk; no single sign proves toxicity."
+    },
+    "retry": {
+      "question_stem": "An adult taking digoxin reports new nausea and yellow-green vision. Which additional finding increases susceptibility to digoxin toxicity?",
+      "options": [
+        {
+          "label": "A",
+          "text": "A potassium level of 4.2 mEq/L"
+        },
+        {
+          "label": "B",
+          "text": "An unchanged weight"
+        },
+        {
+          "label": "C",
+          "text": "A potassium level of 2.9 mEq/L"
+        },
+        {
+          "label": "D",
+          "text": "An unchanged pulse of 78/min"
+        }
+      ],
+      "correct_answer": "C",
+      "key_cue": "The patient has new symptoms and low potassium.",
+      "why_correct_short": "Hypokalemia increases susceptibility to digoxin toxicity and strengthens concern about the new symptoms.",
+      "rationales": {
+        "A": "A potassium level of 4.2 mEq/L is not hypokalemia. It does not exclude toxicity, but it is not the added risk in these options.",
+        "B": "An unchanged weight does not establish a new risk factor for toxicity.",
+        "D": "An unchanged pulse of 78/min is not evidence of a new conduction problem or electrolyte risk."
+      },
+      "one_line_fix": "Recognize a risk factor without treating a normal finding as proof that toxicity is absent."
+    }
+  },
+  "missing": [
+    "independent RN review",
+    "verified reference sections/dates",
+    "at least three reviewed delayed variants",
+    "reviewer approval bound to frozen packet hash"
+  ]
+}

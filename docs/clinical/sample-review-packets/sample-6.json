@@ -1,0 +1,87 @@
+{
+  "status": "unreviewed",
+  "rubric_version": "0.2",
+  "distinction_id": "staff-scope-stability",
+  "generation_provenance": "unknown historical provenance",
+  "lesson": {
+    "sourceStem": "An RN assigns care for stable medical-surgical patients. The LPN is authorized and competent to give oral medications under local scope and facility policy; the UAP has no medication-administration authorization. Which assignment is appropriate?",
+    "topic": "Assigning RN, LPN, and UAP care",
+    "trap_type": "Delegation",
+    "sources": [
+      {
+        "title": "NCSBN: National Guidelines for Nursing Delegation",
+        "url": "https://www.ncsbn.org/public-files/NCSBN_Delegation_Guidelines.pdf"
+      },
+      {
+        "title": "Texas Board of Nursing: Scope and assessment FAQ",
+        "url": "https://www.bon.texas.gov/faq_nursing_practice.asp.html"
+      }
+    ],
+    "initial": {
+      "question_stem": "An RN assigns care for stable medical-surgical patients. The LPN is authorized and competent to give oral medications under local scope and facility policy; the UAP has no medication-administration authorization. Which assignment is appropriate?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Have the UAP provide initial teaching about a low-sodium diet"
+        },
+        {
+          "label": "B",
+          "text": "Have the UAP independently assess pain and decide whether treatment is effective"
+        },
+        {
+          "label": "C",
+          "text": "Have the LPN administer scheduled oral medications to a stable patient"
+        },
+        {
+          "label": "D",
+          "text": "Have the LPN independently complete the comprehensive admission assessment and establish the nursing care plan"
+        }
+      ],
+      "correct_answer": "C",
+      "key_cue": "The patient is stable, and the LPN’s medication task is authorized.",
+      "why_correct_short": "Scheduled oral medication administration fits the LPN’s stated scope and competency. The RN remains responsible for appropriate assignment, supervision, and follow-up.",
+      "rationales": {
+        "A": "Initial teaching requires nursing judgment; it is not assigned to this UAP. Reinforcing established instructions is different from developing teaching.",
+        "B": "The UAP may collect and report authorized observations, but independent nursing assessment and evaluation require a licensed nurse.",
+        "D": "The comprehensive assessment and independent nursing care plan require RN judgment in this scenario. An LPN may contribute focused assessments and data within local scope."
+      },
+      "one_line_fix": "Match the patient and task to local scope, demonstrated competence, and supervision; collecting data is different from independent nursing judgment."
+    },
+    "retry": {
+      "question_stem": "Facility policy authorizes a trained UAP to record routine observations. A stable patient reports pain. Which task can the RN delegate to this UAP?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Determine why the patient has pain"
+        },
+        {
+          "label": "B",
+          "text": "Decide whether to increase the analgesic dose"
+        },
+        {
+          "label": "C",
+          "text": "Evaluate the effectiveness of the nursing pain plan"
+        },
+        {
+          "label": "D",
+          "text": "Record the patient’s reported pain rating and promptly report it to the RN"
+        }
+      ],
+      "correct_answer": "D",
+      "key_cue": "The task is reporting a patient’s statement, not interpreting it.",
+      "why_correct_short": "Recording and reporting an authorized observation can be delegated. The RN uses that information to assess the patient and determine follow-up.",
+      "rationales": {
+        "A": "Determining the cause requires nursing assessment and judgment.",
+        "B": "Changing medication dosing is not within this UAP’s role and must follow the prescription and licensed-clinician process.",
+        "C": "Evaluating the nursing plan requires nursing judgment, beyond recording an observation."
+      },
+      "one_line_fix": "Do not confuse collecting a reported pain score with assessing its meaning."
+    }
+  },
+  "missing": [
+    "independent RN review",
+    "verified reference sections/dates",
+    "at least three reviewed delayed variants",
+    "reviewer approval bound to frozen packet hash"
+  ]
+}

@@ -1,3 +1,4 @@
+import { demoDistinction } from '@/lib/learning/demo-distinction';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { demoLesson, demoFeedback, publicDemoQuestion } from '@/lib/demo-lessons';
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
     if (!lesson) return NextResponse.json({ error: 'No related retry is available.' }, { status: 404 });
     return NextResponse.json(selected_answer
       ? { feedback: demoFeedback(lesson, selected_answer, true) }
-      : { question: publicDemoQuestion(lesson.retry, question_id + '-retry') });
+      : { question: { ...publicDemoQuestion(lesson.retry, question_id + '-retry'), distinction_id: demoDistinction(lesson.topic) } });
   } catch {
     return NextResponse.json({ error: 'Could not load the retry. Please try again.' }, { status: 500 });
   }
