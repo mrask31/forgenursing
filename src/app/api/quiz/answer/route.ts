@@ -1,122 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { getEntitlementForUser } from '@/lib/entitlement';
-
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { createClient } from '@/lib/supabase/server'
+import { getEntitlementForUser } from '@/lib/entitlement'
+import { loopProperties } from '@/lib/learning/distinctions'
+import { approvedContent } from '@/lib/learning/server'
+const input = z.object({ questionId: z.string().uuid(), userAnswer: z.enum(['A','B','C','D']) })
 export async function POST(req: NextRequest) {
-  try {
-    const supabase = createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const entitlement = await getEntitlementForUser(user.id);
-    if (!entitlement.hasAccess) {
-      return NextResponse.json({ error: 'Payment required' }, { status: 402 });
-    }
-
-    const body = await req.json();
-    const { questionId, userAnswer } = body;
-
-    if (!questionId || !userAnswer) {
-      return NextResponse.json({ error: 'Missing required fields: questionId, userAnswer' }, { status: 400 });
-    }
-
-    if (!['A', 'B', 'C', 'D'].includes(userAnswer)) {
-      return NextResponse.json({ error: 'Invalid answer. Must be A, B, C, or D.' }, { status: 400 });
-    }
-
-    const { data: question, error: fetchError } = await supabase
-      .from('quiz_questions')
-      .select('*, quiz_sessions!inner(user_id, id, status, score, current_question_index, total_questions)')
-      .eq('id', questionId)
-      .single();
-
-    if (fetchError || !question) {
-      return NextResponse.json({ error: 'Question not found' }, { status: 404 });
-    }
-
-    const baseResult = {
-      correct_answer: question.correct_answer,
-      rationale_correct: question.rationale_correct,
-      rationale_incorrect: question.rationale_incorrect,
-      mistake_type: question.mistake_type,
-      reasoning_trap: question.reasoning_trap,
-      fix_instruction: question.fix_instruction,
-      retest_focus: question.retest_focus,
-      key_cue: question.key_cue,
-      why_correct_short: question.why_correct_short,
-      why_wrong_short: question.why_wrong_short,
-      one_line_fix: question.one_line_fix,
-    };
-
-    console.log('[Quiz Answer] ANSWER_ROUTE_MICRO_FEEDBACK', JSON.stringify({
-      question_id: questionId,
-      key_cue: question.key_cue,
-      why_correct_short: question.why_correct_short,
-      why_wrong_short: question.why_wrong_short,
-      one_line_fix: question.one_line_fix,
-    }));
-
-    if (question.answered_at) {
-      return NextResponse.json({
-        ...baseResult,
-        is_correct: question.is_correct,
-        user_answer: question.user_answer,
-      });
-    }
-
-    const isCorrect = userAnswer === question.correct_answer;
-    const now = new Date().toISOString();
-
-    const { error: updateError } = await supabase
-      .from('quiz_questions')
-      .update({
-        user_answer: userAnswer,
-        is_correct: isCorrect,
-        answered_at: now,
-      })
-      .eq('id', questionId);
-
-    if (updateError) {
-      console.error('[Quiz Answer] Update question error:', updateError);
-      return NextResponse.json({ error: 'Failed to save answer' }, { status: 500 });
-    }
-
-    const session = question.quiz_sessions;
-    const newScore = (session.score || 0) + (isCorrect ? 1 : 0);
-    const newIndex = (session.current_question_index || 0) + 1;
-    const isComplete = newIndex >= session.total_questions;
-
-    const sessionUpdate: any = {
-      score: newScore,
-      current_question_index: newIndex,
-    };
-
-    if (isComplete) {
-      sessionUpdate.status = 'completed';
-      sessionUpdate.completed_at = now;
-    }
-
-    const { error: sessionUpdateError } = await supabase
-      .from('quiz_sessions')
-      .update(sessionUpdate)
-      .eq('id', session.id);
-
-    if (sessionUpdateError) {
-      console.error('[Quiz Answer] Update session error:', sessionUpdateError);
-    }
-
-    return NextResponse.json({
-      ...baseResult,
-      is_correct: isCorrect,
-      user_answer: userAnswer,
-      session_complete: isComplete,
-      score: newScore,
-      total_answered: newIndex,
-    });
-  } catch (error) {
-    console.error('[Quiz Answer] POST error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
+ try {
+  const db = createClient(), {data:{user},error} = await db.auth.getUser()
+  if(error || !user) return NextResponse.json({error:'Unauthorized'},{status:401})
+  if(!(await getEntitlementForUser(user.id)).hasAccess) return NextResponse.json({error:'Payment required'},{status:402})
+  const body=input.safeParse(await req.json().catch(()=>null))
+  if(!body.success) return NextResponse.json({error:'Invalid question or answer'},{status:400})
+  const {data:q}=await db.from('quiz_questions').select('id,clinical_content_id,quiz_sessions!inner(user_id)').eq('id',body.data.questionId).eq('quiz_sessions.user_id',user.id).maybeSingle()
+  if(!q) return NextResponse.json({error:'Question not found'},{status:404})
+  const reviewed = q.clinical_content_id ? (await approvedContent(q.clinical_content_id))[0] : null
+  if(q.clinical_content_id && !reviewed) return NextResponse.json({error:'This question was withdrawn for review. Please start a new session.'},{status:409})
+  const {data:answer,error:saveError}=await db.rpc('record_quiz_answer',{p_question_id:body.data.questionId,p_answer:body.data.userAnswer})
+  if(saveError || !answer) return NextResponse.json({error:'Could not save your answer. Please try again.'},{status:500})
+  const {source_chunk_text, ...safeAnswer}=answer
+  return NextResponse.json({...safeAnswer, sources: reviewed?.packet.references || [], learning: {...loopProperties(answer,answer.session_id), retry_eligible: answer.learning_attempt === 1 && !answer.is_correct && answer.quiz_mode !== 'retest'}})
+ } catch { return NextResponse.json({error:'Could not save your answer. Please try again.'},{status:500}) }
 }

@@ -1,3 +1,4 @@
+import { approvedContent, clinicalQuestionRow, learningAdmin } from '@/lib/learning/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateText } from 'ai';
@@ -261,7 +262,7 @@ export async function POST(req: NextRequest) {
 
     const { data: sourceQuestion, error: sourceError } = await supabase
       .from('quiz_questions')
-      .select('id, session_id, question_stem, correct_answer, user_answer, nclex_category, mistake_type, reasoning_trap, fix_instruction, retest_focus, quiz_sessions!inner(id, user_id, source_type, nclex_category)')
+      .select('id, session_id, question_stem, correct_answer, user_answer, is_correct, answered_at, learning_attempt, distinction_id, clinical_content_id, nclex_category, mistake_type, reasoning_trap, fix_instruction, retest_focus, quiz_sessions!inner(id, user_id, source_type, nclex_category, quiz_mode)')
       .eq('id', questionId)
       .eq('session_id', quizSessionId)
       .single();
@@ -277,6 +278,21 @@ export async function POST(req: NextRequest) {
     if (!sourceSession || sourceSession.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    if (!sourceQuestion.answered_at || sourceQuestion.is_correct !== false || sourceQuestion.learning_attempt !== 1 || sourceSession.quiz_mode === 'retest') {
+      return NextResponse.json({ error: 'A retry is available only after an original-question miss.' }, { status: 409 });
+    }
+    const publicSelect = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, distinction_id, source_question_id, learning_attempt, clinical_content_id';
+    const existingRetry = async () => {
+      const { data: question } = await supabase.from('quiz_questions').select(publicSelect).eq('source_question_id', questionId).eq('learning_attempt', 2).maybeSingle();
+      if (!question) return null;
+      const { data: session } = await supabase.from('quiz_sessions').select('*').eq('id', question.session_id).eq('user_id', user.id).single();
+      return session ? { session, question } : null;
+    };
+    const approved = sourceQuestion.clinical_content_id ? (await approvedContent(sourceQuestion.clinical_content_id))[0] : null;
+    if (sourceQuestion.clinical_content_id && !approved) return NextResponse.json({ error: 'This content was withdrawn for review.' }, { status: 409 });
+    const previousRetry = await existingRetry();
+    if (previousRetry) return NextResponse.json(previousRetry);
 
     const category = sourceQuestion.nclex_category || sourceSession.nclex_category || 'Priority Setting';
     const parsedMistakeType = MistakeTypeSchema.safeParse(sourceQuestion.mistake_type);
@@ -320,11 +336,11 @@ export async function POST(req: NextRequest) {
       previousStems,
     });
 
-    let questionData;
+    let questionData: any = approved ? clinicalQuestionRow(approved.packet.retry) : undefined;
     let retries = 0;
     const maxRetries = 2;
 
-    while (retries <= maxRetries) {
+    while (!questionData && retries <= maxRetries) {
       try {
         const retryHint = retries > 0
           ? '\n\nIMPORTANT: Your previous response was not valid JSON. Return ONLY one JSON object. Use exactly four options labeled A, B, C, and D. Include correct_answer, rationale_correct, rationale_incorrect, nclex_category, difficulty, mistake_type, reasoning_trap, fix_instruction, and retest_focus.'
@@ -372,10 +388,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to create retest session' }, { status: 500 });
     }
 
-    const { data: retestQuestion, error: questionError } = await supabase
+    const { data: retestQuestion, error: questionError } = await (approved ? learningAdmin() : supabase)
       .from('quiz_questions')
       .insert({
         session_id: retestSession.id,
+        source_question_id: questionId, learning_attempt: 2, distinction_id: sourceQuestion.distinction_id, clinical_content_id: approved?.id || null,
+        generation_model: approved ? 'reviewed-content' : 'claude-sonnet-4-6', generation_prompt_version: approved ? 'clinical-packet-v1' : 'retry-2026-10-14-v2',
         question_index: 0,
         question_stem: questionData!.question_stem,
         options: questionData!.options,
@@ -385,11 +403,15 @@ export async function POST(req: NextRequest) {
         nclex_category: category,
         difficulty: questionData!.difficulty,
         ...mistakeMetadata,
+        ...(approved ? {key_cue: approved.packet.retry.key_cue, one_line_fix: approved.packet.retry.one_line_fix} : {}),
       })
-      .select('id, session_id, question_index, question_stem, options, nclex_category, difficulty')
+      .select(publicSelect)
       .single();
 
     if (questionError || !retestQuestion) {
+      await supabase.from('quiz_sessions').delete().eq('id', retestSession.id).eq('user_id', user.id);
+      const winner = await existingRetry();
+      if (winner) return NextResponse.json(winner);
       console.error('[Retest Weakness] Question insert error:', questionError);
       return NextResponse.json({ error: 'Failed to save retest question' }, { status: 500 });
     }

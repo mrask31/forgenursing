@@ -1,0 +1,87 @@
+{
+  "status": "unreviewed",
+  "rubric_version": "0.2",
+  "distinction_id": "ppe-contamination-removal",
+  "generation_provenance": "unknown historical provenance",
+  "lesson": {
+    "sourceStem": "A nurse wore gloves, a gown, a face shield, and a mask while providing care. Using CDC’s sequence for removing these PPE items separately, which item is removed first?",
+    "topic": "Safe PPE removal",
+    "trap_type": "Safety",
+    "sources": [
+      {
+        "title": "CDC: Safe donning and removal of PPE",
+        "url": "https://www.cdc.gov/infection-control/hcp/isolation-precautions/appendix-a-figure.html"
+      },
+      {
+        "title": "CDC: PPE removal sequence examples",
+        "url": "https://www.cdc.gov/infection-control/media/pdfs/guidelines-ppe-sequence-p.pdf"
+      }
+    ],
+    "initial": {
+      "question_stem": "A nurse wore gloves, a gown, a face shield, and a mask while providing care. Using CDC’s sequence for removing these PPE items separately, which item is removed first?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Gloves"
+        },
+        {
+          "label": "B",
+          "text": "Gown"
+        },
+        {
+          "label": "C",
+          "text": "Face shield"
+        },
+        {
+          "label": "D",
+          "text": "Mask"
+        }
+      ],
+      "correct_answer": "A",
+      "key_cue": "The question specifies removal of PPE items separately.",
+      "why_correct_short": "In CDC’s separate-item sequence, gloves are removed first, followed by eye protection, gown, and mask or respirator. Use the prescribed technique to avoid touching contaminated surfaces.",
+      "rationales": {
+        "B": "Gown removal comes after gloves and eye protection in this specified sequence. A different CDC method removes gown and gloves together.",
+        "C": "The face shield is removed after gloves in the separate-item sequence, using its clean headband rather than the contaminated front.",
+        "D": "The mask is removed later by its ties or elastics. Removing it first does not follow this specified sequence."
+      },
+      "one_line_fix": "Follow the specified PPE technique and local policy; perform hand hygiene after removal and between steps if hands become contaminated."
+    },
+    "retry": {
+      "question_stem": "A nurse is removing a used face shield after taking off gloves. Which technique best avoids contact with its contaminated surface?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Grasp the front of the shield with bare hands"
+        },
+        {
+          "label": "B",
+          "text": "Lift it away using the headband without touching the front"
+        },
+        {
+          "label": "C",
+          "text": "Wipe the front with bare fingers before removing it"
+        },
+        {
+          "label": "D",
+          "text": "Rest the used shield against the uniform"
+        }
+      ],
+      "correct_answer": "B",
+      "key_cue": "The outside of the face shield is contaminated.",
+      "why_correct_short": "Handling the headband avoids touching the contaminated front. Place reusable equipment in the designated receptacle for reprocessing.",
+      "rationales": {
+        "A": "Touching the front can contaminate bare hands.",
+        "C": "Wiping with bare fingers brings the hands into contact with the contaminated surface.",
+        "D": "Contact with the uniform can transfer contamination to clothing."
+      },
+      "one_line_fix": "Keep contaminated PPE surfaces away from bare skin and clothing, and perform hand hygiene as indicated."
+    }
+  },
+  "missing": [
+    "independent RN review",
+    "verified reference sections/dates",
+    "at least three reviewed delayed variants",
+    "reviewer approval bound to frozen packet hash"
+  ]
+}

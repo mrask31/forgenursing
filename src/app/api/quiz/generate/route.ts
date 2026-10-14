@@ -1,3 +1,5 @@
+import { DISTINCTION_PROMPT, distinctionId } from '@/lib/learning/distinctions';
+import { approvedContent, clinicalQuestionRow, learningAdmin } from '@/lib/learning/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateText } from 'ai';
@@ -13,8 +15,8 @@ const openaiEmbeddings = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const QUESTION_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer, mistake_type, reasoning_trap, fix_instruction, retest_focus, key_cue, why_correct_short, why_wrong_short, one_line_fix';
-const QUESTION_PUBLIC_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty';
+const QUESTION_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer, mistake_type, reasoning_trap, fix_instruction, retest_focus, key_cue, why_correct_short, why_wrong_short, one_line_fix, distinction_id, source_question_id, learning_attempt, clinical_content_id';
+const QUESTION_PUBLIC_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, distinction_id, source_question_id, learning_attempt, clinical_content_id';
 
 const MistakeTypeSchema = z.enum(MISTAKE_TYPES);
 
@@ -240,6 +242,7 @@ function normalizeMicroFeedback(questionData: any, mistakeType: string, lockedCa
 }
 
 const QuizQuestionSchema = z.object({
+  distinction_id: z.string().nullable().optional(),
   question_stem: z.string().min(10),
   options: z.array(z.object({
     label: z.enum(['A', 'B', 'C', 'D']),
@@ -382,6 +385,8 @@ export async function POST(req: NextRequest) {
       .eq('question_index', numericQuestionIndex)
       .maybeSingle();
 
+    if (existingQuestion?.clinical_content_id && !(await approvedContent(existingQuestion.clinical_content_id)).length) return NextResponse.json({ error: 'This question was withdrawn for review. Please start a new session.' }, { status: 409 });
+
     if (existingQuestion && !existingQuestion.answered_at && !existingQuestion.user_answer) {
       return NextResponse.json({
         question: {
@@ -392,6 +397,7 @@ export async function POST(req: NextRequest) {
           options: existingQuestion.options,
           nclex_category: existingQuestion.nclex_category,
           difficulty: existingQuestion.difficulty,
+          distinction_id: existingQuestion.distinction_id, source_question_id: existingQuestion.source_question_id, learning_attempt: existingQuestion.learning_attempt, clinical_content_id: existingQuestion.clinical_content_id,
 
         },
         resumed: true,
@@ -400,6 +406,23 @@ export async function POST(req: NextRequest) {
 
     if (existingQuestion && existingQuestion.answered_at) {
       return NextResponse.json({ error: 'Question already answered' }, { status: 409 });
+    }
+
+    // Frozen, independently approved content is preferred when it matches the requested category.
+    if (session.source_type === 'generic' && !isTargetedDrill && session.quiz_mode !== 'retest') {
+      const { data: learner } = await supabase.from('profiles').select('program_level').eq('id', user.id).maybeSingle();
+      const bank = !learner?.program_level || ['ADN', 'BSN'].includes(learner.program_level) ? await approvedContent() : [];
+      const { data: used } = await supabase.from('quiz_questions').select('clinical_content_id, quiz_sessions!inner(user_id)').eq('quiz_sessions.user_id', user.id).not('clinical_content_id', 'is', null).limit(1000);
+      const usedIds = new Set((used || []).map((q: any) => q.clinical_content_id));
+      const item = bank.find(c => !usedIds.has(c.id) && (!lockedCategory || c.packet.original.nclex_category === lockedCategory));
+      if (item) {
+        const { data: saved, error } = await learningAdmin().from('quiz_questions').insert({ session_id: sessionId, question_index: numericQuestionIndex,
+          ...clinicalQuestionRow(item.packet.original), clinical_content_id: item.id, distinction_id: item.packet.distinction_id }).select(QUESTION_PUBLIC_SELECT).single();
+        if (!error) return NextResponse.json({ question: saved });
+        const existing = await fetchExistingPublicQuestion(supabase, sessionId, numericQuestionIndex);
+        if (existing) return NextResponse.json({ question: existing });
+        return NextResponse.json({ error: 'Could not save the reviewed question.' }, { status: 500 });
+      }
     }
 
     let programLevel: 'LPN' | 'ADN' | 'BSN' | 'MSN' = 'ADN';
@@ -493,7 +516,7 @@ export async function POST(req: NextRequest) {
         const { text } = await generateText({
           model: anthropic('claude-sonnet-4-6') as any,
           maxTokens: 1800,
-          prompt: prompt + retryHint,
+          prompt: prompt + DISTINCTION_PROMPT + retryHint,
         });
 
         const rawQuestion = extractJsonObject(text);
@@ -537,6 +560,8 @@ export async function POST(req: NextRequest) {
         rationale_incorrect: questionData!.rationale_incorrect,
         nclex_category: finalCategory,
         difficulty: questionData!.difficulty,
+        distinction_id: distinctionId(questionData!.distinction_id),
+        generation_model: 'claude-sonnet-4-6', generation_prompt_version: 'practice-2026-10-14-v2',
         source_doc_id: sourceDocId,
         source_chunk_text: sourceChunkText,
         ...mistakeMetadata,

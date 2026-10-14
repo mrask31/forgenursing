@@ -21,6 +21,8 @@ export default function EntryChoiceClient() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [claimNotice, setClaimNotice] = useState('')
+  const [review, setReview] = useState<{available:boolean;due:{id:string}[];next_due_at:string|null}|null>(null)
+  const [reviewError, setReviewError] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -50,7 +52,7 @@ export default function EntryChoiceClient() {
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not load your plan.') }
     finally { setLoading(false) }
   }
-  useEffect(() => { void load() }, [])
+  useEffect(() => { void load(); fetch('/api/review', {cache:'no-store'}).then(async r => {if(!r.ok) throw new Error();setReview(await r.json())}).catch(()=>setReviewError(true)) }, [])
 
   async function savePlan() {
     setBusy(true); setError('')
@@ -99,6 +101,7 @@ export default function EntryChoiceClient() {
       <button disabled={busy} onClick={savePlan} className="rounded-xl bg-[#0D8F9C] px-6 py-3 font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : 'Save and continue'}</button>
       <button disabled={busy} onClick={() => setEditing(false)} className="ml-4 py-3 text-sm underline">Skip for now</button>
     </section> : <>
+      <section className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-5"><h2 className="font-bold">{review?.due.length ? `${review.due.length} review${review.due.length===1?'':'s'} ready to revisit` : 'Revisit earlier distinctions'}</h2><p className="mt-2 text-sm text-slate-600">{reviewError ? 'Your review queue could not load. Open it to retry.' : review?.due.length ? 'Try a new reviewed question about an earlier miss. It is scored separately.' : review?.available ? review.next_due_at ? `Next review: ${new Date(review.next_due_at).toLocaleDateString()}.` : 'Nothing due today. Missed questions from reviewed sets appear here when due.' : 'Scheduled review will begin when independently reviewed question sets are available.'}</p><Link href="/review" className="mt-3 inline-block font-semibold text-[#087986] underline">{review?.due.length ? 'Start a review →' : 'Open review queue →'}</Link></section>
       {resume && <section className="mt-8 rounded-2xl bg-[#0B2545] p-6 text-white"><p className="text-xs uppercase tracking-widest text-teal-200">Pick up where you left off</p><h2 className="mt-3 text-xl font-bold text-white">{resume.quiz_mode === 'retest' ? 'Your related retry is saved.' : 'Your practice is saved.'}</h2><p className="mt-2 text-slate-200">{resume.current_question_index} of {resume.total_questions} questions completed · Started {new Date(resume.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.</p><Link href={`/quiz?sessionId=${resume.id}`} className="mt-5 inline-flex rounded-xl bg-white px-5 py-3 font-bold text-[#0B2545]">{resume.quiz_mode === 'retest' ? 'Resume related question →' : 'Resume session →'}</Link><Link href="/quiz" className="mt-4 block text-sm text-teal-100 underline">Choose a new session instead</Link></section>}
       {!resume && <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
         <p className="text-xs font-bold uppercase tracking-widest text-[#0D8F9C]">Today’s practice</p>
