@@ -76,7 +76,6 @@ export async function POST(req: Request) {
 
     const configuredPrices = [
       process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY,
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMESTER,
       process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL,
     ]
     if (!isConfiguredCheckoutPrice(priceId, configuredPrices)) {

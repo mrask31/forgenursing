@@ -19,3 +19,11 @@ Validation: 131 automated tests in 18 files pass, TypeScript passes, incremental
 - Actual tutor model responses and the full clinical rubric require evaluation, including uploaded-source/image modes. No local provider key is available; the runner's dry run validates four probe definitions only.
 - Independent RN review remains required for exact content packets and tutor outputs. There are no approved packets; scheduled review remains gated. No approval or patient-safety validation is implied by the software checks.
 - Recruitment/launch readiness remains unapproved until these acceptance and clinical gates are resolved.
+
+## Authenticated follow-up findings
+
+Secure sign-in succeeded on the preview. Home claimed the sample result (2/3), showed the saved-session entry point, and both Home and /review displayed the unapproved-content gate. Account settings loaded successfully with the existing beta access status.
+
+The signed-in pricing page exposed a legacy branch with a semester plan and founder offers. New purchases now use the same two published offers for every account. The retired founder purchase endpoint returns 410; the standard endpoint rejects semester prices even if an old environment value remains. Existing subscription prices and webhook recognition are unchanged. Legacy payment-required/cancel pages redirect to the current checkout flow; they no longer claim that a card starts the free trial. Checkout failures now clear the spinner and show a retryable error instead of returning success or redirecting between legacy pages.
+
+Regression coverage increased to 136 tests in 19 files, including new offer-route authorization checks. Five legacy lint findings were removed with obsolete billing/pricing code; 452 remain. Revised pricing still needs browser verification on the updated preview before release.

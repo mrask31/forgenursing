@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { startStripeCheckout } from '@/lib/stripeClient'
 import { ArrowRight, Check, CheckCircle, Loader2 } from 'lucide-react'
@@ -20,9 +20,9 @@ type Plan = 'monthly' | 'annual'
 
 function CheckoutContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const urlPlan = searchParams.get('plan') as Plan | null
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(urlPlan === 'annual' ? 'annual' : urlPlan === 'monthly' ? 'monthly' : null)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [isStartingCheckout, setIsStartingCheckout] = useState(false)
   const [checkingAccess, setCheckingAccess] = useState(true)
   const [hasCurrentAccess, setHasCurrentAccess] = useState(false)
@@ -73,12 +73,13 @@ function CheckoutContent() {
     if (!selectedPlan) return
 
     setIsStartingCheckout(true)
+    setCheckoutError(null)
     try {
       await startStripeCheckout(selectedPlan)
     } catch (error) {
-      console.error('Failed to start Stripe checkout:', error)
+      setCheckoutError(error instanceof Error ? error.message : 'Unable to open checkout. Please try again.')
+    } finally {
       setIsStartingCheckout(false)
-      router.push('/billing/payment-required')
     }
   }
 
@@ -163,6 +164,7 @@ function CheckoutContent() {
         </div>
 
         <div className="text-center max-w-md mx-auto">
+          {checkoutError && <p role="alert" className="text-red-700 mb-3">{checkoutError}</p>}
           <button
             onClick={handleStartCheckout}
             disabled={!selectedPlan || isStartingCheckout}
