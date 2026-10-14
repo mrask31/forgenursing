@@ -2,7 +2,9 @@ import { demoLesson, demoFeedback } from '@/lib/demo-lessons';
 import { selectedAnswerComparison } from '@/lib/practice-progress';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import type { AnswerFeedback } from '@/lib/answer-trap';
+import { z } from 'zod';
+import { randomUUID } from 'node:crypto';
+import type { AnswerFeedback, SessionAnswer } from '@/lib/answer-trap';
 
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,25 +14,23 @@ function getServiceClient() {
 }
 
 export async function POST(req: NextRequest) {
+  const suppliedId = req.headers.get('x-request-id');
+  const requestId = suppliedId && /^[a-f0-9-]{36}$/i.test(suppliedId) ? suppliedId : randomUUID();
+  const response = await answer(req, requestId);
+  response.headers.set('X-Request-ID', requestId);
+  if (response.status >= 400) console.error('[AnswerTrapCheck/answer]', { request_id: requestId, status: response.status });
+  return response;
+}
+
+async function answer(req: NextRequest, requestId: string) {
   try {
     const supabase = getServiceClient();
-    const body = await req.json();
-    const { session_id, question_id, question_index, selected_answer } = body;
-
-    // Validate required fields
-    if (!session_id || !question_id || question_index === undefined || !selected_answer) {
-      return NextResponse.json(
-        { error: 'Missing required fields: session_id, question_id, question_index, selected_answer' },
-        { status: 400 }
-      );
-    }
-
-    if (!['A', 'B', 'C', 'D'].includes(selected_answer)) {
-      return NextResponse.json(
-        { error: 'Invalid answer. Must be A, B, C, or D.' },
-        { status: 400 }
-      );
-    }
+    const parsed = z.object({
+      session_id: z.string().uuid(), question_id: z.string().uuid(),
+      question_index: z.number().int().min(0).max(2), selected_answer: z.enum(['A', 'B', 'C', 'D']),
+    }).safeParse(await req.json().catch(() => null));
+    if (!parsed.success) return NextResponse.json({ error: 'Invalid answer submission' }, { status: 400 });
+    const { session_id, question_id, question_index, selected_answer } = parsed.data;
 
     // Verify session exists and question is part of it
     const { data: session, error: sessionError } = await supabase
@@ -46,13 +46,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (session.completed_at) {
-      return NextResponse.json(
-        { error: 'Session already completed' },
-        { status: 400 }
-      );
-    }
-
     const questionIds = session.questions as string[];
     if (!Number.isInteger(question_index) || questionIds[question_index] !== question_id) {
       return NextResponse.json(
@@ -62,8 +55,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if already answered
-    const existingAnswers = (session.answers as any[]) || [];
-    const alreadyAnswered = existingAnswers.find((a: any) => a.question_id === question_id);
+    const existingAnswers = (session.answers as SessionAnswer[]) || [];
+    const alreadyAnswered = existingAnswers.find((a: SessionAnswer) => a.question_id === question_id);
     if (alreadyAnswered) {
       // Re-fetch and return the feedback (idempotent)
       const { data: question } = await supabase
@@ -89,6 +82,13 @@ export async function POST(req: NextRequest) {
       };
 
       return NextResponse.json(feedback);
+    }
+
+    if (session.completed_at) {
+      return NextResponse.json(
+        { error: 'Session already completed' },
+        { status: 400 }
+      );
     }
 
     // Fetch the question to check the answer
@@ -117,22 +117,30 @@ export async function POST(req: NextRequest) {
     };
 
     const updatedAnswers = [...existingAnswers, newAnswer];
-    const newScore = updatedAnswers.filter((a: any) => a.is_correct).length;
+    const newScore = updatedAnswers.filter((a: SessionAnswer) => a.is_correct).length;
 
-    const { error: updateError } = await supabase
+    const update = supabase
       .from('answer_trap_sessions')
       .update({
         answers: updatedAnswers,
         score: newScore,
       })
-      .eq('id', session_id);
+      .eq('id', session_id)
+      .is('completed_at', null);
+    // Compare-and-swap prevents concurrent submissions from overwriting each other.
+    const guarded = session.answers == null ? update.is('answers', null) : update.eq('answers', JSON.stringify(session.answers));
+    const { data: saved, error: updateError } = await guarded.select('id').maybeSingle();
 
     if (updateError) {
-      console.error('[AnswerTrapCheck/answer] Session update error:', updateError);
+      console.error('[AnswerTrapCheck/answer] Save failed', { request_id: requestId, code: updateError.code });
       return NextResponse.json(
         { error: 'Failed to save answer' },
         { status: 500 }
       );
+    }
+
+    if (!saved) {
+      return NextResponse.json({ error: 'Session changed. Please retry to retrieve your saved answer.' }, { status: 409 });
     }
 
     // Return feedback
@@ -148,8 +156,8 @@ export async function POST(req: NextRequest) {
     };
 
     return NextResponse.json(feedback);
-  } catch (error) {
-    console.error('[AnswerTrapCheck/answer] Unexpected error:', error);
+  } catch {
+    console.error('[AnswerTrapCheck/answer] Unexpected failure', { request_id: requestId });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

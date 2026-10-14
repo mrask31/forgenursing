@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // npm run build first runs lint:gate: all new errors and all hook errors block builds.
+    // The complete legacy report remains available through npm run lint.
     eslint: {
         ignoreDuringBuilds: true,
     },

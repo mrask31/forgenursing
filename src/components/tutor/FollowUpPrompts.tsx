@@ -14,7 +14,6 @@ interface FollowUpPromptsProps {
 // Generate contextual follow-up prompts based on message content and active course
 function generateFollowUpPrompts(content: string, activeCourse?: string | null, activeCourseType?: string | null): string[] {
   const prompts: string[] = []
-  const lowerContent = content.toLowerCase()
 
   // STATIC PROMPTS (always available)
   const staticPrompts = [
@@ -34,7 +33,7 @@ function generateFollowUpPrompts(content: string, activeCourse?: string | null, 
   // Heart failure chips are only relevant for adult med-surg courses, not peds/OB/psych
   // Require an explicit "heart failure" mention (not just "cardiac") when course is peds/OB/psych
   const adultCardiacCourses = ['med_surg', 'fundamentals', 'other', undefined, null]
-  const isAdultCardiacContext = adultCardiacCourses.includes(activeCourseType as any)
+  const isAdultCardiacContext = adultCardiacCourses.includes(activeCourseType)
   const hasHeartFailure = isAdultCardiacContext
     ? /(heart failure|cardiac|edema|jugular|hepatomegaly|ascites)/i.test(content)
     : /heart failure/i.test(content) // require explicit "heart failure" for non-adult courses
@@ -148,15 +147,12 @@ export default function FollowUpPrompts({
 }: FollowUpPromptsProps) {
   const lastChipClickRef = useRef<{ prompt: string; clickedAt: number; count: number } | null>(null)
 
-  // Only show on the last assistant message
-  if (!isLastMessage) return null
-
   const prompts = useMemo(
     () => generateFollowUpPrompts(messageContent, activeCourse, activeCourseType),
     [messageContent, activeCourse, activeCourseType]
   )
 
-  if (prompts.length === 0) return null
+  if (!isLastMessage || prompts.length === 0) return null
 
   return (
     <div className="mt-4 pt-4 border-t border-slate-200">
