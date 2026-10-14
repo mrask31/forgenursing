@@ -88,6 +88,23 @@ describe('clinical incident containment', () => {
     expect(state.model).toHaveBeenCalledOnce()
     expect(state.insert).not.toHaveBeenCalled()
   })
+  it('rejects a newly generated held retry from an unrelated original before creating a child session', async () => {
+    state.fresh = true
+    state.row = { id, question_stem: 'An unrelated original question', answered_at: '2026-10-14', is_correct: false,
+      learning_attempt: 1, correct_answer: 'A', user_answer: 'B', quiz_sessions: {user_id: 'owner', quiz_mode: 'standard'} }
+    state.model.mockResolvedValue({text: JSON.stringify({
+      question_stem: 'A patient with COPD has oxygen saturation of 82%.',
+      options: ['A', 'B', 'C', 'D'].map(label => ({label, text: 'Synthetic QA option'})),
+      correct_answer: 'B', rationale_correct: 'Unsafe QA fixture must not reach a learner.',
+      rationale_incorrect: {A: 'Synthetic rationale', C: 'Synthetic rationale', D: 'Synthetic rationale'},
+      nclex_category: 'Physiological Adaptation', difficulty: 3,
+    })})
+    const response = await retry(request())
+    expect(response.status).toBe(409)
+    expect((await response.json()).code).toBe(CONTENT_HOLD_CODE)
+    expect(state.model).toHaveBeenCalledOnce()
+    expect(state.insert).not.toHaveBeenCalled()
+  })
   it.each([['progress', progress], ['focus suggestions', fixPlan]] as const)('excludes held answers from %s without deleting records', async (_name, route) => {
     const response = await route()
     expect(response.status).toBe(200)
