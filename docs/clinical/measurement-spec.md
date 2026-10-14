@@ -50,7 +50,7 @@ Status: Sections 1–3 describe the original rollout; public events and owner-ac
 
 ### Common identity and scope
 
-Every loop event includes `loop_version: 2`, `experience` (`free_sample` or `signed_in`), `quiz_session_id`/`sample_session_id`, `question_id`, `distinction_id` (nullable), `distinction_status` (`reviewed`, `provisional`, `unmapped`), `retry_opportunity_id`, and `retry_ui_version`. Never include clinical question text, student free text, email or patient information in these events.
+Every loop event includes `loop_version: 2`, `experience` (`free_sample` or `signed_in`), `quiz_session_id`/`sample_session_id`, `question_id`, `distinction_id` (nullable), `distinction_status` (`reviewed`, `ai_source_checked`, `provisional`, `unmapped`), `retry_opportunity_id`, and `retry_ui_version`. Never include clinical question text, student free text, email or patient information in these events.
 
 `retry_opportunity_id` identifies one original missed question instance: sample session + original question ID, or the unique signed-in original question ID. It persists across reloads, retries and later review. `source_question_id` is null for originals and the original ID for retries/reviews. Do not identify a new attempt by a reusable bank ID alone.
 
@@ -63,7 +63,8 @@ Assign `distinction_id` from a controlled, versioned taxonomy. AI-assigned mappi
 - `related_retry_started`: tap on the retry action. Same opportunity ID across repeated clicks and attempts to load it.
 - `related_retry_loaded`: retry question rendered successfully, with its actual question ID.
 - `related_retry_failed`: request failed; include `stage` (`load` or `answer`) and a bounded error code, never raw errors or clinical text.
-- `review_question_answered`: saved delayed-review answer. Include distinct review attempt ID as `question_id`, original `source_question_id`, `distinction_id`, opportunity ID, `correct`, `days_since_miss`, `review_round`, and approved content version.
+- `review_question_loaded`: emit only after the delayed question renders; never infer it from a due queue or a request. Include actual review attempt ID and original opportunity.
+- `review_question_answered`: saved delayed-review answer. Include distinct review attempt ID as `question_id`, original `source_question_id`, `distinction_id`, opportunity ID, `correct`, `days_since_miss`, `review_round`, and immutable content version.
 
 Retries remain optional. Only original misses are eligible for immediate retry in v2. A missed retry returns the student to their original session and future review; it does not recursively spawn another immediate retry.
 
@@ -91,4 +92,4 @@ For immediate metrics use a 24-hour outcome window after the original miss. Excl
 
 ### Guardrails
 
-Keep public production reports separate from all-traffic QA. Continue owner/device exclusions; historical anonymous tests remain unidentified. Do not create fake review events before the queue exists. Do not backfill guessed distinction IDs or fabricated approval. A useful approved-review queue needs real independently reviewed content before it can serve students.
+Keep public production reports separate from all-traffic QA. Continue owner/device exclusions; historical anonymous tests remain unidentified. Do not create fake review events before the queue exists. Do not backfill guessed distinction IDs or fabricated approval. The independent-review tier still requires independent approval. A separate `ai_source_checked` tier contains frozen AI-assisted source-checked/editorially reviewed questions; this is not independent clinical validation. Report the two tiers separately, matching both content version and distinction. The initial source-checked tier has one delayed variant per family and ends when that variant is answered; it does not manufacture a rolling review schedule.

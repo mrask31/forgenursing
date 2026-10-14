@@ -11,6 +11,7 @@ interface QuizQuestion {
   distinction_id?: string | null
   source_question_id?: string | null
   learning_attempt?: number
+  source_checked_content_id?: string | null
   clinical_content_id?: string | null
   id: string
   question_index: number
@@ -366,6 +367,7 @@ export default function QuizResultsClient() {
 
                     {reviewingId === q.id && (
                       <div className="rounded-lg p-3 text-sm space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
+                        {q.source_checked_content_id && <p className="text-xs">AI-assisted, source-checked • Not independently clinically validated</p>}
                         <p><span className="font-medium">Your answer:</span> {q.user_answer} — {q.options.find(option => option.label === q.user_answer)?.text}</p>
                         <p><span className="font-medium">Correct:</span> {q.correct_answer} — {q.options.find(option => option.label === q.correct_answer)?.text}</p>
                         {!q.is_correct && q.user_answer && q.rationale_incorrect?.[q.user_answer] && <p><span className="font-medium">Why your choice does not fit:</span> {q.rationale_incorrect[q.user_answer]}</p>}

@@ -78,6 +78,7 @@ export async function GET() {
       .select('question_stem, rationale_correct, rationale_incorrect, options, one_line_fix, key_cue, why_correct_short, why_wrong_short, reasoning_trap, fix_instruction, id, question_index, nclex_category, mistake_type, retest_focus, is_correct, user_answer, answered_at, created_at, quiz_sessions!inner(user_id, created_at, status)')
       .eq('quiz_sessions.user_id', user.id)
       .not('answered_at', 'is', null)
+      .or('learning_attempt.is.null,learning_attempt.eq.1')
       .order('answered_at', { ascending: false })
       .limit(500)
 

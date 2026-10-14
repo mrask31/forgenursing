@@ -1,3 +1,4 @@
+import { sourceCheckedContent, sourceCheckedRpc } from '@/lib/learning/source-checked-server';
 import { contentOnHold, contentHoldPayload } from '@/lib/learning/content-hold';
 import { approvedContent, clinicalQuestionRow, learningAdmin } from '@/lib/learning/server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -263,7 +264,7 @@ export async function POST(req: NextRequest) {
 
     const { data: sourceQuestion, error: sourceError } = await supabase
       .from('quiz_questions')
-      .select('rationale_correct, rationale_incorrect, options, key_cue, one_line_fix, id, session_id, question_stem, correct_answer, user_answer, is_correct, answered_at, learning_attempt, distinction_id, clinical_content_id, nclex_category, mistake_type, reasoning_trap, fix_instruction, retest_focus, quiz_sessions!inner(id, user_id, source_type, nclex_category, quiz_mode)')
+      .select('rationale_correct, rationale_incorrect, options, key_cue, one_line_fix, id, session_id, question_stem, correct_answer, user_answer, is_correct, answered_at, learning_attempt, distinction_id, clinical_content_id, source_checked_content_id, nclex_category, mistake_type, reasoning_trap, fix_instruction, retest_focus, quiz_sessions!inner(id, user_id, source_type, nclex_category, quiz_mode)')
       .eq('id', questionId)
       .eq('session_id', quizSessionId)
       .single();
@@ -284,6 +285,13 @@ export async function POST(req: NextRequest) {
 
     if (!sourceQuestion.answered_at || sourceQuestion.is_correct !== false || sourceQuestion.learning_attempt !== 1 || sourceSession.quiz_mode === 'retest') {
       return NextResponse.json({ error: 'A retry is available only after an original-question miss.' }, { status: 409 });
+    }
+    if (sourceQuestion.source_checked_content_id) {
+      const content = await sourceCheckedContent(sourceQuestion.source_checked_content_id);
+      if (!content) return NextResponse.json({ error: 'This content is unavailable while it is checked.' }, { status: 409 });
+      const { data, error } = await sourceCheckedRpc('start_source_checked_retry', { p_user_id: user.id, p_question_id: questionId });
+      if (error || !data) return NextResponse.json({ error: 'Your related retry could not load. Please retry.' }, { status: 409 });
+      return NextResponse.json(data);
     }
     const publicSelect = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, distinction_id, source_question_id, learning_attempt, clinical_content_id';
     const existingRetry = async () => {

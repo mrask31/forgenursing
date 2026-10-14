@@ -1,3 +1,4 @@
+import { sourceCheckedContent } from '@/lib/learning/source-checked-server';
 import { contentOnHold, contentHoldPayload } from '@/lib/learning/content-hold';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -48,6 +49,10 @@ export async function GET(req: NextRequest) {
     }
 
     if (questions?.some(contentOnHold)) return NextResponse.json(contentHoldPayload(), { status: 409 });
+
+    for (const q of questions || []) {
+      if (q.source_checked_content_id && !(await sourceCheckedContent(q.source_checked_content_id))) return NextResponse.json(contentHoldPayload(), { status: 409 });
+    }
 
     // Recover the original session when a retry was resumed from Home.
     let parentSessionId: string | null = null;

@@ -22,7 +22,7 @@ describe('draft bank staging boundary', () => {
     const report = draftImportReport(bank)
     expect(report.publishable_count).toBe(0)
     expect(report.held_item_ids).toEqual([])
-    expect(report.families.every(f => f.delayed_variant_count === 1 && f.runtime_distinction_id === null)).toBe(true)
+    expect(report.families.every(f => f.delayed_variant_count === 1 && f.runtime_distinction_id !== null)).toBe(true)
     expect(() => validatePublication(bank, {})).toThrow()
     const promoted = copy(); promoted.questions[0].eligible_for_production = true as never
     expect(() => parseDraftBank(promoted)).toThrow()

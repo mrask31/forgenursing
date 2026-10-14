@@ -1,3 +1,4 @@
+import { sourceCheckedContent, sourceCheckedRpc } from '@/lib/learning/source-checked-server';
 import { contentOnHold, contentHoldPayload } from '@/lib/learning/content-hold';
 import { DISTINCTION_PROMPT, distinctionId } from '@/lib/learning/distinctions';
 import { approvedContent, clinicalQuestionRow, learningAdmin } from '@/lib/learning/server';
@@ -16,8 +17,8 @@ const openaiEmbeddings = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const QUESTION_SELECT = 'rationale_correct, rationale_incorrect, id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer, mistake_type, reasoning_trap, fix_instruction, retest_focus, key_cue, why_correct_short, why_wrong_short, one_line_fix, distinction_id, source_question_id, learning_attempt, clinical_content_id';
-const QUESTION_PUBLIC_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, distinction_id, source_question_id, learning_attempt, clinical_content_id';
+const QUESTION_SELECT = 'rationale_correct, rationale_incorrect, id, session_id, question_index, question_stem, options, nclex_category, difficulty, answered_at, user_answer, mistake_type, reasoning_trap, fix_instruction, retest_focus, key_cue, why_correct_short, why_wrong_short, one_line_fix, distinction_id, source_question_id, learning_attempt, clinical_content_id, source_checked_content_id';
+const QUESTION_PUBLIC_SELECT = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, distinction_id, source_question_id, learning_attempt, clinical_content_id, source_checked_content_id';
 
 const MistakeTypeSchema = z.enum(MISTAKE_TYPES);
 
@@ -385,6 +386,16 @@ export async function POST(req: NextRequest) {
       .eq('session_id', sessionId)
       .eq('question_index', numericQuestionIndex)
       .maybeSingle();
+
+    if (existingQuestion?.source_checked_content_id) {
+      const content = await sourceCheckedContent(existingQuestion.source_checked_content_id);
+      if (!content || contentOnHold(existingQuestion)) return NextResponse.json(contentHoldPayload(), { status: 409 });
+      if (existingQuestion.answered_at) return NextResponse.json({ error: 'Question already answered' }, { status: 409 });
+      const { data, error } = await sourceCheckedRpc('present_source_checked_question', { p_user_id: user.id, p_question_id: existingQuestion.id });
+      if (error || !data) return NextResponse.json({ error: 'This saved question is unavailable. Please return Home.' }, { status: 409 });
+      return NextResponse.json({ question: data, resumed: true });
+    }
+    if (session.content_policy === 'source_checked_v1') return NextResponse.json({ error: 'No fresh question is available in this saved set. Return Home to choose your next step.', code: 'fresh_content_exhausted' }, { status: 409 });
 
     if (contentOnHold(existingQuestion)) return NextResponse.json(contentHoldPayload(), { status: 409 });
     if (existingQuestion?.clinical_content_id && !(await approvedContent(existingQuestion.clinical_content_id)).length) return NextResponse.json({ error: 'This question was withdrawn for review. Please start a new session.' }, { status: 409 });

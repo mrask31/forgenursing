@@ -24,6 +24,7 @@ interface QuestionData {
   distinction_id?: string | null
   source_question_id?: string | null
   learning_attempt?: number
+  source_checked_content_id?: string | null
   clinical_content_id?: string | null
   id: string
   session_id: string
@@ -91,6 +92,7 @@ export default function QuizPageClient() {
 
   const [resumeSession, setResumeSession] = useState<any>(null)
 
+  const startRequest = useRef<{id:string; key:string}|null>(null)
   const initRef = useRef(false)
   const prefetchingIndexesRef = useRef<Set<string>>(new Set())
 
@@ -167,7 +169,7 @@ export default function QuizPageClient() {
       setQuestionStartTime(Date.now())
       setPhase('question')
 
-      prefetchQuestions(sessId, index + 1, 2)
+      if (!question.source_checked_content_id) prefetchQuestions(sessId, index + 1, 2)
     } catch (err: any) {
       setError(err.message || 'Failed to generate question. Please try again.')
       setPhase('question')
@@ -242,10 +244,13 @@ export default function QuizPageClient() {
     setError(null)
     try {
       const quizMode = options?.quizMode || 'standard'
+      const requestKey = JSON.stringify([sourceType,category,options])
+      if (!startRequest.current || startRequest.current.key !== requestKey) startRequest.current = {id:crypto.randomUUID(),key:requestKey}
       const res = await fetch('/api/quiz/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          requestId: startRequest.current.id,
           sourceType,
           nclexCategory: category === 'All Categories' ? null : category,
           quizMode,
@@ -260,6 +265,7 @@ export default function QuizPageClient() {
         throw new Error(data.error || 'Failed to create session')
       }
       const { session } = await res.json()
+      startRequest.current = null
       setSessionId(session.id)
       setSessionTotalQuestions(session.total_questions || 10)
       setCurrentQuizMode(session.quiz_mode || quizMode)
@@ -342,7 +348,7 @@ export default function QuizPageClient() {
       setAnswerResult(result)
       setPhase('rationale')
 
-      prefetchQuestions(sessionId, currentIndex + 1, 2)
+      if (!currentQuestion.source_checked_content_id) prefetchQuestions(sessionId, currentIndex + 1, 2)
 
       try {
         const timeSpent = Math.round((Date.now() - questionStartTime) / 1000)
@@ -494,6 +500,7 @@ export default function QuizPageClient() {
         <div className="space-y-5">
           <QuizProgress current={currentIndex} total={sessionTotalQuestions} />
           <QuizQuestion
+            sourceChecked={!!currentQuestion.source_checked_content_id}
             stem={currentQuestion.question_stem}
             options={currentQuestion.options}
             selectedAnswer={selectedAnswer}
@@ -508,6 +515,7 @@ export default function QuizPageClient() {
         <div className="space-y-5">
           <QuizProgress current={currentIndex} total={sessionTotalQuestions} />
           <QuizRationale
+            sourceChecked={!!currentQuestion.source_checked_content_id}
             reviewed={!!currentQuestion.clinical_content_id}
             sources={answerResult.sources}
             isCorrect={answerResult.is_correct}

@@ -17,7 +17,7 @@ vi.mock('@/lib/supabase/server', () => ({ createClient: () => ({
   rpc: state.rpc,
   from: (table: string) => {
     const q = {
-      select: () => q, eq: () => q, not: () => q, lt: () => q, neq: () => q,
+      select: () => q, eq: () => q, not: () => q, or: () => q, lt: () => q, neq: () => q,
       limit: () => q,
       then: (resolve: (value: {data: Record<string, unknown>[], error: null}) => unknown) => Promise.resolve(resolve({data: state.fresh ? [] : [state.row], error: null})),
       order: () => q,

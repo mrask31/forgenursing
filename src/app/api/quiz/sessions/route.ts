@@ -1,3 +1,6 @@
+import { z } from 'zod';
+import { sourceCheckedEnabled, sourceCheckedRpc } from '@/lib/learning/source-checked-server';
+import { normalizeBankCategory } from '@/lib/learning/source-checked-content';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
@@ -50,6 +53,23 @@ export async function POST(req: NextRequest) {
       : isDiagnostic
         ? 5
         : Math.max(1, Math.min(Number(totalQuestions) || 10, 20));
+
+    if (sourceCheckedEnabled() && sourceType === 'generic') {
+      const requestId = z.string().uuid().safeParse(body.requestId);
+      if (!requestId.success) return NextResponse.json({ error: 'A valid session request ID is required.' }, { status: 400 });
+      if (quizMode === 'retest') return NextResponse.json({ error: 'Start a retry from a missed question.' }, { status: 400 });
+      const { data, error } = await sourceCheckedRpc('start_source_checked_session', {
+        p_user_id: user.id, p_request_id: requestId.data,
+        p_total: Math.min(5, Math.floor(sessionTotalQuestions)),
+        p_category: normalizeBankCategory(typeof nclexCategory === 'string' ? nclexCategory : null),
+        p_focus: isTargetedDrill && typeof targetMistakeType === 'string' ? targetMistakeType : null,
+      });
+      if (error || !data) {
+        const exhausted = error?.message?.includes('No fresh');
+        return NextResponse.json({ error: exhausted ? 'No fresh questions remain in this focus. Try another topic, revisit saved explanations, or check your review queue.' : error?.message?.includes('NCLEX-RN') ? 'This question bank supports the NCLEX-RN track.' : 'Your practice could not start. Please retry.', code: exhausted ? 'fresh_content_exhausted' : 'practice_unavailable' }, { status: exhausted ? 409 : 503 });
+      }
+      return NextResponse.json(data);
+    }
 
     await supabase
       .from('quiz_sessions')

@@ -1,3 +1,4 @@
+import { sourceCheckedEnabled, sourceCheckedAvailableFocuses } from '@/lib/learning/source-checked-server'
 import { contentOnHold } from '@/lib/learning/content-hold'
 import { normalizePracticeFocus } from '@/lib/practice-focus'
 import { NextResponse } from 'next/server'
@@ -76,6 +77,7 @@ export async function GET() {
       .select('question_stem, rationale_correct, rationale_incorrect, options, one_line_fix, key_cue, why_correct_short, why_wrong_short, reasoning_trap, fix_instruction, id, nclex_category, mistake_type, is_correct, answered_at, created_at, quiz_sessions!inner(user_id)')
       .eq('quiz_sessions.user_id', user.id)
       .not('answered_at', 'is', null)
+      .or('learning_attempt.is.null,learning_attempt.eq.1')
       .order('answered_at', { ascending: false })
       .limit(500)
 
@@ -110,13 +112,15 @@ export async function GET() {
     }
 
     const patterns = Array.from(map.values())
-    const eligible = patterns.filter(pattern => pattern.attempted >= 2 && pattern.missed > 0)
+    const availableFocuses = sourceCheckedEnabled() ? await sourceCheckedAvailableFocuses(user.id) : null
+    const availablePatterns = availableFocuses ? patterns.filter(pattern => availableFocuses.has(pattern.mistake_type)) : patterns
+    const eligible = availablePatterns.filter(pattern => pattern.attempted >= 2 && pattern.missed > 0)
     const topFocus = eligible.length > 0
       ? eligible.sort((a, b) => {
           if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy
           return b.missed - a.missed
         })[0]
-      : patterns.filter(pattern => pattern.missed > 0).sort((a, b) => b.missed - a.missed)[0] ?? null
+      : availablePatterns.filter(pattern => pattern.missed > 0).sort((a, b) => b.missed - a.missed)[0] ?? null
 
     const hasPersonalPlan = totalAttempted >= MIN_ATTEMPTS_FOR_PERSONAL_PLAN && !!topFocus
     const focus = hasPersonalPlan ? topFocus!.mistake_type : 'Find your clinical judgment pattern'
