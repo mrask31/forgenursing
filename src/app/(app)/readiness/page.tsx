@@ -4,7 +4,7 @@ import Link from 'next/link'
 import type { PracticeTrend } from '@/lib/practice-progress'
 type Session = { id: string; status: string; total_questions: number; score: number; created_at: string }
 type Area = { mistake_type: string; attempted: number; correct: number; missed: number; accuracy: number; trend: PracticeTrend }
-type Progress = { summary: { total_attempted: number; total_correct: number; overall_accuracy: number }; mistake_types: Area[]; top_weakness: Area | null }
+type Progress = { clinical_hold_count?: number; summary: { total_attempted: number; total_correct: number; overall_accuracy: number }; mistake_types: Area[]; top_weakness: Area | null }
 const trendLabels: Record<PracticeTrend, string> = { insufficient: 'Not enough answers to compare', improving: 'Higher recent accuracy', steady: 'Same recent accuracy', declining: 'Lower recent accuracy' }
 export default function ProgressPage() {
   const [data, setData] = useState<Progress | null>(null)
@@ -30,6 +30,7 @@ export default function ProgressPage() {
     {error && <p role="alert" className="mt-6 rounded-xl bg-red-50 p-4 text-red-800">{error} <button onClick={load} className="underline">Retry</button></p>}
     {!data && !error && <p role="status" className="mt-8">Loading your answers…</p>}
     {data && <>
+      {!!data.clinical_hold_count && <p role="status" className="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">{data.clinical_hold_count} answer(s) are excluded from these totals and suggestions while the clinical content is reviewed. Saved session scores are historical and may still include those answers.</p>}
       {data.top_weakness && data.summary.total_attempted >= 5 && <section className="mt-6 rounded-2xl bg-teal-50 p-6"><p className="text-xs font-bold uppercase tracking-widest text-[#087986]">Suggested review</p><h2 className="mt-2 text-xl font-bold">{data.top_weakness.mistake_type}</h2><p className="mt-2 text-sm text-slate-600">Based on missed practice answers. Review the explanation, then apply the lesson to a fresh question.</p><Link href="/quiz?suggested=1" className="mt-4 inline-block font-bold text-[#087986] underline">Choose focused practice →</Link></section>}
 
       <div className="mt-8 grid grid-cols-2 gap-4"><div className="rounded-2xl border bg-white p-6"><p className="text-sm text-slate-500">Questions answered</p><p className="mt-2 text-3xl font-bold">{data.summary.total_attempted}</p></div><div className="rounded-2xl border bg-white p-6"><p className="text-sm text-slate-500">Correct answers</p><p className="mt-2 text-3xl font-bold">{data.summary.total_correct}<span className="text-base font-normal text-slate-500"> / {data.summary.total_attempted}</span></p></div></div>

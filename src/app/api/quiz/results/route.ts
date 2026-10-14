@@ -1,3 +1,4 @@
+import { contentOnHold, contentHoldPayload } from '@/lib/learning/content-hold';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
@@ -45,6 +46,8 @@ export async function GET(req: NextRequest) {
       console.error('[Quiz Results] Questions fetch error:', questionsError);
       return NextResponse.json({ error: 'Failed to load quiz questions' }, { status: 500 });
     }
+
+    if (questions?.some(contentOnHold)) return NextResponse.json(contentHoldPayload(), { status: 409 });
 
     // Recover the original session when a retry was resumed from Home.
     let parentSessionId: string | null = null;

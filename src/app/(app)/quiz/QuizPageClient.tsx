@@ -1,4 +1,5 @@
 'use client'
+import { CONTENT_HOLD_MESSAGE } from '@/lib/learning/content-hold'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -457,7 +458,8 @@ export default function QuizPageClient() {
 
   return (
     <div className="min-h-screen px-4 py-6 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      {error && sessionId && !currentQuestion && <button className="mb-4 rounded-lg bg-[#0D8F9C] px-4 py-3 text-white" onClick={() => generateQuestion(sessionId, currentIndex)}>Retry this question</button>}
+      {error && error !== CONTENT_HOLD_MESSAGE && sessionId && !currentQuestion && <button className="mb-4 rounded-lg bg-[#0D8F9C] px-4 py-3 text-white" onClick={() => generateQuestion(sessionId, currentIndex)}>Retry this question</button>}
+      {error === CONTENT_HOLD_MESSAGE && <a href="/quiz" className="mb-4 block underline">Choose another practice topic</a>}
       {error && (
         <div role="alert" className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
           {error}

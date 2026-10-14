@@ -1,3 +1,4 @@
+import { contentOnHold, contentHoldPayload } from '@/lib/learning/content-hold';
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
@@ -12,8 +13,9 @@ export async function POST(req: NextRequest) {
   if(!(await getEntitlementForUser(user.id)).hasAccess) return NextResponse.json({error:'Payment required'},{status:402})
   const body=input.safeParse(await req.json().catch(()=>null))
   if(!body.success) return NextResponse.json({error:'Invalid question or answer'},{status:400})
-  const {data:q}=await db.from('quiz_questions').select('id,clinical_content_id,quiz_sessions!inner(user_id)').eq('id',body.data.questionId).eq('quiz_sessions.user_id',user.id).maybeSingle()
+  const {data:q}=await db.from('quiz_questions').select('*,quiz_sessions!inner(user_id)').eq('id',body.data.questionId).eq('quiz_sessions.user_id',user.id).maybeSingle()
   if(!q) return NextResponse.json({error:'Question not found'},{status:404})
+  if(contentOnHold(q)) return NextResponse.json(contentHoldPayload(),{status:409})
   const reviewed = q.clinical_content_id ? (await approvedContent(q.clinical_content_id))[0] : null
   if(q.clinical_content_id && !reviewed) return NextResponse.json({error:'This question was withdrawn for review. Please start a new session.'},{status:409})
   const {data:answer,error:saveError}=await db.rpc('record_quiz_answer',{p_question_id:body.data.questionId,p_answer:body.data.userAnswer})

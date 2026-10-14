@@ -1,4 +1,5 @@
 'use client'
+import { CONTENT_HOLD_MESSAGE } from '@/lib/learning/content-hold'
 
 import { captureLoop } from '@/lib/analytics/learning-loop'
 import { loopProperties } from '@/lib/learning/distinctions'
@@ -179,9 +180,9 @@ export default function QuizResultsClient() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 text-center">
         <p className="text-gray-500">{loadError}</p>
-        <button onClick={() => window.location.reload()} className="rounded-lg text-white font-semibold px-5 py-3" style={{ backgroundColor: '#0D8F9C' }}>
+        {loadError !== CONTENT_HOLD_MESSAGE && <button onClick={() => window.location.reload()} className="rounded-lg text-white font-semibold px-5 py-3" style={{ backgroundColor: '#0D8F9C' }}>
           Try Again
-        </button>
+        </button>}
         <Link href="/quiz" className="underline" style={{ color: '#0D8F9C' }}>Start a new quiz</Link>
       </div>
     )

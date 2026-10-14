@@ -1,3 +1,4 @@
+import { contentOnHold, contentHoldPayload } from '@/lib/learning/content-hold';
 import { approvedContent, clinicalQuestionRow, learningAdmin } from '@/lib/learning/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { anthropic } from '@ai-sdk/anthropic';
@@ -262,7 +263,7 @@ export async function POST(req: NextRequest) {
 
     const { data: sourceQuestion, error: sourceError } = await supabase
       .from('quiz_questions')
-      .select('id, session_id, question_stem, correct_answer, user_answer, is_correct, answered_at, learning_attempt, distinction_id, clinical_content_id, nclex_category, mistake_type, reasoning_trap, fix_instruction, retest_focus, quiz_sessions!inner(id, user_id, source_type, nclex_category, quiz_mode)')
+      .select('rationale_correct, rationale_incorrect, options, key_cue, one_line_fix, id, session_id, question_stem, correct_answer, user_answer, is_correct, answered_at, learning_attempt, distinction_id, clinical_content_id, nclex_category, mistake_type, reasoning_trap, fix_instruction, retest_focus, quiz_sessions!inner(id, user_id, source_type, nclex_category, quiz_mode)')
       .eq('id', questionId)
       .eq('session_id', quizSessionId)
       .single();
@@ -279,19 +280,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    if (contentOnHold(sourceQuestion)) return NextResponse.json(contentHoldPayload(), { status: 409 });
+
     if (!sourceQuestion.answered_at || sourceQuestion.is_correct !== false || sourceQuestion.learning_attempt !== 1 || sourceSession.quiz_mode === 'retest') {
       return NextResponse.json({ error: 'A retry is available only after an original-question miss.' }, { status: 409 });
     }
     const publicSelect = 'id, session_id, question_index, question_stem, options, nclex_category, difficulty, distinction_id, source_question_id, learning_attempt, clinical_content_id';
     const existingRetry = async () => {
-      const { data: question } = await supabase.from('quiz_questions').select(publicSelect).eq('source_question_id', questionId).eq('learning_attempt', 2).maybeSingle();
+      const { data: question } = await supabase.from('quiz_questions').select(`${publicSelect},rationale_correct,rationale_incorrect,reasoning_trap,fix_instruction`).eq('source_question_id', questionId).eq('learning_attempt', 2).maybeSingle();
       if (!question) return null;
       const { data: session } = await supabase.from('quiz_sessions').select('*').eq('id', question.session_id).eq('user_id', user.id).single();
-      return session ? { session, question } : null;
+      return session ? { session, question: Object.fromEntries(publicSelect.split(', ').map(key => [key, (question as Record<string, unknown>)[key]])), held: contentOnHold(question) } : null;
     };
     const approved = sourceQuestion.clinical_content_id ? (await approvedContent(sourceQuestion.clinical_content_id))[0] : null;
     if (sourceQuestion.clinical_content_id && !approved) return NextResponse.json({ error: 'This content was withdrawn for review.' }, { status: 409 });
     const previousRetry = await existingRetry();
+    if (previousRetry && previousRetry.held) return NextResponse.json(contentHoldPayload(), { status: 409 });
     if (previousRetry) return NextResponse.json(previousRetry);
 
     const category = sourceQuestion.nclex_category || sourceSession.nclex_category || 'Priority Setting';
@@ -364,6 +368,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (contentOnHold(questionData)) return NextResponse.json(contentHoldPayload(), { status: 409 });
+
     const mistakeMetadata = normalizeMistakeMetadata(questionData, mistakeType, retestFocus);
 
     const { data: retestSession, error: sessionError } = await supabase
@@ -411,6 +417,7 @@ export async function POST(req: NextRequest) {
     if (questionError || !retestQuestion) {
       await supabase.from('quiz_sessions').delete().eq('id', retestSession.id).eq('user_id', user.id);
       const winner = await existingRetry();
+      if (winner && winner.held) return NextResponse.json(contentHoldPayload(), { status: 409 });
       if (winner) return NextResponse.json(winner);
       console.error('[Retest Weakness] Question insert error:', questionError);
       return NextResponse.json({ error: 'Failed to save retest question' }, { status: 500 });

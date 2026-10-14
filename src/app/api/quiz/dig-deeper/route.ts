@@ -1,3 +1,4 @@
+import { contentOnHold, contentHoldPayload } from '@/lib/learning/content-hold';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
@@ -66,6 +67,8 @@ export async function POST(req: NextRequest) {
     if (!session || session.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    if (contentOnHold(question)) return NextResponse.json(contentHoldPayload(), { status: 409 });
 
     const category = question.nclex_category || session.nclex_category || 'NCLEX Review';
     const mistakeType = question.mistake_type || fallbackMistakeType(category);

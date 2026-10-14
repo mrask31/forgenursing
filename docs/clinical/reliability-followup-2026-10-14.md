@@ -27,3 +27,21 @@ Secure sign-in succeeded on the preview. Home claimed the sample result (2/3), s
 The signed-in pricing page exposed a legacy branch with a semester plan and founder offers. New purchases now use the same two published offers for every account. The retired founder purchase endpoint returns 410; the standard endpoint rejects semester prices even if an old environment value remains. Existing subscription prices and webhook recognition are unchanged. Legacy payment-required/cancel pages redirect to the current checkout flow; they no longer claim that a card starts the free trial. Checkout failures now clear the spinner and show a retryable error instead of returning success or redirecting between legacy pages.
 
 Regression coverage increased to 136 tests in 19 files, including new offer-route authorization checks. Five legacy lint findings were removed with obsolete billing/pricing code; 452 remain. Revised pricing still needs browser verification on the updated preview before release.
+
+## Clinical incident found during authenticated QA — release remains blocked
+
+A fresh five-question session completed and saved as 3/5, with its separate retry saved as 1/1. Both appeared in Progress. This verifies persistence and navigation, not clinical accuracy.
+
+Question 5 described a COPD exacerbation with SpO2 82% on nasal oxygen, tachypnea and accessory-muscle use. Its generated explanation instructed the learner to give the prescribed bronchodilator before adjusting oxygen, asserting bronchospasm rather than flow rate caused the hypoxemia. This is a safety failure under D9. Do not mark this question or its family approved. An earlier delegation item also deserves reviewer attention for ambiguity.
+
+Primary reference: NICE NG115 recommendations 1.3.11 and 1.3.27–1.3.29, https://www.nice.org.uk/guidance/ng115/chapter/Recommendations . Oxygen needed during nebulized treatment may be administered simultaneously; oxygen and assessment are guided by the patient's condition. This reference is evidence for raising the incident, not an independent RN sign-off or a replacement answer key.
+
+Containment implemented:
+
+- Hold the COPD/chronic obstructive disease/emphysema/chronic bronchitis family in generated questions, saved-question resume, answer submission, original/retry paths, results, tutor-context creation and visual-lesson matching.
+- Check clinical text fields, including options and rationales. A clinical_content_id does not bypass the temporary incident hold. Do not remove the hold without independent clinical review.
+- Do not save newly generated held content. Retain previously saved answers; do not silently rewrite grades or delete history. A session containing held clinical content returns a review-pending message instead of its explanations.
+- Exclude held answers from current progress totals and focus recommendations. Explain that historical session scores can still include the held answers.
+- Provide a different-topic exit rather than a retry loop on the deliberate hold.
+
+Limitations: this targeted text rule is containment of a known failure family, not a medical validator. It does not certify other generated content, retrospectively rewrite existing tutor conversations, or replace RN review. The approved scheduled-review bank is still empty. Recruitment remains blocked.

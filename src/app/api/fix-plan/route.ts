@@ -1,3 +1,4 @@
+import { contentOnHold } from '@/lib/learning/content-hold'
 import { normalizePracticeFocus } from '@/lib/practice-focus'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
@@ -72,7 +73,7 @@ export async function GET() {
 
     const { data: rows, error } = await supabase
       .from('quiz_questions')
-      .select('id, nclex_category, mistake_type, is_correct, answered_at, created_at, quiz_sessions!inner(user_id)')
+      .select('question_stem, rationale_correct, rationale_incorrect, options, one_line_fix, key_cue, why_correct_short, why_wrong_short, reasoning_trap, fix_instruction, id, nclex_category, mistake_type, is_correct, answered_at, created_at, quiz_sessions!inner(user_id)')
       .eq('quiz_sessions.user_id', user.id)
       .not('answered_at', 'is', null)
       .order('answered_at', { ascending: false })
@@ -83,7 +84,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to build fix plan' }, { status: 500 })
     }
 
-    const answered = rows ?? []
+    const answered = (rows ?? []).filter(row => !contentOnHold(row))
     const totalAttempted = answered.length
     const map = new Map<string, PatternStats>()
 
@@ -157,6 +158,7 @@ export async function GET() {
         ]
 
     return NextResponse.json({
+      clinical_hold_count: (rows?.length ?? 0) - answered.length,
       has_personal_plan: hasPersonalPlan,
       total_attempted: totalAttempted,
       focus,

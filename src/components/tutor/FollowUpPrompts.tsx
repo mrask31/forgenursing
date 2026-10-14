@@ -2,6 +2,7 @@
 
 import { useMemo, useRef } from 'react'
 import posthog from 'posthog-js'
+import { isEmergencyHandoff } from '@/lib/ai/emergency-handoff'
 
 interface FollowUpPromptsProps {
   messageContent: string
@@ -13,6 +14,7 @@ interface FollowUpPromptsProps {
 
 // Generate contextual follow-up prompts based on message content and active course
 function generateFollowUpPrompts(content: string, activeCourse?: string | null, activeCourseType?: string | null): string[] {
+  if (isEmergencyHandoff(content)) return []
   const prompts: string[] = []
 
   // STATIC PROMPTS (always available)

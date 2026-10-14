@@ -1,3 +1,4 @@
+import { contentOnHold } from '@/lib/learning/content-hold'
 import { normalizePracticeFocus } from '@/lib/practice-focus'
 import { practiceTrend, practiceStage } from '@/lib/practice-progress'
 import { NextResponse } from 'next/server'
@@ -74,7 +75,7 @@ export async function GET() {
 
     const { data: rows, error } = await supabase
       .from('quiz_questions')
-      .select('id, question_index, nclex_category, mistake_type, retest_focus, is_correct, user_answer, answered_at, created_at, quiz_sessions!inner(user_id, created_at, status)')
+      .select('question_stem, rationale_correct, rationale_incorrect, options, one_line_fix, key_cue, why_correct_short, why_wrong_short, reasoning_trap, fix_instruction, id, question_index, nclex_category, mistake_type, retest_focus, is_correct, user_answer, answered_at, created_at, quiz_sessions!inner(user_id, created_at, status)')
       .eq('quiz_sessions.user_id', user.id)
       .not('answered_at', 'is', null)
       .order('answered_at', { ascending: false })
@@ -85,7 +86,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to load judgment map' }, { status: 500 })
     }
 
-    const answered = rows ?? []
+    const answered = (rows ?? []).filter(row => !contentOnHold(row))
     const totalAttempted = answered.length
     const totalCorrect = answered.filter((row: any) => row.is_correct === true).length
     const overallAccuracy = roundAccuracy(totalCorrect, totalAttempted)
@@ -185,6 +186,7 @@ export async function GET() {
         }
 
     return NextResponse.json({
+      clinical_hold_count: (rows?.length ?? 0) - answered.length,
       summary: {
         total_attempted: totalAttempted,
         total_correct: totalCorrect,
