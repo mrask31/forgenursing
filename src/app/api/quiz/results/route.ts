@@ -46,7 +46,21 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to load quiz questions' }, { status: 500 });
     }
 
+    // Recover the original session when a retry was resumed from Home.
+    let parentSessionId: string | null = null;
+    const sourceQuestionId = questions?.find(q => q.source_question_id)?.source_question_id;
+    if (sourceQuestionId) {
+      const { data: source } = await supabase.from('quiz_questions')
+        .select('session_id').eq('id', sourceQuestionId).maybeSingle();
+      if (source?.session_id) {
+        const { data: parent } = await supabase.from('quiz_sessions')
+          .select('id').eq('id', source.session_id).eq('user_id', user.id).maybeSingle();
+        parentSessionId = parent?.id ?? null;
+      }
+    }
+
     return NextResponse.json({
+      parent_session_id: parentSessionId,
       session,
       questions: questions ?? [],
     });

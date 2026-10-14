@@ -26,3 +26,13 @@ V2 events distinguish eligible miss, offered, tapped, loaded, failed and answere
 Reports deduplicate opportunities and question instances. Immediate final rates use 24-hour mature cohorts; pending counts remain visible. Separate public sample and signed-in experiences, QA and public traffic, and provisional versus reviewed mappings. Do not interpret a generated concept label as validated clinical transfer.
 
 Delayed answer events exist, but a complete due-cohort return report requires authoritative queue data from the database. Do not use page views as a substitute for due opportunities or call answer-only data a return rate. Do not claim causality, exam readiness or proven retention from these observational reports.
+
+## Reports deployed October 14, 2026
+
+- Public dashboard: https://us.posthog.com/project/388925/dashboard/2205141
+- All-traffic QA dashboard: https://us.posthog.com/project/388925/dashboard/2205142
+- Public matched retry table: `mHkWzdFV` (12859699).
+- QA matched retry table: `llirEb8C` (12859700).
+- Reviewed delayed comparison: `Hw5DoNfT` (12859798), awaiting clinical publication and returning students.
+
+SQL sources are in `docs/analytics`. These are derived, noncanonical reports; the connected tool lacks Data Catalog permissions, so no catalog approval is claimed. Existing acquisition funnels remain unchanged. No home-IP exclusion was configured. The due-cohort PostgreSQL report excludes the owner but needs an explicit QA-account exclusion before being described as clean public traffic.

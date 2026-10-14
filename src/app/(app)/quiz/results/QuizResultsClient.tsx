@@ -86,7 +86,8 @@ export default function QuizResultsClient() {
   const router = useRouter()
   const sessionId = searchParams.get('sessionId')
   const returnSessionId = searchParams.get('returnSessionId')
-  const safeReturnSessionId = returnSessionId && /^[0-9a-f-]{36}$/i.test(returnSessionId) ? returnSessionId : null
+  const [parentSessionId, setParentSessionId] = useState<string | null>(null)
+  const safeReturnSessionId = parentSessionId || (returnSessionId && /^[0-9a-f-]{36}$/i.test(returnSessionId) ? returnSessionId : null)
 
   const [session, setSession] = useState<any>(null)
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
@@ -137,6 +138,7 @@ export default function QuizResultsClient() {
         }
 
         const data = await response.json()
+        setParentSessionId(data.parent_session_id ?? null)
         setSession(data.session)
         setQuestions(data.questions ?? [])
         try {
@@ -159,6 +161,11 @@ export default function QuizResultsClient() {
 
     load()
   }, [sessionId])
+
+  useEffect(() => {
+    if (!sessionId || !session || session.quiz_mode === 'retest') return
+    for (const q of questions) if (q.user_answer && !q.is_correct && q.learning_attempt !== 2) captureLoop('related_retry_offered', { ...loopProperties(q, sessionId), source_question_id: q.id, source: 'results_screen' }, q.id)
+  }, [questions, sessionId, session])
 
   if (loading) {
     return (
@@ -224,10 +231,7 @@ export default function QuizResultsClient() {
     router.push('/readiness')
   }
 
-  useEffect(() => {
-    if (!sessionId || !session || session.quiz_mode === 'retest') return
-    for (const q of questions) if (q.user_answer && !q.is_correct && q.learning_attempt !== 2) captureLoop('related_retry_offered', { ...loopProperties(q, sessionId), source_question_id: q.id, source: 'results_screen' }, q.id)
-  }, [questions, sessionId, session])
+
 
   const handleFixWeakness = async (q: QuizQuestion) => {
     if (!sessionId || fixingQuestionId || q.learning_attempt === 2 || session?.quiz_mode === 'retest') return
@@ -284,7 +288,7 @@ export default function QuizResultsClient() {
         return
       }
 
-      router.push(`/quiz?sessionId=${data.session.id}&returnSessionId=${encodeURIComponent(safeReturnSessionId || sessionId || '')}`)
+      router.push(`/quiz${data.session.status === 'completed' ? '/results' : ''}?sessionId=${data.session.id}&returnSessionId=${encodeURIComponent(safeReturnSessionId || sessionId || '')}`)
     } catch (error) {
       console.error('[QuizResults] Fix weakness error:', error)
       captureLoop('related_retry_failed', {...loopProperties(q, sessionId), stage: 'load', error_code: 'request_failed'})

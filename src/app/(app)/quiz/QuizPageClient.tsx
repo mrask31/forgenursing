@@ -408,6 +408,10 @@ export default function QuizPageClient() {
       }
 
       const { session, question } = await res.json()
+      if (session.status === 'completed') {
+        router.push(`/quiz/results?sessionId=${session.id}&returnSessionId=${encodeURIComponent(returnSessionId || sessionId)}`)
+        return
+      }
       setSessionId(session.id)
       setSessionTotalQuestions(session.total_questions || 1)
       setCurrentQuizMode(session.quiz_mode || 'retest')
