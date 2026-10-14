@@ -24,18 +24,21 @@ Project: ForgeNursing (`gqrpjvmxquipurmhmvfs`). Applied the source-checked learn
 - Database advisors checked. New content table intentionally has RLS with no client policy (service-only). New indexes are unused before traffic, as expected. Existing mutable-search-path, legacy security-definer/extension and leaked-password-protection notices remain outside this patch.
 - No independent clinical validation or learner-outcome evidence is claimed.
 
-## Preview activation blocker
+## Preview activation and browser blocker
 
-Vercel's connector returned **403 forbidden** for setting the project environment variable, including the retry after the user's clarification. No authenticated Vercel CLI is available in this workspace. The feature flag is therefore not enabled by this work.
+The owner confirmed `SOURCE_CHECKED_PRACTICE_ENABLED=true` for Preview on `codex/release-reliability`. A rebuild of commit `a7df79ad47711221e55eeb2459f3be48e5281751` completed successfully as deployment `dpl_FnrhmkWGMgupEDEdQM2V8Ztm5xG9`. Runtime flag behavior remains unverified.
 
-In the ForgeNursing Vercel project, add:
+The secure Vercel sign-in request timed out. After manual handoff and the owner's confirmation of completion, the cloud browser still returned `credential_observation_restricted`, including after the documented navigation recovery. This is a testing-tool limitation, not evidence of an application login failure. Do not bypass the credential restriction or count this as a completed signed-in test.
 
-- Key: `SOURCE_CHECKED_PRACTICE_ENABLED`
-- Value: `true`
-- Environment: **Preview only**
-- Git branch: `codex/release-reliability`
+A subsequent database read confirmed 60 preview publications, none withdrawn, no production publications, and zero source-review queue/attempt rows. Preview error/fatal log lookup for the checked three-hour window returned no records; lack of logs is not evidence that the student flow passed.
 
-Then redeploy the latest preview commit. Keep Production unchanged until the authenticated preview checks pass. Do not hardcode the flag or remove the environment gate to work around permissions.
+## Additional checkout audit
+
+The legacy `/checkout` screen still advertised a trial in the paid-checkout flow and used monthly fine print even when Annual was selected. It now uses the shared offer prices, preselects Monthly, follows the selected cadence in the fine print, and explicitly distinguishes paid checkout from the new-account no-card trial. Removed the outdated founding-plan title and unlimited-access claim. Plan buttons expose their selected state to assistive technology.
+
+Updated the expired-trial browser test to expect both current prices, verify annual fine print and default CTA availability, and clean up its fixture even if assertions fail. This browser test has **not** executed in the blocked session. The 23 focused checkout/conversion unit tests and TypeScript checks passed; they do not establish a complete paid Stripe lifecycle.
+
+The local tutor probe runner cannot execute model calls here because `ANTHROPIC_API_KEY` is unavailable. No new tutor-output evaluation was performed. No secrets were printed or extracted from a browser session.
 
 ## Remaining release checks
 
