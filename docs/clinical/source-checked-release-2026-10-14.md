@@ -255,3 +255,11 @@ This closes the three pending Stripe-side simulation checks. It does **not** clo
 - Exact bounded next steps and mobile acceptance checklist: `docs/qa/remaining-release-acceptance-2026-10-15.md`.
 
 **Still HOLD.** No production publication, merge or deployment. Work is now blocked on protected webhook access/approval, usable browser observation for new tutor runs, actual mobile viewport acceptance, and the genuine delayed-review due time.
+
+### Temporary webhook access approved, creation blocked — October 15, 1:28 PM Central
+
+Owner explicitly approved recreating the project-wide temporary Vercel automation bypass solely for sandbox billing tests and revoking it afterward, with manual cleanup risk disclosed. The authorized connector request returned HTTP 403: permission to create the protection bypass denied. No bypass was created. No installed Vercel CLI was available for the mapped fallback. The previously established native browser credential-observation restriction remains unresolved; no repeated login was requested.
+
+Read-only Stripe inspection reconfirmed existing sandbox endpoint `we_1UQn2AGnwd1bHIvcjoDX2Nxk`, description “ForgeNursing preview-only billing QA 2026-10-15; revoke access after testing”, is disabled and livemode false, with the expected six event types. It still points to the release-branch /api/stripe/webhook destination. Secret-bearing query values were not disclosed.
+
+Concrete manual continuation: owner creates the approved temporary automation bypass in Vercel, replaces only the existing sandbox endpoint URL's x-vercel-protection-bypass query value with that new secret, saves, then enables the existing endpoint. Retain its signing secret and event selections; do not create a new endpoint or touch live Stripe. Never paste the bypass value into chat. After owner confirms, verify endpoint state through the Stripe connector and continue isolated-fixture signed-event/profile checks. Browser access checks remain separately blocked. After tests disable the endpoint and revoke the temporary bypass; verify cleanup, requesting owner removal if connector revocation again fails.
