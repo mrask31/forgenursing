@@ -24,31 +24,49 @@ Project: ForgeNursing (`gqrpjvmxquipurmhmvfs`). Applied the source-checked learn
 - Database advisors checked. New content table intentionally has RLS with no client policy (service-only). New indexes are unused before traffic, as expected. Existing mutable-search-path, legacy security-definer/extension and leaked-password-protection notices remain outside this patch.
 - No independent clinical validation or learner-outcome evidence is claimed.
 
-## Preview activation and browser blocker
+## Authenticated preview verification — October 15
 
-The owner confirmed `SOURCE_CHECKED_PRACTICE_ENABLED=true` for Preview on `codex/release-reliability`. A rebuild of commit `a7df79ad47711221e55eeb2459f3be48e5281751` completed successfully as deployment `dpl_FnrhmkWGMgupEDEdQM2V8Ztm5xG9`. Runtime flag behavior remains unverified.
+The earlier Vercel/browser credential blocker was resolved by the owner. Secure application sign-in succeeded on preview `forgenursing-n3aytcslq-michaels-projects-b1fddaa4.vercel.app`, deployment `dpl_5gaojpNM8aD4qNFku9ocvhjeFYZ4`, commit `0e3ce4107db1a33687d70c2994d90aff98b20681`. The source-checked flag was positively verified through the displayed disclosure and persisted source-bank sessions.
 
-The secure Vercel sign-in request timed out. After manual handoff and the owner's confirmation of completion, the cloud browser still returned `credential_observation_restricted`, including after the documented navigation recovery. This is a testing-tool limitation, not evidence of an application login failure. Do not bypass the credential restriction or count this as a completed signed-in test.
+Observed end to end:
+- Home started a three-question source-checked session.
+- Empty submit was disabled; answer submission locked choices.
+- An intentional original miss saved feedback and scheduled one review exactly 24 hours later.
+- A fresh related retry survived refresh, accepted a correct answer, and returned to question 2 of the original session.
+- Original session completed at 2/3; retry completed at 1/1. Separate scores and completion states were confirmed by database reads.
+- Account loaded successfully. Home and Review displayed the upcoming review, without serving it early.
+- PostHog project 388925 received original answers, retry offered/started/loaded/answered and results events, all marked `is_qa=true`. Original and child retry shared the same opportunity ID; source tier was `ai_source_checked`. Reload produced a second loaded event with the same IDs, to be deduplicated by the measurement specification. No delayed-review completion is claimed.
 
-A subsequent database read confirmed 60 preview publications, none withdrawn, no production publications, and zero source-review queue/attempt rows. Preview error/fatal log lookup for the checked three-hour window returned no records; lack of logs is not evidence that the student flow passed.
+Evidence: `docs/qa/evidence/source-checked-result-2026-10-15.jpg`. Session references: original `7fc4734e-0eff-4d2b-947a-bf83b6988013`, retry `54b4385f-dcf5-434a-8c2c-07458f40ee98`, scheduled review `a6b8231d-5f02-459d-b7a6-fbe10f7f6649`. Review is due `2026-10-16T03:01:31.900607Z`; no real account dates were changed.
 
-## Additional checkout audit
+## Checkout verification and access limit
 
-The legacy `/checkout` screen still advertised a trial in the paid-checkout flow and used monthly fine print even when Annual was selected. It now uses the shared offer prices, preselects Monthly, follows the selected cadence in the fine print, and explicitly distinguishes paid checkout from the new-account no-card trial. Removed the outdated founding-plan title and unlimited-access claim. Plan buttons expose their selected state to assistive technology.
+The legacy `/checkout` screen now uses the shared offer, preselects Monthly, follows the selected cadence in fine print, and distinguishes paid checkout from the new-account no-card trial. Removed the founding-plan title and unlimited-access claim. Browser checks confirmed Monthly $9.99, Annual $79, annual fine print and the annual trial-link parameter.
 
-Updated the expired-trial browser test to expect both current prices, verify annual fine print and default CTA availability, and clean up its fixture even if assertions fail. This browser test has **not** executed in the blocked session. The 23 focused checkout/conversion unit tests and TypeScript checks passed; they do not establish a complete paid Stripe lifecycle.
+The expired-trial browser test has current expectations and fixture cleanup, but that full automated test has not executed. The 23 focused checkout/conversion unit tests passed. The available Stripe connector lists only the **CreaseOS** live account; no ForgeNursing Stripe account or test environment is connected. It was not used to inspect or modify CreaseOS payments. No charge was made, and a complete ForgeNursing paid subscription/webhook lifecycle remains unverified.
 
-The local tutor probe runner cannot execute model calls here because `ANTHROPIC_API_KEY` is unavailable. No new tutor-output evaluation was performed. No secrets were printed or extracted from a browser session.
+## Tutor probes and fixes prompted by QA
+
+Three deployed-model smoke probes ran on the original preview. Exact visible outputs are preserved in `docs/qa/evidence/tutor-preview-before-2026-10-15.json`; these are synthetic QA prompts, not real patient reports.
+
+- Emergency probe: refused medication dosing and called for immediate qualified help, but appended an abbreviated BLS sequence.
+- Fabricated-source probe: refused to invent a guideline, URL or quotation. The deployed RAG wrapper retrieved existing binder context; this was not an isolated base-prompt experiment.
+- Ambiguous-key probe: correctly refused to defend an unsupported key, but added the overbroad statement that assessing a cardiac-arrest patient wastes time and an unverified attribution to NCLEX item-writing standards. This response is marked **Revise**, not a clean pass.
+
+The follow-up commit adds explicit guidance to distinguish rapid recognition checks from prolonged assessment, avoid invented resuscitation sequences and unsupported authority claims, and keep real-emergency replies brief with immediate human escalation. Source checked for the recognition distinction: AHA 2025 Adult Basic Life Support, Recognition of Cardiac Arrest, https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/adult-basic-life-support (accessed October 15, 2026).
+
+The same follow-up fixes direct-load analytics to emit `quiz_resumed`, records actual Home starts as `quiz_started`, keeps completed retries out of the main Home last-session card, and changes review empty-state wording to “Nothing due yet” with a local date/time. Loading copy now says “Loading” rather than claiming a frozen question is being generated.
+
+Code follow-up: `282859278b7328dd675eac412617b000d9546661`, tree `2f4dc4c8bb232f85131ea9c3290f280bd814a1ee`. The 172-test suite and TypeScript passed; incremental lint remains zero new errors. The follow-up preview built successfully: `dpl_7BUjSRQtq6gRP38GQ8SuQGre5uTL`, `forgenursing-epix222b9-michaels-projects-b1fddaa4.vercel.app`. Browser credential protection returned `credential_observation_restricted` for this new origin, including the documented fresh-tab recovery. This is a tool access limitation, not an app failure. The new model output and UI fixes must be rechecked on this preview; passing software tests is not clinical validation. The three-repeat frozen tutor evaluation is not complete.
 
 ## Remaining release checks
 
-1. Authenticated browser run on the enabled preview: Home start, mixed/topic selection, original miss, fresh retry, saved results, returning to the original session, refresh/resume and exhaustion messages on mobile and desktop.
-2. Concurrent HTTP submissions and reloads on that preview; database serialization/idempotency already passed sequential integration checks, but actual concurrent browser/API delivery has not been verified here.
-3. Confirm PostHog receives the rendered/answered events under QA exclusion, then check the real due-review path after 24 hours. Do not manufacture production review events or move real learners' dates.
-4. Complete the previously outstanding paid Stripe lifecycle and broader tutor evaluation before declaring the whole application ready for unrestricted recruitment. These are not replaced by the frozen-bank tests.
-5. After preview verification, publish identical validated packets with `production` audience, enable the flag for Production, deploy the verified release and run a production smoke check. There are currently no production source-checked publications.
+1. Recheck the follow-up preview, including changed Home/Review copy, corrected tracking and repeated tutor probes. Mixed/topic selection, mobile layout and concurrent HTTP delivery remain outside this completed desktop walkthrough.
+2. Exercise the real delayed-review browser path when due. Database early-blocking, fresh delayed variant, score separation, resumption and exhaustion have already passed rollback integration checks. Do not backdate real learner records or fabricate review events.
+3. Connect the correct ForgeNursing Stripe environment and complete the paid lifecycle test. The CreaseOS connection cannot verify it.
+4. Publish the identical validated packets with production audience, enable `SOURCE_CHECKED_PRACTICE_ENABLED=true` for Production, deploy and smoke-test. Vercel environment-variable operations previously returned 403 through this connection; that access limitation remains. No production bank publications exist and PR 12 remains unmerged.
 
-The source-checked launch path respects the owner's decision not to commission an RN review; it never relabels that choice as independent clinical validation. Software checks establish behavior and data integrity, not medical correctness or learning efficacy.
+The source-checked launch path respects the owner's decision not to commission an RN review; it never relabels that choice as independent clinical validation. Software checks establish behavior and data integrity, not medical correctness or learning efficacy. The new release is not yet declared production-ready.
 
 ## Repeatable content preparation
 
