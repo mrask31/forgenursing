@@ -1,6 +1,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
 import { buildSystemPrompt, FINAL_EVIDENCE_CHECK } from '@/lib/ai/system-prompt';
+import { evidenceOutputGuard } from '@/lib/ai/evidence-output-guard';
 import { buildMessageHistory } from '@/lib/ai/history-manager';
 import { scorePhiText } from '@/app/api/_middleware/phi-scrubber';
 import { analyzeClinicalImage, type GeminiVisionResult } from '@/lib/ai/gemini-vision';
@@ -721,6 +722,7 @@ FORMATTING RULES:
         maxTokens: 1200,
         messages: processedMessages,
         system: systemPrompt + FINAL_EVIDENCE_CHECK,
+        experimental_transform: evidenceOutputGuard(),
       });
     } catch (claudeError: any) {
       console.error('[CHAT] Error calling Claude:', claudeError);
