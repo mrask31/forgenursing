@@ -23,6 +23,7 @@ describe('evidence output guard', () => {
     'It is a professional nursing function in **every jurisdiction**.',
     'Trusting a supplied answer over sound clinical reasoning is exactly the habit NCLEX Next Generation items are designed to break.',
     'This is consistent with NCSBN delegation principles.',
+    "Interpretation is not within UAP scope under any U.S. jurisdiction's nurse practice act framework.",
   ])('withholds observed unsupported claim: %s', async text => {
     const output = await run([{ type: 'text-delta', textDelta: text }, finish()])
     expect(textOf(output)).toBe(EVIDENCE_RECHECK_MESSAGE)
