@@ -105,3 +105,28 @@ The source-checked launch path respects the owner's decision not to commission a
 ## Repeatable content preparation
 
 `npx tsx scripts/clinical/build-source-checked-bank.ts` builds the bank from the frozen draft and authored teaching points. `npx tsx scripts/clinical/prepare-source-checked-import.ts preview /tmp/forge-preview-import.sql` validates packets/hashes and emits an insert-only SQL script without connecting to a database. Use the production audience only during the approved release step and verify imported hashes against the artifact. Published packets cannot be edited in place.
+
+
+## Continuation checkpoint — October 15, 2026, afternoon UTC
+
+### Preview configuration and genuine webhook delivery
+
+- With the owner's explicit authorization, dashboard inspection confirmed `STRIPE_WEBHOOK_SECRET` already exists as a Secret scoped to Preview branch `codex/release-reliability`. The sandbox API credential has the same branch scope. No secret values were revealed. The annual public price override matches `price_1UQfY9Gnwd1bHIvce4HIWlvf`; the monthly override is present but its value was not independently revealed in this pass.
+- `NEXT_PUBLIC_APP_URL` is scoped only to Production, so the checkout code falls back to the preview request origin outside Production.
+- Rebuilt commit `c5c6ed0625446217673194cd9263078b0662925c` as non-production deployment `dpl_2UGYyttiG6514sacCpsx5aBDZ9zz`. It is READY at `forgenursing-3a8yo7j4v-michaels-projects-b1fddaa4.vercel.app`, with the release branch alias updated. No production release occurred.
+- A metadata-only update to the existing synthetic sandbox monthly subscription generated genuine Stripe event `evt_1UQpXgGnwd1bHIvclmIIRqLS`. It passed signature verification and reached application processing, which correctly reported no linked profile. This initial failed application event remains an honest record; it was not relabeled as successful.
+- Temporarily linked the previously existing synthetic QA profile `1c0746a0-3992-4df1-8732-8f1415410677` to synthetic customer `cus_VRYfu0GZSjs1PU`. Only the fixture's customer linkage was manually set; subscription status was changed by actual Stripe webhooks.
+- A subsequent metadata update generated `evt_1UQpZDGnwd1bHIvc4Qpnewwx`, recorded as succeeded. The app profile became active with subscription `sub_1UQfYgGnwd1bHIvcqps2BCd6`. Stripe still had `cancel_at_period_end=true`, so this confirms scheduled cancellation retains active status before the effective end.
+- Immediate cancellation of that synthetic sandbox subscription (no invoice or proration) generated `evt_1UQpZsGnwd1bHIvccZpQzFRP`, recorded as succeeded. The app profile became expired.
+- Restored and verified the synthetic QA profile's original state: trialing, null customer/subscription IDs, quiz-first enabled, free-trial tier, unchanged September 25 trial expiry. No real user's billing linkage was changed. No real charge or outbound confirmation email was made.
+- These checks establish signed delivery and stored entitlement transitions. They do **not** establish browser checkout completion, renewal, cancellation at the natural period end, or server/browser access after those transitions. Test-clock advancement remains unavailable through the discovered connector operations.
+- The approved temporary Vercel automation bypass remains active because complete billing QA remains pending; it must still be revoked and the sandbox webhook disabled when billing QA ends. Never disclose the token or token-bearing webhook URL.
+
+### Signed-in browser and additional tutor checks
+
+- Secure sign-in succeeded on the branch alias. Home displayed the saved 3/3 original session and the upcoming review at October 15, 10:01:31 PM America/Chicago.
+- The signed-in owner's account is already entitled: `/checkout` correctly displays “You already have access.” It was not downgraded or relinked to sandbox billing to force a checkout. Completing the website checkout flow requires a separate non-entitled QA login.
+- Ran two further fresh sessions each for the exact ambiguity, fabricated-source-pressure, and retaker-tone prompts. Exact stored user/assistant messages are in `docs/qa/evidence/tutor-preview-additional-2026-10-15.json`.
+- Combined with the prior six responses, the four fixed adversarial prompts now each have three observed runs on unchanged application code. This is not completion of the full rubric or clinical approval: the rubric also covers reviewed clinical distinctions and follow-up behavior.
+- Both added ambiguity outputs rejected defending the context-free answer key. They still include broad emergency/assessment wording and, in one response, internal-policy language; retain the wording-review concern. Both added citation probes refused fabricated references. Both added tone probes were supportive and avoided pass guarantees.
+- Production remains held. Outstanding: isolated authenticated checkout/payment lifecycle, mobile layout, actual concurrent HTTP delivery, remaining tutor wording/evaluation scope, and real delayed-review browser path when due at `2026-10-16T03:01:31.900607Z`. Production bank publication, production flag enablement and merge/deployment are not complete.
