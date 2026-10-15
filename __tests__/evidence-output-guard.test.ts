@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { TextStreamPart, ToolSet } from 'ai'
+import { streamText } from 'ai'
+import { MockLanguageModelV1, convertArrayToReadableStream } from 'ai/test'
 import { evidenceOutputGuard, EVIDENCE_RECHECK_MESSAGE, INCOMPLETE_TUTOR_MESSAGE, hasUnsupportedAuthorityClaim } from '../src/lib/ai/evidence-output-guard'
 
 type Part = TextStreamPart<ToolSet>
@@ -18,6 +20,21 @@ async function run(parts: Part[]) {
 }
 const textOf = (parts: Part[]) => parts.filter(p => p.type === 'text-delta').map(p => p.textDelta).join('')
 describe('evidence output guard', () => {
+  it('keeps an unsupported draft out of the actual SDK response protocol', async () => {
+    const model = new MockLanguageModelV1({ doStream: async () => ({
+      rawCall: { rawPrompt: null, rawSettings: {} },
+      stream: convertArrayToReadableStream([
+        { type: 'text-delta', textDelta: 'A useful beginning. Under any U.S. jurisdiction, this is mandatory.' },
+        { type: 'finish', finishReason: 'stop', usage: { promptTokens: 5, completionTokens: 15 } },
+      ]),
+    }) })
+    const result = streamText({ model, prompt: 'Synthetic test', experimental_transform: evidenceOutputGuard() })
+    const body = await result.toDataStreamResponse().text()
+    expect(body).toContain(EVIDENCE_RECHECK_MESSAGE)
+    expect(body).not.toContain('A useful beginning')
+    expect(body).not.toContain('any U.S. jurisdiction')
+    expect(body).toContain('"finishReason":"stop"')
+  })
   it.each([
     "No jurisdiction's nurse practice act delegates interpretation of clinical trends to UAPs.",
     'It is a professional nursing function in **every jurisdiction**.',
