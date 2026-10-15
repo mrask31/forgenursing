@@ -45,6 +45,30 @@ The legacy `/checkout` screen now uses the shared offer, preselects Monthly, fol
 
 The expired-trial browser test has current expectations and fixture cleanup, but that full automated test has not executed. The 23 focused checkout/conversion unit tests passed. The available Stripe connector lists only the **CreaseOS** live account; no ForgeNursing Stripe account or test environment is connected. It was not used to inspect or modify CreaseOS payments. No charge was made, and a complete ForgeNursing paid subscription/webhook lifecycle remains unverified.
 
+### Stripe reconnection and sandbox checks — October 15
+
+The owner restored the ForgeNursing live connection, followed by the shared test mode and dedicated sandbox connections. Live read-only inspection confirmed active USD prices of $9.99/month and $79/year, and an enabled webhook at `https://forgenursing.com/api/stripe/webhook` using API version `2025-12-15.clover`. Historical checkout sessions also contained those amounts; this does not establish the current preview's configured price IDs. No live payments, subscriptions or prices were changed.
+
+Both test environments initially had no prices or webhook endpoints. Created the following only in dedicated sandbox `acct_1SoyM3Gnwd1bHIvc`:
+
+- Product `prod_VRYflMZ8528015` (ForgeNursing Practice — QA).
+- Monthly price `price_1UQfY8Gnwd1bHIvcpwvgIR9K`: USD 999 cents, monthly.
+- Annual price `price_1UQfY9Gnwd1bHIvce4HIWlvf`: USD 7900 cents, yearly.
+- Test clock `clock_1UQfYAGnwd1bHIvciWGCokaA` and three synthetic customers without email addresses or real personal data.
+
+Verified through Stripe API responses and generated Stripe events:
+
+| Scenario | Observed result | Evidence |
+| --- | --- | --- |
+| Monthly initial payment | Active subscription; paid invoice for 999 cents | `sub_1UQfYgGnwd1bHIvcqps2BCd6`, `in_1UQfYgGnwd1bHIvc0N0qGkjb` |
+| Annual initial payment | Active subscription; paid invoice for 7900 cents | `sub_1UQfZ8Gnwd1bHIvcf7rdVFAd`, `in_1UQfZ8Gnwd1bHIvc8mnMPmpc` |
+| Schedule cancellation | Monthly update set `cancel_at_period_end=true`, while status remained active; annual subscription also has end-of-period cancellation scheduled | Monthly cancellation timestamp `1794715200`; annual `1823572800` |
+| Declined initial payment | Subscription incomplete; invoice open, zero paid, 999 cents outstanding; `invoice.payment_failed` emitted | `sub_1UQfZyGnwd1bHIvcCpINKJQO`, `in_1UQfZyGnwd1bHIvc9T7FhQWX`, `evt_1UQfa1Gnwd1bHIvcTgkgEa37` |
+
+These are **Stripe-side API smoke checks**, not app end-to-end tests. Synthetic customers have no ForgeNursing profiles and the sandbox has no webhook destination. No application entitlement or analytics event was fabricated. The no-card trial remains an application-managed trial; no Stripe trial was added. The connector's operation search did not expose test-clock advancement, so renewal, failed renewal and actual expiration after cancellation were not tested. Do not substitute scheduled cancellation for proof of cancellation at period end.
+
+The preview still needs a sandbox API credential, these price IDs and a reachable sandbox webhook with its matching signing secret. Vercel configuration access was previously denied; reconnecting Stripe does not resolve that separate permission. Keep all sandbox configuration scoped to QA/preview, never Production, and do not paste secrets into chat or commit them. Taxes were not enabled or assessed by these tests.
+
 ## Tutor probes and fixes prompted by QA
 
 Three deployed-model smoke probes ran on the original preview. Exact visible outputs are preserved in `docs/qa/evidence/tutor-preview-before-2026-10-15.json`; these are synthetic QA prompts, not real patient reports.
@@ -63,7 +87,7 @@ Code follow-up: `282859278b7328dd675eac412617b000d9546661`, tree `2f4dc4c8bb232f
 
 1. Finish broader tutor evaluation, mobile layout and actual concurrent HTTP delivery. Follow-up Home copy and original-score selection are browser-verified. Mixed/topic controls loaded and selecting Management of Care updated the field. Corrected tracking was observed in PostHog: new Home session `6d707656-a767-47d3-94f8-fdc9d402c46e` produced `quiz_started` with `is_resume=false`, and direct loading emitted `quiz_resumed`; all were QA-tagged. A refresh produced a second `quiz_resumed`, not another start. This second session completed at 3/3, with zero scheduled reviews for its correct originals, confirmed in the database.
 2. Exercise the real delayed-review browser path when due. Database early-blocking, fresh delayed variant, score separation, resumption and exhaustion have already passed rollback integration checks. Do not backdate real learner records or fabricate review events.
-3. Connect the correct ForgeNursing Stripe environment and complete the paid lifecycle test. The CreaseOS connection cannot verify it.
+3. Complete the website-connected paid lifecycle test. The correct ForgeNursing sandbox is now connected and initial payment/decline/scheduled-cancellation API checks passed as described above. Wiring the preview to that sandbox, webhook delivery, renewal and post-cancellation access remain unverified.
 4. Publish the identical validated packets with production audience, enable `SOURCE_CHECKED_PRACTICE_ENABLED=true` for Production, deploy and smoke-test. Vercel environment-variable operations previously returned 403 through this connection; that access limitation remains. No production bank publications exist and PR 12 remains unmerged.
 
 The source-checked launch path respects the owner's decision not to commission an RN review; it never relabels that choice as independent clinical validation. Software checks establish behavior and data integrity, not medical correctness or learning efficacy. The new release is not yet declared production-ready.
