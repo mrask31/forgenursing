@@ -69,6 +69,16 @@ These are **Stripe-side API smoke checks**, not app end-to-end tests. Synthetic 
 
 The preview still needs a sandbox API credential, these price IDs and a reachable sandbox webhook with its matching signing secret. Vercel configuration access was previously denied; reconnecting Stripe does not resolve that separate permission. Keep all sandbox configuration scoped to QA/preview, never Production, and do not paste secrets into chat or commit them. Taxes were not enabled or assessed by these tests.
 
+## Sandbox wiring checkpoint — October 15, 2026, 11:44 UTC
+
+- Owner saved the sandbox API credential as a Secret named `STRIPE_SECRET_KEY`, scoped to Preview branch `codex/release-reliability`. The unused `_TEST` entries remain; application code does not read them. The existing all-environments credential was not changed by the agent. Secret values were not exposed or committed.
+- Branch-only sandbox monthly and annual price overrides are saved. Preview redeployment `dpl_E9X1FW1BZqoHLiE1zQi3ixUznrHe` is READY at `forgenursing-dm3253zzg-michaels-projects-b1fddaa4.vercel.app`, commit `78292369224bb963b74252a4e6f9d1e63aa35865`. Pricing returned HTTP 200. Successful build does not establish credential/account correctness.
+- Owner explicitly approved a temporary project-wide Vercel automation bypass for sandbox webhooks, including disclosure of its scope and revocation after testing. Connector creation returned 403; the approved dashboard fallback generated it automatically. Note: `ForgeNursing sandbox billing QA 2026-10-15 — revoke after testing`. **The token is active and must be revoked after QA.** Do not disclose its value or the full webhook URL containing it.
+- Created sandbox endpoint `we_1UQn2AGnwd1bHIvcjoDX2Nxk` in account `acct_1SoyM3Gnwd1bHIvc`, livemode false, API `2025-12-15.clover`. Destination is the release-branch alias path `/api/stripe/webhook` with the approved access parameter. Events: checkout completion, subscription created/updated/deleted, invoice payment success/failure.
+- An unsigned POST using the access token reached the app and returned HTTP 400 `Missing signature`. This verifies routing and unsigned-request rejection only, not genuine Stripe delivery or entitlement changes.
+- Prepared, but did not save, a new Secret `STRIPE_WEBHOOK_SECRET`, scoped only to Preview branch `codex/release-reliability`. Owner must copy the new endpoint's signing secret from Stripe into the prepared Value and save; browser credential-entry rules require human entry. Never use the live webhook secret here.
+- Still pending: signing-secret save, redeploy, actual sandbox checkout and webhook delivery, failed/renewed/canceled access checks. Do not test against a real user's live subscription record. Production deployment and content publication remain pending.
+
 ## Tutor probes and fixes prompted by QA
 
 Three deployed-model smoke probes ran on the original preview. Exact visible outputs are preserved in `docs/qa/evidence/tutor-preview-before-2026-10-15.json`; these are synthetic QA prompts, not real patient reports.
