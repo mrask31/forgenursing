@@ -187,3 +187,44 @@ Tutor recheck evidence is saved in `docs/qa/evidence/tutor-delegation-recheck-20
 ### Stripe browser access checkpoint — October 15, 11:36 AM Central
 
 Owner reported successful sign-in. Inspection was blocked by native credential protection. One explicit navigation to https://dashboard.stripe.com/ returned only an empty Dashboard root; the subsequent observation was again blocked. This does not establish an authenticated account or sandbox selection. No further browser recovery or credential-entry attempts were made. Connector search for advancing existing test clocks returned no matching operations in OpenAPI 2026-09-30.preview. Renewal lifecycle remains unverified; no billing mutations or production release occurred in this continuation. Do not ask the owner to repeat ordinary sign-in as though the current problem were an incorrect credential.
+
+## Current release checkpoint — October 15, 2026, after remaining-checks continuation
+
+This section supersedes earlier status counts, but preserves the historical failures above.
+
+### Completed this continuation
+
+- Final local source and test files match remote branch source/test files exactly (git diff against fetched branch returned empty). **191 tests across 26 files passed**. TypeScript passed. New/changed AI helper and regression files pass ESLint. Incremental lint passed with **0 new/blocking errors, 451 legacy errors and 16 warnings**, one resolved baseline entry; full lint is not clean.
+- Latest source/test preview commit `e6e00e9d9a245301f266658ac3c365af998ecf65` built READY: deployment `dpl_EL5DSCisEyggwKthruQNUCDvkmUW`, `forgenursing-hh8gju1ex-michaels-projects-b1fddaa4.vercel.app`. Production was not changed.
+- Appended a final evidence policy after all dynamic tutor instructions. Prompt-only recheck still made a universal jurisdiction assertion (captured in `docs/qa/evidence/tutor-final-policy-failure-2026-10-15.json`); it was not accepted as a fix.
+- Added a narrow server output guard for the observed unsupported jurisdiction and exam-authority patterns. It buffers the completed response before emitting learner-facing text, preserves stream finish metadata, and discards interrupted drafts. This introduces complete-response latency. It is a known-pattern safeguard, with possible false positives and unrecognized phrasings, **not clinical validation**.
+- Initial guarded deployment missed “any U.S. jurisdiction”; recorded that failure in `docs/qa/evidence/tutor-guard-initial-recheck-2026-10-15.json`, expanded the pattern and added a regression. A build then failed because the regex Unicode flag exceeded the project's TypeScript target; replaced it with target-compatible syntax and verified successful subsequent builds.
+- Regression coverage includes captured claims split across chunks, ordinary source-neutral teaching, emergency escalation, interrupted/truncated streams, and actual AI SDK `streamText` / data-stream response protocol integration.
+- Three independent fresh wrong-key conversations on guarded code rejected A and selected B without the prior jurisdiction/NCLEX-authority claims. The first was observed in browser and storage; two others were confirmed from stored synthetic QA messages after browser observation failed. **Unsupported certainty and speculation about why the answer key author erred remain; the broader tutor release gate is OPEN.** A fourth interrupted attempt was not counted. An editing-exercise refusal was model behavior, not proof that the server fallback fired live.
+- One fresh emergency probe immediately directed the learner to qualified help without dosing or a treatment sequence. The UI still appended study questions; expanded the handoff detector with three observed/variant regression cases. Reloading the deployed conversation confirmed the study nudges are absent. This is one fresh emergency run, not a complete repeated emergency evaluation.
+- Exact current probe messages and limitations: `docs/qa/evidence/tutor-guard-final-checks-2026-10-15.json`.
+- Mobile code review fixed narrow-screen Progress card stacking, long Account value wrapping, missing safe-area top padding and bottom content clearance above fixed navigation. These static fixes are saved. **Authenticated phone-width and Safari interaction acceptance remain unverified**; the available controlled browser exposes no viewport resize. The temporary responsive QA route remains removed.
+
+### Remaining sandbox lifecycle fixtures are ready
+
+Evidence: `docs/qa/evidence/billing-renewal-fixtures-2026-10-15.json`. Dedicated sandbox only: `acct_1SoyM3Gnwd1bHIvc`, livemode false. New clock `clock_1UQriKGnwd1bHIvc6t7uRygA`, named **Forge release remaining lifecycle QA 2026-10-15**, starts at `2026-10-15T17:00:00Z`. Three synthetic customers have no email addresses and no linked Forge profiles. Each initial invoice is paid 999 USD cents.
+
+| Scenario | Subscription | Prepared state |
+| --- | --- | --- |
+| Successful renewal | `sub_1UQrjHGnwd1bHIvc3c2hq8fr` | Active, successful test payment method |
+| Failed renewal | `sub_1UQrjLGnwd1bHIvcqaIAx39u` | Active after paid initial invoice, then replaced customer payment source with documented charge-failure test token; default subscription payment override absent |
+| Natural cancellation | `sub_1UQrjPGnwd1bHIvcRoUUe2Pd` | Active with cancel_at_period_end true |
+
+Period end is `2026-11-15T17:00:00Z`. Required manual action in Stripe sandbox: Billing → Subscriptions → Simulations → open the exact clock name above → **Advance time to November 16, 2026, 11:00 AM America/Chicago (`2026-11-16T17:00:00Z`)**. The connector does not expose clock advancement, and browser credential protection persists; do not request repeated ordinary sign-in. After advancement, read resulting subscriptions/invoices/events and verify actual outcomes; fixture setup is not a renewal pass.
+
+The sandbox webhook remains disabled and the temporary Vercel bypass remains revoked. Clock advancement alone verifies Stripe-side behavior, **not application entitlement changes**. End-to-end lifecycle checks additionally require a reachable approved sandbox webhook endpoint and isolated profile linkage/cleanup. Do not recreate a project-wide security bypass without the necessary approval. No live Stripe records were changed.
+
+### Release decision and next checks
+
+**HOLD — not production-ready.** Remaining gates:
+1. Broader tutor wording/source and repeated rubric evaluation; current mitigation does not close it.
+2. Authenticated mobile/browser acceptance of Home, practice/retry/review/results, Progress, Account and Tutor.
+3. Successful/failed renewal and natural period-end cancellation, followed by signed app webhook and access-transition verification.
+4. Genuine delayed-review acceptance after `2026-10-16T03:01:31.900607Z` (October 15, 10:01:31 PM America/Chicago). Continuation is already scheduled for 10:03 PM Central, automation `6ad0fc3a1c2c819196ebbf3295b8a665`; a schedule is not a passed check.
+
+Then confirm production environment/live billing configuration, publish the frozen source-checked production bank and enable the intended production flag through the approved release process. Build with Production configuration; **never promote the sandbox-configured preview build**. Merge, production content publication and production deployment remain undone. The source-checked designation and lack of independent RN validation must remain explicit.
