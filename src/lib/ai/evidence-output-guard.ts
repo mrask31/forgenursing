@@ -7,7 +7,7 @@ export const INCOMPLETE_TUTOR_MESSAGE = 'The explanation did not finish, so I ha
 export function hasUnsupportedAuthorityClaim(text: string): boolean {
   const plain = text.normalize('NFKC').replace(/[*_`]/g, '').replace(/\s+/g, ' ')
   return [
-    /\b(?:every|all|any|no)\s+(?:[\p{L}.]+\s+){0,3}(?:states?|jurisdictions?)\b/iu,
+    /\b(?:every|all|any|no)\s+(?:[a-z.]+\s+){0,3}(?:states?|jurisdictions?)\b/i,
     /\b(?:regardless of|across)\s+(?:(?:the|all)\s+)?jurisdictions?\b/i,
     /\b(?:all|every|no)\s+nurse practice acts?\b/i,
     /\b(?:ncsbn|nclex(?: next generation)?)\b[^.!?]{0,160}\b(?:requires?|mandates?|prohibits?|designed|standards?|principles|testing logic)\b/i,
