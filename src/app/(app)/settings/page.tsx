@@ -154,9 +154,9 @@ function SettingsCard({ icon, title, children }: { icon: React.ReactNode; title:
 
 function SettingRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-2 last:border-b-0 last:pb-0">
+    <div className="flex flex-col items-start justify-between gap-1 sm:flex-row sm:gap-4 border-b border-slate-100 pb-2 last:border-b-0 last:pb-0">
       <span className="text-xs font-bold uppercase tracking-wide text-slate-400">{label}</span>
-      <span className="text-right text-sm font-medium text-[#0B2545]">{value}</span>
+      <span className="min-w-0 max-w-full break-words text-sm font-medium text-[#0B2545] [overflow-wrap:anywhere] sm:text-right">{value}</span>
     </div>
   )
 }
