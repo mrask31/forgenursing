@@ -228,3 +228,15 @@ The sandbox webhook remains disabled and the temporary Vercel bypass remains rev
 4. Genuine delayed-review acceptance after `2026-10-16T03:01:31.900607Z` (October 15, 10:01:31 PM America/Chicago). Continuation is already scheduled for 10:03 PM Central, automation `6ad0fc3a1c2c819196ebbf3295b8a665`; a schedule is not a passed check.
 
 Then confirm production environment/live billing configuration, publish the frozen source-checked production bank and enable the intended production flag through the approved release process. Build with Production configuration; **never promote the sandbox-configured preview build**. Merge, production content publication and production deployment remain undone. The source-checked designation and lack of independent RN validation must remain explicit.
+
+### Clock advancement results verified — October 15, 2026, after 12:18 PM Central
+
+Owner advanced the intended sandbox simulation to November 16, 2026, 17:00 UTC (screenshot). Subsequent read-only Stripe API inspection confirms all three prepared **Stripe-side** lifecycle expectations:
+
+- Successful renewal: subscription `sub_1UQrjHGnwd1bHIvc3c2hq8fr` remains active, period advanced to November 15–December 15. New cycle invoice `in_1UQsHNGnwd1bHIvc7ZCFpmFk` is paid, USD 999 cents, zero remaining, one payment attempt.
+- Failed renewal: subscription `sub_1UQrjLGnwd1bHIvcqaIAx39u` is past_due. New cycle invoice `in_1UQsHPGnwd1bHIvcMjzXGU8n` is open after one attempted collection, zero paid, USD 999 cents outstanding; Stripe has a next_payment_attempt scheduled. This verifies the initial failed renewal, not exhausted retries or eventual cancellation.
+- Natural period-end cancellation: subscription `sub_1UQrjPGnwd1bHIvcRoUUe2Pd` is canceled, ended_at `1794762000` (November 15, 17:00 UTC), matching its scheduled period end. The complete invoice list contains only its original paid invoice, with no renewal invoice.
+
+All objects are livemode false and belong to `clock_1UQriKGnwd1bHIvc6t7uRygA`. Exact selected non-sensitive API evidence is saved in `docs/qa/evidence/billing-renewal-results-2026-10-15.json`. No payments or subscription settings were changed during verification.
+
+This closes the three pending Stripe-side simulation checks. It does **not** close signed application webhook delivery or browser/server entitlement transitions for these outcomes: the sandbox endpoint remains disabled, the security bypass remains revoked, and these synthetic customers have no linked Forge profiles. Do not finish/delete the simulation before remaining app integration work has a verified evidence/fixture plan. Production remains held for application billing lifecycle, tutor evaluation, mobile acceptance and genuine delayed-review acceptance.
