@@ -285,3 +285,9 @@ Restored the QA profile conditionally and compared every captured billing field 
 Exact non-secret evidence: `docs/qa/evidence/billing-lifecycle-signed-reconciliation-2026-10-15.json`.
 
 Remaining release gates: temporary-bypass cleanup; actual access acceptance after billing states; fresh tutor probes on code `9a3f5c87b3a59c535fc933f5a6fa54ec6af8faad`; authenticated mobile acceptance; genuine delayed review at its scheduled due time. Production remains held.
+
+### Owner-reported bypass cleanup — October 15, 1:45 PM Central
+
+Owner confirmed the temporary Vercel bypass is now disabled after the removal request. Record this as owner-reported cleanup, not independent dashboard verification: native browser observation remains restricted and connector revocation had returned 403. Read-only Stripe inspection independently reconfirmed sandbox endpoint `we_1UQn2AGnwd1bHIvcjoDX2Nxk` is disabled and livemode false. The QA account was already restored and verified.
+
+No further Stripe setup action is currently requested. Remaining acceptance gates are browser/server access behavior after billing states, fresh tutor responses on the latest prompt, authenticated mobile acceptance, and the genuine delayed-review task scheduled for 10:03 PM Central. No production release is claimed.
