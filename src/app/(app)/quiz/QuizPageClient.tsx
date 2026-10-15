@@ -211,7 +211,7 @@ export default function QuizPageClient() {
           setResumeSession(null)
           try {
             const posthog = (await import('posthog-js')).default
-            posthog.capture('quiz_started', {
+            posthog.capture('quiz_resumed', {
               session_id: directSession.id,
               source_type: sourceType,
               nclex_category: category === 'All Categories' ? null : category,
@@ -492,7 +492,7 @@ export default function QuizPageClient() {
       {phase === 'loading' && (
         <div className="flex flex-col items-center justify-center py-20 space-y-3">
           <div className="w-8 h-8 border-3 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0D8F9C', borderTopColor: 'transparent' }} />
-          <p className="text-sm text-gray-500">Generating your next question...</p>
+          <p className="text-sm text-gray-500">Loading your next question...</p>
         </div>
       )}
 
