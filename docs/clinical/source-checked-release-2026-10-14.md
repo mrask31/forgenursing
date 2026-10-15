@@ -181,3 +181,5 @@ Remaining release gates are unchanged. In particular, the real delayed review ca
 - Scheduled continuation for the real delayed review at October 15, 10:03 PM America/Chicago, just after its genuine due time. No dates were backdated. A scheduled continuation is not a passed check.
 
 Production remains unmerged/unreleased. Remaining: complete tutor repeat/source review, remaining mobile/browser acceptance, sandbox renewal lifecycle, and genuine delayed-review acceptance. Production content publication/flag enablement and a production-configured build come only after those gates; never promote a sandbox-configured preview build to Production.
+
+Tutor recheck evidence is saved in `docs/qa/evidence/tutor-delegation-recheck-2026-10-15.json`. The deliberate wrong-key follow-up was rejected, but it produced unsupported assertions about every jurisdiction's nurse practice act and NCSBN/NCLEX standards despite the prompt's evidence policy. **Tutor release gate remains open; the prompt correction is not a validated resolution.** Further fixes and fresh repeated deployed checks are required.
