@@ -1,0 +1,143 @@
+{
+  "observed_date": "2026-10-15",
+  "sandbox": "acct_1SoyM3Gnwd1bHIvc",
+  "clock_time_confirmed_by_owner_screenshot": "2026-11-16T17:00:00Z",
+  "scope": "Stripe-side lifecycle only; sandbox webhook disabled; no linked Forge profiles; application access transitions not verified",
+  "scenarios": [
+    {
+      "scenario": "successful-renewal",
+      "subscription": "sub_1UQrjHGnwd1bHIvc3c2hq8fr",
+      "customer": "cus_VRlFRDNcYCH4lR",
+      "status": "active",
+      "livemode": false,
+      "test_clock": "clock_1UQriKGnwd1bHIvc6t7uRygA",
+      "ended_at": null,
+      "cancel_at_period_end": false,
+      "current_period_start": 1794762000,
+      "current_period_end": 1797354000,
+      "invoices_has_more": false,
+      "invoices": [
+        {
+          "id": "in_1UQsHNGnwd1bHIvc7ZCFpmFk",
+          "status": "paid",
+          "billing_reason": "subscription_cycle",
+          "currency": "usd",
+          "amount_paid": 999,
+          "amount_remaining": 0,
+          "attempt_count": 1,
+          "attempted": true,
+          "next_payment_attempt": null,
+          "created": 1794762000,
+          "status_transitions": {
+            "finalized_at": 1794765600,
+            "marked_uncollectible_at": null,
+            "paid_at": 1794765600,
+            "voided_at": null
+          }
+        },
+        {
+          "id": "in_1UQrjHGnwd1bHIvciez7M5fP",
+          "status": "paid",
+          "billing_reason": "subscription_create",
+          "currency": "usd",
+          "amount_paid": 999,
+          "amount_remaining": 0,
+          "attempt_count": 1,
+          "attempted": true,
+          "next_payment_attempt": null,
+          "created": 1792083600,
+          "status_transitions": {
+            "finalized_at": 1792083600,
+            "marked_uncollectible_at": null,
+            "paid_at": 1792083600,
+            "voided_at": null
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "failed-renewal",
+      "subscription": "sub_1UQrjLGnwd1bHIvcqaIAx39u",
+      "customer": "cus_VRlFukrjHpLZT9",
+      "status": "past_due",
+      "livemode": false,
+      "test_clock": "clock_1UQriKGnwd1bHIvc6t7uRygA",
+      "ended_at": null,
+      "cancel_at_period_end": false,
+      "current_period_start": 1794762000,
+      "current_period_end": 1797354000,
+      "invoices_has_more": false,
+      "invoices": [
+        {
+          "id": "in_1UQsHPGnwd1bHIvcMjzXGU8n",
+          "status": "open",
+          "billing_reason": "subscription_cycle",
+          "currency": "usd",
+          "amount_paid": 0,
+          "amount_remaining": 999,
+          "attempt_count": 1,
+          "attempted": true,
+          "next_payment_attempt": 1794928925,
+          "created": 1794762000,
+          "status_transitions": {
+            "finalized_at": 1794765600,
+            "marked_uncollectible_at": null,
+            "paid_at": null,
+            "voided_at": null
+          }
+        },
+        {
+          "id": "in_1UQrjLGnwd1bHIvcxIKyM85t",
+          "status": "paid",
+          "billing_reason": "subscription_create",
+          "currency": "usd",
+          "amount_paid": 999,
+          "amount_remaining": 0,
+          "attempt_count": 1,
+          "attempted": true,
+          "next_payment_attempt": null,
+          "created": 1792083600,
+          "status_transitions": {
+            "finalized_at": 1792083600,
+            "marked_uncollectible_at": null,
+            "paid_at": 1792083600,
+            "voided_at": null
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "period-end-cancel",
+      "subscription": "sub_1UQrjPGnwd1bHIvcRoUUe2Pd",
+      "customer": "cus_VRlFNH54j7CFJv",
+      "status": "canceled",
+      "livemode": false,
+      "test_clock": "clock_1UQriKGnwd1bHIvc6t7uRygA",
+      "ended_at": 1794762000,
+      "cancel_at_period_end": true,
+      "current_period_start": 1792083600,
+      "current_period_end": 1794762000,
+      "invoices_has_more": false,
+      "invoices": [
+        {
+          "id": "in_1UQrjPGnwd1bHIvcIHNMWVfu",
+          "status": "paid",
+          "billing_reason": "subscription_create",
+          "currency": "usd",
+          "amount_paid": 999,
+          "amount_remaining": 0,
+          "attempt_count": 1,
+          "attempted": true,
+          "next_payment_attempt": null,
+          "created": 1792083600,
+          "status_transitions": {
+            "finalized_at": 1792083600,
+            "marked_uncollectible_at": null,
+            "paid_at": 1792083600,
+            "voided_at": null
+          }
+        }
+      ]
+    }
+  ]
+}
