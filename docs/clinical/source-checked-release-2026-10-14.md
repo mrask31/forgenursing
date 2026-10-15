@@ -263,3 +263,25 @@ Owner explicitly approved recreating the project-wide temporary Vercel automatio
 Read-only Stripe inspection reconfirmed existing sandbox endpoint `we_1UQn2AGnwd1bHIvcjoDX2Nxk`, description “ForgeNursing preview-only billing QA 2026-10-15; revoke access after testing”, is disabled and livemode false, with the expected six event types. It still points to the release-branch /api/stripe/webhook destination. Secret-bearing query values were not disclosed.
 
 Concrete manual continuation: owner creates the approved temporary automation bypass in Vercel, replaces only the existing sandbox endpoint URL's x-vercel-protection-bypass query value with that new secret, saves, then enables the existing endpoint. Retain its signing secret and event selections; do not create a new endpoint or touch live Stripe. Never paste the bypass value into chat. After owner confirms, verify endpoint state through the Stripe connector and continue isolated-fixture signed-event/profile checks. Browser access checks remain separately blocked. After tests disable the endpoint and revoke the temporary bypass; verify cleanup, requesting owner removal if connector revocation again fails.
+
+### Signed lifecycle reconciliation passed — October 15, after 1:36 PM Central
+
+Owner completed the approved temporary bypass creation and sandbox endpoint update/enabling. Connector inspection confirmed the existing endpoint enabled, livemode false, expected branch webhook destination and event selection. Secret-bearing URL values were never disclosed.
+
+Temporarily linked only designated QA profile `b3aabc19-9155-4dc3-8741-de8bfb31284a` to each prepared synthetic subscription in sequence. Billing status was not manually set to the expected result. A metadata-only update emitted a genuine signed `customer.subscription.updated` for each. Deployed app logs and profile reads verified:
+
+| Stripe outcome | Signed event | App processing | Resulting profile status |
+| --- | --- | --- | --- |
+| Renewed active subscription | `evt_1UQtWnGnwd1bHIvcuw3DaTTV` | succeeded | active |
+| Failed renewal, past_due | `evt_1UQtXIGnwd1bHIvc8WfLhIR5` | succeeded | past_due |
+| Natural period-end cancellation | `evt_1UQtXgGnwd1bHIvcZsYi8SuW` | succeeded | expired |
+
+This verifies real signature acceptance and current-subscription reconciliation after the three simulated outcomes. It is NOT a claim that the original renewal/cancellation events were redelivered, and it does NOT establish new server-response/browser access acceptance while native browser observation remains restricted.
+
+Restored the QA profile conditionally and compared every captured billing field to its pre-test snapshot: exact match. Status trialing, original October 22 expiry, beta false, null Stripe customer/subscription links, quiz-first true, free_trial tier. Main owner account and live Stripe were untouched. Disabled sandbox endpoint `we_1UQn2AGnwd1bHIvcjoDX2Nxk`; Stripe confirmed disabled.
+
+**ACTION REQUIRED: temporary bypass remains active.** Authorized revocation returned Vercel 403 permission denied. No CLI is installed, and the established browser restriction prevents dashboard cleanup. Owner must revoke the temporary Protection Bypass for Automation entry just created for these remaining sandbox lifecycle tests. Do not repeat the failed unchanged connector request or claim removal before verified/reported evidence. The sandbox endpoint is already disabled.
+
+Exact non-secret evidence: `docs/qa/evidence/billing-lifecycle-signed-reconciliation-2026-10-15.json`.
+
+Remaining release gates: temporary-bypass cleanup; actual access acceptance after billing states; fresh tutor probes on code `9a3f5c87b3a59c535fc933f5a6fa54ec6af8faad`; authenticated mobile acceptance; genuine delayed review at its scheduled due time. Production remains held.
