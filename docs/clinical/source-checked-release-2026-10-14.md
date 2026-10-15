@@ -160,3 +160,10 @@ Production remains held for the remaining release gates above. The temporary web
 - Disabled sandbox webhook `we_1UQn2AGnwd1bHIvcjoDX2Nxk`; Stripe returned status disabled. Both browser-created subscriptions remain canceled and the dedicated login account retains its original trial.
 - **Bypass revocation is still blocked.** The Vercel connector returned 403 for revoking the approved temporary automation bypass. The previously approved dashboard fallback was attempted, but browser credential protection blocked observation even after navigation recovery. Manual handoff opened the existing Vercel tab. Owner needs Project Settings > Deployment Protection > Protection Bypass for Automation and must revoke the entry noted `ForgeNursing sandbox billing QA 2026-10-15 — revoke after testing`. Do not paste the bypass value into chat. The sandbox webhook is already disabled.
 - Production remains unmerged/unreleased. Remaining checks include renewal/failed renewal/natural cancellation, mobile layout, actual concurrent HTTP delivery, outstanding tutor evaluation wording, and the real delayed review due `2026-10-16T03:01:31.900607Z` (October 15, 10:01:31 PM America/Chicago).
+
+
+### Bypass removal verified — October 15, 2026, after 10:24 AM America/Chicago
+
+The owner confirmed removal. After a permission-review timeout and a transient browser connection interruption, the dashboard recovered. Project Settings > Deployment Protection displayed the empty Protection Bypass for Automation list: “Add a secret that can be used to bypass Deployment Protection for this project.” No bypass entries remained. Vercel Authentication / Require Log In remained enabled with Standard Protection. No settings were changed during this verification. This supersedes the blocked cleanup checkpoint above: temporary bypass cleanup is complete, and the sandbox webhook remains disabled.
+
+Remaining release gates are unchanged. In particular, the real delayed review cannot be exercised before `2026-10-16T03:01:31.900607Z` (October 15, 10:01:31 PM America/Chicago). No production release or publication is claimed.
