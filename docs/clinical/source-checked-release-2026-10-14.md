@@ -308,3 +308,21 @@ Current browser availability check `cua.getState()` failed with `BrowserCredenti
 Consequently fresh delayed content rendering, answer submission/persistence, independent delayed score, refresh resumption and post-completion exhaustion were **not exercised**. No learner data, dates, answers, review statuses or exposures were written. No successful browser check or clinical approval is claimed.
 
 The timed waiting prerequisite is satisfied; usable authorized authenticated browser observation is now the delayed-review blocker. Remaining release gates: this delayed-review acceptance; the 27 fresh tutor responses on the latest prompt configuration; authenticated 320/390-width and Safari acceptance; actual server/browser access behavior after the verified billing-state transitions. Earlier signed billing reconciliation and owner-reported bypass cleanup stand as documented above. Production configuration verification and the approved production publication/build process remain subsequent release steps. **No merge, production publication or deployment occurred.**
+
+
+### Browser recovery and genuine delayed-review acceptance — October 16, 2026, morning Central
+
+The owner's request to finish release QA was resumed. Fresh-document browser recovery reached the release branch /entry and then /login; secure browserAuth sign-in succeeded. Positive signed-in evidence: Home displayed the saved original 3/3 session and “1 review ready to revisit.” Browser access was usable in this pass; the previous retained-data restriction is historical, not the current state.
+
+Tested deployment: `dpl_DguTA8oWE5UT3449Sx1bLuc8QUBm`, READY preview `forgenursing-alj4lrmyn-michaels-projects-b1fddaa4.vercel.app`, branch alias, git commit `0d6333f53a7a5857e5355510051d271a761cbd38` (documentation changes after latest source `9a3f5c87b3a59c535fc933f5a6fa54ec6af8faad`).
+
+Genuine delayed-review acceptance for queue `a6b8231d-5f02-459d-b7a6-fbe10f7f6649`:
+- /review showed one due review; Start one review served “Which postoperative finding needs immediate assessment and escalation?” with A unchanged mild incision soreness; B routine dressing question; C lunch request; D sudden chest pain with unexplained breathlessness. Source-check / not independently clinically validated disclosure was visible. Empty submit disabled.
+- Application start persisted attempt `5c30eb50-8803-42a1-a578-1c79c3121e11` at `2026-10-16T11:14:13.432297Z`, after the genuine due time. Read-only verification at `11:14:21.677908Z` found an unanswered attempt.
+- Refresh returned to the due queue; pressing Start again resumed the same question and exactly the same attempt ID/presented_at, independently checked at `11:14:41.404147Z`. No second attempt was created.
+- Selected D through the browser and submitted. App displayed “Correct.”, choice-specific explanation, “Saved separately. This family has no fresh delayed questions left.”
+- Database read at `2026-10-16T11:15:09.354796Z` confirmed answer D, correct=true, answered_at `2026-10-16T11:14:55.092689Z`, queue status exhausted. A delayed_review exposure was first recorded at the real presentation timestamp. Original/retry exposures remained from October 15.
+- Original `7fc4734e-0eff-4d2b-947a-bf83b6988013` remains completed 2/3; retry `54b4385f-dcf5-434a-8c2c-07458f40ee98` remains completed 1/1. Delayed correctness is stored independently in its review attempt.
+- Back to review queue, and a subsequent full page reload, both showed “Nothing due yet” and explained that the available delayed questions were finished; no start/answer control remained.
+
+This closes the real delayed-review browser gate, including fresh role exposure, first-answer saving, score separation, resumption and exhaustion. No timestamps were backdated or direct database writes used. These were designated owner QA interactions, not clinical validation. Fresh tutor probes, authenticated mobile acceptance and billing-state access acceptance remain in progress/pending. Production remains held.
