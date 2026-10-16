@@ -1,7 +1,7 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { Send, Stethoscope, User, Brain, FileText, Pill, Paperclip, FileIcon, ClipboardCheck, Bookmark, Star, AlertCircle } from 'lucide-react'
+import { Send, Stethoscope, User, Brain, FileText, Pill, Paperclip, ClipboardCheck, Bookmark, Star, AlertCircle } from 'lucide-react'
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import MessageWithMedicalTerms from '../tutor/MessageWithMedicalTerms'
@@ -35,23 +35,6 @@ const generateChatId = () => {
     return newId;
   }
   return '';
-};
-
-// Helper to detect if message likely used binder context
-// This is a simple heuristic - can be enhanced with API metadata later
-const detectBinderUsage = (content: string): boolean => {
-  // Simple check: if content mentions specific file patterns or binder-related terms
-  // This is a placeholder - ideally API would return metadata
-  const binderIndicators = [
-    'from your',
-    'your uploaded',
-    'your materials',
-    'your binder',
-    'your document',
-  ];
-  return binderIndicators.some(indicator => 
-    content.toLowerCase().includes(indicator)
-  );
 };
 
 interface ClinicalTutorWorkspaceProps {
@@ -89,18 +72,18 @@ export default function ClinicalTutorWorkspace({
   const [flaggedMessages, setFlaggedMessages] = useState<Set<string>>(new Set())
   const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
   const justSentMessageRef = useRef<boolean>(false) // Track when we just sent a message
-  
+
   // If selection props are provided, we'll use ChatMessageList for rendering
   const useMessageList = !!selectedMessageId || !!onSelectMessage
-  
+
   // Check if we have topic context to avoid landing page flash
   const hasTopic = Boolean(tutorContext?.selectedTopicId || tutorContext?.selectedTopic)
-  
+
   // CRITICAL: Use providedChatId directly and update when it changes
   // This ensures Notes Mode chatId is used, not a cached tutor chatId
   // DO NOT generate a new chatId if providedChatId is missing - wait for resolution
   const chatId = providedChatId && isValidUUID(providedChatId) ? providedChatId : null
-  
+
   // Update localStorage when chatId changes (for Notes Mode)
   useEffect(() => {
     if (chatId && typeof window !== 'undefined' && isValidUUID(chatId)) {
@@ -173,18 +156,18 @@ export default function ClinicalTutorWorkspace({
 
     loadHistory();
   }, [chatId]);
-  
+
   // Get topic context for warm start
   const topicTitle = tutorContext.selectedTopic?.title
   const className = tutorContext.selectedClass ? `${tutorContext.selectedClass.code} — ${tutorContext.selectedClass.name}` : undefined
   const selectedClassName = tutorContext.selectedClass?.name || undefined
-  
+
   const requestBody = useMemo(() => {
     // CRITICAL: Always send array, never 'none' or undefined
     const attachedFileIds = Array.isArray(attachedFiles) && attachedFiles.length > 0
       ? attachedFiles.map(f => f.id).filter(id => id) // Filter out any falsy IDs
       : [];
-    
+
     return {
       chatId,
       filterMode,
@@ -197,7 +180,7 @@ export default function ClinicalTutorWorkspace({
       // imageData is passed per-request via append() options, not in the hook-level body
     };
   }, [chatId, filterMode, selectedDocIds, mode, topicTitle, className, selectedClassName, attachedFiles]);
-  
+
   const { messages, append, isLoading, setMessages } = useChat({
     api: '/api/chat',
     initialMessages: initialMessages,
@@ -234,14 +217,14 @@ export default function ClinicalTutorWorkspace({
   // Auto-scroll when a new user message is added to messages array
   useEffect(() => {
     if (!scrollContainerRef?.current) return
-    
+
     const currentMessageCount = messages.length
     const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null
-    
+
     // Check if a new user message was added
     const isNewUserMessage = lastMessage?.role === 'user' && 
       currentMessageCount > prevMessageCountRef.current
-    
+
     if (isNewUserMessage) {
       const scrollToBottom = () => {
         if (scrollContainerRef.current) {
@@ -252,7 +235,7 @@ export default function ClinicalTutorWorkspace({
           })
         }
       }
-      
+
       // Use requestAnimationFrame and multiple retries to ensure DOM is updated
       requestAnimationFrame(() => {
         scrollToBottom()
@@ -260,7 +243,7 @@ export default function ClinicalTutorWorkspace({
         setTimeout(scrollToBottom, 300)
       })
     }
-    
+
     // Update ref
     prevMessageCountRef.current = currentMessageCount
   }, [messages, scrollContainerRef])
@@ -303,15 +286,15 @@ export default function ClinicalTutorWorkspace({
   // Scroll to specific message if scrollToMessageId is provided
   useEffect(() => {
     if (!scrollToMessageId || !scrollContainerRef?.current) return
-    
+
     let attempts = 0
     const maxAttempts = 30 // Try for up to 3 seconds (30 * 100ms)
-    
+
     const tryScroll = () => {
       attempts++
       const container = scrollContainerRef.current
       if (!container) return
-      
+
       // Find the message element by data attribute
       const messageElement = container.querySelector(`[data-message-id="${scrollToMessageId}"]`) as HTMLElement
       if (messageElement) {
@@ -319,12 +302,12 @@ export default function ClinicalTutorWorkspace({
         const containerRect = container.getBoundingClientRect()
         const elementRect = messageElement.getBoundingClientRect()
         const scrollTop = container.scrollTop + elementRect.top - containerRect.top - 100 // 100px offset from top
-        
+
         container.scrollTo({
           top: scrollTop,
           behavior: 'smooth'
         })
-        
+
         // Temporarily highlight the message
         messageElement.style.transition = 'background-color 0.3s'
         messageElement.style.backgroundColor = 'rgba(99, 102, 241, 0.1)' // indigo-50
@@ -336,7 +319,7 @@ export default function ClinicalTutorWorkspace({
         setTimeout(tryScroll, 100)
       }
     }
-    
+
     // Start trying after messages have a chance to load
     setTimeout(tryScroll, 300)
   }, [scrollToMessageId, scrollContainerRef, messages.length]) // Retry when messages change
@@ -347,7 +330,7 @@ export default function ClinicalTutorWorkspace({
     setIsTogglingHelp(true)
     const isCurrentlyFlagged = flaggedMessages.has(messageId)
     const newFlaggedSet = new Set(flaggedMessages)
-    
+
     if (isCurrentlyFlagged) {
       newFlaggedSet.delete(messageId)
     } else {
@@ -427,7 +410,7 @@ export default function ClinicalTutorWorkspace({
         { role: 'user', content: trimmedMessage },
         imageData ? { body: { imageData } } : undefined
       );
-      
+
       // Trigger scroll immediately and with retries to ensure it works
       if (scrollContainerRef?.current) {
         const scrollToBottom = () => {
@@ -438,7 +421,7 @@ export default function ClinicalTutorWorkspace({
             })
           }
         }
-        
+
         // Use requestAnimationFrame for better timing
         requestAnimationFrame(() => {
           scrollToBottom()
@@ -457,12 +440,12 @@ export default function ClinicalTutorWorkspace({
 
   // Track processed messages to prevent duplicates (persist across re-renders)
   const processedMessagesRef = useRef<Set<string>>(new Set())
-  
+
   // Listen for messages from ChatInterface (after handleSendMessage is defined)
   // This listener should catch messages even if chatId changes (e.g., when session is created)
   useEffect(() => {
     if (!append) return
-    
+
     const handleMessage = async (event: Event) => {
       const customEvent = event as CustomEvent<{ message: string; sessionId: string; imageData?: Array<{ base64: string; mimeType: string }> }>
       const { message, sessionId: eventSessionId, imageData: eventImageData } = customEvent.detail
@@ -497,7 +480,7 @@ export default function ClinicalTutorWorkspace({
         }
       }
     }
-    
+
     window.addEventListener('tutor-send-message', handleMessage)
     return () => {
       window.removeEventListener('tutor-send-message', handleMessage)
@@ -507,22 +490,22 @@ export default function ClinicalTutorWorkspace({
   // Check for prefilled prompt from landing page and auto-send if needed
   // Use a ref to track if we've already processed the auto-send to prevent duplicates
   const autoSendProcessedRef = useRef(false)
-  
+
   useEffect(() => {
     if (!chatId || !append) {
       return
     }
-    
+
     // Wait for history to finish loading before checking
     if (isLoadingHistory) {
       return
     }
-    
+
     // Check if there's a prefilled message that should be auto-sent
     if (typeof window !== 'undefined' && !autoSendProcessedRef.current) {
       const prefill = sessionStorage.getItem('forgenursing-tutor-prefill')
       const shouldAutoSend = sessionStorage.getItem('forgenursing-tutor-auto-send') === 'true'
-      
+
       
       if (prefill && shouldAutoSend) {
         // If images are pending (user uploaded an image), skip auto-send entirely.
@@ -560,7 +543,7 @@ export default function ClinicalTutorWorkspace({
       }
     }
   }, [chatId, append, isLoadingHistory, messages, handleSendMessage])
-  
+
   // Reset the ref when chatId changes (new chat session)
   useEffect(() => {
     autoSendProcessedRef.current = false
@@ -605,16 +588,16 @@ export default function ClinicalTutorWorkspace({
   // Filter to only assistant messages for document blocks
   const assistantMessages = messages.filter(m => m.role === 'assistant');
   const userMessages = messages.filter(m => m.role === 'user');
-  
+
   // Check if we have non-system messages (real conversation history)
   const hasNonSystemHistory = Array.isArray(messages) && messages.some((m) => m.role !== 'system');
-  
+
   // Determine if we should show landing page
   // Only show landing if we do NOT have a topic and do NOT have history
   const hasHistory = hasNonSystemHistory;
   const hasActiveSession = Boolean(chatId);
   const showLanding = !hasTopic && !hasHistory && !hasActiveSession && !isLoadingHistory;
-  
+
   // Defensive deduplication: if last two messages are identical user messages, remove one
   const normalizedMessages = useMemo(() => {
     if (messages.length >= 2) {
@@ -718,15 +701,14 @@ export default function ClinicalTutorWorkspace({
         ) : (
           normalizedMessages.map((m, index) => {
           if (m.role === 'assistant') {
-            const hasBinderContext = detectBinderUsage(m.content);
             const prevMessage = index > 0 ? normalizedMessages[index - 1] : null;
             const showDivider = prevMessage && prevMessage.role === 'assistant';
-            
+
             // Detect welcome message: first message, contains "Welcome to" pattern
             const isWelcomeMessage = index === 0 && 
               (m.content.includes('Welcome to') || m.content.includes('👋')) &&
               (m.content.includes('study materials') || m.content.includes('I can help you'));
-            
+
             // Show follow-up prompts only on the last assistant message
             const isLastMessage = index === normalizedMessages.length - 1 || 
               (index < normalizedMessages.length - 1 && normalizedMessages[index + 1]?.role === 'user');
@@ -743,38 +725,12 @@ export default function ClinicalTutorWorkspace({
                   {/* Grounding Indicator Strip + Actions */}
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                      {hasBinderContext ? (
-                        <div className="flex items-center gap-2">
-                          <FileIcon className="w-4 h-4 text-teal-600" />
-                          <span className="text-xs text-teal-700 font-medium">
-                            ✅ Using: {(() => {
-                              // Try to extract filenames from message content
-                              const filenameMatches = m.content.match(/From\s+["']?([^"'\n]+\.(pdf|docx?|txt))["']?/gi);
-                              if (filenameMatches && filenameMatches.length > 0) {
-                                const filenames = filenameMatches
-                                  .map(match => match.replace(/From\s+["']?/i, '').replace(/["']?/g, ''))
-                                  .filter((f, i, arr) => arr.indexOf(f) === i) // dedupe
-                                  .slice(0, 3); // max 3
-                                return filenames.join(', ') + (filenameMatches.length > 3 ? '...' : '');
-                              }
-                              // Fallback: check for common patterns
-                              const patternMatches = m.content.match(/([A-Z][a-zA-Z0-9_\-]+\.(pdf|docx?|txt))/g);
-                              if (patternMatches && patternMatches.length > 0) {
-                                const filenames = patternMatches
-                                  .filter((f, i, arr) => arr.indexOf(f) === i)
-                                  .slice(0, 3);
-                                return filenames.join(', ') + (patternMatches.length > 3 ? '...' : '');
-                              }
-                              return 'your uploaded materials';
-                            })()}
-                          </span>
-                        </div>
-                      ) : (
+
                         <>
                           <ClipboardCheck className="w-4 h-4 text-[var(--tutor-text-muted)]" />
                           <span className="text-xs text-[var(--tutor-text-muted)] font-medium">NCLEX Reasoning (Learning Only)</span>
                         </>
-                      )}
+
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -808,11 +764,11 @@ export default function ClinicalTutorWorkspace({
                           <span>{flaggedMessages.has(m.id) ? 'Flagged' : 'Flag'}</span>
                         </button>
                       )}
-                      {tutorContext.selectedTopicId && !hasBinderContext && (
+                      {tutorContext.selectedTopicId && (
                         <button
                           onClick={async () => {
                             if (!tutorContext.selectedTopicId || savingToNotebook === m.id) return
-                            
+
                             setSavingToNotebook(m.id)
                             try {
                               // Get user ID
@@ -834,7 +790,7 @@ export default function ClinicalTutorWorkspace({
                               }
 
                               await setTopicSummaryAndStudiedAt(user.id, tutorContext.selectedTopicId, summary)
-                              
+
                               // Show brief success feedback
                               setTimeout(() => {
                                 setSavingToNotebook(null)
@@ -928,7 +884,7 @@ export default function ClinicalTutorWorkspace({
           }
           })
         )}
-        
+
         {isLoading && !useMessageList && (
           <div className="flex justify-center">
             <div className="tutor-card">
