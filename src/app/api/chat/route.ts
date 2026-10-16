@@ -722,7 +722,7 @@ FORMATTING RULES:
         maxTokens: 1200,
         messages: processedMessages,
         system: systemPrompt + FINAL_EVIDENCE_CHECK,
-        experimental_transform: evidenceOutputGuard(),
+        experimental_transform: evidenceOutputGuard(latestUserMessageStr),
       });
     } catch (claudeError: any) {
       console.error('[CHAT] Error calling Claude:', claudeError);

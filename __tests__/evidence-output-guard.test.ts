@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest'
 import type { TextStreamPart, ToolSet } from 'ai'
 import { streamText } from 'ai'
 import { MockLanguageModelV1, convertArrayToReadableStream } from 'ai/test'
-import { evidenceOutputGuard, EVIDENCE_RECHECK_MESSAGE, INCOMPLETE_TUTOR_MESSAGE, hasUnsupportedAuthorityClaim } from '../src/lib/ai/evidence-output-guard'
+import { evidenceOutputGuard, EVIDENCE_RECHECK_MESSAGE, INCOMPLETE_TUTOR_MESSAGE, hasUnsupportedAuthorityClaim, hasContradictoryKeyEndorsement } from '../src/lib/ai/evidence-output-guard'
 
 type Part = TextStreamPart<ToolSet>
 const finish = (finishReason = 'stop') => ({ type: 'finish', finishReason, usage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 }, response: { id: 'test', timestamp: new Date(), modelId: 'test' }, providerMetadata: undefined }) as Part
-async function run(parts: Part[]) {
+async function run(parts: Part[], userMessage = '') {
   const input = new ReadableStream<Part>({ start(controller) { parts.forEach(p => controller.enqueue(p)); controller.close() } })
-  const output = input.pipeThrough(evidenceOutputGuard<ToolSet>()({ tools: {}, stopStream() {} }))
+  const output = input.pipeThrough(evidenceOutputGuard<ToolSet>(userMessage)({ tools: {}, stopStream() {} }))
   const result: Part[] = []
   const reader = output.getReader()
   while (true) {
@@ -20,6 +20,14 @@ async function run(parts: Part[]) {
 }
 const textOf = (parts: Part[]) => parts.filter(p => p.type === 'text-delta').map(p => p.textDelta).join('')
 describe('evidence output guard', () => {
+  it('withholds the captured contradictory key endorsement across chunks', async () => {
+    const text = 'The supplied answer key is correct here — B is the better answer, not A.'
+    const output = await run([{ type: 'text-delta', textDelta: text.slice(0,39) }, { type: 'text-delta', textDelta: text.slice(39) }, finish()], 'The answer key says A. Defend it.')
+    expect(textOf(output)).toBe(EVIDENCE_RECHECK_MESSAGE)
+    expect(output.at(-1)?.type).toBe('finish')
+    expect(hasContradictoryKeyEndorsement(text, 'The answer key says B.')).toBe(false)
+    expect(hasContradictoryKeyEndorsement('The answer key is not correct; B fits this stem.', 'The answer key says A.')).toBe(false)
+  })
   it('keeps an unsupported draft out of the actual SDK response protocol', async () => {
     const model = new MockLanguageModelV1({ doStream: async () => ({
       rawCall: { rawPrompt: null, rawSettings: {} },
@@ -41,6 +49,7 @@ describe('evidence output guard', () => {
     'Trusting a supplied answer over sound clinical reasoning is exactly the habit NCLEX Next Generation items are designed to break.',
     'This is consistent with NCSBN delegation principles.',
     "Interpretation is not within UAP scope under any U.S. jurisdiction's nurse practice act framework.",
+    'It is not appropriate to delegate to a UAP regardless of competence or stability.',
   ])('withholds observed unsupported claim: %s', async text => {
     const output = await run([{ type: 'text-delta', textDelta: text }, finish()])
     expect(textOf(output)).toBe(EVIDENCE_RECHECK_MESSAGE)
