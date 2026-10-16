@@ -140,11 +140,11 @@ function TutorPageContent() {
         await new Promise(resolve => setTimeout(resolve, 300))
       }
 
-      // Step 3: Store message in localStorage for the chat to pick up and auto-send
+      // Step 3: Keep the pending message tab-local so concurrent starts cannot consume one another
       // Don't save the message here - let handleSendMessage do it to ensure proper flow
       if (typeof window !== 'undefined') {
-        localStorage.setItem('forgenursing-tutor-prefill', message.trim())
-        localStorage.setItem('forgenursing-tutor-auto-send', 'true')
+        sessionStorage.setItem('forgenursing-tutor-prefill', message.trim())
+        sessionStorage.setItem('forgenursing-tutor-auto-send', 'true')
       }
       
       const newUrl = tutorContext.selectedClassId
