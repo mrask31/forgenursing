@@ -291,3 +291,20 @@ Remaining release gates: temporary-bypass cleanup; actual access acceptance afte
 Owner confirmed the temporary Vercel bypass is now disabled after the removal request. Record this as owner-reported cleanup, not independent dashboard verification: native browser observation remains restricted and connector revocation had returned 403. Read-only Stripe inspection independently reconfirmed sandbox endpoint `we_1UQn2AGnwd1bHIvcjoDX2Nxk` is disabled and livemode false. The QA account was already restored and verified.
 
 No further Stripe setup action is currently requested. Remaining acceptance gates are browser/server access behavior after billing states, fresh tutor responses on the latest prompt, authenticated mobile acceptance, and the genuine delayed-review task scheduled for 10:03 PM Central. No production release is claimed.
+
+
+### Genuine delayed-review due-time check — October 15, 2026, 10:05 PM Central
+
+**BLOCKED — delayed-review browser acceptance remains OPEN.** Read-only Supabase verification at `2026-10-16T03:05:45.718168Z` confirmed:
+
+- Queue `a6b8231d-5f02-459d-b7a6-fbe10f7f6649` remains `scheduled`; `is_due=true`.
+- Original miss: `2026-10-15T03:01:31.900607Z`. Due time: `2026-10-16T03:01:31.900607Z`, exactly 24 hours later. Neither value was changed.
+- Content `188346ab-5ade-467a-a11c-9a4bb951321a`, packet `qb3-g15`, version 2, audience `preview`, remains unwithdrawn. SHA-256: `ea1796a2e1d16d260e4a6a2db36b5448d0bb8d8ca4580a8326c13507f1f11f73`.
+- Review attempt count is **0**. Exposure records for this user/packet contain only original (`2026-10-15T03:01:15.229018Z`) and retry (`2026-10-15T03:01:46.764908Z`); no delayed exposure was recorded.
+- Original session `7fc4734e-0eff-4d2b-947a-bf83b6988013` remains completed at **2/3**; retry `54b4385f-dcf5-434a-8c2c-07458f40ee98` remains completed at **1/1**. This confirms existing stored scores, not delayed-review scoring.
+
+Current browser availability check `cua.getState()` failed with `BrowserCredentialRecoveryError`: “Browser observation is unavailable because retained browser data remains restricted after native credential delivery.” The error reports `reason=retained_data_restricted`, `phase=before_command`, `next_action=create_new_tab`; browser inventory returned no observable tabs. Prior documented new-document recovery had already failed after temporary recovery. No repeated recovery, alternative browser/network bypass, or ordinary sign-in request was attempted.
+
+Consequently fresh delayed content rendering, answer submission/persistence, independent delayed score, refresh resumption and post-completion exhaustion were **not exercised**. No learner data, dates, answers, review statuses or exposures were written. No successful browser check or clinical approval is claimed.
+
+The timed waiting prerequisite is satisfied; usable authorized authenticated browser observation is now the delayed-review blocker. Remaining release gates: this delayed-review acceptance; the 27 fresh tutor responses on the latest prompt configuration; authenticated 320/390-width and Safari acceptance; actual server/browser access behavior after the verified billing-state transitions. Earlier signed billing reconciliation and owner-reported bypass cleanup stand as documented above. Production configuration verification and the approved production publication/build process remain subsequent release steps. **No merge, production publication or deployment occurred.**
