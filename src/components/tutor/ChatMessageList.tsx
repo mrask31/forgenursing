@@ -1,7 +1,7 @@
 'use client'
 
 import ReactMarkdown from 'react-markdown'
-import { FileIcon, ClipboardCheck, Bookmark, Star, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ClipboardCheck, Bookmark, Star, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useTutorContext } from './TutorContext'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { setTopicSummaryAndStudiedAt } from '@/lib/api/notebook'
@@ -93,20 +93,6 @@ function splitIntoAdpieSections(content: string): AdpieSection[] {
   return sections
 }
 
-// Helper to detect if message likely used binder context
-const detectBinderUsage = (content: string): boolean => {
-  const binderIndicators = [
-    'from your',
-    'your uploaded',
-    'your materials',
-    'your binder',
-    'your document',
-  ]
-  return binderIndicators.some(indicator => 
-    content.toLowerCase().includes(indicator)
-  )
-}
-
 export default function ChatMessageList({
   messages,
   selectedMessageId,
@@ -189,7 +175,7 @@ export default function ChatMessageList({
     setIsTogglingHelp(true)
     const isCurrentlyFlagged = flaggedMessages.has(messageId)
     const newFlaggedSet = new Set(flaggedMessages)
-    
+
     if (isCurrentlyFlagged) {
       newFlaggedSet.delete(messageId)
     } else {
@@ -221,11 +207,11 @@ export default function ChatMessageList({
 
   const handleSaveToNotebook = async (messageId: string, content: string) => {
     if (!tutorContext.selectedTopicId || savingToNotebook === messageId) return
-    
+
     if (onSaveToNotebook) {
       onSaveToNotebook(messageId)
     }
-    
+
     try {
   const supabase = getBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -253,7 +239,6 @@ export default function ChatMessageList({
       <div className="mx-auto max-w-2xl space-y-4 pt-2">
         {messages.map((m, index) => {
         if (m.role === 'assistant') {
-          const hasBinderContext = detectBinderUsage(m.content)
           const hasEvidence = m.evidence && m.evidence.length > 0
           const isSelected = selectedMessageId === m.id
           const prevMessage = index > 0 ? messages[index - 1] : null
@@ -283,36 +268,12 @@ export default function ChatMessageList({
                 {/* Grounding Indicator Strip + Actions */}
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--gray-200)]">
                   <div className="flex items-center gap-2">
-                    {hasBinderContext ? (
-                      <div className="flex items-center gap-2">
-                        <FileIcon className="w-4 h-4 text-[var(--teal)]" />
-                        <span className="text-xs text-[var(--teal)] font-medium">
-                          ✅ Using: {(() => {
-                            const filenameMatches = m.content.match(/From\s+["']?([^"'\n]+\.(pdf|docx?|txt))["']?/gi)
-                            if (filenameMatches && filenameMatches.length > 0) {
-                              const filenames = filenameMatches
-                                .map(match => match.replace(/From\s+["']?/i, '').replace(/["']?/g, ''))
-                                .filter((f, i, arr) => arr.indexOf(f) === i)
-                                .slice(0, 3)
-                              return filenames.join(', ') + (filenameMatches.length > 3 ? '...' : '')
-                            }
-                            const patternMatches = m.content.match(/([A-Z][a-zA-Z0-9_\-]+\.(pdf|docx?|txt))/g)
-                            if (patternMatches && patternMatches.length > 0) {
-                              const filenames = patternMatches
-                                .filter((f, i, arr) => arr.indexOf(f) === i)
-                                .slice(0, 3)
-                              return filenames.join(', ') + (patternMatches.length > 3 ? '...' : '')
-                            }
-                            return 'your uploaded materials'
-                          })()}
-                        </span>
-                      </div>
-                    ) : (
+
                       <>
                         <ClipboardCheck className="w-4 h-4 text-[var(--gray-400)]" />
                         <span className="text-xs text-[var(--gray-400)] font-medium">NCLEX Reasoning (Learning Only)</span>
                       </>
-                    )}
+
                   </div>
                   <div className="flex items-center gap-2">
                     {voiceEnabled && (
@@ -360,7 +321,7 @@ export default function ChatMessageList({
                         <span>{flaggedMessages.has(m.id) ? 'Flagged' : 'Flag'}</span>
                       </button>
                     )}
-                    {tutorContext.selectedTopicId && !hasBinderContext && (
+                    {tutorContext.selectedTopicId && (
                       <button
                         onClick={() => handleSaveToNotebook(m.id, m.content)}
                         disabled={savingToNotebook === m.id}
