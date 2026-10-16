@@ -144,7 +144,7 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
         <ProgramSelectionModal open={showProgramModal} onComplete={handleProgramSelection} />
 
         {/* Mobile Header Bar - Sticky, only on mobile */}
-        <header className="lg:hidden sticky top-0 z-50 bg-[#0B2545] border-b border-[#1E2D3D] flex-shrink-0 safe-t">
+        <header className="lg:hidden sticky top-0 z-50 bg-[#0B2545] border-b border-[#1E2D3D] flex-shrink-0 pt-safe-t">
           <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={() => setMobileNavOpen(true)}
@@ -173,7 +173,7 @@ export function AppShell({ children, variant = 'app' }: AppShellProps) {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 min-w-0 min-h-0 overflow-y-auto pb-20 lg:pb-0 bg-[var(--gray-50)] flex flex-col">
+        <main className="flex-1 min-w-0 min-h-0 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-0 bg-[var(--gray-50)] flex flex-col">
           {children}
         </main>
 

@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
-import { GENERAL_TUTOR_PROMPTS, CLASS_TUTOR_PROMPTS, TUTOR_PROMPTS, NOTES_PROMPTS } from '@/lib/constants'
+import { GENERAL_TUTOR_PROMPTS, CLASS_TUTOR_PROMPTS } from '@/lib/constants'
 import { inferCourseType } from '@/lib/course-utils'
 
 type Mode = 'tutor'
@@ -114,7 +113,6 @@ interface SuggestedPromptsProps {
 // Generate contextual prompts from last assistant message (similar to FollowUpPrompts logic)
 function generateContextualPrompts(lastMessage: string): string[] {
   const prompts: string[] = []
-  const lowerContent = lastMessage.toLowerCase()
 
   // Detect key topics/concepts from the last message
   const hasMedication = /(medication|drug|med|dose|dosage|administration|pharmacology)/i.test(lastMessage)
@@ -182,12 +180,8 @@ function generateContextualPrompts(lastMessage: string): string[] {
   return uniquePrompts.slice(0, 5)
 }
 
-export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCompact = false, onSend, hasAttachedFiles = false, attachedContext = 'none', hasActiveExam = false, selectedClassId, selectedCourseType, selectedClassCode, selectedClassName, lastAssistantMessage, hasExistingConversation = false }: SuggestedPromptsProps) {
+export default function SuggestedPrompts({ onPromptSelect, isVisible, isCompact = false, onSend, hasAttachedFiles = false, attachedContext = 'none', hasActiveExam = false, selectedClassId, selectedCourseType, selectedClassCode, selectedClassName, lastAssistantMessage, hasExistingConversation = false }: SuggestedPromptsProps) {
   if (!isVisible) return null
-
-  // Logging for debugging
-  useEffect(() => {
-  }, [mode, hasAttachedFiles, attachedContext, hasExistingConversation, lastAssistantMessage])
 
   // Priority Logic:
   // 1. If there's an existing conversation with a last assistant message → Generate contextual prompts
@@ -224,20 +218,6 @@ export default function SuggestedPrompts({ mode, onPromptSelect, isVisible, isCo
     }
   }
   
-  // Log which prompt set is being used
-  useEffect(() => {
-    const isSyllabus = hasAttachedFiles && attachedContext === 'syllabus'
-    const isTextbook = hasAttachedFiles && attachedContext === 'textbook'
-    const isMixed = hasAttachedFiles && attachedContext === 'mixed'
-    const isDefaultFile = hasAttachedFiles && !isSyllabus && !isTextbook
-    
-    const promptType = isSyllabus ? 'SYLLABUS'
-      : isTextbook ? 'TEXTBOOK'
-      : isMixed || isDefaultFile ? 'DEFAULT_FILE'
-      : 'TUTOR'
-    
-  }, [hasAttachedFiles, attachedContext, mode])
-
   const handleClick = (prompt: string) => {
     // If onSend is provided, auto-send immediately
     if (onSend) {

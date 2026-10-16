@@ -1,18 +1,10 @@
 'use client'
 
-type Plan = 'monthly' | 'semester' | 'annual'
+type Plan = 'monthly' | 'annual'
 
 const PRICE_IDS: Record<Plan, string> = {
   monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY!,
-  semester: process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMESTER!,
   annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL!,
-}
-
-// Founder / discounted price IDs — server-side only (no NEXT_PUBLIC_ prefix)
-export const FOUNDER_PRICE_IDS: Record<Plan, string> = {
-  monthly: process.env.STRIPE_PRICE_MONTHLY_FOUNDER!,
-  semester: process.env.STRIPE_PRICE_SEMESTER_FOUNDER!,
-  annual: process.env.STRIPE_PRICE_ANNUAL_FOUNDER!,
 }
 
 async function captureCheckoutEvent(eventName: string, properties: Record<string, unknown>) {
@@ -61,33 +53,9 @@ export async function startStripeCheckout(plan: Plan) {
     }
 
     if (!res.ok) {
-      let errorData
-      try {
-        errorData = await res.json()
-      } catch {
-        errorData = { error: await res.text() }
-      }
-      console.error('Stripe checkout failed:', {
-        status: res.status,
-        statusText: res.statusText,
-        error: errorData,
-      })
-      await captureCheckoutEvent('checkout_start_failed', {
-        source: 'stripe_client',
-        plan,
-        checkout_type: 'standard',
-        status: res.status,
-        error_message: errorData?.error || null,
-      })
-      
-      // Show more detailed error message in development
-      const errorMessage = errorData?.error || 'Unknown error'
-      if (process.env.NODE_ENV === 'development') {
-        alert(`Error starting checkout: ${errorMessage} (Status: ${res.status})`)
-      } else {
-        alert('Something went wrong starting your trial. Please try again.')
-      }
-      return
+      const errorData = await res.json().catch(() => null)
+      await captureCheckoutEvent('checkout_start_failed', { source: 'stripe_client', plan, status: res.status })
+      throw new Error(typeof errorData?.error === 'string' ? errorData.error : 'Unable to open checkout. Please try again.')
     }
 
     const { url, sessionId } = await res.json()
@@ -100,8 +68,7 @@ export async function startStripeCheckout(plan: Plan) {
         error_type: 'missing_checkout_url',
         session_id: sessionId || null,
       })
-      alert('Checkout session missing URL. Please contact support.')
-      return
+      throw new Error('Unable to open checkout. Please contact support.')
     }
 
     await captureCheckoutEvent('checkout_redirect_started', {
@@ -121,10 +88,6 @@ export async function startStripeCheckout(plan: Plan) {
       error_type: 'network_or_exception',
       error_message: errorMessage,
     })
-    if (process.env.NODE_ENV === 'development') {
-      alert(`Network error: ${errorMessage}`)
-    } else {
-      alert('Network error starting your trial. Please try again.')
-    }
+    throw new Error(errorMessage === 'Unknown error' ? 'Unable to open checkout. Please try again.' : errorMessage)
   }
 }

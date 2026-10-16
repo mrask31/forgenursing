@@ -1,3 +1,5 @@
+import { sourceCheckedContent } from '@/lib/learning/source-checked-server';
+import { contentOnHold, contentHoldPayload } from '@/lib/learning/content-hold';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
@@ -44,6 +46,12 @@ export async function GET(req: NextRequest) {
     if (questionsError) {
       console.error('[Quiz Results] Questions fetch error:', questionsError);
       return NextResponse.json({ error: 'Failed to load quiz questions' }, { status: 500 });
+    }
+
+    if (questions?.some(contentOnHold)) return NextResponse.json(contentHoldPayload(), { status: 409 });
+
+    for (const q of questions || []) {
+      if (q.source_checked_content_id && !(await sourceCheckedContent(q.source_checked_content_id))) return NextResponse.json(contentHoldPayload(), { status: 409 });
     }
 
     // Recover the original session when a retry was resumed from Home.

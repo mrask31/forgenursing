@@ -10,19 +10,17 @@ export default async function PricingPage() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  let isBeta = false
   let isSubscribed = false
 
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_beta, subscription_status')
+      .select('subscription_status')
       .eq('id', user.id)
       .single()
 
-    isBeta = profile?.is_beta === true
     isSubscribed = profile?.subscription_status === 'active'
   }
 
-  return <PricingContent isBeta={isBeta} isSubscribed={isSubscribed} isSignedIn={Boolean(user)} />
+  return <PricingContent isSubscribed={isSubscribed} isSignedIn={Boolean(user)} />
 }

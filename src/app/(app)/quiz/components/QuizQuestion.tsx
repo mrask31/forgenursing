@@ -1,6 +1,7 @@
 'use client'
 
 interface QuizQuestionProps {
+  sourceChecked?: boolean
   stem: string
   options: { label: string; text: string }[]
   selectedAnswer: string | null
@@ -10,7 +11,7 @@ interface QuizQuestionProps {
 }
 
 export default function QuizQuestion({
-  stem, options, selectedAnswer, onSelect, onSubmit, submitting,
+  sourceChecked = false, stem, options, selectedAnswer, onSelect, onSubmit, submitting,
 }: QuizQuestionProps) {
   return (
     <div className="space-y-4 pb-6">
@@ -24,6 +25,8 @@ export default function QuizQuestion({
           return (
             <button
               key={opt.label}
+              aria-pressed={isSelected}
+              disabled={submitting}
               onClick={() => onSelect(opt.label)}
               className="w-full rounded-lg border-2 p-3 text-left text-sm transition-all"
               style={{
@@ -40,7 +43,7 @@ export default function QuizQuestion({
       </div>
 
       <p className="text-center text-[10px] leading-snug text-gray-400">
-        AI-generated NCLEX-style practice • Educational use only
+        {sourceChecked ? 'AI-assisted, source-checked practice • Not independently clinically validated' : 'AI-generated NCLEX-style practice • Educational use only'}
       </p>
 
       <div className="h-28 sm:hidden" aria-hidden="true" />

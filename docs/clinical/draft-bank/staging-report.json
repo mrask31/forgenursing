@@ -1,0 +1,732 @@
+{
+  "mode": "dry_run_only",
+  "revision": 2,
+  "bank_sha256": "7a9be29a3f1a10ed60baa105fce603a93ac9da030b23d5f3af8faeb1f9ecb926",
+  "question_count": 180,
+  "family_count": 60,
+  "publishable_count": 0,
+  "database_writes": 0,
+  "held_item_ids": [],
+  "families": [
+    {
+      "family_id": "qb1-d01",
+      "draft_distinction_id": "delegated-data-collection-vs-nursing-judgment",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-d02",
+      "draft_distinction_id": "delegation-circumstances-and-change",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-d03",
+      "draft_distinction_id": "unexpected-finding-requires-rn-assessment",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-d04",
+      "draft_distinction_id": "lpn-authorized-routine-task",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-d05",
+      "draft_distinction_id": "right-supervision-evaluation-follow-up",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-d06",
+      "draft_distinction_id": "scope-matched-assignment",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-d07",
+      "draft_distinction_id": "rn-retains-accountability",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-i01",
+      "draft_distinction_id": "donning-gloves-cover-cuffs",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-i02",
+      "draft_distinction_id": "doffing-separate-removal-sequence",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-i03",
+      "draft_distinction_id": "hand-hygiene-after-doffing",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-i04",
+      "draft_distinction_id": "standard-precautions-apply-to-all",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-i05",
+      "draft_distinction_id": "mask-removal-handle-by-ties",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-i06",
+      "draft_distinction_id": "safe-work-practices-clean-to-dirty",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-i07",
+      "draft_distinction_id": "goggles-removal-by-headband",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-p01",
+      "draft_distinction_id": "postoperative-stridor-urgent-airway-assessment",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-p02",
+      "draft_distinction_id": "acute-change-vs-stable-baseline",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-p03",
+      "draft_distinction_id": "bleeding-urgency-and-circulation",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-p04",
+      "draft_distinction_id": "unstable-vitals-require-assessment",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-p05",
+      "draft_distinction_id": "new-change-vs-baseline",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb1-p06",
+      "draft_distinction_id": "new-respiratory-deterioration-vs-routine-needs",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f01",
+      "draft_distinction_id": "acetaminophen-duplicate-active-ingredient",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f02",
+      "draft_distinction_id": "warfarin-consistent-vitamin-k-intake",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f03",
+      "draft_distinction_id": "levothyroxine-calcium-separation",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f04",
+      "draft_distinction_id": "alendronate-tablet-water-and-upright",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f05",
+      "draft_distinction_id": "metformin-er-swallow-whole",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f06",
+      "draft_distinction_id": "metoprolol-succinate-er-permitted-splitting",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f07",
+      "draft_distinction_id": "ciprofloxacin-antacid-separation",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f08",
+      "draft_distinction_id": "apixaban-missed-dose-not-doubled",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f09",
+      "draft_distinction_id": "lantus-not-mixed",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f10",
+      "draft_distinction_id": "insulin-pen-single-patient-use",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f11",
+      "draft_distinction_id": "nitrostat-original-container",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f12",
+      "draft_distinction_id": "antibiotics-not-for-uncomplicated-viral-cold",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f13",
+      "draft_distinction_id": "opioid-alcohol-additive-depression",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f14",
+      "draft_distinction_id": "liquid-medication-matched-measuring-device",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f15",
+      "draft_distinction_id": "medication-history-includes-otc-and-supplements",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f16",
+      "draft_distinction_id": "tablet-splitting-product-specific-verification",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f17",
+      "draft_distinction_id": "antibiotic-plan-not-self-shortened",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f18",
+      "draft_distinction_id": "expired-medicine-replacement-not-appearance",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f19",
+      "draft_distinction_id": "drug-facts-active-ingredient-versus-use",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb2-f20",
+      "draft_distinction_id": "unused-medicine-accessible-take-back",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g01",
+      "draft_distinction_id": "teach-back-checks-explanation",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g02",
+      "draft_distinction_id": "smoking-cessation-supported-plan",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g03",
+      "draft_distinction_id": "mild-illness-vaccine-screening",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g04",
+      "draft_distinction_id": "home-bp-standardized-technique",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g05",
+      "draft_distinction_id": "dementia-clear-respectful-communication",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g06",
+      "draft_distinction_id": "anxiety-listen-without-false-reassurance",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g07",
+      "draft_distinction_id": "grief-offer-support-without-imposed-timeline",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g08",
+      "draft_distinction_id": "hallucinations-acknowledge-distress-not-belief",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g09",
+      "draft_distinction_id": "pressure-injury-prevention-without-massage",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g10",
+      "draft_distinction_id": "catheter-unobstructed-dependent-drainage",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g11",
+      "draft_distinction_id": "dry-mouth-comfort-within-fluid-plan",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g12",
+      "draft_distinction_id": "sleep-support-environment-and-routine",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g13",
+      "draft_distinction_id": "peripheral-iv-phlebitis-requires-action",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g14",
+      "draft_distinction_id": "possible-gi-bleeding-prompt-evaluation",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g15",
+      "draft_distinction_id": "possible-pe-emergency-recognition",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g16",
+      "draft_distinction_id": "allergy-history-verify-and-document",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g17",
+      "draft_distinction_id": "new-stroke-signs-emergency-response",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g18",
+      "draft_distinction_id": "adult-low-glucose-safe-oral-treatment",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g19",
+      "draft_distinction_id": "asthma-unrelieved-severe-breathing-emergency",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb3-g20",
+      "draft_distinction_id": "heart-failure-consistent-weight-tracking",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    }
+  ]
+}

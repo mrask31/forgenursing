@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { startStripeCheckout } from '@/lib/stripeClient'
+import { STANDARD_OFFER } from '@/lib/offer'
 import { ArrowRight, Check, CheckCircle, Loader2 } from 'lucide-react'
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
@@ -20,13 +21,13 @@ type Plan = 'monthly' | 'annual'
 
 function CheckoutContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const urlPlan = searchParams.get('plan') as Plan | null
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(urlPlan === 'annual' ? 'annual' : urlPlan === 'monthly' ? 'monthly' : null)
+  const [selectedPlan, setSelectedPlan] = useState<Plan>(urlPlan === 'annual' ? 'annual' : 'monthly')
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [isStartingCheckout, setIsStartingCheckout] = useState(false)
   const [checkingAccess, setCheckingAccess] = useState(true)
   const [hasCurrentAccess, setHasCurrentAccess] = useState(false)
-  const [isExpired, setIsExpired] = useState(false)
+  const selectedPrice = selectedPlan === 'annual' ? `$${STANDARD_OFFER.annual}/year` : `$${STANDARD_OFFER.monthly}/month`
 
   useEffect(() => {
     localStorage.removeItem('forgenursing-pending-plan')
@@ -47,20 +48,16 @@ function CheckoutContent() {
 
         if (!response.ok) {
           setHasCurrentAccess(false)
-          setIsExpired(false)
           return
         }
 
         const data = await response.json().catch(() => null)
         const access = Boolean(data?.hasAccess)
-        const status = data?.status ?? null
 
         setHasCurrentAccess(access)
-        setIsExpired(Boolean(!access && ['expired', 'past_due', 'canceled', 'incomplete_expired'].includes(status)))
       } catch (error) {
         console.warn('[Checkout] Access check failed or timed out; showing plans instead of spinner', error)
         setHasCurrentAccess(false)
-        setIsExpired(false)
       } finally {
         setCheckingAccess(false)
       }
@@ -73,12 +70,13 @@ function CheckoutContent() {
     if (!selectedPlan) return
 
     setIsStartingCheckout(true)
+    setCheckoutError(null)
     try {
       await startStripeCheckout(selectedPlan)
     } catch (error) {
-      console.error('Failed to start Stripe checkout:', error)
+      setCheckoutError(error instanceof Error ? error.message : 'Unable to open checkout. Please try again.')
+    } finally {
       setIsStartingCheckout(false)
-      router.push('/billing/payment-required')
     }
   }
 
@@ -122,17 +120,19 @@ function CheckoutContent() {
     <div className="min-h-[calc(100dvh-4rem)] bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-50 py-12 sm:py-16 pb-safe-b">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="paywall">
         <div className="text-center mb-10 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">Founding Student Plan</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">Study Plans</h1>
           <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto">
-            {isExpired ? 'Choose a plan to continue. Cancel anytime.' : 'Start free, then choose the plan that fits. Cancel anytime.'}
+            Choose a paid plan when you are ready to subscribe.
           </p>
+          <p className="text-sm text-slate-600 mt-3">You are charged only after completing paid checkout. Paid subscriptions renew until canceled.</p>
+          <p className="text-sm text-slate-600 mt-3">New to ForgeNursing? <Link href={`/signup?plan=${selectedPlan}`} className="underline">Start a {STANDARD_OFFER.trialDays}-day free trial</Link>. No credit card required; no automatic charge when the trial ends.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto mb-8">
           <PlanCard
             selected={selectedPlan === 'monthly'}
             title="Monthly"
-            price="$9.99"
+            price={`$${STANDARD_OFFER.monthly}`}
             cadence="/ month"
             subtitle="Perfect for students who want flexibility."
             bullets={[
@@ -140,7 +140,7 @@ function CheckoutContent() {
               'Mistake-type feedback',
               'Retest missed weaknesses',
               'AI clinical reasoning tutor',
-              isExpired ? 'Immediate access after subscribing' : '7-day free trial included',
+              'Access after subscribing',
             ]}
             onClick={() => setSelectedPlan('monthly')}
           />
@@ -148,21 +148,22 @@ function CheckoutContent() {
           <PlanCard
             selected={selectedPlan === 'annual'}
             title="Annual"
-            price="$79"
+            price={`$${STANDARD_OFFER.annual}`}
             cadence="/ year"
             subtitle="Best value for a full year. Save 34% vs monthly."
             featured
             bullets={[
-              '12 months of unlimited access',
+              '12 months of study access',
               'Mistake-type feedback and targeted retests',
               'Best overall savings',
-              isExpired ? 'Immediate access after subscribing' : '7-day free trial included',
+              'Access after subscribing',
             ]}
             onClick={() => setSelectedPlan('annual')}
           />
         </div>
 
         <div className="text-center max-w-md mx-auto">
+          {checkoutError && <p role="alert" className="text-red-700 mb-3">{checkoutError}</p>}
           <button
             onClick={handleStartCheckout}
             disabled={!selectedPlan || isStartingCheckout}
@@ -181,7 +182,7 @@ function CheckoutContent() {
             )}
           </button>
           <p className="text-xs text-slate-500 mt-3">
-            {isExpired ? 'Subscribe to continue. Cancel anytime.' : 'Start free, then $9.99/month. Cancel anytime.'}
+            {selectedPrice}. Renews until canceled.
           </p>
         </div>
       </div>
@@ -212,6 +213,7 @@ function PlanCard({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className={`text-left bg-white border-2 rounded-2xl p-6 sm:p-8 shadow-lg cursor-pointer transition-all duration-200 ${
         selected ? 'border-indigo-500 shadow-xl shadow-indigo-500/20' : featured ? 'border-indigo-300' : 'border-slate-200 hover:border-indigo-300'
       }`}

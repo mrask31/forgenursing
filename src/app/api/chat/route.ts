@@ -1,6 +1,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
-import { buildSystemPrompt } from '@/lib/ai/system-prompt';
+import { buildSystemPrompt, FINAL_EVIDENCE_CHECK } from '@/lib/ai/system-prompt';
+import { evidenceOutputGuard } from '@/lib/ai/evidence-output-guard';
 import { buildMessageHistory } from '@/lib/ai/history-manager';
 import { scorePhiText } from '@/app/api/_middleware/phi-scrubber';
 import { analyzeClinicalImage, type GeminiVisionResult } from '@/lib/ai/gemini-vision';
@@ -676,12 +677,12 @@ Remember: The student selected this topic because they want to study it. Keep yo
     systemPrompt += '\n\n' + getStrictModePrompt();
   }
 
-  // Formatting rules - Structured response takes precedence
+  // Presentation must not compete with the base teaching/evidence policy.
   systemPrompt += `
 FORMATTING RULES:
-- Use the structured response format (Snapshot, Key Findings, Clinical Reasoning, Priority Actions, Clinical Safety Note, Next Steps) for clinical scenarios.
+- Use the response pattern selected by the base tutoring instructions for fictional practice scenarios.
 - For non-scenario questions, provide concise, direct answers.
-- End with 1-2 guided follow-up questions when appropriate.
+- A study follow-up is optional. Omit it for real-patient escalation, unverifiable citations, or a disputed/ambiguous answer key.
 - If binder context was present, explicitly mention filenames and document types in your response. Example: "From Medical_Surgical_Unit_3_Heart_Failure.pdf (Textbook)…"
 `;
 
@@ -720,7 +721,8 @@ FORMATTING RULES:
         model: anthropic('claude-sonnet-4-6') as any,
         maxTokens: 1200,
         messages: processedMessages,
-        system: systemPrompt,
+        system: systemPrompt + FINAL_EVIDENCE_CHECK,
+        experimental_transform: evidenceOutputGuard(latestUserMessageStr),
       });
     } catch (claudeError: any) {
       console.error('[CHAT] Error calling Claude:', claudeError);

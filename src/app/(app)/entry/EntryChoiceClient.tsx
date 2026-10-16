@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
 import { CPR_CATEGORIES, EMPTY_RETAKE_PLAN, cprPracticeCategory, type RetakePlan } from '@/lib/retake-plan'
+import { captureLoop } from '@/lib/analytics/learning-loop'
 
 type StarterCheck = { score: number; total_questions: number; detected_trap: string | null }
 type Session = { id: string; status: string; current_question_index: number; total_questions: number; score: number; quiz_mode: string; created_at: string }
@@ -12,6 +13,7 @@ type Focus = { has_personal_plan: boolean; focus: string; focus_explanation: str
 
 export default function EntryChoiceClient() {
   const router = useRouter()
+  const startRequest = useRef<{id:string;key:string}|null>(null)
   const [plan, setPlan] = useState<RetakePlan>(EMPTY_RETAKE_PLAN)
   const [check, setCheck] = useState<StarterCheck | null>(null)
   const [focus, setFocus] = useState<Focus | null>(null)
@@ -66,14 +68,17 @@ export default function EntryChoiceClient() {
   }
 
   const resume = sessions.find(session => session.status === 'in_progress')
-  const lastCompleted = sessions.find(session => session.status === 'completed')
+  const lastCompleted = sessions.find(session => session.status === 'completed' && session.quiz_mode !== 'retest')
   const practiceFocus = focus?.has_personal_plan ? focus.focus : check?.detected_trap
   const reportCategory = cprPracticeCategory(plan)
   async function startPractice() {
+    if (busy) return
     setBusy(true); setError('')
+    const key = JSON.stringify([practiceFocus,reportCategory])
+    if (!startRequest.current || startRequest.current.key !== key) startRequest.current = {id:crypto.randomUUID(),key}
     try {
       const response = await fetch('/api/quiz/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-        sourceType: 'generic', quizMode: practiceFocus ? 'targeted_drill' : 'diagnostic',
+        requestId: startRequest.current.id, sourceType: 'generic', quizMode: practiceFocus ? 'targeted_drill' : 'diagnostic',
         targetMistakeType: practiceFocus || null,
         targetFocus: focus?.has_personal_plan ? focus.focus_explanation : practiceFocus,
         nclexCategory: practiceFocus ? null : reportCategory, totalQuestions: practiceFocus ? 3 : 5,
@@ -81,6 +86,12 @@ export default function EntryChoiceClient() {
       const body = await response.json()
       if (response.status === 402) { router.push('/pricing'); return }
       if (!response.ok) throw new Error(body.error || 'Could not start practice.')
+      startRequest.current = null
+      captureLoop('quiz_started', {
+        experience: 'signed_in', session_id: body.session.id, quiz_session_id: body.session.id,
+        source: 'study_home', source_type: 'generic', is_resume: false,
+        quiz_mode: body.session.quiz_mode, total_questions: body.session.total_questions,
+      }, body.session.id)
       router.push(`/quiz?sessionId=${body.session.id}`)
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not start practice.'); setBusy(false) }
   }
@@ -101,7 +112,7 @@ export default function EntryChoiceClient() {
       <button disabled={busy} onClick={savePlan} className="rounded-xl bg-[#0D8F9C] px-6 py-3 font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : 'Save and continue'}</button>
       <button disabled={busy} onClick={() => setEditing(false)} className="ml-4 py-3 text-sm underline">Skip for now</button>
     </section> : <>
-      <section className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-5"><h2 className="font-bold">{review?.due.length ? `${review.due.length} review${review.due.length===1?'':'s'} ready to revisit` : 'Revisit earlier distinctions'}</h2><p className="mt-2 text-sm text-slate-600">{reviewError ? 'Your review queue could not load. Open it to retry.' : review?.due.length ? 'Try a new reviewed question about an earlier miss. It is scored separately.' : review?.available ? review.next_due_at ? `Next review: ${new Date(review.next_due_at).toLocaleDateString()}.` : 'Nothing due today. Missed questions from reviewed sets appear here when due.' : 'Scheduled review will begin when independently reviewed question sets are available.'}</p><Link href="/review" className="mt-3 inline-block font-semibold text-[#087986] underline">{review?.due.length ? 'Start a review →' : 'Open review queue →'}</Link></section>
+      <section className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-5"><h2 className="font-bold">{review?.due.length ? `${review.due.length} review${review.due.length===1?'':'s'} ready to revisit` : 'Revisit earlier distinctions'}</h2><p className="mt-2 text-sm text-slate-600">{reviewError ? 'Your review queue could not load. Open it to retry.' : review?.due.length ? 'Try a fresh related question about an earlier miss. It is scored separately.' : review?.available ? review.next_due_at ? `Next review: ${new Date(review.next_due_at).toLocaleString()}.` : 'Nothing due yet. Eligible missed questions appear here when due.' : 'Scheduled review appears here when an eligible missed question is due.'}</p><Link href="/review" className="mt-3 inline-block font-semibold text-[#087986] underline">{review?.due.length ? 'Start a review →' : 'Open review queue →'}</Link></section>
       {resume && <section className="mt-8 rounded-2xl bg-[#0B2545] p-6 text-white"><p className="text-xs uppercase tracking-widest text-teal-200">Pick up where you left off</p><h2 className="mt-3 text-xl font-bold text-white">{resume.quiz_mode === 'retest' ? 'Your related retry is saved.' : 'Your practice is saved.'}</h2><p className="mt-2 text-slate-200">{resume.current_question_index} of {resume.total_questions} questions completed · Started {new Date(resume.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.</p><Link href={`/quiz?sessionId=${resume.id}`} className="mt-5 inline-flex rounded-xl bg-white px-5 py-3 font-bold text-[#0B2545]">{resume.quiz_mode === 'retest' ? 'Resume related question →' : 'Resume session →'}</Link><Link href="/quiz" className="mt-4 block text-sm text-teal-100 underline">Choose a new session instead</Link></section>}
       {!resume && <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
         <p className="text-xs font-bold uppercase tracking-widest text-[#0D8F9C]">Today’s practice</p>

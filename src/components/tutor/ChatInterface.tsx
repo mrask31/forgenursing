@@ -207,7 +207,7 @@ export default function ChatInterface({
       : undefined
     // Signal that images are in flight so auto-send doesn't race ahead
     if (imagePayload && imagePayload.length > 0 && typeof window !== 'undefined') {
-      localStorage.setItem('forgenursing-tutor-has-images', 'true')
+      sessionStorage.setItem('forgenursing-tutor-has-images', 'true')
     }
     try {
       await onSend(message, imagePayload)
@@ -215,7 +215,7 @@ export default function ChatInterface({
       pendingImages.forEach(img => URL.revokeObjectURL(img.preview))
       setPendingImages([])
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('forgenursing-tutor-has-images')
+        sessionStorage.removeItem('forgenursing-tutor-has-images')
       }
     } catch (error) {
       console.error('[ChatInterface] Error sending message:', error)

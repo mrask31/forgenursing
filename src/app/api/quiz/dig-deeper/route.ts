@@ -1,3 +1,5 @@
+import { sourceCheckedContent } from '@/lib/learning/source-checked-server';
+import { contentOnHold, contentHoldPayload } from '@/lib/learning/content-hold';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
@@ -50,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     const { data: question, error: questionError } = await supabase
       .from('quiz_questions')
-      .select('id, session_id, question_index, question_stem, options, correct_answer, user_answer, is_correct, rationale_correct, rationale_incorrect, nclex_category, difficulty, mistake_type, reasoning_trap, fix_instruction, retest_focus, quiz_sessions!inner(id, user_id, source_type, nclex_category)')
+      .select('id, session_id, source_checked_content_id, question_index, question_stem, options, correct_answer, user_answer, is_correct, rationale_correct, rationale_incorrect, nclex_category, difficulty, mistake_type, reasoning_trap, fix_instruction, retest_focus, quiz_sessions!inner(id, user_id, source_type, nclex_category)')
       .eq('id', questionId)
       .eq('session_id', quizSessionId)
       .single();
@@ -67,6 +69,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    if (contentOnHold(question)) return NextResponse.json(contentHoldPayload(), { status: 409 });
+
     const category = question.nclex_category || session.nclex_category || 'NCLEX Review';
     const mistakeType = question.mistake_type || fallbackMistakeType(category);
     const title = `Fix Weakness — ${mistakeType}`;
@@ -74,6 +78,8 @@ export async function POST(req: NextRequest) {
     const selectedAnswer = question.user_answer || 'Not answered';
     const selectedOptionText = options.find((option: any) => option.label === selectedAnswer)?.text;
     const correctOptionText = options.find((option: any) => option.label === question.correct_answer)?.text;
+    if (question.source_checked_content_id && !(await sourceCheckedContent(question.source_checked_content_id))) return NextResponse.json(contentHoldPayload(), { status: 409 });
+
     const selectedRationale =
       question.rationale_incorrect && typeof question.rationale_incorrect === 'object'
         ? (question.rationale_incorrect as Record<string, string>)[selectedAnswer]
