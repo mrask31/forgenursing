@@ -378,3 +378,12 @@ Immediately restored subscription_status to trialing with a conditional update a
 Source remains 02aa18ee3bd222dc60d423dafab097a52cf741ba; this is an evidence-only checkpoint. Full tutor rubric, simultaneous-start browser acceptance, authenticated phone/Safari acceptance and billing access acceptance remain open. Production remains held.
 
 The prescribed manual handoff was also rejected: browser_security_restricted, command=tab_manual_handoff_request, next_action=stop. Browser URL security policy explicitly prohibits workarounds or alternate browser surfaces. Stopped browser actions. No further sign-in is requested; the remaining browser tests require the platform restriction to be resolved or independent acceptance evidence from an authorized tester.
+
+
+### Question bank export and tutor source badge correction — October 16
+
+Exported the current database bank into a Word reference at the owner's request: 60 preview families, 180 questions (original, immediate retry, delayed review), preserving stored stems, choices, answers, correct/incorrect rationales, cues, teaching points and references. No bank content or publication state was changed. Explicitly labels AI-assisted source checking and no independent clinical validation. The export does not establish production approval.
+
+Fixed an observed tutor presentation defect in both ClinicalTutorWorkspace and ChatMessageList: removed the green 'Using' badge and filename extraction inferred solely from assistant wording such as 'from your'. A reply mentioning an uploaded document could previously imply verified source usage and even extract a long prose fragment as a filename. The neutral learning-only label now remains. Existing actual evidence selection behavior in ChatMessageList remains separate; no retrieval, model or output-guard change. Topic notebook controls no longer depend on that removed wording heuristic.
+
+Source commit 41a511a954b37f6f38833c5df1d92e04f230c12a. TypeScript and 198 tests across 27 files pass. Incremental lint: zero new/blocking errors, 451 documented legacy errors, 16 warnings; not a clean full-lint claim. Browser security remains at the previously recorded stop boundary; no workaround or reauthentication was attempted. This UI fix still needs deployed browser acceptance. Full tutor rubric, concurrent-start acceptance, billing access and authenticated mobile/Safari gates remain open. No production deployment or merge.
