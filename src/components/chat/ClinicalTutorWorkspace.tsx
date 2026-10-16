@@ -520,26 +520,26 @@ export default function ClinicalTutorWorkspace({
     
     // Check if there's a prefilled message that should be auto-sent
     if (typeof window !== 'undefined' && !autoSendProcessedRef.current) {
-      const prefill = localStorage.getItem('forgenursing-tutor-prefill')
-      const shouldAutoSend = localStorage.getItem('forgenursing-tutor-auto-send') === 'true'
+      const prefill = sessionStorage.getItem('forgenursing-tutor-prefill')
+      const shouldAutoSend = sessionStorage.getItem('forgenursing-tutor-auto-send') === 'true'
       
       
       if (prefill && shouldAutoSend) {
         // If images are pending (user uploaded an image), skip auto-send entirely.
         // The user's manual send via ChatInterface will carry imageData through the
         // event path. Auto-send cannot carry images and would race the manual send.
-        const hasImagePending = localStorage.getItem('forgenursing-tutor-has-images') === 'true'
+        const hasImagePending = sessionStorage.getItem('forgenursing-tutor-has-images') === 'true'
         if (hasImagePending || (pendingImageDataRef.current && pendingImageDataRef.current.length > 0)) {
-          localStorage.removeItem('forgenursing-tutor-prefill')
-          localStorage.removeItem('forgenursing-tutor-auto-send')
-          localStorage.removeItem('forgenursing-tutor-has-images')
+          sessionStorage.removeItem('forgenursing-tutor-prefill')
+          sessionStorage.removeItem('forgenursing-tutor-auto-send')
+          sessionStorage.removeItem('forgenursing-tutor-has-images')
           return
         }
 
         // Mark as processed immediately to prevent duplicate sends
         autoSendProcessedRef.current = true
-        localStorage.removeItem('forgenursing-tutor-prefill')
-        localStorage.removeItem('forgenursing-tutor-auto-send')
+        sessionStorage.removeItem('forgenursing-tutor-prefill')
+        sessionStorage.removeItem('forgenursing-tutor-auto-send')
 
         // Check if message was already sent (might be in messages from history)
         const userMessageIndex = messages.findIndex(m =>
