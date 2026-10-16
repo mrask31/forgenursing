@@ -16,13 +16,11 @@ export function hasUnsupportedAuthorityClaim(text: string): boolean {
   ].some(pattern => pattern.test(plain))
 }
 
-/** Detect the captured key-endorsement contradiction; not a clinical answer checker. */
-export function hasContradictoryKeyEndorsement(text: string, userMessage: string): boolean {
-  const key = userMessage.match(/\b(?:answer\s+)?key\s+(?:says|states|is)\s+([A-D])\b/i)?.[1]
-  if (!key) return false
+/** A user-supplied key is not verified source evidence, even when it agrees with the model. */
+export function hasUnverifiedKeyEndorsement(text: string, userMessage: string): boolean {
+  if (!/\b(?:answer\s+)?key\s+(?:says|states|is)\s+([A-D])\b/i.test(userMessage)) return false
   const plain = text.normalize('NFKC').replace(/[*_`]/g, '').replace(/\s+/g, ' ')
-  const endorsesKey = /\b(?:answer\s+)?key\s+(?:is|was)\s+correct\b/i.test(plain)
-  return endorsesKey && new RegExp(`\\bnot\\s+${key}\\b`, 'i').test(plain)
+  return /\b(?:answer\s+)?key\s+(?:is|was)\s+correct\b/i.test(plain)
 }
 
 /** Buffer the answer so a late unsupported claim cannot leak through early deltas. */
@@ -45,7 +43,7 @@ export function evidenceOutputGuard<TOOLS extends ToolSet>(userMessage = ''): St
         const text = parts.filter(p => p.type === 'text-delta').map(p => p.textDelta).join('')
         const replacement = part.finishReason !== 'stop'
           ? INCOMPLETE_TUTOR_MESSAGE
-          : hasUnsupportedAuthorityClaim(text) || hasContradictoryKeyEndorsement(text, userMessage)
+          : hasUnsupportedAuthorityClaim(text) || hasUnverifiedKeyEndorsement(text, userMessage)
             ? EVIDENCE_RECHECK_MESSAGE : null
         let emitted = false
         for (const pending of parts) {

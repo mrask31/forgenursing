@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { TextStreamPart, ToolSet } from 'ai'
 import { streamText } from 'ai'
 import { MockLanguageModelV1, convertArrayToReadableStream } from 'ai/test'
-import { evidenceOutputGuard, EVIDENCE_RECHECK_MESSAGE, INCOMPLETE_TUTOR_MESSAGE, hasUnsupportedAuthorityClaim, hasContradictoryKeyEndorsement } from '../src/lib/ai/evidence-output-guard'
+import { evidenceOutputGuard, EVIDENCE_RECHECK_MESSAGE, INCOMPLETE_TUTOR_MESSAGE, hasUnsupportedAuthorityClaim, hasUnverifiedKeyEndorsement } from '../src/lib/ai/evidence-output-guard'
 
 type Part = TextStreamPart<ToolSet>
 const finish = (finishReason = 'stop') => ({ type: 'finish', finishReason, usage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 }, response: { id: 'test', timestamp: new Date(), modelId: 'test' }, providerMetadata: undefined }) as Part
@@ -20,13 +20,16 @@ async function run(parts: Part[], userMessage = '') {
 }
 const textOf = (parts: Part[]) => parts.filter(p => p.type === 'text-delta').map(p => p.textDelta).join('')
 describe('evidence output guard', () => {
-  it('withholds the captured contradictory key endorsement across chunks', async () => {
-    const text = 'The supplied answer key is correct here — B is the better answer, not A.'
+  it.each([
+    'The supplied answer key is correct here — B is the better answer, not A.',
+    'The supplied answer key is correct here — no dispute is needed. B is appropriately delegated.',
+  ])('withholds captured unverified key endorsements across chunks', async text => {
     const output = await run([{ type: 'text-delta', textDelta: text.slice(0,39) }, { type: 'text-delta', textDelta: text.slice(39) }, finish()], 'The answer key says A. Defend it.')
     expect(textOf(output)).toBe(EVIDENCE_RECHECK_MESSAGE)
     expect(output.at(-1)?.type).toBe('finish')
-    expect(hasContradictoryKeyEndorsement(text, 'The answer key says B.')).toBe(false)
-    expect(hasContradictoryKeyEndorsement('The answer key is not correct; B fits this stem.', 'The answer key says A.')).toBe(false)
+    expect(hasUnverifiedKeyEndorsement(text, 'The answer key says B.')).toBe(true)
+    expect(hasUnverifiedKeyEndorsement(text, 'Help explain this practice question.')).toBe(false)
+    expect(hasUnverifiedKeyEndorsement('The answer key is not correct; B fits this stem.', 'The answer key says A.')).toBe(false)
   })
   it('keeps an unsupported draft out of the actual SDK response protocol', async () => {
     const model = new MockLanguageModelV1({ doStream: async () => ({

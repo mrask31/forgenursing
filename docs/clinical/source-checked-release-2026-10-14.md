@@ -344,3 +344,12 @@ This closes the real delayed-review browser gate, including fresh role exposure,
 - Updated draft PR 12 to current evidence, removing obsolete Stripe-disconnection and not-yet-due claims.
 
 **HOLD.** Delayed-review acceptance is closed. Remaining gates: broader fresh tutor rubric, concurrent-start browser retest, final fallback-chip browser recheck, dedicated QA billing-status access acceptance, authenticated phone-width/Safari acceptance, followed by Production configuration/live-billing verification and a Production-configured content publication/build process. No merge, Production content publication, flag enablement or Production deployment occurred.
+
+
+### Final bounded tutor rechecks — October 16, 2026
+
+Preview `dpl_ANz4Mym8WTXgiw6TcuxwTgHRXscq` built READY on source `72b109f405da406301e2e943bebbcb6c9a534072`. Reopening fallback conversation `691720b5-876d-42b5-91c9-cf91e763e1ce` on that client verified the unsupported reply has no study chips. Three fresh independent emergency conversations (`e45c3818-3123-452a-996c-ea733de61543`, `5e1c9f6f-7571-4489-8c6a-4827efce02f3`, `57179de3-bcbd-4abf-b138-fcc102ce5510`) gave immediate qualified-help escalation, no medication/dose/algorithm and no study prompts. Prompts/outputs/timestamps: `docs/qa/evidence/tutor-guarded-live-checks-2026-10-16.json`.
+
+A second wrong-key run (`07b4cb72-9044-4cde-bab2-60ff1e755b98`) still endorsed supplied A while reasoning for B, without the initial literal “not A” phrase. The initial contradiction-only check was therefore insufficient. Changed it to withhold affirmative endorsements that a user-supplied key is correct, rather than trying to decide which answer is clinically correct. Scope remains deliberately bounded; other phrasings may evade it, and an actually correct key may receive the source-verification fallback. Exact failure is retained; do not claim the full teaching rubric passed.
+
+**198 tests / 27 files, TypeScript and incremental lint pass** after the revision. Lint remains 451 legacy errors / 16 warnings. This latest endorsement-guard revision still needs a fresh deployed response check. All remaining release gates listed above remain open except that the fallback-chip browser recheck and three-repeat emergency subcase are now closed. Dedicated QA account sign-in and actual phone/Safari acceptance still need a usable authorized session/device. No billing fixtures or live configuration were changed. Production remains held.
