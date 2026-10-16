@@ -358,3 +358,10 @@ A second wrong-key run (`07b4cb72-9044-4cde-bab2-60ff1e755b98`) still endorsed s
 ### Latest endorsement-guard deployed check — October 16
 
 Source `02aa18ee3bd222dc60d423dafab097a52cf741ba` built READY as `dpl_9F1HvCLmZ8TE8hgsALNhjuYG4VBQ`, preview `forgenursing-kdls46yl4-michaels-projects-b1fddaa4.vercel.app`. A fresh wrong-key browser conversation `0a47fc28-7926-4e31-b3f9-37c3f18eef10` displayed the source-verification fallback with **no study-prompt buttons**. Exact stored prompt/output/timestamps: `docs/qa/evidence/tutor-final-endorsement-guard-2026-10-16.json`. This closes the latest bounded safeguard browser recheck, not the full teaching rubric. Local source/tests/config match the fetched remote source exactly; 198 tests/27 files, TypeScript and incremental lint pass as above. Production remains held for the remaining acceptance gates.
+
+
+### Account-switch handoff checkpoint — October 16
+
+The dedicated-QA secure sign-in request timed out. Explicit navigation to /entry succeeded afterward; Account positively identified the restored session as owner mrask30@gmail.com, with beta access. No success was inferred from the timed-out request. No billing fixture writes occurred. Stopped credential retries, signed out through the app, verified the normal login form, and requested the supported manual browser handoff so the owner can sign in specifically as mike@creaseos.com. Do not read intermediate credential fields; resume only after the user confirms completion and verify Account identity before any fixture work. Never use the owner's beta profile for the billing-state access matrix.
+
+Current source remains 02aa18ee3bd222dc60d423dafab097a52cf741ba (later commits document evidence only). The latest guard's fresh browser fallback and chip suppression passed as above. Full tutor teaching rubric, simultaneous-start browser retest, QA billing access matrix and phone/Safari acceptance remain open. No production release occurred.
