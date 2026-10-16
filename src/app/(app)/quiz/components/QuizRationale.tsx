@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Brain } from 'lucide-react'
 
 interface QuizRationaleProps {
+  previewOnly?: boolean
   sourceChecked?: boolean
   reviewed?: boolean
   sources?: {title:string;url:string}[]
@@ -54,6 +55,7 @@ function fallbackMistakeType(category: string) {
 }
 
 export default function QuizRationale({
+  previewOnly = false,
   sourceChecked = false, reviewed = false, sources = [], isCorrect, userAnswer, correctAnswer, options, rationaleCorrect,
   rationaleIncorrect, nclexCategory, difficulty, mistakeType, reasoningTrap,
   fixInstruction, retestFocus, keyCue, whyCorrectShort, oneLineFix,
@@ -71,6 +73,7 @@ export default function QuizRationale({
 
   const handleToggleFullRationale = () => {
     setShowFullRationale(prev => !prev)
+    if (previewOnly) return
     try {
       const posthog = require('posthog-js').default
       posthog.capture('show_full_rationale_clicked', {
@@ -85,6 +88,7 @@ export default function QuizRationale({
   }
 
   const handleFixWeakness = async () => {
+    if (previewOnly) return
     if (isDiggingDeeper) return
 
     setIsDiggingDeeper(true)
@@ -275,7 +279,7 @@ export default function QuizRationale({
             <button
               type="button"
               onClick={handleFixWeakness}
-              disabled={isDiggingDeeper}
+              disabled={previewOnly || isDiggingDeeper}
               className="block w-full rounded-lg border text-center font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}
             >
