@@ -36,9 +36,9 @@ interface QuizRationaleProps {
 const clearTutorAutoSendState = () => {
   if (typeof window === 'undefined') return
 
-  localStorage.removeItem('forgenursing-tutor-prefill')
-  localStorage.removeItem('forgenursing-tutor-auto-send')
-  localStorage.removeItem('forgenursing-tutor-has-images')
+  sessionStorage.removeItem('forgenursing-tutor-prefill')
+  sessionStorage.removeItem('forgenursing-tutor-auto-send')
+  sessionStorage.removeItem('forgenursing-tutor-has-images')
 }
 
 function fallbackMistakeType(category: string) {
