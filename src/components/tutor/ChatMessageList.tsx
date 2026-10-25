@@ -1,7 +1,7 @@
 'use client'
 
 import ReactMarkdown from 'react-markdown'
-import { ClipboardCheck, Bookmark, Star, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ClipboardCheck, Star } from 'lucide-react'
 import { useTutorContext } from './TutorContext'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { setTopicSummaryAndStudiedAt } from '@/lib/api/notebook'
@@ -101,15 +101,12 @@ export default function ChatMessageList({
   chatId,
   onSaveToNotebook,
   savingToNotebook,
-  onSaveClip,
   onSendMessage,
   activeCourse,
   activeCourseType,
   messageImageMap,
 }: ChatMessageListProps) {
   const tutorContext = useTutorContext()
-  const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
-  const [savedClipId, setSavedClipId] = useState<string | null>(null)
   const [voiceEnabled, setVoiceEnabled] = useState(false)
   // Track message IDs we've already seen so we never autoPlay historical messages
   const seenMessageIdsRef = useRef<Set<string>>(new Set())
@@ -143,67 +140,6 @@ export default function ChatMessageList({
       seenMessageIdsRef.current.add(m.id)
     }
   }, [messages])
-
-  // Track which messages are flagged (per message, not per chat)
-  const [flaggedMessages, setFlaggedMessages] = useState<Set<string>>(new Set())
-
-  // Load flagged messages from chat metadata
-  useEffect(() => {
-    if (!chatId) return
-
-    const loadFlaggedMessages = async () => {
-      try {
-        const response = await fetch(`/api/chats/metadata?chatId=${chatId}`, {
-          credentials: 'include'
-        })
-        if (response.ok) {
-          const data = await response.json()
-          const flaggedMessageIds = data.metadata?.flaggedMessages || []
-          setFlaggedMessages(new Set(flaggedMessageIds))
-        }
-      } catch (error) {
-        console.error('[ChatMessageList] Error loading flagged messages:', error)
-      }
-    }
-
-    loadFlaggedMessages()
-  }, [chatId])
-
-  const handleToggleNeedsHelp = async (messageId: string) => {
-    if (!chatId || isTogglingHelp) return
-
-    setIsTogglingHelp(true)
-    const isCurrentlyFlagged = flaggedMessages.has(messageId)
-    const newFlaggedSet = new Set(flaggedMessages)
-
-    if (isCurrentlyFlagged) {
-      newFlaggedSet.delete(messageId)
-    } else {
-      newFlaggedSet.add(messageId)
-    }
-
-    try {
-      const response = await fetch('/api/chats/metadata', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          chatId,
-          metadata: { flaggedMessages: Array.from(newFlaggedSet) }
-        })
-      })
-
-      if (response.ok) {
-        setFlaggedMessages(newFlaggedSet)
-      } else {
-        console.error('[ChatMessageList] Failed to update flagged messages')
-      }
-    } catch (error) {
-      console.error('[ChatMessageList] Error toggling flagged messages:', error)
-    } finally {
-      setIsTogglingHelp(false)
-    }
-  }
 
   const handleSaveToNotebook = async (messageId: string, content: string) => {
     if (!tutorContext.selectedTopicId || savingToNotebook === messageId) return
