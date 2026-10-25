@@ -1,4 +1,4 @@
-import { isConfiguredCheckoutPrice } from '@/lib/checkout-validation'
+import { isConfiguredCheckoutPrice, matchesStandardOffer } from '@/lib/checkout-validation'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
@@ -86,6 +86,16 @@ export async function POST(req: Request) {
     if (profileError || !profile) return NextResponse.json({ error: 'Could not verify your subscription. Please retry.' }, { status: 503 })
     if (profile.subscription_status === 'active') {
       return NextResponse.json({ error: 'You already have an active subscription. Open Account for subscription help.' }, { status: 409 })
+    }
+
+    if (configuredPrices[0] === configuredPrices[1]) {
+      return NextResponse.json({ error: 'Plan pricing is temporarily unavailable. Please contact support.' }, { status: 503 })
+    }
+    const expectedInterval = priceId === configuredPrices[0] ? 'month' : 'year'
+    const price = await stripe.prices.retrieve(priceId)
+    if (!matchesStandardOffer(price, expectedInterval)) {
+      console.error('[Stripe Checkout] Configured price does not match the advertised plan', { priceId, expectedInterval })
+      return NextResponse.json({ error: 'Plan pricing is temporarily unavailable. Please contact support.' }, { status: 503 })
     }
 
     // 3. Build base URL for redirects (use request origin as fallback)

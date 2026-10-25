@@ -135,7 +135,7 @@ export async function middleware(request: NextRequest) {
 
     // CRITICAL: For login/signup pages, only redirect if we have a VALID authenticated user
     // If getUser() failed or returned no user (stale token), let the page handle cleanup
-    if ((pathname === '/login' || pathname === '/signup') && user && supabase) {
+    if (pathname === '/login' && user && supabase) {
       // Only redirect if we have a valid user - this means the token is good
       // If token is stale, getUser() will fail and user will be null, so we skip this
       try {

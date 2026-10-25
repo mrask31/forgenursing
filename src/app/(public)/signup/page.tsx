@@ -7,9 +7,10 @@ import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { isValidSignupEmail } from '@/lib/signup-validation'
-import { resolveEntryPath } from '@/lib/resolve-entry-path'
 
 export default function SignupPage() {
+  const [existingAccount, setExistingAccount] = useState<string | null>(null)
+  const [checkingAccount, setCheckingAccount] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -37,18 +38,11 @@ export default function SignupPage() {
     const checkExistingAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       
-      if (user) {
-        // User is already signed in, resolve entry path from profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('quiz_first_enabled, default_entry_path')
-          .eq('id', user.id)
-          .single()
-        router.push(resolveEntryPath(profile))
-      }
+      setExistingAccount(user ? user.email || 'your account' : null)
+      setCheckingAccount(false)
     }
     
-    checkExistingAuth()
+    checkExistingAuth().catch(() => setCheckingAccount(false))
   }, [router, supabase])
 
   // Store plan parameter from URL in localStorage
@@ -231,6 +225,19 @@ export default function SignupPage() {
       setLoading(false)
     }
   }
+
+  if (checkingAccount) return <main className="mx-auto max-w-md px-5 py-16" role="status">Checking your sign-in…</main>
+  if (existingAccount) return <main className="mx-auto max-w-md px-5 py-16 text-slate-900">
+    <h1 className="text-2xl font-bold">You are already signed in</h1>
+    <p className="my-4">You are signed in as {existingAccount}. Open your account to check your trial or subscription, or sign out to create a different account.</p>
+    <Link href="/settings" className="block rounded-xl bg-teal-700 p-3 text-center font-semibold text-white">Open Account</Link>
+    <button type="button" className="mt-4 underline" onClick={async () => {
+      const { error } = await supabase.auth.signOut()
+      if (error) { setMessage({ text: 'Could not sign out. Please retry.', type: 'error' }); return }
+      setExistingAccount(null)
+    }}>Sign out to create an account</button>
+    {message && <p role="alert" className="mt-3">{message.text}</p>}
+  </main>
 
   return (
     <div className="min-h-[calc(100dvh-4rem)] bg-slate-50">

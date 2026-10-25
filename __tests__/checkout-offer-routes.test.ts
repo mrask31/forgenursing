@@ -1,6 +1,6 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
-const mocks = vi.hoisted(() => ({ create: vi.fn(), user: { id: 'qa-user', email: 'qa@example.test' } as { id: string; email: string } | null, status: 'trialing' }))
-vi.mock('stripe', () => ({ default: class { checkout = { sessions: { create: mocks.create } }; static errors = { StripeError: Error } } }))
+const mocks = vi.hoisted(() => ({ create: vi.fn(), retrieve: vi.fn(), user: { id: 'qa-user', email: 'qa@example.test' } as { id: string; email: string } | null, status: 'trialing' }))
+vi.mock('stripe', () => ({ default: class { prices = { retrieve: mocks.retrieve }; checkout = { sessions: { create: mocks.create } }; static errors = { StripeError: Error } } }))
 vi.mock('next/headers', () => ({ cookies: () => ({ get: () => undefined, set: vi.fn(), delete: vi.fn() }) }))
 vi.mock('@supabase/ssr', () => ({ createServerClient: () => ({ auth: { getUser: async () => ({ data: { user: mocks.user }, error: null }) }, from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: { subscription_status: mocks.status, is_beta: true }, error: null }) }) }) }) }) }))
 import { POST } from '../src/app/api/stripe/checkout/route'
@@ -12,6 +12,7 @@ beforeEach(() => {
   vi.stubEnv('NEXT_PUBLIC_STRIPE_PRICE_MONTHLY', 'price_monthly')
   vi.stubEnv('NEXT_PUBLIC_STRIPE_PRICE_ANNUAL', 'price_annual')
   vi.stubEnv('NEXT_PUBLIC_STRIPE_PRICE_SEMESTER', 'price_retired_semester')
+  mocks.retrieve.mockImplementation(async (id: string) => ({ active: true, currency: 'usd', unit_amount: id === 'price_monthly' ? 999 : 7900, type: 'recurring', recurring: { interval: id === 'price_monthly' ? 'month' : 'year', interval_count: 1, usage_type: 'licensed' } }))
   mocks.create.mockResolvedValue({ id: 'cs_test_fixture', url: 'https://example.test/mock-checkout' })
 })
 afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks() })
@@ -39,6 +40,23 @@ describe('current paid offers', () => {
   })
   it('retires the legacy founder purchase endpoint without touching subscriptions', async () => {
     expect((await retiredFounder()).status).toBe(410)
+    expect(mocks.create).not.toHaveBeenCalled()
+  })
+})
+
+// Regression: environment IDs alone must never authorize a wrongly priced offer.
+describe('advertised price verification', () => {
+  it('blocks a configured annual price charging 129 dollars before checkout', async () => {
+    mocks.retrieve.mockResolvedValue({ active: true, currency: 'usd', unit_amount: 12900, type: 'recurring', recurring: { interval: 'year', interval_count: 1, usage_type: 'licensed' } })
+    expect((await POST(request('price_annual'))).status).toBe(503)
+    expect(mocks.create).not.toHaveBeenCalled()
+  })
+  it('blocks annual plans pointing to a monthly, inactive, metered or foreign-currency price', async () => {
+    const price = { active: true, currency: 'usd', unit_amount: 7900, type: 'recurring', recurring: { interval: 'year', interval_count: 1, usage_type: 'licensed' } }
+    for (const change of [{ active: false }, { currency: 'eur' }, { recurring: { ...price.recurring, interval: 'month' } }, { recurring: { ...price.recurring, usage_type: 'metered' } }, { recurring: { ...price.recurring, interval_count: 2 } }]) {
+      mocks.retrieve.mockResolvedValue({ ...price, ...change })
+      expect((await POST(request('price_annual'))).status).toBe(503)
+    }
     expect(mocks.create).not.toHaveBeenCalled()
   })
 })
