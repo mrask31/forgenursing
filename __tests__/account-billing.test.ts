@@ -26,3 +26,17 @@ it('reports live restricted-key mode without returning any key bytes', async () 
  const body=await (await GET()).json()
  expect(body.stripeMode).toBe('live'); expect(JSON.stringify(body)).not.toContain('rk_live_')
 })
+
+it('identifies a missing return URL before calling Stripe', async () => {
+ vi.stubEnv('NEXT_PUBLIC_APP_URL','')
+ const r=await POST(); expect(r.status).toBe(503)
+ expect(await r.json()).toMatchObject({stage:'return_url',code:'billing_return_url_invalid'})
+ expect(mocks.portal).not.toHaveBeenCalled()
+})
+it('identifies portal permissions without exposing provider messages', async () => {
+ mocks.portal.mockRejectedValue({type:'StripePermissionError',message:'private provider detail'})
+ const r=await POST(); const body=await r.json()
+ expect(body).toMatchObject({stage:'stripe_portal',code:'stripe_permission_denied'})
+ expect(r.headers.get('Cache-Control')).toBe('private, no-store')
+ expect(JSON.stringify(body)).not.toContain('private provider detail')
+})
