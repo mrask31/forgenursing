@@ -18,10 +18,10 @@ export default function BillingDetails() {
     return () => controller.abort()
   }, [reload])
   async function manage() {
-    setBusy(true); setError('')
+    setBusy(true); setError(''); setCode(null)
     try {
       const response = await fetch('/api/account/billing', { method: 'POST' })
-      const body = await response.json(); if (!response.ok) throw new Error(body.error)
+      const body = await response.json(); setCode(body.code ? `${body.stage ?? 'portal'}: ${body.code}` : null); if (!response.ok) throw new Error(body.error)
       window.location.assign(body.url)
     } catch (err) { setError(err instanceof Error ? err.message : 'Billing could not open.') }
     finally { setBusy(false) }
