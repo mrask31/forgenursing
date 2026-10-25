@@ -9,3 +9,10 @@ Live billing portal configuration list initially empty. Dedicated sandbox config
 Attempt to create identical live configuration was rejected by automatic approval review: persistent live configuration enables customer payment-method changes and cancellation; requires explicit production-side billing authorization beyond general release work. Stopped; no workaround or repeated mutation. Subsequent live configuration list reconfirmed empty. Ask owner to approve these exact capabilities before retrying.
 
 Vercel project-env listing returned403 permission denied. No Vercel CLI available. Production price-ID bindings remain unverified; do not claim the live founder mismatch is fixed. No deploy, purchase, cancellation, existing subscription modification or secret exposure.
+
+
+## Explicit owner approval and live configuration completion
+
+Owner explicitly approved enabling live invoices, payment-method updates and cancellation at period end, with plan switching disabled. Created live configuration bpc_1UUSm5GnWxTbupf0Xwapns3r successfully, then independently retrieved it. active=true, is_default=true, livemode=true. invoice_history.enabled=true; payment_method_update.enabled=true; subscription_cancel.enabled=true, mode=at_period_end, proration_behavior=none; subscription_update.enabled=false; customer_update.enabled=false. Default return https://forgenursing.com/settings. No existing subscription, price, payment method or cancellation was changed. This supersedes the earlier approval blocker for this configuration only.
+
+App Account portal entry remains on the release preview, not production. End-to-end authenticated portal acceptance and production environment bindings remain unverified; do not equate configuration success with full release acceptance. Other release/audit gates remain open.
