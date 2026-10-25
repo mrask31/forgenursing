@@ -12,6 +12,17 @@ async function account() {
   if (profileError || !profile) return { error: NextResponse.json({ error: 'Your billing account could not load. Please retry.' }, { status: 503 }) }
   return { profile }
 }
+function stripeMode() {
+  const key = process.env.STRIPE_SECRET_KEY || ''
+  return /^(sk|rk)_live_/.test(key) ? 'live' : /^(sk|rk)_test_/.test(key) ? 'test' : 'unknown'
+}
+function billingErrorCode(error: unknown) {
+  const value = error as { code?: string; type?: string } | null
+  if (value?.code === 'resource_missing') return 'stripe_resource_missing'
+  if (value?.type === 'StripeAuthenticationError') return 'stripe_authentication_failed'
+  if (value?.type === 'StripePermissionError') return 'stripe_permission_denied'
+  return 'billing_unavailable'
+}
 function stripeClient() {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error('Billing unavailable')
   return new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-12-15.clover' })
@@ -20,19 +31,19 @@ export async function GET() {
   try {
     const auth = await account(); if (auth.error) return auth.error
     const profile = auth.profile!
-    if (!profile.stripe_customer_id || !profile.stripe_subscription_id) return NextResponse.json({ subscription: null, canManage: Boolean(profile.stripe_customer_id) }, { headers: { 'Cache-Control': 'private, no-store' } })
+    if (!profile.stripe_customer_id || !profile.stripe_subscription_id) return NextResponse.json({ subscription: null, canManage: Boolean(profile.stripe_customer_id), stripeMode: stripeMode() }, { headers: { 'Cache-Control': 'private, no-store' } })
     const subscription = await stripeClient().subscriptions.retrieve(profile.stripe_subscription_id)
     const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
     if (customerId !== profile.stripe_customer_id) throw new Error('Billing ownership mismatch')
     const item = subscription.items.data[0]
-    return NextResponse.json({ canManage: true, subscription: {
+    return NextResponse.json({ canManage: true, stripeMode: stripeMode(), subscription: {
       status: subscription.status, amount: item?.price.unit_amount ?? null,
       currency: item?.price.currency ?? null, interval: item?.price.recurring?.interval ?? null,
       intervalCount: item?.price.recurring?.interval_count ?? null,
       currentPeriodEnd: item?.current_period_end ?? null,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     } }, { headers: { 'Cache-Control': 'private, no-store' } })
-  } catch { return NextResponse.json({ error: 'Billing details are temporarily unavailable. Please retry or contact support.' }, { status: 503 }) }
+  } catch (error) { return NextResponse.json({ error: 'Billing details are temporarily unavailable. Please retry or contact support.', stripeMode: stripeMode(), code: billingErrorCode(error) }, { status: 503, headers: { 'Cache-Control': 'private, no-store' } }) }
 }
 export async function POST() {
   try {
