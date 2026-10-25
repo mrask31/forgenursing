@@ -9,7 +9,9 @@ import { captureLoop } from '@/lib/analytics/learning-loop'
 
 type StarterCheck = { score: number; total_questions: number; detected_trap: string | null }
 type Session = { id: string; status: string; current_question_index: number; total_questions: number; score: number; quiz_mode: string; created_at: string }
-type Focus = { has_personal_plan: boolean; focus: string; focus_explanation: string }
+import { reviewSummary, type ReviewSummary } from '@/lib/review-display'
+
+type Focus = { has_personal_plan: boolean; total_attempted: number; focus: string; focus_explanation: string }
 
 export default function EntryChoiceClient() {
   const router = useRouter()
@@ -23,7 +25,7 @@ export default function EntryChoiceClient() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [claimNotice, setClaimNotice] = useState('')
-  const [review, setReview] = useState<{available:boolean;due:{id:string}[];next_due_at:string|null}|null>(null)
+  const [review, setReview] = useState<ReviewSummary|null>(null)
   const [reviewError, setReviewError] = useState(false)
 
   async function load() {
@@ -69,7 +71,7 @@ export default function EntryChoiceClient() {
 
   const resume = sessions.find(session => session.status === 'in_progress')
   const lastCompleted = sessions.find(session => session.status === 'completed' && session.quiz_mode !== 'retest')
-  const practiceFocus = focus?.has_personal_plan ? focus.focus : check?.detected_trap
+  const practiceFocus = focus?.has_personal_plan ? focus.focus : (focus && focus.total_attempted < 5 ? check?.detected_trap : undefined)
   const reportCategory = cprPracticeCategory(plan)
   async function startPractice() {
     if (busy) return
@@ -103,7 +105,7 @@ export default function EntryChoiceClient() {
     <p className="mt-3 text-slate-600">Practice a few questions, understand your choices, then try the skill again.</p>
     {error && <div role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-red-800">{error} <button onClick={load} className="underline font-semibold">Retry loading</button></div>}
     {claimNotice && <div role="status" className="mt-5 rounded-xl bg-teal-50 p-4 text-sm">{claimNotice} {claimNotice.includes('not been') && <button onClick={load} className="underline">Retry handoff</button>}</div>}
-    {check && <p className="mt-4 text-sm text-slate-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Starter check saved: {check.score}/{check.total_questions}. A starting point, not a readiness score.</p>}
+    {check && focus && focus.total_attempted < 5 && <p className="mt-4 text-sm text-slate-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Starter check saved: {check.score}/{check.total_questions}. A starting point, not a readiness score.</p>}
     {!plan.completed && !editing && <button onClick={() => setEditing(true)} className="mt-5 text-sm font-semibold text-[#087986] underline">Add your exam date or performance report (optional)</button>}
     {editing ? <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 space-y-5">
       <div><h2 className="text-xl font-bold">Make this plan yours</h2><p className="mt-2 text-sm text-slate-600">These details are optional. This plan focuses on NCLEX-RN preparation.</p></div>
@@ -112,7 +114,7 @@ export default function EntryChoiceClient() {
       <button disabled={busy} onClick={savePlan} className="rounded-xl bg-[#0D8F9C] px-6 py-3 font-bold text-white disabled:opacity-50">{busy ? 'Saving…' : 'Save and continue'}</button>
       <button disabled={busy} onClick={() => setEditing(false)} className="ml-4 py-3 text-sm underline">Skip for now</button>
     </section> : <>
-      <section className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-5"><h2 className="font-bold">{review?.due.length ? `${review.due.length} review${review.due.length===1?'':'s'} ready to revisit` : 'Revisit earlier distinctions'}</h2><p className="mt-2 text-sm text-slate-600">{reviewError ? 'Your review queue could not load. Open it to retry.' : review?.due.length ? 'Try a fresh related question about an earlier miss. It is scored separately.' : review?.available ? review.next_due_at ? `Next review: ${new Date(review.next_due_at).toLocaleString()}.` : 'Nothing due yet. Eligible missed questions appear here when due.' : 'Scheduled review appears here when an eligible missed question is due.'}</p><Link href="/review" className="mt-3 inline-block font-semibold text-[#087986] underline">{review?.due.length ? 'Start a review →' : 'Open review queue →'}</Link></section>
+      <section className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-5"><h2 className="font-bold">{review?.due.length ? `${review.due.length} review${review.due.length===1?'':'s'} ready to revisit` : 'Revisit earlier distinctions'}</h2><p className="mt-2 text-sm text-slate-600">{reviewError ? 'Your review queue could not load. Open it to retry.' : review ? reviewSummary(review) : 'Loading your review queue…'}</p><Link href="/review" className="mt-3 inline-block font-semibold text-[#087986] underline">{review?.due.length ? 'Start a review →' : 'Open review queue →'}</Link></section>
       {resume && <section className="mt-8 rounded-2xl bg-[#0B2545] p-6 text-white"><p className="text-xs uppercase tracking-widest text-teal-200">Pick up where you left off</p><h2 className="mt-3 text-xl font-bold text-white">{resume.quiz_mode === 'retest' ? 'Your related retry is saved.' : 'Your practice is saved.'}</h2><p className="mt-2 text-slate-200">{resume.current_question_index} of {resume.total_questions} questions completed · Started {new Date(resume.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.</p><Link href={`/quiz?sessionId=${resume.id}`} className="mt-5 inline-flex rounded-xl bg-white px-5 py-3 font-bold text-[#0B2545]">{resume.quiz_mode === 'retest' ? 'Resume related question →' : 'Resume session →'}</Link><Link href="/quiz" className="mt-4 block text-sm text-teal-100 underline">Choose a new session instead</Link></section>}
       {!resume && <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
         <p className="text-xs font-bold uppercase tracking-widest text-[#0D8F9C]">Today’s practice</p>

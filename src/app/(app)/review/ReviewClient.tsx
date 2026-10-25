@@ -1,5 +1,6 @@
 'use client'
 import {useEffect,useState} from 'react'
+import { reviewSummary, REVIEW_ELIGIBILITY_COPY } from '@/lib/review-display'
 import Link from 'next/link'
 import {captureLoop} from '@/lib/analytics/learning-loop'
 import {opportunityId} from '@/lib/learning/distinctions'
@@ -18,11 +19,12 @@ export default function ReviewClient(){
  return <main className="mx-auto max-w-2xl px-5 py-8 text-[#0B2545]">
   <p className="text-xs font-bold uppercase tracking-widest text-[#087986]">Revisit a distinction</p><h1 className="mt-3 text-3xl font-bold">See what you remember.</h1>
   <p className="mt-3 text-slate-600">A new question about an earlier miss. Review results are separate from your original score.</p>
+  <p className="mt-3 text-sm text-slate-600">{REVIEW_ELIGIBILITY_COPY}</p>
   {error&&<div role="alert" className="mt-5 rounded-xl bg-red-50 p-4">{error} <button className="underline" onClick={()=>{setQuestion(null);setFeedback(null);void load()}}>Reload queue</button></div>}
   {busy&&<p role="status" className="mt-5">Loading…</p>}
   {!question&&queue&&<section className="mt-6 rounded-2xl border bg-white p-6">
    <h2 className="text-xl font-bold">{queue.due.length?`${queue.due.length} review${queue.due.length===1?'':'s'} due`:queue.available?'Nothing due yet':'Question sets are being prepared'}</h2>
-   <p className="mt-3 text-slate-600">{queue.due.length?'Try one, review the explanation, then decide whether to continue.':queue.available?(queue.next_due_at?`Your next review is due ${new Date(queue.next_due_at).toLocaleString()}.`:queue.exhausted_count?'You have finished the available delayed questions for earlier misses. Saved explanations remain available; more reviews need fresh content.':'Eligible missed questions will appear here when due.'):'No eligible question sets are available for scheduled review yet. You can revisit your saved explanations.'}</p>
+   <p className="mt-3 text-slate-600">{reviewSummary(queue)}</p>
    {queue.due.length>0&&<button disabled={busy} onClick={start} className="mt-5 rounded-xl bg-[#0D8F9C] px-5 py-3 font-bold text-white disabled:opacity-50">Start one review →</button>}
   </section>}
   {question&&context.content_status==='ai_source_checked'&&<p className="mt-4 text-sm text-slate-600">AI-assisted, source-checked practice. Not independently clinically validated.</p>}

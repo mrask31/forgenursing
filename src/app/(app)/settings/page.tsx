@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Brain, CreditCard, Loader2, Settings, Target, User } from 'lucide-react'
 import { isBetaActive } from '@/lib/subscription-access'
+import BillingDetails from '@/components/account/BillingDetails'
 
 type Profile = {
   is_beta: boolean | null
@@ -29,7 +30,7 @@ function formatDate(value?: string | null) {
 function accessLabel(profile: Profile | null) {
   if (profile?.subscription_status === 'active') return 'Subscription active'
   if (isBetaActive(profile?.is_beta, profile?.beta_expires_at)) return `Beta access through ${formatDate(profile?.beta_expires_at)}`
-  if (profile?.subscription_status === 'trialing') return profile.trial_ends_at && new Date(profile.trial_ends_at).getTime() > Date.now() ? `Trial ends ${formatDate(profile.trial_ends_at)}` : 'Your trial has ended'
+  if (profile?.subscription_status === 'trialing') return profile.trial_ends_at && new Date(profile.trial_ends_at).getTime() > Date.now() ? `Trial ends ${formatDate(profile.trial_ends_at)} · ${Math.ceil((new Date(profile.trial_ends_at).getTime() - Date.now()) / 86400000)} day(s) remaining` : 'Your trial has ended'
   if (profile?.subscription_status === 'expired') return 'Subscription needed'
   if (profile?.subscription_status === 'canceled') return 'Subscription canceled'
   if (profile?.subscription_status === 'past_due') return 'Payment update needed'
@@ -127,11 +128,13 @@ export default function SettingsPage() {
           <SettingsCard icon={<CreditCard className="h-5 w-5" />} title="Access">
 
             <SettingRow label="Access" value={accessLabel(profile)} />
+            <BillingDetails />
             {profile?.subscription_status !== 'active' && <Link href="/pricing" className="block rounded-xl bg-[#0D8F9C] px-4 py-3 text-center font-bold text-white">View subscription options</Link>}
             <a href="mailto:support@forgenursing.com?subject=Subscription%20help" className="inline-block py-2 text-sm font-semibold text-[#087986] underline">Get help changing or canceling a subscription</a>
           </SettingsCard>
 
           <SettingsCard icon={<Target className="h-5 w-5" />} title="Help">
+            <Link href="/faq" className="block py-2 font-semibold text-[#087986] underline">Frequently asked questions</Link>
             <a href="mailto:support@forgenursing.com" className="block rounded-xl border border-[#DDE5EE] bg-[#F7F9FB] p-3 text-sm font-bold text-[#0B2545] hover:border-[#0D8F9C]">Contact Support →</a>
           </SettingsCard>
         </section>

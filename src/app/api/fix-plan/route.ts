@@ -118,9 +118,9 @@ export async function GET() {
     const topFocus = eligible.length > 0
       ? eligible.sort((a, b) => {
           if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy
-          return b.missed - a.missed
+          return b.missed - a.missed || a.mistake_type.localeCompare(b.mistake_type)
         })[0]
-      : availablePatterns.filter(pattern => pattern.missed > 0).sort((a, b) => b.missed - a.missed)[0] ?? null
+      : availablePatterns.filter(pattern => pattern.missed > 0).sort((a, b) => b.missed - a.missed || a.mistake_type.localeCompare(b.mistake_type))[0] ?? null
 
     const hasPersonalPlan = totalAttempted >= MIN_ATTEMPTS_FOR_PERSONAL_PLAN && !!topFocus
     const focus = hasPersonalPlan ? topFocus!.mistake_type : 'Find your clinical judgment pattern'
