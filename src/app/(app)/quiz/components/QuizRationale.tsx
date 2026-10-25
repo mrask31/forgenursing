@@ -145,6 +145,11 @@ export default function QuizRationale({
       }
 
       clearTutorAutoSendState()
+      // Preserve this answered step in browser history before leaving for the tutor.
+      const back = new URL(window.location.href)
+      back.searchParams.set('sessionId', sessionId)
+      back.searchParams.set('feedbackQuestionId', questionId)
+      window.history.replaceState(null, '', back.pathname + back.search)
       router.push(`/tutor?sessionId=${data.chatId}`)
     } catch (error) {
       console.error('[QuizRationale] Fix weakness error:', error)

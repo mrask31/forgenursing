@@ -68,6 +68,7 @@ export default function QuizPageClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const directSessionId = searchParams.get('sessionId')
+  const feedbackQuestionId = searchParams.get('feedbackQuestionId')
   const returnSessionId = searchParams.get('returnSessionId')
 
   const [phase, setPhase] = useState<Phase>('setup')
@@ -203,6 +204,21 @@ export default function QuizPageClient() {
           ? sessions?.find((s: any) => s.id === directSessionId)
           : null
 
+        if (directSession && feedbackQuestionId) {
+          const response = await fetch(`/api/quiz/feedback?questionId=${encodeURIComponent(feedbackQuestionId)}`, { cache: 'no-store' })
+          const saved = await response.json()
+          if (!response.ok) throw new Error(saved.error || 'Saved feedback could not load.')
+          if (saved.question.session_id !== directSession.id) throw new Error('This feedback does not belong to the selected session.')
+          setSessionId(directSession.id)
+          setSessionTotalQuestions(directSession.total_questions || 10)
+          setCurrentQuizMode(directSession.quiz_mode || 'standard')
+          setCurrentIndex(saved.question.question_index)
+          setCurrentQuestion(saved.question)
+          setSelectedAnswer(saved.answer.user_answer)
+          setAnswerResult(saved.answer)
+          setPhase('rationale')
+          return
+        }
         if (directSession) {
           if (directSession.status === 'completed') { router.replace(`/quiz/results?sessionId=${directSession.id}`); return }
           setSessionId(directSession.id)
@@ -237,7 +253,7 @@ export default function QuizPageClient() {
       } finally { setInitializing(false) }
     }
     void init()
-  }, [directSessionId, generateQuestion, sourceType, category])
+  }, [directSessionId, feedbackQuestionId, generateQuestion, sourceType, category])
 
   const handleStart = useCallback(async (options?: StartOptions) => {
     setLoading(true)
@@ -441,6 +457,9 @@ export default function QuizPageClient() {
   const handleNext = useCallback(async () => {
     if (!sessionId) return
     const nextIndex = currentIndex + 1
+    const nextUrl = new URL(window.location.href)
+    nextUrl.searchParams.delete('feedbackQuestionId')
+    window.history.replaceState(null, '', nextUrl.pathname + nextUrl.search)
 
     if (nextIndex >= sessionTotalQuestions || answerResult?.session_complete) {
       try {
