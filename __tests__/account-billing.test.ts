@@ -3,7 +3,7 @@ const mocks = vi.hoisted(() => ({ user: { id: 'qa' } as {id:string}|null, profil
 vi.mock('@/lib/supabase/server', () => ({ createClient: () => ({ auth:{getUser:async()=>({data:{user:mocks.user},error:null})},from:()=>({select:()=>({eq:()=>({single:async()=>({data:mocks.profile,error:null})})})}) }) }))
 vi.mock('stripe', () => ({default:class {subscriptions={retrieve:mocks.subscription};billingPortal={sessions:{create:mocks.portal}}}}))
 import {GET,POST} from '../src/app/api/account/billing/route'
-beforeEach(()=>{vi.clearAllMocks();mocks.user={id:'qa'};mocks.profile={stripe_customer_id:'cus_qa',stripe_subscription_id:'sub_qa'};vi.stubEnv('STRIPE_SECRET_KEY','sk_test_fixture_not_a_secret');vi.stubEnv('NEXT_PUBLIC_APP_URL','https://preview.example.test');mocks.portal.mockResolvedValue({url:'https://billing.stripe.com/test-only'});mocks.subscription.mockResolvedValue({customer:'cus_qa',status:'active',cancel_at_period_end:false,items:{data:[{current_period_end:1800000000,price:{unit_amount:7900,currency:'usd',recurring:{interval:'year',interval_count:1}}}]}})})
+beforeEach(()=>{vi.clearAllMocks();mocks.user={id:'qa'};mocks.profile={stripe_customer_id:'cus_qa',stripe_subscription_id:'sub_qa'};vi.stubEnv('STRIPE_SECRET_KEY','sk_test_fixture_not_a_secret');vi.stubEnv('NEXT_PUBLIC_APP_URL','https://preview.example.test');vi.stubEnv('VERCEL_URL','');mocks.portal.mockResolvedValue({url:'https://billing.stripe.com/test-only'});mocks.subscription.mockResolvedValue({customer:'cus_qa',status:'active',cancel_at_period_end:false,items:{data:[{current_period_end:1800000000,price:{unit_amount:7900,currency:'usd',recurring:{interval:'year',interval_count:1}}}]}})})
 afterEach(()=>vi.unstubAllEnvs())
 describe('account billing boundaries',()=>{
  it('requires authentication for both details and portal',async()=>{mocks.user=null;expect((await GET()).status).toBe(401);expect((await POST()).status).toBe(401);expect(mocks.portal).not.toHaveBeenCalled();expect(mocks.subscription).not.toHaveBeenCalled()})
@@ -39,4 +39,11 @@ it('identifies portal permissions without exposing provider messages', async () 
  expect(body).toMatchObject({stage:'stripe_portal',code:'stripe_permission_denied'})
  expect(r.headers.get('Cache-Control')).toBe('private, no-store')
  expect(JSON.stringify(body)).not.toContain('private provider detail')
+})
+
+it('uses the trusted deployment hostname when app URL is absent', async () => {
+ vi.stubEnv('NEXT_PUBLIC_APP_URL','')
+ vi.stubEnv('VERCEL_URL','forgenursing-preview.vercel.app')
+ expect((await POST()).status).toBe(200)
+ expect(mocks.portal).toHaveBeenCalledWith({customer:'cus_qa',return_url:'https://forgenursing-preview.vercel.app/settings'})
 })
