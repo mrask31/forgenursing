@@ -52,7 +52,8 @@ export async function POST() {
     if (!auth.profile!.stripe_customer_id) return NextResponse.json({ error: 'No Stripe billing account is linked. Contact support if you already paid.' }, { status: 409 })
     // Never accept a client-supplied customer or redirect URL.
     stage = 'return_url'
-    const configured = process.env.NEXT_PUBLIC_APP_URL
+    // Vercel supplies this hostname for each deployment; never trust request headers.
+    const configured = process.env.NEXT_PUBLIC_APP_URL?.trim() || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '')
     const base = configured ? new URL(configured.startsWith('http') ? configured : `https://${configured}`) : null
     if (!base || !['http:', 'https:'].includes(base.protocol)) throw new Error('Return URL unavailable')
     stage = 'stripe_portal'
