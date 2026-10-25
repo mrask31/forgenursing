@@ -1,5 +1,7 @@
 'use client'
 
+import { tutorHistoryTitle } from '@/lib/tutor-history-title'
+
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Clock, Trash2, X, ChevronDown, ChevronRight } from 'lucide-react'
@@ -374,7 +376,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
                                           <span className="text-sm font-medium text-slate-900 truncate">
-                                            {chat.title || 'Untitled Chat'}
+                                            {tutorHistoryTitle(chat.title)}
                                           </span>
                                           <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded shrink-0">
                                             {badge}

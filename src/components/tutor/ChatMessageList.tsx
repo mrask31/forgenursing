@@ -279,48 +279,6 @@ export default function ChatMessageList({
                     {voiceEnabled && (
                       <ForgeAudioPlayer text={m.content} autoPlay={m.id === newestAssistantId} />
                     )}
-                    <button
-                      onClick={() => {
-                        if (onSaveClip) {
-                          onSaveClip(m.id, m.content)
-                          setSavedClipId(m.id)
-                          setTimeout(() => setSavedClipId(null), 3000)
-                        }
-                      }}
-                      className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all duration-200 ${
-                        savedClipId === m.id
-                          ? 'text-emerald-600 bg-emerald-50'
-                          : 'text-[var(--gray-400)] hover:text-[var(--teal)] hover:bg-[var(--teal-light)]'
-                      }`}
-                      title="Save this explanation to your Learning Library (accessible from sidebar)"
-                    >
-                      {savedClipId === m.id ? (
-                        <>
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Saved!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Bookmark className="w-3 h-3" />
-                          <span>Save</span>
-                        </>
-                      )}
-                    </button>
-                    {chatId && (
-                      <button
-                        onClick={() => handleToggleNeedsHelp(m.id)}
-                        disabled={isTogglingHelp}
-                        className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all duration-200 ${
-                          flaggedMessages.has(m.id)
-                            ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 font-medium'
-                            : 'text-[var(--gray-400)] hover:text-amber-600 hover:bg-amber-50'
-                        } disabled:opacity-50`}
-                        title={flaggedMessages.has(m.id) ? 'Flagged for review - Click to remove. This appears in your Dashboard under "Flagged for Review"' : 'Flag this Q&A pair for focused review (appears in Dashboard)'}
-                      >
-                        <AlertCircle className="w-3 h-3" />
-                        <span>{flaggedMessages.has(m.id) ? 'Flagged' : 'Flag'}</span>
-                      </button>
-                    )}
                     {tutorContext.selectedTopicId && (
                       <button
                         onClick={() => handleSaveToNotebook(m.id, m.content)}

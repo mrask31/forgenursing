@@ -109,11 +109,16 @@ export default function ClinicalTutorWorkspace({
     if (!chatId) return;
 
 
+    const controller = new AbortController()
+    setIsLoadingHistory(true)
+    setInitialMessages([])
     const loadHistory = async () => {
       try {
         const historyUrl = `/api/history?id=${chatId}`
-        const response = await fetch(historyUrl);
+        const response = await fetch(historyUrl, {cache:'no-store', signal:controller.signal});
         const data = await response.json();
+        if (controller.signal.aborted) return
+        if (!response.ok) throw new Error(data.error || 'Conversation could not load. Please retry.')
         // Handle both old format (array) and new format (object)
         if (Array.isArray(data)) {
           if (data.length > 0) {
@@ -148,13 +153,14 @@ export default function ClinicalTutorWorkspace({
           }
         }
       } catch (error) {
-        console.error('[Chat] Error loading history:', error);
+        if (!controller.signal.aborted) setCustomError(error instanceof Error ? error.message : 'Conversation could not load. Please retry.');
       } finally {
-        setIsLoadingHistory(false);
+        if (!controller.signal.aborted) setIsLoadingHistory(false);
       }
     };
 
     loadHistory();
+    return () => controller.abort()
   }, [chatId]);
 
   // Get topic context for warm start
@@ -182,6 +188,7 @@ export default function ClinicalTutorWorkspace({
   }, [chatId, filterMode, selectedDocIds, mode, topicTitle, className, selectedClassName, attachedFiles]);
 
   const { messages, append, isLoading, setMessages } = useChat({
+    id: chatId || undefined,
     api: '/api/chat',
     initialMessages: initialMessages,
     body: requestBody,
@@ -618,6 +625,8 @@ export default function ClinicalTutorWorkspace({
           <span className="font-medium">Error:</span> {customError}
         </div>
       )}
+
+      {!isLoadingHistory && !customError && chatId && messages.length === 0 && <p role="status" className="p-4 text-sm text-slate-600">No saved messages were found in this conversation.</p>}
 
       {/* Archived Chat Banner */}
       {chatStatus === 'archived' && (

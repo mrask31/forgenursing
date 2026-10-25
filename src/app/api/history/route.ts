@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // Helper to validate UUID format
 const isValidUUID = (str: string): boolean => {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -27,13 +29,18 @@ export async function GET(req: Request) {
     // Get the current user
     const { data: { user } } = await supabase.auth.getUser();
 
+    if (!user) return NextResponse.json({error:'Please sign in to load this conversation.'},{status:401})
+
     // Fetch chat info (status, summary)
-    const { data: chatInfo } = await supabase
+    const { data: chatInfo, error: chatError } = await supabase
       .from('chats')
       .select('status, summary')
       .eq('id', chatId)
       .eq('user_id', user?.id)
       .single();
+
+    if (chatError && chatError.code !== 'PGRST116') return NextResponse.json({error:'Conversation could not load. Please retry.'},{status:503})
+    if (!chatInfo) return NextResponse.json({error:'Conversation not found or unavailable to this account.'},{status:404})
 
     // Fetch messages for this chat
     const { data: messages, error } = await supabase
@@ -48,7 +55,7 @@ export async function GET(req: Request) {
       if (error.code === 'PGRST205') {
         console.warn('[API] Tables not found. Please run the SQL schema in Supabase.');
       }
-      return NextResponse.json([]);
+      return NextResponse.json({error:'Messages could not load. Please retry.'},{status:503});
     }
 
     if (!messages || messages.length === 0) {
@@ -70,6 +77,6 @@ export async function GET(req: Request) {
 
   } catch (error) {
     console.error('[DB] Error loading history:', error);
-    return NextResponse.json([]);
+    return NextResponse.json({error:'Conversation could not load. Please retry.'},{status:503});
   }
 }
