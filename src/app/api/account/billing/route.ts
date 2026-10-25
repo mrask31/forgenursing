@@ -46,14 +46,20 @@ export async function GET() {
   } catch (error) { return NextResponse.json({ error: 'Billing details are temporarily unavailable. Please retry or contact support.', stripeMode: stripeMode(), code: billingErrorCode(error) }, { status: 503, headers: { 'Cache-Control': 'private, no-store' } }) }
 }
 export async function POST() {
+  let stage: 'account' | 'return_url' | 'stripe_portal' = 'account'
   try {
     const auth = await account(); if (auth.error) return auth.error
     if (!auth.profile!.stripe_customer_id) return NextResponse.json({ error: 'No Stripe billing account is linked. Contact support if you already paid.' }, { status: 409 })
     // Never accept a client-supplied customer or redirect URL.
+    stage = 'return_url'
     const configured = process.env.NEXT_PUBLIC_APP_URL
     const base = configured ? new URL(configured.startsWith('http') ? configured : `https://${configured}`) : null
     if (!base || !['http:', 'https:'].includes(base.protocol)) throw new Error('Return URL unavailable')
+    stage = 'stripe_portal'
     const session = await stripeClient().billingPortal.sessions.create({ customer: auth.profile!.stripe_customer_id, return_url: new URL('/settings', base).href })
     return NextResponse.json({ url: session.url }, { headers: { 'Cache-Control': 'private, no-store' } })
-  } catch { return NextResponse.json({ error: 'Billing management could not open. Please retry or contact support.' }, { status: 503 }) }
+  } catch (error) {
+    const code = stage === 'return_url' ? 'billing_return_url_invalid' : billingErrorCode(error)
+    return NextResponse.json({ error: 'Billing management could not open. Please retry or contact support.', code, stage, stripeMode: stripeMode() }, { status: 503, headers: { 'Cache-Control': 'private, no-store' } })
+  }
 }
