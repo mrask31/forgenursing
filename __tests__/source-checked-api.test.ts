@@ -1,7 +1,7 @@
 import {beforeEach,describe,it,expect,vi} from 'vitest'
 import {NextRequest} from 'next/server'
 const state=vi.hoisted(()=>({user:{id:'owner'} as {id:string}|null,access:true,enabled:true,content:true,rpc:vi.fn(),legacy:vi.fn(),row:{id:'11111111-1111-4111-8111-111111111111',source_checked_content_id:'version',question_stem:'frozen'} as any}))
-vi.mock('@/lib/supabase/server',()=>({createClient:()=>({auth:{getUser:async()=>({data:{user:state.user},error:null})},from:()=>{const q:any={select:()=>q,eq:()=>q,maybeSingle:async()=>({data:state.row}),update:state.legacy,insert:state.legacy};return q}})}))
+vi.mock('@/lib/supabase/server',()=>({createClient:()=>({auth:{getUser:async()=>({data:{user:state.user},error:null})},from:()=>{const q:any={select:()=>q,eq:()=>q,maybeSingle:async()=>({data:state.row}),update:(...args:any[])=>{state.legacy(...args);return q},insert:(...args:any[])=>{state.legacy(...args);return q},single:async()=>({data:{id:"supplement",content_policy:"generated_supplement_v1"}})};return q}})}))
 vi.mock('@/lib/entitlement',()=>({getEntitlementForUser:async()=>({hasAccess:state.access})}))
 vi.mock('@/lib/learning/server',()=>({approvedContent:async()=>[],learningAdmin:()=>({})}))
 vi.mock('@/lib/learning/source-checked-server',()=>({sourceCheckedEnabled:()=>state.enabled,sourceCheckedContent:async()=>state.content?{}:null,sourceCheckedRpc:state.rpc}))
@@ -51,3 +51,6 @@ describe('source-checked API boundaries',()=>{
   expect(state.rpc).not.toHaveBeenCalled()
  })
 })
+
+it('does not silently generate default daily practice when bank rollout is off',async()=>{state.enabled=false;const r=await start(req({requestId:id}));expect(r.status).toBe(503);expect(await r.json()).toMatchObject({code:'bank_not_enabled'});expect(state.legacy).not.toHaveBeenCalled();expect(state.rpc).not.toHaveBeenCalled()})
+it('allows an explicit generated supplement independently of bank availability',async()=>{state.enabled=false;expect((await start(req({practiceSource:'generated',totalQuestions:5}))).status).toBe(200);expect(state.rpc).not.toHaveBeenCalled();expect(state.legacy).toHaveBeenCalledWith(expect.objectContaining({content_policy:'generated_supplement_v1',source_type:'generic'}))})

@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       sourceType = 'generic',
+      practiceSource = 'bank',
       classId,
       nclexCategory,
       quizMode = 'standard',
@@ -32,6 +33,8 @@ export async function POST(req: NextRequest) {
       targetFocus = null,
       totalQuestions,
     } = body;
+
+    if (!['bank', 'generated'].includes(practiceSource)) return NextResponse.json({ error: 'Invalid practice source' }, { status: 400 });
 
     if (!['document', 'generic', 'mixed'].includes(sourceType)) {
       return NextResponse.json({ error: 'Invalid sourceType' }, { status: 400 });
@@ -54,7 +57,8 @@ export async function POST(req: NextRequest) {
         ? 5
         : Math.max(1, Math.min(Number(totalQuestions) || 10, 20));
 
-    if (sourceCheckedEnabled() && sourceType === 'generic') {
+    if (sourceType !== 'document' && practiceSource === 'bank') {
+      if (!sourceCheckedEnabled()) return NextResponse.json({ error: 'Source-checked bank practice is not enabled here yet. Choose Generated supplement for additional practice.', code: 'bank_not_enabled' }, { status: 503 });
       const requestId = z.string().uuid().safeParse(body.requestId);
       if (!requestId.success) return NextResponse.json({ error: 'A valid session request ID is required.' }, { status: 400 });
       if (quizMode === 'retest') return NextResponse.json({ error: 'Start a retry from a missed question.' }, { status: 400 });
@@ -82,6 +86,7 @@ export async function POST(req: NextRequest) {
       .insert({
         user_id: user.id,
         source_type: sourceType,
+        content_policy: practiceSource === 'generated' && sourceType !== 'document' ? 'generated_supplement_v1' : null,
         class_id: classId || null,
         nclex_category: nclexCategory || null,
         status: 'in_progress',

@@ -422,7 +422,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Frozen, independently approved content is preferred when it matches the requested category.
-    if (session.source_type === 'generic' && !isTargetedDrill && session.quiz_mode !== 'retest') {
+    if (session.content_policy !== 'generated_supplement_v1' && session.source_type === 'generic' && !isTargetedDrill && session.quiz_mode !== 'retest') {
       const { data: learner } = await supabase.from('profiles').select('program_level').eq('id', user.id).maybeSingle();
       const bank = !learner?.program_level || ['ADN', 'BSN'].includes(learner.program_level) ? await approvedContent() : [];
       const { data: used } = await supabase.from('quiz_questions').select('clinical_content_id, quiz_sessions!inner(user_id)').eq('quiz_sessions.user_id', user.id).not('clinical_content_id', 'is', null).limit(1000);

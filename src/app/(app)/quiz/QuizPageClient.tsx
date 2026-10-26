@@ -14,6 +14,7 @@ import QuizRationale from './components/QuizRationale'
 type Phase = 'setup' | 'question' | 'rationale' | 'loading'
 
 type StartOptions = {
+  practiceSource?: 'bank' | 'generated'
   quizMode?: 'standard' | 'targeted_drill'
   targetMistakeType?: string | null
   targetFocus?: string | null
@@ -268,6 +269,7 @@ export default function QuizPageClient() {
         body: JSON.stringify({
           requestId: startRequest.current.id,
           sourceType,
+          practiceSource: options?.practiceSource || 'bank',
           nclexCategory: category === 'All Categories' ? null : category,
           quizMode,
           targetMistakeType: options?.targetMistakeType ?? null,
