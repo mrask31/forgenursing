@@ -5,14 +5,14 @@ export default function TermsPage() {
     <div className="min-h-screen bg-[var(--gray-50)]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h1 className="text-4xl font-semibold text-[var(--navy)] mb-4">Terms of Service</h1>
-        <p className="text-sm text-[var(--gray-400)] mb-8">Last updated: October 9, 2026</p>
+        <p className="text-sm text-[var(--gray-400)] mb-8">Last updated: October 26, 2026</p>
 
         <div className="bg-white border border-[var(--gray-200)] rounded-xl p-8 shadow-sm space-y-8">
           {/* 1. Agreement to Terms */}
           <section>
             <h2 className="text-2xl font-semibold text-[var(--navy)] mb-4">1. Agreement to Terms</h2>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              These Terms of Service (&ldquo;Terms&rdquo;) constitute a legally binding agreement between you and MJR Intelligence Group LLC (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) governing your use of ForgeNursing, an AI-powered clinical reasoning tutor for nursing students.
+              These Terms of Service (&ldquo;Terms&rdquo;) constitute a legally binding agreement between you and MJR Intelligence Group LLC (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) governing your use of ForgeNursing, a three-month NCLEX-RN retake program with AI-assisted study support.
             </p>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
               By accessing or using ForgeNursing, you agree to be bound by these Terms. If you do not agree to these Terms, you may not use the service.
@@ -23,11 +23,11 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold text-[var(--navy)] mb-4">2. Eligibility</h2>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              ForgeNursing is designed exclusively for nursing students aged 18 and older enrolled in accredited nursing programs (LPN, ADN, BSN, MSN, or DNP tracks). By creating an account, you represent that:
+              ForgeNursing is designed for adults preparing for another NCLEX-RN attempt, including graduates who are no longer enrolled in a nursing program. Current enrollment is not required. By creating an account, you represent that:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-[var(--gray-800)] leading-relaxed mb-4">
               <li>You are at least 18 years of age</li>
-              <li>You are currently enrolled in or preparing for a nursing or healthcare education program</li>
+              <li>You use ForgeNursing for your own educational preparation, not to make real patient-care decisions</li>
               <li>You have the legal authority to enter into this agreement</li>
             </ul>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
@@ -60,7 +60,7 @@ export default function TermsPage() {
               <li>Make real patient care decisions — ForgeNursing is a study tool only</li>
               <li>Attempt to reverse engineer, decompile, or extract source code</li>
               <li>Use automated systems (bots, scrapers) to access or interact with the service</li>
-              <li>Upload materials you do not have the right to share</li>
+              <li>Submit content you do not have the right to share, including identifiable patient information</li>
               <li>Violate any applicable local, state, national, or international law</li>
               <li>Impersonate any person or entity</li>
             </ul>
@@ -107,11 +107,12 @@ export default function TermsPage() {
               ForgeNursing uses the following third-party AI services to power its features:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-[var(--gray-800)] leading-relaxed mb-4">
-              <li><strong>Anthropic Claude</strong> — primary clinical reasoning and tutoring responses</li>
-              <li><strong>Google Gemini</strong> — clinical image analysis (EKG strips, wound photos, lab results) and supporting features</li>
+              <li><strong>Anthropic Claude</strong> — tutoring, conversation processing, and image analysis</li>
+              <li><strong>OpenAI</strong> — embeddings used to retrieve relevant retained study material</li>
+              <li><strong>Google Gemini</strong> — image-safety checks where enabled</li>
             </ul>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              Your messages, uploaded materials, and session data are processed by these providers solely to generate educational responses. Their use of your data is governed by their respective privacy policies. We implement contractual safeguards to protect your data during AI processing.
+              Depending on the feature, your messages, images, relevant conversation history, and excerpts from retained historical attachments may be sent to AI providers to generate responses or retrieve relevant context. Provider terms and privacy practices apply. See our Privacy Policy for the data flows and service providers. Do not submit identifiable patient information.
             </p>
           </section>
 
@@ -136,15 +137,13 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold text-[var(--navy)] mb-4">8. User Content</h2>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              You may upload educational materials (PDFs, notes, slides, textbooks) to your account. You retain ownership of your content, but by uploading it, you grant us a license to:
+              You retain ownership of the messages, study preferences, images, and other content you submit. You grant us permission to store, display, and process that content as needed to operate your account, provide educational responses, retrieve relevant context, and restore your saved history.
             </p>
-            <ul className="list-disc pl-6 space-y-2 text-[var(--gray-800)] leading-relaxed mb-4">
-              <li>Store and process your content to provide the ForgeNursing service</li>
-              <li>Use your content to generate personalized educational responses</li>
-              <li>Improve our AI models and algorithms (content may be used in anonymized or aggregated form)</li>
-            </ul>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              You represent and warrant that you have the right to upload any content you submit and that it does not violate any third-party rights, including publisher copyright, or applicable laws.
+              My Courses and new course-document uploads have been removed from the retake program. Existing conversations and previously attached materials may remain in your history so those conversations can still be opened. This retention does not create a new course-upload feature. Contact support to request deletion of retained content.
+            </p>
+            <p className="text-[var(--gray-800)] leading-relaxed mb-4">
+              Submit only content you have the right to share. Do not submit protected patient information, identifiable clinical records, or copyrighted material without permission. These permissions do not grant us ownership of your content or a general license to train AI models on it.
             </p>
           </section>
 
@@ -164,7 +163,7 @@ export default function TermsPage() {
               The ForgeNursing service, including its software, design, text, graphics, AI models, ADPIE framework implementation, and all related intellectual property, is owned by MJR Intelligence Group LLC and protected by copyright, trademark, and other intellectual property laws.
             </p>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              You retain ownership of any educational content you upload to the platform. You may not copy, modify, distribute, sell, or lease any part of the ForgeNursing service without our prior written consent.
+              You retain ownership of the content you submit, including materials retained from earlier versions of the service. You may not copy, modify, distribute, sell, or lease any part of the ForgeNursing service without our prior written consent.
             </p>
           </section>
 
