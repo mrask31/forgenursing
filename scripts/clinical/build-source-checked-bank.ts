@@ -4,12 +4,18 @@ import { sourceCheckedPackets, type TeachingPoint } from '../../src/lib/learning
 const inputs = [
   {bank:'content/drafts/question-bank-v1.json',points:'content/drafts/teaching-points.tsv'},
   {bank:'content/drafts/question-bank-4.json',points:'content/drafts/teaching-points-bank-4.tsv'},
+  {bank:'content/drafts/question-bank-5.json',points:'content/drafts/teaching-points-bank-5.tsv'},
 ]
 const focusOverrides: Record<string,string> = {
   'qb4-h01':'Patient education','qb4-h02':'Safety','qb4-h03':'Priority-setting',
   'qb4-h04':'Patient education','qb4-h05':'Therapeutic communication',
   'qb4-h06':'Medication reasoning','qb4-h07':'Safety',
   'qb4-h08':'Medication reasoning','qb4-h09':'Safety','qb4-h10':'Safety',
+  'qb5-h01':'Safety','qb5-h02':'Safety',
+  'qb5-h03':'Therapeutic communication','qb5-h04':'Therapeutic communication',
+  'qb5-h05':'Patient education','qb5-h06':'Patient education',
+  'qb5-h07':'Priority-setting','qb5-h08':'Safety',
+  'qb5-h09':'Medication reasoning','qb5-h10':'Assessment-first',
 }
 const labels: Record<string,string> = {}
 const packets = inputs.flatMap(input => {

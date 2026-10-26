@@ -12,7 +12,7 @@ export const DISTINCTIONS = {
   'mealtime-insulin-food-availability': 'Check meal availability and the specified insulin timing before administration.',
 } as const
 export type DistinctionId = keyof typeof DISTINCTIONS
-export const TAXONOMY_VERSION = '2026-10-26-v3'
+export const TAXONOMY_VERSION = '2026-10-26-v4'
 export function distinctionId(value: unknown): DistinctionId | null {
   return typeof value === 'string' && Object.hasOwn(DISTINCTIONS, value) ? value as DistinctionId : null
 }

@@ -2,14 +2,15 @@ import {describe,it,expect} from 'vitest'
 import raw from '../content/source-checked-bank.json'
 import originalDraft from '../content/drafts/question-bank-v1.json'
 import batch4 from '../content/drafts/question-bank-4.json'
-const draft = {questions:[...originalDraft.questions,...batch4.questions]}
+import batch5 from '../content/drafts/question-bank-5.json'
+const draft = {questions:[...originalDraft.questions,...batch4.questions,...batch5.questions]}
 import {SourceCheckedPacket,normalizeBankCategory} from '../src/lib/learning/source-checked-content'
 import {canonicalHash} from '../src/lib/learning/draft-bank'
 import {loopProperties,distinctionId} from '../src/lib/learning/distinctions'
 
 describe('frozen source-checked publication',()=>{
- it('preserves every option, answer key and option-specific explanation across all 210 questions',()=>{
-  expect(raw).toHaveLength(70)
+ it('preserves every option, answer key and option-specific explanation across all 240 questions',()=>{
+  expect(raw).toHaveLength(80)
   for(const row of raw){
    const p=SourceCheckedPacket.parse(row.packet)
    expect(canonicalHash(p)).toBe(row.packet_sha256)

@@ -1,0 +1,122 @@
+{
+  "mode": "dry_run_only",
+  "revision": 1,
+  "bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+  "question_count": 30,
+  "family_count": 10,
+  "publishable_count": 0,
+  "database_writes": 0,
+  "held_item_ids": [],
+  "families": [
+    {
+      "family_id": "qb5-h01",
+      "draft_distinction_id": "pressure-redistribution-does-not-replace-individualized-repositioning",
+      "runtime_distinction_id": "pressure-redistribution-does-not-replace-individualized-repositioning",
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb5-h02",
+      "draft_distinction_id": "unconscious-oral-care-drainage-and-suction",
+      "runtime_distinction_id": "unconscious-oral-care-drainage-and-suction",
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb5-h03",
+      "draft_distinction_id": "acute-panic-presence-low-stimulation-simple-directions",
+      "runtime_distinction_id": "acute-panic-presence-low-stimulation-simple-directions",
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb5-h04",
+      "draft_distinction_id": "sexual-assault-forensic-care-ongoing-consent",
+      "runtime_distinction_id": "sexual-assault-forensic-care-ongoing-consent",
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb5-h05",
+      "draft_distinction_id": "infant-car-seat-rear-facing-until-seat-limits",
+      "runtime_distinction_id": "infant-car-seat-rear-facing-until-seat-limits",
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb5-h06",
+      "draft_distinction_id": "folic-acid-before-pregnancy-recognition",
+      "runtime_distinction_id": "folic-acid-before-pregnancy-recognition",
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb5-h07",
+      "draft_distinction_id": "postoperative-evisceration-protect-moist-and-escalate",
+      "runtime_distinction_id": "postoperative-evisceration-protect-moist-and-escalate",
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb5-h08",
+      "draft_distinction_id": "central-line-dressing-correct-aseptic-break-before-contact",
+      "runtime_distinction_id": "central-line-dressing-correct-aseptic-break-before-contact",
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb5-h09",
+      "draft_distinction_id": "digoxin-predose-pulse-and-toxicity-cues",
+      "runtime_distinction_id": "digoxin-predose-pulse-and-toxicity-cues",
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb5-h10",
+      "draft_distinction_id": "potassium-ecg-u-wave-versus-peaked-t-with-lab-context",
+      "runtime_distinction_id": "potassium-ecg-u-wave-versus-peaked-t-with-lab-context",
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    }
+  ]
+}

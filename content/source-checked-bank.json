@@ -8506,5 +8506,1225 @@
       ]
     },
     "packet_sha256": "3d692d09641b9567b124cd7fa26498e81d7785aa8f9cb5fa84ec23b2f342527a"
+  },
+  {
+    "packet": {
+      "packet_id": "qb5-h01",
+      "version": 1,
+      "distinction_id": "pressure-redistribution-does-not-replace-individualized-repositioning",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Safety",
+      "references": [
+        {
+          "title": "internationalguideline.com",
+          "url": "https://www.internationalguideline.com/repositioning"
+        }
+      ],
+      "original": {
+        "question_stem": "A stable adult cannot reposition independently and is at risk for pressure injury. A pressure-redistribution mattress has been installed. Which plan best addresses ongoing pressure exposure?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Continue assisted repositioning on a schedule individualized to skin findings, tolerance, and the support surface."
+          },
+          {
+            "label": "B",
+            "text": "Reposition only when the client reports pain over a pressure point."
+          },
+          {
+            "label": "C",
+            "text": "Stop scheduled repositioning while the pressure-redistribution mattress is functioning."
+          },
+          {
+            "label": "D",
+            "text": "Use one overnight position if the skin is intact at bedtime."
+          }
+        ],
+        "correct_answer": "A",
+        "rationale_correct": "The mattress supplements an individualized pressure-relief plan.",
+        "rationale_incorrect": {
+          "B": "Pain alone is an inadequate trigger, especially when sensation or communication is limited.",
+          "C": "A support surface does not remove the need to change pressure loading.",
+          "D": "An intact bedtime assessment does not justify prolonged unchanged loading."
+        },
+        "nclex_category": "Basic Care and Comfort",
+        "difficulty": 2,
+        "key_cue": "The client cannot shift weight without help.",
+        "one_line_fix": "Repositioning remains necessary on a pressure-redistribution surface; individualize the regimen to tissue response and tolerance."
+      },
+      "retry": {
+        "question_stem": "During a scheduled turn, the RN finds new nonblanching redness over an immobile client’s sacrum. The client is stable and can tolerate repositioning. Which response best applies the prevention plan?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Leave the regimen unchanged because every scheduled turn was documented."
+          },
+          {
+            "label": "B",
+            "text": "Keep the same position until the next scheduled skin assessment."
+          },
+          {
+            "label": "C",
+            "text": "Extend the turning interval because movement may disturb the red area."
+          },
+          {
+            "label": "D",
+            "text": "Offload the sacrum now, assess the skin, and revise the repositioning regimen based on the finding."
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "Tissue response requires offloading and reassessment of the plan.",
+        "rationale_incorrect": {
+          "A": "Completed documentation does not establish that the regimen is effective.",
+          "B": "The new tissue change needs action now rather than another interval of loading.",
+          "C": "Longer loading is not a response to early pressure damage."
+        },
+        "nclex_category": "Basic Care and Comfort",
+        "difficulty": 2,
+        "key_cue": "New tissue change despite following the schedule.",
+        "one_line_fix": "Repositioning remains necessary on a pressure-redistribution surface; individualize the regimen to tissue response and tolerance."
+      },
+      "reviews": [
+        {
+          "question_stem": "A home caregiver says, “The new mattress means I can leave my father in one position all night.” He cannot turn himself and has no movement restrictions. Which revision should the nurse recommend?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Use the same nighttime position but perform a skin check each morning."
+            },
+            {
+              "label": "B",
+              "text": "Wait for an open wound before starting assisted turns."
+            },
+            {
+              "label": "C",
+              "text": "Plan assisted position changes across the full day and night, adjusted to his skin response and comfort."
+            },
+            {
+              "label": "D",
+              "text": "Leave him in that position if a pillow is placed under his head."
+            }
+          ],
+          "correct_answer": "C",
+          "rationale_correct": "Home care still needs an individualized, feasible repositioning regimen.",
+          "rationale_incorrect": {
+            "A": "A morning check detects effects but does not relieve overnight pressure.",
+            "B": "Prevention should begin before an open injury develops.",
+            "D": "A head pillow does not redistribute loading at other pressure points."
+          },
+          "nclex_category": "Basic Care and Comfort",
+          "difficulty": 2,
+          "key_cue": "A home setting does not make the mattress a replacement for repositioning.",
+          "one_line_fix": "Repositioning remains necessary on a pressure-redistribution surface; individualize the regimen to tissue response and tolerance."
+        }
+      ]
+    },
+    "packet_sha256": "57388eb95d03284afca7b54051d07c4d1e5ddabc4c25615f1caa8ad077a12abf"
+  },
+  {
+    "packet": {
+      "packet_id": "qb5-h02",
+      "version": 1,
+      "distinction_id": "unconscious-oral-care-drainage-and-suction",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Safety",
+      "references": [
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/clinical-nursing-skills/pages/7-3-assisting-with-hygiene-and-health-promotion"
+        }
+      ],
+      "original": {
+        "question_stem": "A stable unconscious adult is breathing spontaneously and needs oral care. There are no positioning restrictions. Which preparation best reduces aspiration risk?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Raise the chin and ask the client to spit after each rinse."
+          },
+          {
+            "label": "B",
+            "text": "Delay all mouth care until the client can follow commands."
+          },
+          {
+            "label": "C",
+            "text": "Turn the head to the side as appropriate and have working suction ready to remove excess fluid."
+          },
+          {
+            "label": "D",
+            "text": "Place the client flat on the back and provide a cup of rinse water."
+          }
+        ],
+        "correct_answer": "C",
+        "rationale_correct": "Drainage positioning and removal of excess fluid address the airway risk.",
+        "rationale_incorrect": {
+          "A": "An unconscious client cannot reliably follow a spit instruction.",
+          "B": "Dependence calls for assisted mouth care with precautions, not indefinite omission.",
+          "D": "Flat positioning and free rinse water encourage pooling."
+        },
+        "nclex_category": "Basic Care and Comfort",
+        "difficulty": 2,
+        "key_cue": "The client cannot rinse, spit, or protect the airway reliably.",
+        "one_line_fix": "For a client unable to protect the airway, perform oral care with drainage positioning and controlled suction rather than free liquid or an expected rinse-and-spit."
+      },
+      "retry": {
+        "question_stem": "A nurse is assisting with oral care for an unconscious client whose head is turned to the side. A colleague begins pouring rinse water into the mouth. What should the nurse do?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Stop the free pouring and use controlled mouth care with suction to remove excess fluid."
+          },
+          {
+            "label": "B",
+            "text": "Continue pouring because the side position eliminates aspiration risk."
+          },
+          {
+            "label": "C",
+            "text": "Finish quickly and check the oxygen saturation afterward."
+          },
+          {
+            "label": "D",
+            "text": "Ask the client to hold the rinse in the mouth."
+          }
+        ],
+        "correct_answer": "A",
+        "rationale_correct": "Control of liquid and suction supplement safe positioning.",
+        "rationale_incorrect": {
+          "B": "Positioning reduces risk but cannot make uncontrolled fluid safe.",
+          "C": "Speed and later monitoring do not prevent pooling during care.",
+          "D": "The client cannot follow that instruction."
+        },
+        "nclex_category": "Basic Care and Comfort",
+        "difficulty": 2,
+        "key_cue": "A safety precaution is being treated as complete protection.",
+        "one_line_fix": "For a client unable to protect the airway, perform oral care with drainage positioning and controlled suction rather than free liquid or an expected rinse-and-spit."
+      },
+      "reviews": [
+        {
+          "question_stem": "A stable client remains unconscious after a neurologic illness. The mouth is dry. A family member asks to give the client water to swish around. Which response is best?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Give the water through a straw so less enters the mouth at once."
+            },
+            {
+              "label": "B",
+              "text": "Give a smaller cup and ask the family member to remind the client to spit."
+            },
+            {
+              "label": "C",
+              "text": "Explain that the client cannot safely swish and spit; offer assisted mouth moistening and cleaning with drainage and suction precautions."
+            },
+            {
+              "label": "D",
+              "text": "Use mouthwash instead of water because it is intended for oral care."
+            }
+          ],
+          "correct_answer": "C",
+          "rationale_correct": "This addresses comfort while adapting care to impaired airway protection.",
+          "rationale_incorrect": {
+            "A": "A straw does not make oral intake appropriate for an unconscious client.",
+            "B": "A smaller cup does not restore the ability to follow commands.",
+            "D": "Mouthwash can also be aspirated."
+          },
+          "nclex_category": "Basic Care and Comfort",
+          "difficulty": 2,
+          "key_cue": "Dry mouth calls for safe comfort care, not unsupported oral intake.",
+          "one_line_fix": "For a client unable to protect the airway, perform oral care with drainage positioning and controlled suction rather than free liquid or an expected rinse-and-spit."
+        }
+      ]
+    },
+    "packet_sha256": "7ef644181bf1fc686eef56803193903e3334a52a81dd2d9fcb1fb85a551ed28d"
+  },
+  {
+    "packet": {
+      "packet_id": "qb5-h03",
+      "version": 1,
+      "distinction_id": "acute-panic-presence-low-stimulation-simple-directions",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Therapeutic communication",
+      "references": [
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/psychiatric-mental-health/pages/24-3-anxiety"
+        }
+      ],
+      "original": {
+        "question_stem": "A client with panic disorder has been assessed for urgent medical causes of the current symptoms. The client is trembling and cannot follow a lengthy explanation. Which nursing approach is most appropriate now?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Stay with the client in a quieter area and use one brief direction at a time."
+          },
+          {
+            "label": "B",
+            "text": "Provide a detailed handout and ask the client to read it aloud."
+          },
+          {
+            "label": "C",
+            "text": "Leave the client alone until the episode ends to reduce dependency."
+          },
+          {
+            "label": "D",
+            "text": "Ask the client to compare the triggers of the last three episodes."
+          }
+        ],
+        "correct_answer": "A",
+        "rationale_correct": "Calm presence, reduced stimulation, and simple directions fit acute panic.",
+        "rationale_incorrect": {
+          "B": "Complex teaching is poorly timed during severely narrowed attention.",
+          "C": "Withdrawal of support is inappropriate during acute panic.",
+          "D": "Analysis of past triggers requires attention the client currently lacks."
+        },
+        "nclex_category": "Psychosocial Integrity",
+        "difficulty": 2,
+        "key_cue": "The client cannot process a lengthy explanation right now.",
+        "one_line_fix": "During assessed acute panic, remain with the client, reduce stimulation, and give calm simple directions; defer complex teaching until attention improves."
+      },
+      "retry": {
+        "question_stem": "During an assessed panic episode, a client repeatedly says, “I can’t take in what you’re saying.” Which response best fits the client’s current ability to process information?",
+        "options": [
+          {
+            "label": "A",
+            "text": "“List everything that might have contributed to this episode.”"
+          },
+          {
+            "label": "B",
+            "text": "“Read these four coping steps before we try them.”"
+          },
+          {
+            "label": "C",
+            "text": "“I’ll explain the full treatment plan now so you won’t worry.”"
+          },
+          {
+            "label": "D",
+            "text": "“I’ll stay here. Let’s move to this quieter chair.”"
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "The response supplies calm presence and one manageable direction.",
+        "rationale_incorrect": {
+          "A": "A broad request increases the processing burden.",
+          "B": "A multistep reading task is too demanding at this point.",
+          "C": "A full treatment discussion should wait until attention improves."
+        },
+        "nclex_category": "Psychosocial Integrity",
+        "difficulty": 2,
+        "key_cue": "Acute panic narrows the ability to take in information.",
+        "one_line_fix": "During assessed acute panic, remain with the client, reduce stimulation, and give calm simple directions; defer complex teaching until attention improves."
+      },
+      "reviews": [
+        {
+          "question_stem": "A client’s panic symptoms have been medically assessed. Several visitors are asking questions at once while the client becomes more overwhelmed. What is the best change to the environment?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Turn up the television to distract the client from the questions."
+            },
+            {
+              "label": "B",
+              "text": "Leave the visitors to continue the conversation while the nurse gets teaching materials."
+            },
+            {
+              "label": "C",
+              "text": "Reduce the crowd and noise while one calm staff member remains with the client."
+            },
+            {
+              "label": "D",
+              "text": "Invite each visitor to offer a different coping suggestion."
+            }
+          ],
+          "correct_answer": "C",
+          "rationale_correct": "A quieter setting with consistent calm support reduces overload.",
+          "rationale_incorrect": {
+            "A": "More noise adds stimulation.",
+            "B": "The immediate need is support and reduced stimulation, not additional teaching.",
+            "D": "Multiple simultaneous suggestions increase competing demands."
+          },
+          "nclex_category": "Psychosocial Integrity",
+          "difficulty": 2,
+          "key_cue": "Too many voices are worsening overload.",
+          "one_line_fix": "During assessed acute panic, remain with the client, reduce stimulation, and give calm simple directions; defer complex teaching until attention improves."
+        }
+      ]
+    },
+    "packet_sha256": "d7c7880f62829e3597057dabff1948e1bad05a07e773b899f4d346031e2975e0"
+  },
+  {
+    "packet": {
+      "packet_id": "qb5-h04",
+      "version": 1,
+      "distinction_id": "sexual-assault-forensic-care-ongoing-consent",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Therapeutic communication",
+      "references": [
+        {
+          "title": "rainn.org",
+          "url": "https://rainn.org/2240/getting-a-sexual-assault-forensic-exam-safe/"
+        },
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/medical-surgical-nursing/pages/33-4-forensic-nursing"
+        }
+      ],
+      "original": {
+        "question_stem": "A medically stable adult who reported sexual assault is discussing a forensic examination. The client says, “I want medical care, but I’m not ready to agree to evidence collection.” What is the best response?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Begin collecting samples while the client considers the decision."
+          },
+          {
+            "label": "B",
+            "text": "Explain the available options, support the client’s decision, and continue appropriate medical care without pressuring consent."
+          },
+          {
+            "label": "C",
+            "text": "Ask a support person to sign the evidence-collection consent instead."
+          },
+          {
+            "label": "D",
+            "text": "Explain that evidence collection is required before any medical care can be provided."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "Consent is a patient-controlled process; care is not leverage for agreement.",
+        "rationale_incorrect": {
+          "A": "Collection must not begin without consent.",
+          "C": "A capable adult’s decision cannot be replaced by a support person’s preference.",
+          "D": "This wrongly makes medical treatment conditional on a forensic choice."
+        },
+        "nclex_category": "Psychosocial Integrity",
+        "difficulty": 2,
+        "key_cue": "The client is capable and distinguishes medical care from evidence collection.",
+        "one_line_fix": "A capable adult controls consent during sexual-assault forensic care; pause or stop the requested step and discuss options without coercion."
+      },
+      "retry": {
+        "question_stem": "During an agreed-upon sexual-assault forensic examination, a capable adult says, “Stop. I need a break.” What should the examiner do?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Finish the current collection step because the client signed consent earlier."
+          },
+          {
+            "label": "B",
+            "text": "Pause the examination, check the client’s immediate needs, and ask how the client wishes to proceed."
+          },
+          {
+            "label": "C",
+            "text": "Continue if the accompanying support person agrees."
+          },
+          {
+            "label": "D",
+            "text": "Tell the client that stopping now means no further care can be offered."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "Ongoing consent includes control over pacing and continuation.",
+        "rationale_incorrect": {
+          "A": "An earlier signature does not remove the right to pause or withdraw consent.",
+          "C": "A support person cannot override the capable client.",
+          "D": "Threatening loss of care is coercive."
+        },
+        "nclex_category": "Psychosocial Integrity",
+        "difficulty": 2,
+        "key_cue": "Consent can change during the examination.",
+        "one_line_fix": "A capable adult controls consent during sexual-assault forensic care; pause or stop the requested step and discuss options without coercion."
+      },
+      "reviews": [
+        {
+          "question_stem": "A capable adult receiving care after sexual assault accepts an examination but declines photographs. Which plan best preserves patient control?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Cancel all care because the examination cannot proceed unless every component is accepted."
+            },
+            {
+              "label": "B",
+              "text": "Take photographs quickly so the client will not need another visit."
+            },
+            {
+              "label": "C",
+              "text": "Ask law enforcement to persuade the client to accept photography."
+            },
+            {
+              "label": "D",
+              "text": "Honor the declined step, explain alternatives without pressure, and continue only the care and examination steps the client accepts."
+            }
+          ],
+          "correct_answer": "D",
+          "rationale_correct": "Consent is specific to the component and remains ongoing.",
+          "rationale_incorrect": {
+            "A": "Declining a component does not authorize abandonment of other accepted care.",
+            "B": "Convenience does not replace permission.",
+            "C": "Pressure is not a substitute for informed voluntary consent."
+          },
+          "nclex_category": "Psychosocial Integrity",
+          "difficulty": 2,
+          "key_cue": "Acceptance of an examination is not blanket acceptance of every component.",
+          "one_line_fix": "A capable adult controls consent during sexual-assault forensic care; pause or stop the requested step and discuss options without coercion."
+        }
+      ]
+    },
+    "packet_sha256": "58bafead9c17192af160515e9a673959f41c5356ad231dd9885ebfc0b3a5434f"
+  },
+  {
+    "packet": {
+      "packet_id": "qb5-h05",
+      "version": 1,
+      "distinction_id": "infant-car-seat-rear-facing-until-seat-limits",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Patient education",
+      "references": [
+        {
+          "title": "cdc.gov",
+          "url": "https://www.cdc.gov/child-passenger-safety/prevention/index.html"
+        }
+      ],
+      "original": {
+        "question_stem": "Parents preparing to take a healthy newborn home ask which travel arrangement is appropriate. Which plan should the nurse reinforce?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Hold the newborn while a rear-seat adult wears the seat belt."
+          },
+          {
+            "label": "B",
+            "text": "Use a forward-facing harnessed seat so the driver can see the newborn."
+          },
+          {
+            "label": "C",
+            "text": "Place a rear-facing seat in front of an active passenger air bag."
+          },
+          {
+            "label": "D",
+            "text": "Use an appropriately fitted rear-facing harnessed car seat in the back seat, following its instructions."
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "Rear-facing restraint in the back seat is appropriate newborn transport.",
+        "rationale_incorrect": {
+          "A": "An adult belt does not secure a held infant.",
+          "B": "A newborn needs a rear-facing restraint, not forward-facing positioning.",
+          "C": "An active frontal air bag is hazardous to a rear-facing child."
+        },
+        "nclex_category": "Health Promotion and Maintenance",
+        "difficulty": 2,
+        "key_cue": "A newborn needs a dedicated correctly installed restraint.",
+        "one_line_fix": "Use a rear-facing harnessed car seat in the back seat until the child reaches that seat’s rear-facing height or weight limit; fit follows manufacturer instructions."
+      },
+      "retry": {
+        "question_stem": "At a later visit, a caregiver says a child’s legs touch the vehicle seat while rear-facing. The child remains below both rear-facing height and weight limits for this car seat. What should guide the decision?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Replace the harness with the vehicle seat belt to give the legs more room."
+          },
+          {
+            "label": "B",
+            "text": "Keep the child rear-facing until a manufacturer rear-facing height or weight limit is reached."
+          },
+          {
+            "label": "C",
+            "text": "Move the rear-facing seat to the front passenger seat for extra leg space."
+          },
+          {
+            "label": "D",
+            "text": "Turn the seat forward because bent legs mean the rear-facing position is outgrown."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "The stated seat limits, not leg contact alone, determine when it is outgrown.",
+        "rationale_incorrect": {
+          "A": "A vehicle belt alone is not an appropriate substitute for this young child’s restraint.",
+          "C": "Extra leg space does not justify leaving the safer back-seat location.",
+          "D": "Leg contact is not the stated criterion for forward-facing transition."
+        },
+        "nclex_category": "Health Promotion and Maintenance",
+        "difficulty": 2,
+        "key_cue": "The child is still within the seat’s rear-facing limits.",
+        "one_line_fix": "Use a rear-facing harnessed car seat in the back seat until the child reaches that seat’s rear-facing height or weight limit; fit follows manufacturer instructions."
+      },
+      "reviews": [
+        {
+          "question_stem": "A caregiver plans to turn a child forward-facing on the first birthday. The child is still below the rear-facing limits of the current seat. Which teaching is best?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Continue rear-facing in the back seat until the rear-facing height or weight limit for that seat is reached."
+            },
+            {
+              "label": "B",
+              "text": "Choose whichever direction makes it easier for the driver to watch the child."
+            },
+            {
+              "label": "C",
+              "text": "Use a booster seat instead because it fits children after infancy."
+            },
+            {
+              "label": "D",
+              "text": "A first birthday automatically overrides the limits printed on the seat."
+            }
+          ],
+          "correct_answer": "A",
+          "rationale_correct": "The current seat’s rear-facing limits should guide the transition.",
+          "rationale_incorrect": {
+            "B": "Driver convenience does not determine the appropriate restraint stage.",
+            "C": "A booster is not the next step for a child who still fits a rear-facing seat.",
+            "D": "A birthday alone is not the criterion in the recommendation."
+          },
+          "nclex_category": "Health Promotion and Maintenance",
+          "difficulty": 2,
+          "key_cue": "Age alone does not mean the seat’s rear-facing limit has been reached.",
+          "one_line_fix": "Use a rear-facing harnessed car seat in the back seat until the child reaches that seat’s rear-facing height or weight limit; fit follows manufacturer instructions."
+        }
+      ]
+    },
+    "packet_sha256": "0175cd043f19f53a58f0400ebf5afc3e92663b23fc9d6bc599ab8f625e251098"
+  },
+  {
+    "packet": {
+      "packet_id": "qb5-h06",
+      "version": 1,
+      "distinction_id": "folic-acid-before-pregnancy-recognition",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Patient education",
+      "references": [
+        {
+          "title": "cdc.gov",
+          "url": "https://www.cdc.gov/folic-acid/about/index.html"
+        },
+        {
+          "title": "fda.gov",
+          "url": "https://www.fda.gov/food/nutrition-facts-label/folate-and-folic-acid-nutrition-and-supplement-facts-labels"
+        }
+      ],
+      "original": {
+        "question_stem": "An average-risk adult plans to try to become pregnant in two months and asks when to start folic acid. Which response best supports neural-tube-defect prevention?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Start during the third trimester when fetal growth is fastest."
+          },
+          {
+            "label": "B",
+            "text": "Wait until pregnancy is confirmed because folic acid is only useful after a missed period."
+          },
+          {
+            "label": "C",
+            "text": "Begin a daily source providing 400 mcg of folic acid now and continue through early pregnancy."
+          },
+          {
+            "label": "D",
+            "text": "Take a large single dose when a pregnancy test first becomes positive."
+          }
+        ],
+        "correct_answer": "C",
+        "rationale_correct": "Routine preconception intake addresses the early prevention window.",
+        "rationale_incorrect": {
+          "A": "Third-trimester initiation misses the key early developmental period.",
+          "B": "Neural-tube development begins before many pregnancies are recognized.",
+          "D": "A one-time dose does not replace the recommended daily intake."
+        },
+        "nclex_category": "Health Promotion and Maintenance",
+        "difficulty": 2,
+        "key_cue": "Planning pregnancy makes prevention relevant before a positive test.",
+        "one_line_fix": "Routine neural-tube-defect prevention includes 400 mcg of folic acid daily before conception and during early pregnancy, not waiting for pregnancy recognition."
+      },
+      "retry": {
+        "question_stem": "A client who could become pregnant says, “I’m not planning a pregnancy, so I’ll start folic acid only if I get a positive test.” What is the best teaching?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Take folic acid only on days when pregnancy symptoms occur."
+          },
+          {
+            "label": "B",
+            "text": "Get 400 mcg of folic acid each day because the neural tube develops early, often before pregnancy is recognized."
+          },
+          {
+            "label": "C",
+            "text": "Folic acid has no role unless a pregnancy was planned."
+          },
+          {
+            "label": "D",
+            "text": "Avoid folic acid until the first prenatal ultrasound."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "The recommendation applies even when pregnancy is not currently planned.",
+        "rationale_incorrect": {
+          "A": "Symptom-based intermittent intake does not match daily prevention.",
+          "C": "Unplanned pregnancies also have an early prevention window.",
+          "D": "An ultrasound is not the appropriate trigger for starting routine prevention."
+        },
+        "nclex_category": "Health Promotion and Maintenance",
+        "difficulty": 2,
+        "key_cue": "Pregnancy can begin before the client knows it.",
+        "one_line_fix": "Routine neural-tube-defect prevention includes 400 mcg of folic acid daily before conception and during early pregnancy, not waiting for pregnancy recognition."
+      },
+      "reviews": [
+        {
+          "question_stem": "At a preconception visit, an average-risk client brings two otherwise suitable daily multivitamins. One explicitly lists 400 mcg folic acid; the other has no folic acid. Which advice best addresses neural-tube-defect prevention?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Choose the product with no folic acid until the pregnancy reaches twelve weeks."
+            },
+            {
+              "label": "B",
+              "text": "Choose the product listing 400 mcg folic acid for daily use before pregnancy and during early pregnancy."
+            },
+            {
+              "label": "C",
+              "text": "Alternate products weekly because regular folic-acid intake is unnecessary before pregnancy."
+            },
+            {
+              "label": "D",
+              "text": "Use the folic-acid product only after fetal movements begin."
+            }
+          ],
+          "correct_answer": "B",
+          "rationale_correct": "This supplies the stated routine folic-acid amount during the early prevention window.",
+          "rationale_incorrect": {
+            "A": "Waiting until twelve weeks misses early neural-tube development.",
+            "C": "Alternating with a folic-acid-free product does not ensure the daily recommendation.",
+            "D": "Fetal movement occurs well after the relevant early developmental period."
+          },
+          "nclex_category": "Health Promotion and Maintenance",
+          "difficulty": 2,
+          "key_cue": "The label explicitly identifies folic acid rather than an ambiguous folate-equivalent number.",
+          "one_line_fix": "Routine neural-tube-defect prevention includes 400 mcg of folic acid daily before conception and during early pregnancy, not waiting for pregnancy recognition."
+        }
+      ]
+    },
+    "packet_sha256": "77a887c88491615dbd87dc467bda85477fbed75879334f126281ecf2134248be"
+  },
+  {
+    "packet": {
+      "packet_id": "qb5-h07",
+      "version": 1,
+      "distinction_id": "postoperative-evisceration-protect-moist-and-escalate",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Priority-setting",
+      "references": [
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/fundamentals-nursing/pages/24-4-wound-healing"
+        }
+      ],
+      "original": {
+        "question_stem": "After abdominal surgery, a client’s incision separates and bowel is visible. A colleague is activating the emergency surgical response. Which action should the bedside nurse take?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Apply a tight dry pressure dressing across the exposed bowel."
+          },
+          {
+            "label": "B",
+            "text": "Give the client water and walk the client to the treatment room."
+          },
+          {
+            "label": "C",
+            "text": "Gently push the bowel beneath the wound edges before covering it."
+          },
+          {
+            "label": "D",
+            "text": "Cover the exposed tissue with sterile dressings moistened with sterile normal saline."
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "A sterile moist covering protects exposed tissue while urgent help arrives.",
+        "rationale_incorrect": {
+          "A": "Pressure and a dry adherent covering can injure exposed tissue.",
+          "B": "The client needs urgent bedside care and should remain NPO.",
+          "C": "Bedside reinsertion is not the nursing response for this postoperative complication."
+        },
+        "nclex_category": "Reduction of Risk Potential",
+        "difficulty": 2,
+        "key_cue": "Visible bowel after incision separation; help is already being called.",
+        "one_line_fix": "Postoperative abdominal evisceration needs emergency surgical escalation and protection with a sterile saline-moistened covering, without bedside reinsertion."
+      },
+      "retry": {
+        "question_stem": "A postoperative abdominal client says the incision “gave way.” The wound is open with tissue protruding. Help has been called and sterile saline-moistened dressings are in place. Which instruction should the nurse correct?",
+        "options": [
+          {
+            "label": "A",
+            "text": "“Keep the covering moist with sterile normal saline.”"
+          },
+          {
+            "label": "B",
+            "text": "“Remain with the client while urgent surgical evaluation is arranged.”"
+          },
+          {
+            "label": "C",
+            "text": "“Keep the client from eating or drinking during the emergency.”"
+          },
+          {
+            "label": "D",
+            "text": "“Push the exposed tissue back inside before the surgeon arrives.”"
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "Reinserting exposed tissue at the bedside can cause additional injury.",
+        "rationale_incorrect": {
+          "A": "Maintaining a moist sterile protective covering fits the immediate plan.",
+          "B": "Remaining with the client supports ongoing assessment and safety.",
+          "C": "NPO status is appropriate while urgent surgery may be needed."
+        },
+        "nclex_category": "Reduction of Risk Potential",
+        "difficulty": 2,
+        "key_cue": "The protective covering is already in place; the unsafe extra intervention is the issue.",
+        "one_line_fix": "Postoperative abdominal evisceration needs emergency surgical escalation and protection with a sterile saline-moistened covering, without bedside reinsertion."
+      },
+      "reviews": [
+        {
+          "question_stem": "During transfer preparations, a new nurse finds a coughing postoperative client with a newly separated abdominal incision and visible bowel. Another RN calls for immediate surgical help. Which plan is appropriate?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Seat the client upright and ask the client to walk to reduce abdominal stiffness."
+            },
+            {
+              "label": "B",
+              "text": "Keep the client at rest in low Fowler position with knees slightly flexed as tolerated, protect the tissue with a sterile saline-moistened covering, and keep the client NPO."
+            },
+            {
+              "label": "C",
+              "text": "Offer oral fluids and reassess after the transfer team arrives."
+            },
+            {
+              "label": "D",
+              "text": "Leave the exposed tissue uncovered so the surgeon can inspect it on arrival."
+            }
+          ],
+          "correct_answer": "B",
+          "rationale_correct": "The plan protects the wound and limits strain while urgent evaluation proceeds.",
+          "rationale_incorrect": {
+            "A": "Walking and upright strain do not protect the disrupted wound.",
+            "C": "Oral intake is inappropriate when emergency surgical treatment may be needed.",
+            "D": "Leaving tissue exposed allows drying and contamination."
+          },
+          "nclex_category": "Reduction of Risk Potential",
+          "difficulty": 2,
+          "key_cue": "A transfer plan must change when evisceration appears.",
+          "one_line_fix": "Postoperative abdominal evisceration needs emergency surgical escalation and protection with a sterile saline-moistened covering, without bedside reinsertion."
+        }
+      ]
+    },
+    "packet_sha256": "60620691bca7b3b11eb7db6271f35fae8a3a10f1a864f510f8e5f3f6cd74c691"
+  },
+  {
+    "packet": {
+      "packet_id": "qb5-h08",
+      "version": 1,
+      "distinction_id": "central-line-dressing-correct-aseptic-break-before-contact",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Safety",
+      "references": [
+        {
+          "title": "cdc.gov",
+          "url": "https://www.cdc.gov/infection-control/hcp/intravascular-catheter-related-infections/summary-recommendations.html"
+        }
+      ],
+      "original": {
+        "question_stem": "Facility protocol requires sterile gloves and aseptic handling of central-line dressing supplies. After donning sterile gloves, the RN touches the bed rail with one glove before touching the prepared site. What should the RN do?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Wipe the glove on a clean towel and continue."
+          },
+          {
+            "label": "B",
+            "text": "Stop and replace the contaminated gloves using hand hygiene and the facility’s aseptic sequence before continuing."
+          },
+          {
+            "label": "C",
+            "text": "Use the contaminated glove only to press the new dressing over the insertion site."
+          },
+          {
+            "label": "D",
+            "text": "Continue because the bed rail is part of the client’s immediate environment."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "The contamination must be corrected before site or dressing contact.",
+        "rationale_incorrect": {
+          "A": "A towel wipe does not restore sterility.",
+          "C": "The new dressing must not be applied using a contaminated glove.",
+          "D": "The bed rail is not a sterile surface."
+        },
+        "nclex_category": "Reduction of Risk Potential",
+        "difficulty": 2,
+        "key_cue": "The glove touched a nonsterile surface before sterile-site care.",
+        "one_line_fix": "Maintain asepsis during central-line dressing care; correct contamination before contact with the prepared site or new dressing."
+      },
+      "retry": {
+        "question_stem": "During a central-line dressing change under an aseptic no-touch protocol, the patient-contact surface of a new sterile dressing falls onto the unclean bedside table. The insertion site has not been touched. What should the RN do?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Discard it, obtain a new sterile dressing, and maintain asepsis while protecting the site."
+          },
+          {
+            "label": "B",
+            "text": "Use the dressing because its outer surface still looks clean."
+          },
+          {
+            "label": "C",
+            "text": "Apply the fallen dressing and schedule an earlier change tomorrow."
+          },
+          {
+            "label": "D",
+            "text": "Spray the fallen dressing with skin antiseptic and apply it."
+          }
+        ],
+        "correct_answer": "A",
+        "rationale_correct": "A contaminated dressing must be replaced before application.",
+        "rationale_incorrect": {
+          "B": "Appearance does not establish aseptic integrity of the contact surface.",
+          "C": "An earlier later change does not justify contamination now.",
+          "D": "Skin antiseptic does not validate reuse of a contaminated sterile dressing."
+        },
+        "nclex_category": "Reduction of Risk Potential",
+        "difficulty": 2,
+        "key_cue": "The surface that will touch the site has been contaminated.",
+        "one_line_fix": "Maintain asepsis during central-line dressing care; correct contamination before contact with the prepared site or new dressing."
+      },
+      "reviews": [
+        {
+          "question_stem": "An RN has cleaned a central-line site and allowed the antiseptic to dry. Facility protocol requires sterile gloves and no nonsterile contact with the prepared site. Before placing the dressing, the RN palpates the site with an ungloved finger. What is the best response?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Cover the site and document that the finger looked clean."
+            },
+            {
+              "label": "B",
+              "text": "Wipe the finger with antiseptic and proceed without preparing the site again."
+            },
+            {
+              "label": "C",
+              "text": "Correct the break: repeat site antisepsis and drying with appropriate aseptic technique and fresh supplies according to protocol before applying the sterile dressing."
+            },
+            {
+              "label": "D",
+              "text": "Apply the dressing immediately because the antiseptic was allowed to dry."
+            }
+          ],
+          "correct_answer": "C",
+          "rationale_correct": "The now-contaminated site must be prepared again before it is covered.",
+          "rationale_incorrect": {
+            "A": "Visual cleanliness and documentation do not restore asepsis.",
+            "B": "Cleaning the finger afterward does not undo contamination of the site.",
+            "D": "Drying before contamination does not preserve the site afterward."
+          },
+          "nclex_category": "Reduction of Risk Potential",
+          "difficulty": 2,
+          "key_cue": "The prepared site itself, not just a supply, has been touched nonsterilely.",
+          "one_line_fix": "Maintain asepsis during central-line dressing care; correct contamination before contact with the prepared site or new dressing."
+        }
+      ]
+    },
+    "packet_sha256": "47292e05fcfb103be05eed96a7e82a201bdc8bf6907e2b9c7abac5e07e658247"
+  },
+  {
+    "packet": {
+      "packet_id": "qb5-h09",
+      "version": 1,
+      "distinction_id": "digoxin-predose-pulse-and-toxicity-cues",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Medication reasoning",
+      "references": [
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/pharmacology/pages/19-6-adjunct-medications-used-in-heart-failure"
+        },
+        {
+          "title": "medlineplus.gov",
+          "url": "https://medlineplus.gov/ency/article/000165.htm"
+        },
+        {
+          "title": "dailymed.nlm.nih.gov",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=41c16cff-b03e-405e-a617-d6f45d3ce2bd"
+        }
+      ],
+      "original": {
+        "question_stem": "Before an adult’s scheduled digoxin, the RN counts an apical pulse of 54/min for a full minute. The prescription says to hold for a pulse below 60/min and notify the prescriber. What should the RN do?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Withhold the dose and notify the prescriber of the pulse finding."
+          },
+          {
+            "label": "B",
+            "text": "Recheck the pulse after administration to see whether it improves."
+          },
+          {
+            "label": "C",
+            "text": "Give the dose because digoxin is intended to lower the pulse."
+          },
+          {
+            "label": "D",
+            "text": "Give half the prescribed dose without contacting the prescriber."
+          }
+        ],
+        "correct_answer": "A",
+        "rationale_correct": "The measured pulse meets the prescribed reason to withhold and report.",
+        "rationale_incorrect": {
+          "B": "The safety assessment must guide the decision before administration.",
+          "C": "The intended effect does not override an explicit hold parameter.",
+          "D": "Independent dose reduction is not authorized by the prescription."
+        },
+        "nclex_category": "Pharmacological Therapies",
+        "difficulty": 2,
+        "key_cue": "A full-minute apical pulse is below this adult’s ordered threshold.",
+        "one_line_fix": "Assess pulse and toxicity cues before digoxin; withhold a dose and seek prompt review when hold parameters or concerning new symptoms are present."
+      },
+      "retry": {
+        "question_stem": "An adult taking digoxin reports new nausea and yellow-green halos around lights before the morning dose. The pulse is 72/min. What is the best action?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Double the dose because visual changes suggest the medication is wearing off."
+          },
+          {
+            "label": "B",
+            "text": "Give the dose because a pulse above 60/min excludes digoxin toxicity."
+          },
+          {
+            "label": "C",
+            "text": "Give the dose with food and report the symptoms at the next routine visit."
+          },
+          {
+            "label": "D",
+            "text": "Withhold the dose pending prompt prescriber review of the new symptoms and assess for toxicity."
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "The new symptom cluster warrants assessment and prompt medication review despite the pulse.",
+        "rationale_incorrect": {
+          "A": "Increasing the dose could worsen toxicity.",
+          "B": "A pulse above a hold threshold does not rule out toxicity.",
+          "C": "Food does not resolve the concerning toxicity cues or justify delay."
+        },
+        "nclex_category": "Pharmacological Therapies",
+        "difficulty": 2,
+        "key_cue": "New gastrointestinal and visual symptoms matter even with a pulse of 72/min.",
+        "one_line_fix": "Assess pulse and toxicity cues before digoxin; withhold a dose and seek prompt review when hold parameters or concerning new symptoms are present."
+      },
+      "reviews": [
+        {
+          "question_stem": "A client receiving digoxin and a potassium-wasting diuretic reports poor appetite and nausea. Today’s potassium is 2.9 mEq/L and the apical pulse is irregular at 58/min. The adult’s order says hold digoxin below 60/min and notify the prescriber. What is the best interpretation and action?",
+          "options": [
+            {
+              "label": "A",
+              "text": "The findings increase concern for digoxin toxicity; withhold the dose and promptly report the pulse, symptoms, and potassium."
+            },
+            {
+              "label": "B",
+              "text": "The irregular pulse can be ignored if the blood pressure is normal."
+            },
+            {
+              "label": "C",
+              "text": "Low potassium protects against digoxin effects; give the scheduled dose."
+            },
+            {
+              "label": "D",
+              "text": "These findings prove the client needs a larger digoxin dose."
+            }
+          ],
+          "correct_answer": "A",
+          "rationale_correct": "The ordered hold parameter and combined risk cues require prompt review.",
+          "rationale_incorrect": {
+            "B": "A normal blood pressure would not negate the pulse and symptom concerns.",
+            "C": "Low potassium increases susceptibility to digoxin toxicity rather than protecting against it.",
+            "D": "The findings support caution, not a dose increase."
+          },
+          "nclex_category": "Pharmacological Therapies",
+          "difficulty": 2,
+          "key_cue": "Diuretic-associated low potassium compounds new digoxin concerns.",
+          "one_line_fix": "Assess pulse and toxicity cues before digoxin; withhold a dose and seek prompt review when hold parameters or concerning new symptoms are present."
+        }
+      ]
+    },
+    "packet_sha256": "3203460d7fa9cd39ed6e06ecce42ff43549e9028f1b158f1e8a79d9e2e0384c7"
+  },
+  {
+    "packet": {
+      "packet_id": "qb5-h10",
+      "version": 1,
+      "distinction_id": "potassium-ecg-u-wave-versus-peaked-t-with-lab-context",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "449213076529cd20c3c0cb669d4f2b6ac9cdabb774fd36501f5b0abb40fca16f",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Assessment-first",
+      "references": [
+        {
+          "title": "pmc.ncbi.nlm.nih.gov",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3383164/"
+        },
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/medical-surgical-nursing/pages/10-3-electrolyte-imbalance"
+        }
+      ],
+      "original": {
+        "question_stem": "An adult with several days of diarrhea has potassium 2.7 mEq/L. The monitor shows flattened T waves and prominent U waves. Which interpretation best fits these findings?",
+        "options": [
+          {
+            "label": "A",
+            "text": "The laboratory result indicates hyperkalemia because U waves reflect excess potassium."
+          },
+          {
+            "label": "B",
+            "text": "The tracing indicates hyperkalemia, because flattened T waves reflect potassium excess."
+          },
+          {
+            "label": "C",
+            "text": "The client has hypokalemia, but prominent U waves show the potassium is returning to normal."
+          },
+          {
+            "label": "D",
+            "text": "The laboratory result indicates hypokalemia, and the described ECG changes are compatible with it."
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "Both the low laboratory result and described repolarization changes fit potassium depletion.",
+        "rationale_incorrect": {
+          "A": "2.7 mEq/L is low potassium; prominent U waves are compatible with depletion.",
+          "B": "Flattened T waves fit the low-potassium pattern in this case, not potassium excess; the measured potassium of 2.7 mEq/L is low.",
+          "C": "Prominent U waves are compatible with ongoing hypokalemia. Without follow-up measurements or a trend, they do not show that potassium is returning to normal."
+        },
+        "nclex_category": "Physiological Adaptation",
+        "difficulty": 2,
+        "key_cue": "Low measured potassium with a prominent post-T deflection.",
+        "one_line_fix": "Distinguish potassium patterns using laboratory context: flattened T/prominent U waves support low potassium; tall peaked T waves can accompany high potassium. ECG does not replace laboratory assessment."
+      },
+      "retry": {
+        "question_stem": "A client with reduced kidney function has potassium 6.4 mEq/L and newly tall, peaked T waves. The nurse has escalated the findings for urgent management. Which description is accurate?",
+        "options": [
+          {
+            "label": "A",
+            "text": "The value is low, and peaked T waves indicate potassium depletion."
+          },
+          {
+            "label": "B",
+            "text": "The ECG proves the potassium specimen was contaminated."
+          },
+          {
+            "label": "C",
+            "text": "The value is high, and peaked T waves can accompany hyperkalemia."
+          },
+          {
+            "label": "D",
+            "text": "The ECG establishes a normal potassium level despite the reported result."
+          }
+        ],
+        "correct_answer": "C",
+        "rationale_correct": "The laboratory and ECG findings are compatible with potassium excess.",
+        "rationale_incorrect": {
+          "A": "6.4 mEq/L is elevated, not depleted.",
+          "B": "A suggestive ECG change does not establish specimen contamination.",
+          "D": "A tracing cannot establish normal potassium in conflict with the measured high value."
+        },
+        "nclex_category": "Physiological Adaptation",
+        "difficulty": 2,
+        "key_cue": "A high measured potassium value changes the interpretation from the earlier low-potassium case.",
+        "one_line_fix": "Distinguish potassium patterns using laboratory context: flattened T/prominent U waves support low potassium; tall peaked T waves can accompany high potassium. ECG does not replace laboratory assessment."
+      },
+      "reviews": [
+        {
+          "question_stem": "During handoff, two clients are discussed: Client 1 has potassium 2.6 mEq/L with prominent U waves; Client 2 has potassium 6.3 mEq/L with tall peaked T waves. Which summary is accurate?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Client 1 has hyperkalemia and Client 2 has hypokalemia because both patterns reverse the laboratory interpretation."
+            },
+            {
+              "label": "B",
+              "text": "Both clients have hypokalemia because all T-wave abnormalities indicate potassium loss."
+            },
+            {
+              "label": "C",
+              "text": "Client 1 has hypokalemia and Client 2 has hyperkalemia; each described ECG pattern is compatible with the corresponding laboratory result."
+            },
+            {
+              "label": "D",
+              "text": "Both clients have normal potassium because an ECG change is needed to confirm any abnormal laboratory value."
+            }
+          ],
+          "correct_answer": "C",
+          "rationale_correct": "The measured values and contrasting ECG descriptions support the correct low-versus-high classification.",
+          "rationale_incorrect": {
+            "A": "This reverses the laboratory-defined disorders.",
+            "B": "T-wave abnormalities do not all imply depletion; the measured high value must not be ignored.",
+            "D": "Neither measured value is normal, and ECG changes are not required for an abnormal potassium result."
+          },
+          "nclex_category": "Physiological Adaptation",
+          "difficulty": 2,
+          "key_cue": "Compare two different laboratory-plus-ECG patterns rather than treating any abnormal wave as the same disorder.",
+          "one_line_fix": "Distinguish potassium patterns using laboratory context: flattened T/prominent U waves support low potassium; tall peaked T waves can accompany high potassium. ECG does not replace laboratory assessment."
+        }
+      ]
+    },
+    "packet_sha256": "a0914181ad8b197bc1c503628c12d0947c11da68786d75964f493de282b8acf3"
   }
 ]
