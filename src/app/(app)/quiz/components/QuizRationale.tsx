@@ -1,4 +1,5 @@
 'use client'
+import { nclexCategoryLabel } from '@/lib/nclex-categories'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -43,6 +44,7 @@ const clearTutorAutoSendState = () => {
 }
 
 function fallbackMistakeType(category: string) {
+  category = nclexCategoryLabel(category)
   if (category === 'Psychosocial Integrity') return 'Therapeutic communication'
   if (category === 'Pharmacological Therapies') return 'Medication reasoning'
   if (category === 'Safety and Infection Control') return 'Safety'
@@ -243,7 +245,7 @@ export default function QuizRationale({
       )}
 
       <div className="flex items-center gap-3 text-xs text-gray-400">
-        <span className="px-2 py-1 rounded bg-gray-100">{nclexCategory}</span>
+        <span className="px-2 py-1 rounded bg-gray-100">{nclexCategoryLabel(nclexCategory)}</span>
         {!sourceChecked && <span>{'●'.repeat(difficulty)}{'○'.repeat(5 - difficulty)}</span>}
       </div>
 

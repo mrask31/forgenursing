@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { normalizeNclexCategory as normalizeBankCategory } from '@/lib/nclex-categories'
+export { normalizeBankCategory }
 import { ClinicalQuestion } from './clinical-content'
 import { canonicalHash, type DraftBank } from './draft-bank'
 import { contentOnHold } from './content-hold'
@@ -18,7 +20,7 @@ export const SourceCheckedPacket = z.object({
   if (items.some(contentOnHold)) ctx.addIssue({ code: 'custom', message: 'Content incident hold applies' })
 })
 export type SourceCheckedPacketData = z.infer<typeof SourceCheckedPacket>
-export type TeachingPoint = { takeaway: string; cues: [string, string, string] }
+export type TeachingPoint = { takeaway: string; cues: [string, string, string]; focus?: string }
 export function sourceCheckedPackets(bank: DraftBank, points: Record<string, TeachingPoint>) {
   const bankHash = canonicalHash(bank)
   return bank.families.map(family => {
@@ -35,10 +37,10 @@ export function sourceCheckedPackets(bank: DraftBank, points: Record<string, Tea
         nclex_category: category, difficulty: 2, key_cue: point.cues[index], one_line_fix: point.takeaway,
       }
     })
-    const focus = family.family_id.startsWith('qb1-d') ? 'Delegation' : family.family_id.startsWith('qb2-') ? 'Medication reasoning'
+    const focus = point.focus || (family.family_id.startsWith('qb1-d') ? 'Delegation' : family.family_id.startsWith('qb2-') ? 'Medication reasoning'
       : category === 'Psychosocial Integrity' ? 'Therapeutic communication'
       : category === 'Safety and Infection Control' ? 'Safety'
-      : category === 'Physiological Adaptation' || category === 'Reduction of Risk Potential' ? 'Priority-setting' : 'Patient education'
+      : category === 'Physiological Adaptation' || category === 'Reduction of Risk Potential' ? 'Priority-setting' : 'Patient education')
     return SourceCheckedPacket.parse({
       packet_id: family.family_id, version: bank.revision, distinction_id: family.distinction,
       learner_level: 'NCLEX-RN', publication_kind: 'ai_source_checked', independent_clinical_validation: false,
@@ -48,10 +50,4 @@ export function sourceCheckedPackets(bank: DraftBank, points: Record<string, Tea
       original: items[0], retry: items[1], reviews: [items[2]],
     })
   })
-}
-export function normalizeBankCategory(category: string | null | undefined) {
-  if (!category || category === 'All Categories') return null
-  if (category === 'Pharmacological and Parenteral Therapies') return 'Pharmacological Therapies'
-  if (category === 'Safety and Infection Prevention and Control') return 'Safety and Infection Control'
-  return category
 }

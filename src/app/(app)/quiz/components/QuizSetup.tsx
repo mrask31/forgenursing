@@ -1,19 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { NCLEX_CATEGORIES } from '@/lib/nclex-categories'
 
 
-const NCLEX_CATEGORIES = [
-  'All Categories',
-  'Management of Care',
-  'Safety and Infection Control',
-  'Health Promotion and Maintenance',
-  'Psychosocial Integrity',
-  'Basic Care and Comfort',
-  'Pharmacological Therapies',
-  'Reduction of Risk Potential',
-  'Physiological Adaptation',
-]
+const TOPIC_OPTIONS = ['All Categories', ...NCLEX_CATEGORIES]
 
 type StartOptions = {
   practiceSource?: 'bank' | 'generated'
@@ -71,7 +62,7 @@ export default function QuizSetup({setSourceType, category, setCategory, onStart
       <fieldset className="mt-5 grid gap-3 sm:grid-cols-2"><legend className="sr-only">Question source</legend>
         {[{id:'mixed',title:'Mixed bank practice',body:'Source-checked originals across NCLEX-RN topics.'},{id:'topic',title:'Choose a bank topic',body:'Source-checked originals in an area you want to revisit.'}].map(item => <label key={item.id} className={`cursor-pointer rounded-xl border p-4 ${mode === item.id ? 'border-teal-600 bg-teal-50' : 'border-slate-200'}`}><input type="radio" name="practice-mode" checked={mode===item.id} onChange={() => choose(item.id as 'mixed' | 'topic')} className="mr-2 accent-teal-700" /><span className="font-bold">{item.title}</span><p className="mt-2 text-sm text-slate-600">{item.body}</p></label>)}
       </fieldset>
-      {mode === 'topic' && <label className="mt-5 block text-sm font-semibold">NCLEX topic<select value={category} onChange={e=>setCategory(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3">{NCLEX_CATEGORIES.map(c=><option key={c}>{c}</option>)}</select></label>}
+      {mode === 'topic' && <label className="mt-5 block text-sm font-semibold">NCLEX topic<select value={category} onChange={e=>setCategory(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3">{TOPIC_OPTIONS.map(c=><option key={c}>{c}</option>)}</select></label>}
       <details className="mt-5 border-t border-slate-100 pt-4"><summary className="cursor-pointer text-sm font-semibold text-slate-600">Generated supplement</summary><p className="mt-3 text-sm text-slate-600">Additional AI-generated practice. These misses do not schedule bank reviews.</p><label className="mt-3 block text-sm"><input type="radio" name="practice-mode" checked={mode==='generated'} onChange={()=>choose('generated')} className="mr-2" />Use generated questions for this session</label></details>
       <p className="mt-4 text-xs text-slate-500">Missed bank originals schedule a fresh review available anytime; revisiting it after about 24 hours is recommended. Retry and generated misses do not. Source-checked means AI-assisted and checked against sources, not independently clinically validated.</p>
       <p className="mt-6 text-sm text-slate-600">{mode === 'generated' ? '' : 'Up to '}{mode === 'suggested' ? 3 : 5} questions · Go at your own pace</p>

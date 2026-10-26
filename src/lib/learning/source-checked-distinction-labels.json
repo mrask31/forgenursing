@@ -58,5 +58,15 @@
   "new-stroke-signs-emergency-response": "Treat sudden stroke-like symptoms as an emergency, including when symptoms improve.",
   "adult-low-glucose-safe-oral-treatment": "Use oral fast-acting carbohydrate only when the person can swallow safely and the stated protocol applies.",
   "asthma-unrelieved-severe-breathing-emergency": "Severe asthma symptoms unrelieved by prescribed treatment require emergency help.",
-  "heart-failure-consistent-weight-tracking": "Compare daily heart-failure weights under consistent conditions and follow the reporting plan."
+  "heart-failure-consistent-weight-tracking": "Compare daily heart-failure weights under consistent conditions and follow the reporting plan.",
+  "unanswered-procedure-questions-before-consent": "Unanswered procedure-specific risks or alternatives require the responsible procedural clinician before the consent process proceeds.",
+  "pulmonary-tb-airborne-controls": "For infectious pulmonary TB, use airborne controls; a patient mask does not replace a fit-tested respirator for staff entering the room.",
+  "convulsive-seizure-protect-without-restraint": "Protect the person during a convulsive seizure without restraining movements or placing objects in the mouth; oral intake waits until fully alert.",
+  "infant-sleep-back-firm-flat-empty": "Place an infant on the back for each sleep in a separate firm, flat sleep space with only a fitted sheet.",
+  "suicide-cue-direct-nonjudgmental-inquiry": "Ask directly and without judgment about suicide when a client gives a concerning cue; reassurance or avoidance does not assess safety.",
+  "lithium-consistent-salt-and-fluid-plan": "Follow the prescribed salt and fluid plan while taking lithium; abrupt low-salt diets or dehydration need clinician guidance.",
+  "dialysis-access-arm-protection": "Protect the AV fistula arm from routine blood-pressure cuffs, non-dialysis venipuncture and IV placement, and external compression.",
+  "suspected-transfusion-reaction-stop-before-continuing": "When a transfusion reaction is suspected, stop the blood product promptly while initiating assessment and the facility response protocol.",
+  "gastric-tube-feeding-head-elevation": "During gastric tube feeding, maintain prescribed head-of-bed elevation, commonly 30–45 degrees unless contraindicated, alongside the other feeding safety checks.",
+  "standard-cane-opposite-weak-leg": "With a standard prescribed cane plan for a weak leg, hold the cane in the opposite hand; individualized therapy instructions take precedence."
 }

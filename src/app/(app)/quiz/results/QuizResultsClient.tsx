@@ -1,4 +1,5 @@
 'use client'
+import { nclexCategoryLabel } from '@/lib/nclex-categories'
 import { CONTENT_HOLD_MESSAGE } from '@/lib/learning/content-hold'
 
 import { captureLoop } from '@/lib/analytics/learning-loop'
@@ -49,6 +50,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 }
 
 function fallbackMistakeType(category: string | null | undefined) {
+  category = nclexCategoryLabel(category)
   if (category === 'Psychosocial Integrity') return 'Therapeutic communication'
   if (category === 'Pharmacological Therapies') return 'Medication reasoning'
   if (category === 'Safety and Infection Control') return 'Safety'
@@ -209,10 +211,10 @@ export default function QuizResultsClient() {
   const catMap = new Map<string, { correct: number; total: number }>()
   questions.forEach(q => {
     if (!q.nclex_category) return
-    const entry = catMap.get(q.nclex_category) ?? { correct: 0, total: 0 }
+    const entry = catMap.get(nclexCategoryLabel(q.nclex_category)) ?? { correct: 0, total: 0 }
     entry.total++
     if (q.is_correct) entry.correct++
-    catMap.set(q.nclex_category, entry)
+    catMap.set(nclexCategoryLabel(q.nclex_category), entry)
   })
   const categories: CategoryBreakdown[] = Array.from(catMap.entries()).map(
     ([category, { correct, total }]) => ({ category, correct, total })

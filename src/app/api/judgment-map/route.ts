@@ -1,3 +1,4 @@
+import { nclexCategoryLabel, nclexCategoryProgress } from '@/lib/nclex-categories'
 import { contentOnHold } from '@/lib/learning/content-hold'
 import { normalizePracticeFocus } from '@/lib/practice-focus'
 import { practiceTrend, practiceStage } from '@/lib/practice-progress'
@@ -20,6 +21,7 @@ type MistakeTypeRow = {
 }
 
 function fallbackMistakeType(category?: string | null) {
+  category = nclexCategoryLabel(category)
   if (category === 'Psychosocial Integrity') return 'Therapeutic communication'
   if (category === 'Pharmacological Therapies') return 'Medication reasoning'
   if (category === 'Safety and Infection Control') return 'Safety'
@@ -205,6 +207,7 @@ export async function GET() {
           topWeakness ? `${topWeakness.mistake_type} identified as a next focus` : 'Forge will identify your next focus soon',
         ],
       },
+      nclex_categories: nclexCategoryProgress(answered),
       mistake_types: mistakeTypes,
       top_weakness: topWeakness
         ? {

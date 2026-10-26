@@ -7266,5 +7266,1245 @@
       ]
     },
     "packet_sha256": "fa6c6b4723cd910e9822a5230a38b0e2430bd72e919eac29befaf615aa535b9c"
+  },
+  {
+    "packet": {
+      "packet_id": "qb4-h01",
+      "version": 1,
+      "distinction_id": "unanswered-procedure-questions-before-consent",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Patient education",
+      "references": [
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/medical-surgical-nursing/pages/25-2-preoperative-nursing-priorities"
+        },
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/fundamentals-nursing/pages/8-1-patient-admission"
+        }
+      ],
+      "original": {
+        "question_stem": "Before elective surgery, an alert client tells the RN, \"I know the name of the operation, but no one explained the alternatives.\" The RN is asked to witness consent. What is the best response?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Pause signing and contact the surgeon to discuss the alternatives."
+          },
+          {
+            "label": "B",
+            "text": "Witness the signature because the operation’s name is correct."
+          },
+          {
+            "label": "C",
+            "text": "Use the standard handout to finish the consent discussion independently."
+          },
+          {
+            "label": "D",
+            "text": "Ask the accompanying spouse to sign instead."
+          }
+        ],
+        "correct_answer": "A",
+        "rationale_correct": "The unresolved question concerns informed choice. Obtain the responsible procedural clinician’s explanation before proceeding with consent.",
+        "rationale_incorrect": {
+          "B": "Knowing the name does not resolve the missing alternatives discussion.",
+          "C": "A handout can supplement teaching but does not replace the clinician’s procedure-specific discussion.",
+          "D": "The client has capacity; a spouse’s signature does not replace the client’s informed choice."
+        },
+        "nclex_category": "Management of Care",
+        "difficulty": 2,
+        "key_cue": "The client has an unanswered alternatives question before an elective procedure.",
+        "one_line_fix": "Unanswered procedure-specific risks or alternatives require the responsible procedural clinician before the consent process proceeds."
+      },
+      "retry": {
+        "question_stem": "A client awaiting an elective endoscopy says, \"The clinician spoke with me, but I still do not understand the risk of bleeding.\" The unsigned consent form is at the bedside. What should the RN do?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Request a signature and note that the client asked about bleeding."
+          },
+          {
+            "label": "B",
+            "text": "Arrange another discussion with the clinician performing the procedure."
+          },
+          {
+            "label": "C",
+            "text": "Reassure the client that a signed order means the risk is acceptable."
+          },
+          {
+            "label": "D",
+            "text": "Ask another bedside RN to provide the definitive risk estimate."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "Unresolved procedure-specific risk questions need clarification before consent proceeds; a previous discussion is not enough by itself.",
+        "rationale_incorrect": {
+          "A": "Recording the question does not answer it or establish informed consent.",
+          "C": "An order does not substitute for an informed discussion with the client.",
+          "D": "A colleague may support communication, but should not replace the responsible clinician’s risk explanation."
+        },
+        "nclex_category": "Management of Care",
+        "difficulty": 2,
+        "key_cue": "A prior conversation has not resolved this client’s risk question.",
+        "one_line_fix": "Unanswered procedure-specific risks or alternatives require the responsible procedural clinician before the consent process proceeds."
+      },
+      "reviews": [
+        {
+          "question_stem": "During preparation for an elective procedure, the RN notices a signed consent. The client now says, \"I thought this was a different procedure; I need it explained before I agree.\" What is the best action?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Continue because the existing signature completes the requirement."
+            },
+            {
+              "label": "B",
+              "text": "Ask the client to initial the procedure name without another discussion."
+            },
+            {
+              "label": "C",
+              "text": "Pause preparation and notify the procedural clinician to clarify consent."
+            },
+            {
+              "label": "D",
+              "text": "Explain that questions can be answered after the procedure."
+            }
+          ],
+          "correct_answer": "C",
+          "rationale_correct": "A signature does not override the client’s current lack of understanding; resolve the discrepancy before proceeding.",
+          "rationale_incorrect": {
+            "A": "The client’s present concern makes reliance on the signature alone unsafe.",
+            "B": "Initials do not resolve misunderstanding about the procedure.",
+            "D": "Deferring clarification prevents an informed decision before an elective procedure."
+          },
+          "nclex_category": "Management of Care",
+          "difficulty": 2,
+          "key_cue": "The current statement conflicts with the existing signed form.",
+          "one_line_fix": "Unanswered procedure-specific risks or alternatives require the responsible procedural clinician before the consent process proceeds."
+        }
+      ]
+    },
+    "packet_sha256": "90b4042d81eb4ebb989bd0e13a6c289d3e35c75c72de506eda0514f9e9bba1b7"
+  },
+  {
+    "packet": {
+      "packet_id": "qb4-h02",
+      "version": 1,
+      "distinction_id": "pulmonary-tb-airborne-controls",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Safety",
+      "references": [
+        {
+          "title": "cdc.gov",
+          "url": "https://www.cdc.gov/infection-control/hcp/basics/transmission-based-precautions.html"
+        },
+        {
+          "title": "cdc.gov",
+          "url": "https://www.cdc.gov/tb-healthcare-settings/hcp/infection-control/index.html"
+        }
+      ],
+      "original": {
+        "question_stem": "A hospitalized client is being evaluated for infectious pulmonary tuberculosis. An airborne infection isolation room is available. Which placement and entry plan is appropriate?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Use a private room with droplet precautions and a surgical mask for staff entry."
+          },
+          {
+            "label": "B",
+            "text": "Use the isolation room and the required fit-tested N95 or higher respirator for staff entry."
+          },
+          {
+            "label": "C",
+            "text": "Use a shared room after giving the client a surgical mask."
+          },
+          {
+            "label": "D",
+            "text": "Use contact precautions without respiratory protection."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "Airborne placement and appropriate respiratory protection address inhalation exposure while evaluation proceeds.",
+        "rationale_incorrect": {
+          "A": "Droplet-only protection is insufficient for suspected infectious pulmonary TB when airborne controls are available.",
+          "C": "Source control does not replace appropriate isolation placement.",
+          "D": "Contact-only precautions do not address airborne transmission."
+        },
+        "nclex_category": "Safety and Infection Control",
+        "difficulty": 2,
+        "key_cue": "Infectious pulmonary TB is suspected, so airborne precautions are indicated.",
+        "one_line_fix": "For infectious pulmonary TB, use airborne controls; a patient mask does not replace a fit-tested respirator for staff entering the room."
+      },
+      "retry": {
+        "question_stem": "A client with infectious pulmonary TB must leave the airborne isolation room for a medically necessary test. The client can tolerate a mask. Which instruction addresses source control during transport?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Leave the client unmasked because the destination has an isolation room."
+          },
+          {
+            "label": "B",
+            "text": "Use a face shield alone on the client during transport."
+          },
+          {
+            "label": "C",
+            "text": "Have the client wear a surgical mask and follow cough etiquette."
+          },
+          {
+            "label": "D",
+            "text": "Let the client remove the mask in the hallway if coughing stops."
+          }
+        ],
+        "correct_answer": "C",
+        "rationale_correct": "A surgical mask on the client provides source control during necessary transport; notify the receiving area and follow transport policy.",
+        "rationale_incorrect": {
+          "A": "A protected destination does not control exposure along the transport route.",
+          "B": "A face shield alone does not provide the recommended respiratory source control.",
+          "D": "A pause in coughing does not establish that airborne precautions can be discontinued."
+        },
+        "nclex_category": "Safety and Infection Control",
+        "difficulty": 2,
+        "key_cue": "Necessary transport requires limiting the client’s spread of respiratory particles.",
+        "one_line_fix": "For infectious pulmonary TB, use airborne controls; a patient mask does not replace a fit-tested respirator for staff entering the room."
+      },
+      "reviews": [
+        {
+          "question_stem": "Before entering the airborne isolation room of a client with suspected pulmonary TB, an RN says, \"The client is wearing a surgical mask, so I can use one too.\" Which correction is best?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Use two surgical masks instead of the respirator."
+            },
+            {
+              "label": "B",
+              "text": "Enter without respiratory protection if standing away from the bed."
+            },
+            {
+              "label": "C",
+              "text": "Wait for a positive TB test before using airborne respiratory protection."
+            },
+            {
+              "label": "D",
+              "text": "Use the required fit-tested N95 or higher respirator for room entry."
+            }
+          ],
+          "correct_answer": "D",
+          "rationale_correct": "A patient’s mask does not replace the staff member’s required respiratory protection when entering the airborne isolation room.",
+          "rationale_incorrect": {
+            "A": "Layering surgical masks is not equivalent to the required fit-tested respirator.",
+            "B": "Distance inside the isolation room does not replace respiratory protection.",
+            "C": "Suspected infectious pulmonary TB warrants precautions while testing is pending."
+          },
+          "nclex_category": "Safety and Infection Control",
+          "difficulty": 2,
+          "key_cue": "Patient source control and room-entry respiratory protection are different controls.",
+          "one_line_fix": "For infectious pulmonary TB, use airborne controls; a patient mask does not replace a fit-tested respirator for staff entering the room."
+        }
+      ]
+    },
+    "packet_sha256": "41a0f4bd1527596c4c5a1421dfc3a7a5f323593285a5f44df3e3ebcff5ba67d4"
+  },
+  {
+    "packet": {
+      "packet_id": "qb4-h03",
+      "version": 1,
+      "distinction_id": "convulsive-seizure-protect-without-restraint",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Priority-setting",
+      "references": [
+        {
+          "title": "cdc.gov",
+          "url": "https://www.cdc.gov/epilepsy/first-aid-for-seizures/index.html"
+        },
+        {
+          "title": "cpr.heart.org",
+          "url": "https://cpr.heart.org/en/resuscitation-science/first-aid-guidelines/first-aid"
+        }
+      ],
+      "original": {
+        "question_stem": "A client begins a generalized convulsive seizure while lying on the floor beside a chair. Another nurse calls for help and starts timing it. Which action should the bedside RN take?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Hold both arms against the floor until the shaking stops."
+          },
+          {
+            "label": "B",
+            "text": "Insert a padded tongue blade between the teeth."
+          },
+          {
+            "label": "C",
+            "text": "Clear nearby hazards and cushion the head without holding the client down."
+          },
+          {
+            "label": "D",
+            "text": "Give a sip of water to help the client swallow secretions."
+          }
+        ],
+        "correct_answer": "C",
+        "rationale_correct": "Environmental protection reduces injury risk. Continue assessment and the seizure response plan without forcibly restricting movement.",
+        "rationale_incorrect": {
+          "A": "Restraining convulsions can injure the client and the helper.",
+          "B": "Objects in the mouth can damage teeth or the jaw and are not seizure first aid.",
+          "D": "Oral intake during impaired awareness creates a choking risk."
+        },
+        "nclex_category": "Physiological Adaptation",
+        "difficulty": 2,
+        "key_cue": "Help and timing are underway; prevent injury without restraining the client.",
+        "one_line_fix": "Protect the person during a convulsive seizure without restraining movements or placing objects in the mouth; oral intake waits until fully alert."
+      },
+      "retry": {
+        "question_stem": "During a witnessed convulsive seizure, a staff member reaches for a bite block to keep the client from \"swallowing the tongue.\" What should the RN say?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Use a smaller bite block so it is easier to insert."
+          },
+          {
+            "label": "B",
+            "text": "Use gloved fingers to hold the tongue forward instead."
+          },
+          {
+            "label": "C",
+            "text": "Wait for the jaw to relax briefly, then insert the block."
+          },
+          {
+            "label": "D",
+            "text": "Keep objects out of the mouth and continue protective seizure care."
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "A bite block is not appropriate first aid during active convulsions. Protect from injury and follow the response plan.",
+        "rationale_incorrect": {
+          "A": "Making the object smaller does not make insertion appropriate.",
+          "B": "Fingers can injure the client or be bitten; do not force the mouth open.",
+          "C": "A momentary opening does not make placing objects in the mouth safe."
+        },
+        "nclex_category": "Physiological Adaptation",
+        "difficulty": 2,
+        "key_cue": "The proposed mouth intervention creates injury risk during convulsions.",
+        "one_line_fix": "Protect the person during a convulsive seizure without restraining movements or placing objects in the mouth; oral intake waits until fully alert."
+      },
+      "reviews": [
+        {
+          "question_stem": "A client’s convulsions have stopped. The client is breathing but remains drowsy and is not fully alert. A visitor offers water. What is the best nursing response?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Delay oral fluids until the client is fully alert and continue recovery assessment."
+            },
+            {
+              "label": "B",
+              "text": "Offer the water through a straw to reduce the amount at one time."
+            },
+            {
+              "label": "C",
+              "text": "Give water now because the shaking has ended."
+            },
+            {
+              "label": "D",
+              "text": "Use water to check whether the client can be awakened."
+            }
+          ],
+          "correct_answer": "A",
+          "rationale_correct": "Recovery requires monitoring. Food or fluid before full alertness can cause choking; follow the care plan for further swallowing concerns.",
+          "rationale_incorrect": {
+            "B": "A straw does not correct impaired alertness or make swallowing safe.",
+            "C": "The end of convulsions does not establish readiness for oral intake.",
+            "D": "A swallowing challenge is not an appropriate way to test recovery of alertness."
+          },
+          "nclex_category": "Physiological Adaptation",
+          "difficulty": 2,
+          "key_cue": "Convulsions ended, but safe awareness for oral intake has not returned.",
+          "one_line_fix": "Protect the person during a convulsive seizure without restraining movements or placing objects in the mouth; oral intake waits until fully alert."
+        }
+      ]
+    },
+    "packet_sha256": "e1088f9742fdbe2712d7fa047294eb09dd7dc4fdba53977e1397f6e4ceda6270"
+  },
+  {
+    "packet": {
+      "packet_id": "qb4-h04",
+      "version": 1,
+      "distinction_id": "infant-sleep-back-firm-flat-empty",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Patient education",
+      "references": [
+        {
+          "title": "cdc.gov",
+          "url": "https://www.cdc.gov/sudden-infant-death/sleep-safely/index.html"
+        },
+        {
+          "title": "safetosleep.nichd.nih.gov",
+          "url": "https://safetosleep.nichd.nih.gov/reduce-risk/FAQ"
+        }
+      ],
+      "original": {
+        "question_stem": "At a newborn visit, a parent asks how to prepare the baby’s sleep space. Which plan should the nurse reinforce?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Place the baby on the side supported by a rolled blanket."
+          },
+          {
+            "label": "B",
+            "text": "Place the baby prone on a soft mattress for longer sleep."
+          },
+          {
+            "label": "C",
+            "text": "Place the baby on the back with a pillow supporting the head."
+          },
+          {
+            "label": "D",
+            "text": "Place the baby on the back in a safety-approved crib with a firm, flat mattress and fitted sheet."
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "Back placement and a firm, flat surface without loose items reduce sleep-related risk.",
+        "rationale_incorrect": {
+          "A": "Side positioning and a loose positioning item do not provide the recommended sleep setup.",
+          "B": "Prone placement and a soft surface increase risk during routine sleep.",
+          "C": "Back placement does not make a pillow appropriate in the sleep space."
+        },
+        "nclex_category": "Health Promotion and Maintenance",
+        "difficulty": 2,
+        "key_cue": "Routine infant sleep requires a safe position and sleep surface.",
+        "one_line_fix": "Place an infant on the back for each sleep in a separate firm, flat sleep space with only a fitted sheet."
+      },
+      "retry": {
+        "question_stem": "A caregiver says, \"I use back sleeping at night, but put the baby on the stomach for afternoon naps.\" The infant cannot roll independently. Which reply is best?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Use back placement for naps too; tummy time is for awake, supervised activity."
+          },
+          {
+            "label": "B",
+            "text": "Stomach placement is appropriate for short naps if the room is quiet."
+          },
+          {
+            "label": "C",
+            "text": "Use side placement for naps as a compromise."
+          },
+          {
+            "label": "D",
+            "text": "Alternate stomach and back placement to balance pressure during sleep."
+          }
+        ],
+        "correct_answer": "A",
+        "rationale_correct": "Routine sleep should begin on the back for every sleep. Awake supervised tummy time serves a different purpose.",
+        "rationale_incorrect": {
+          "B": "A short nap is still sleep and does not remove the risk.",
+          "C": "Side placement is not the recommended routine sleep position.",
+          "D": "Alternating in prone sleep does not follow the safe sleep recommendation."
+        },
+        "nclex_category": "Health Promotion and Maintenance",
+        "difficulty": 2,
+        "key_cue": "The safe placement recommendation applies to naps as well as nighttime.",
+        "one_line_fix": "Place an infant on the back for each sleep in a separate firm, flat sleep space with only a fitted sheet."
+      },
+      "reviews": [
+        {
+          "question_stem": "During home teaching, the nurse sees an infant’s crib with a firm, flat mattress, a fitted sheet, a stuffed toy, and a loose quilt. The baby is placed on the back. Which change is needed?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Keep the quilt if it is tucked around the baby’s shoulders."
+            },
+            {
+              "label": "B",
+              "text": "Remove the stuffed toy and loose quilt from the sleep space."
+            },
+            {
+              "label": "C",
+              "text": "Move the toy to the corner while keeping it inside the crib."
+            },
+            {
+              "label": "D",
+              "text": "Raise one end of the mattress to keep the quilt near the feet."
+            }
+          ],
+          "correct_answer": "B",
+          "rationale_correct": "The sleep space should be kept free of soft objects and loose bedding even when position and mattress are correct.",
+          "rationale_incorrect": {
+            "A": "Loose bedding remains a hazard; tucking it does not establish a safe empty sleep space.",
+            "C": "Moving a soft object within the crib does not remove it from the sleep space.",
+            "D": "An inclined surface is not the recommended firm, flat sleep surface."
+          },
+          "nclex_category": "Health Promotion and Maintenance",
+          "difficulty": 2,
+          "key_cue": "Correct position and mattress do not make loose objects safe.",
+          "one_line_fix": "Place an infant on the back for each sleep in a separate firm, flat sleep space with only a fitted sheet."
+        }
+      ]
+    },
+    "packet_sha256": "b0dab321cfacaa171864a112911605c5b0a6b40c499ecb0ebe1f7e541f95633b"
+  },
+  {
+    "packet": {
+      "packet_id": "qb4-h05",
+      "version": 1,
+      "distinction_id": "suicide-cue-direct-nonjudgmental-inquiry",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Therapeutic communication",
+      "references": [
+        {
+          "title": "nimh.nih.gov",
+          "url": "https://www.nimh.nih.gov/health/publications/suicide-faq"
+        },
+        {
+          "title": "nimh.nih.gov",
+          "url": "https://www.nimh.nih.gov/health/publications/5-action-steps-to-help-someone-having-thoughts-of-suicide"
+        }
+      ],
+      "original": {
+        "question_stem": "During an interview, a client says, \"Everyone would be better off if I did not wake up.\" Which response best begins assessment of the immediate concern?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Are you thinking about ending your life?"
+          },
+          {
+            "label": "B",
+            "text": "What are three things you are grateful for today?"
+          },
+          {
+            "label": "C",
+            "text": "Your family would never be better off without you."
+          },
+          {
+            "label": "D",
+            "text": "Let us talk about your sleep problems first."
+          }
+        ],
+        "correct_answer": "A",
+        "rationale_correct": "Direct, nonjudgmental inquiry clarifies suicidal thoughts and supports further assessment and safety measures.",
+        "rationale_incorrect": {
+          "B": "Positive reflection may have a role later but does not assess the suicidal cue.",
+          "C": "Reassurance or disagreement does not determine whether the client is considering suicide.",
+          "D": "Changing to sleep symptoms postpones direct assessment of the concerning statement."
+        },
+        "nclex_category": "Psychosocial Integrity",
+        "difficulty": 2,
+        "key_cue": "The statement may indicate thoughts of death and needs direct clarification.",
+        "one_line_fix": "Ask directly and without judgment about suicide when a client gives a concerning cue; reassurance or avoidance does not assess safety."
+      },
+      "retry": {
+        "question_stem": "A student nurse avoids asking a distressed client about suicide, saying, \"I do not want to put the idea in the client’s head.\" Which teaching is accurate?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Ask only if the client independently uses the word suicide."
+          },
+          {
+            "label": "B",
+            "text": "Asking directly does not create suicidal thoughts and helps identify the need for assessment."
+          },
+          {
+            "label": "C",
+            "text": "Ask the family instead, so the client does not hear the question."
+          },
+          {
+            "label": "D",
+            "text": "Discuss coping strategies before asking any safety questions."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "Evidence summarized by NIMH supports direct inquiry. Follow answers with appropriate clinical assessment and safety actions.",
+        "rationale_incorrect": {
+          "A": "Clients may communicate risk indirectly; waiting for a specific word can miss important cues.",
+          "C": "Collateral information can help, but does not replace a direct conversation with the client when possible.",
+          "D": "Coping discussion does not need to precede timely inquiry about a possible immediate safety concern."
+        },
+        "nclex_category": "Psychosocial Integrity",
+        "difficulty": 2,
+        "key_cue": "Avoidance is based on a misconception about asking directly.",
+        "one_line_fix": "Ask directly and without judgment about suicide when a client gives a concerning cue; reassurance or avoidance does not assess safety."
+      },
+      "reviews": [
+        {
+          "question_stem": "A client says, \"I have been thinking about dying.\" Which follow-up by the nurse best clarifies suicide risk rather than minimizing the statement?",
+          "options": [
+            {
+              "label": "A",
+              "text": "You are not going to do anything foolish, are you?"
+            },
+            {
+              "label": "B",
+              "text": "Can you promise me you will stay positive?"
+            },
+            {
+              "label": "C",
+              "text": "Have you been thinking about killing yourself?"
+            },
+            {
+              "label": "D",
+              "text": "Do you mean that you are just having a bad day?"
+            }
+          ],
+          "correct_answer": "C",
+          "rationale_correct": "Clear wording invites disclosure about suicide; assessment of intent, plan, means, and needed safety measures follows.",
+          "rationale_incorrect": {
+            "A": "Judgmental, leading wording can discourage an honest response.",
+            "B": "A positivity request does not clarify suicidal thinking or establish safety.",
+            "D": "The leading interpretation minimizes a potentially serious cue."
+          },
+          "nclex_category": "Psychosocial Integrity",
+          "difficulty": 2,
+          "key_cue": "The client’s words warrant an explicit safety question.",
+          "one_line_fix": "Ask directly and without judgment about suicide when a client gives a concerning cue; reassurance or avoidance does not assess safety."
+        }
+      ]
+    },
+    "packet_sha256": "55c3b5337cad476c398e983f8ef1b3407be95e47088524b3e172971a82446c6c"
+  },
+  {
+    "packet": {
+      "packet_id": "qb4-h06",
+      "version": 1,
+      "distinction_id": "lithium-consistent-salt-and-fluid-plan",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Medication reasoning",
+      "references": [
+        {
+          "title": "medlineplus.gov",
+          "url": "https://medlineplus.gov/druginfo/meds/a681039.html"
+        },
+        {
+          "title": "nhs.uk",
+          "url": "https://www.nhs.uk/medicines/lithium/common-questions-about-lithium/"
+        }
+      ],
+      "original": {
+        "question_stem": "A client taking lithium says, \"I will sharply cut out salt this week to make my diet healthier.\" No diet change has been prescribed. Which response is best?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Make the diet change now and keep the next routine visit."
+          },
+          {
+            "label": "B",
+            "text": "Discuss the change with the prescriber and follow the agreed salt and fluid plan."
+          },
+          {
+            "label": "C",
+            "text": "Skip lithium on days when the meals contain less salt."
+          },
+          {
+            "label": "D",
+            "text": "Add a large daily salt supplement before cutting food sources of salt."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "Lithium treatment requires attention to salt and fluid intake; an abrupt low-salt change should not be made independently.",
+        "rationale_incorrect": {
+          "A": "Routine follow-up alone does not address the effect of an abrupt change.",
+          "C": "The client should not self-adjust medication to compensate for diet changes.",
+          "D": "Unprescribed salt loading is not a substitute for an individualized plan."
+        },
+        "nclex_category": "Pharmacological Therapies",
+        "difficulty": 2,
+        "key_cue": "A sudden sodium change can affect lithium handling.",
+        "one_line_fix": "Follow the prescribed salt and fluid plan while taking lithium; abrupt low-salt diets or dehydration need clinician guidance."
+      },
+      "retry": {
+        "question_stem": "A client prescribed lithium plans several hours of outdoor work in hot weather. Which statement shows the best understanding of teaching?",
+        "options": [
+          {
+            "label": "A",
+            "text": "I will limit drinks during work so I do not need frequent breaks."
+          },
+          {
+            "label": "B",
+            "text": "I will take an extra lithium dose if I sweat heavily."
+          },
+          {
+            "label": "C",
+            "text": "I will follow my fluid plan and contact the care team if I cannot keep hydrated."
+          },
+          {
+            "label": "D",
+            "text": "I will wait until the next blood test to mention poor fluid intake."
+          }
+        ],
+        "correct_answer": "C",
+        "rationale_correct": "Avoiding dehydration and seeking individualized advice support safe lithium use without independent dose changes.",
+        "rationale_incorrect": {
+          "A": "Restricting intake during heat exposure can increase dehydration risk.",
+          "B": "Extra dosing is unsafe and does not replace lost fluid.",
+          "D": "A developing hydration problem warrants earlier clinical guidance."
+        },
+        "nclex_category": "Pharmacological Therapies",
+        "difficulty": 2,
+        "key_cue": "Sweating and reduced intake can disturb the fluid balance relevant to lithium.",
+        "one_line_fix": "Follow the prescribed salt and fluid plan while taking lithium; abrupt low-salt diets or dehydration need clinician guidance."
+      },
+      "reviews": [
+        {
+          "question_stem": "At follow-up, a client taking lithium reports beginning a strict low-salt diet and deliberately drinking much less water. Which teaching point should the RN prioritize?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Keep both changes and take lithium only with the largest meal."
+            },
+            {
+              "label": "B",
+              "text": "Continue the restrictions if the last lithium level was in range."
+            },
+            {
+              "label": "C",
+              "text": "Use thirst alone to decide whether the restrictions are safe."
+            },
+            {
+              "label": "D",
+              "text": "Review the salt and fluid changes with the prescriber rather than continuing them independently."
+            }
+          ],
+          "correct_answer": "D",
+          "rationale_correct": "Diet and hydration influence lithium levels; the client needs a coordinated plan, not an independent restriction or dose change.",
+          "rationale_incorrect": {
+            "A": "Changing meal timing does not resolve the salt and fluid concern.",
+            "B": "A prior level does not guarantee safety after a significant new change.",
+            "C": "Thirst alone is not a substitute for the prescribed plan and clinical advice."
+          },
+          "nclex_category": "Pharmacological Therapies",
+          "difficulty": 2,
+          "key_cue": "Both new changes can affect the conditions under which lithium is used safely.",
+          "one_line_fix": "Follow the prescribed salt and fluid plan while taking lithium; abrupt low-salt diets or dehydration need clinician guidance."
+        }
+      ]
+    },
+    "packet_sha256": "b997cd75eec4acfd711011a5f9fd17a3afb80e8484978a28c535600a1c39d149"
+  },
+  {
+    "packet": {
+      "packet_id": "qb4-h07",
+      "version": 1,
+      "distinction_id": "dialysis-access-arm-protection",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Safety",
+      "references": [
+        {
+          "title": "generalsurgery.ucsf.edu",
+          "url": "https://generalsurgery.ucsf.edu/procedure/vascular-access-hemodialysis"
+        },
+        {
+          "title": "medlineplus.gov",
+          "url": "https://medlineplus.gov/ency/patientinstructions/000591.htm"
+        }
+      ],
+      "original": {
+        "question_stem": "A stable client has a functioning left forearm AV fistula for hemodialysis. The right arm is suitable for routine blood-pressure measurement. What should the nurse do?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Place the cuff on the left upper arm, above the fistula."
+          },
+          {
+            "label": "B",
+            "text": "Use the left arm but allow only one automatic reading."
+          },
+          {
+            "label": "C",
+            "text": "Measure the blood pressure on the right arm."
+          },
+          {
+            "label": "D",
+            "text": "Compress the fistula briefly while applying the cuff to reduce vibration."
+          }
+        ],
+        "correct_answer": "C",
+        "rationale_correct": "The fistula arm should be protected from routine cuff compression when an appropriate alternative is available.",
+        "rationale_incorrect": {
+          "A": "Moving the cuff above the fistula does not remove compression of the access arm.",
+          "B": "Limiting the number of readings does not make routine access-arm compression appropriate.",
+          "D": "The thrill is not a reason to compress the access or use that arm for a routine reading."
+        },
+        "nclex_category": "Reduction of Risk Potential",
+        "difficulty": 2,
+        "key_cue": "A usable alternative is available; protect the dialysis access arm.",
+        "one_line_fix": "Protect the AV fistula arm from routine blood-pressure cuffs, non-dialysis venipuncture and IV placement, and external compression."
+      },
+      "retry": {
+        "question_stem": "A client with a right arm AV fistula needs routine laboratory blood drawn. An appropriate non-access site is available. A staff member proposes using a vein in the right hand because it is below the fistula. What should the RN recommend?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Use the right hand because the needle would not enter the fistula directly."
+          },
+          {
+            "label": "B",
+            "text": "Use the fistula itself so another vein is not punctured."
+          },
+          {
+            "label": "C",
+            "text": "Use the right hand if the tourniquet is placed loosely."
+          },
+          {
+            "label": "D",
+            "text": "Use the appropriate non-access site and protect the right arm."
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "Routine blood draws should avoid the access arm; being below the fistula is not a reason to use it.",
+        "rationale_incorrect": {
+          "A": "Avoiding direct fistula puncture does not make routine venipuncture in the access arm the preferred plan.",
+          "B": "The fistula is reserved for dialysis use by appropriately trained staff, not routine laboratory access.",
+          "C": "A looser tourniquet does not resolve the need to protect the access arm when another site is suitable."
+        },
+        "nclex_category": "Reduction of Risk Potential",
+        "difficulty": 2,
+        "key_cue": "The proposed site remains in the dialysis access arm.",
+        "one_line_fix": "Protect the AV fistula arm from routine blood-pressure cuffs, non-dialysis venipuncture and IV placement, and external compression."
+      },
+      "reviews": [
+        {
+          "question_stem": "While reviewing care of an established arm AV fistula, which client statement needs correction?",
+          "options": [
+            {
+              "label": "A",
+              "text": "I can wear a tight elastic sleeve over the access to keep it protected."
+            },
+            {
+              "label": "B",
+              "text": "I will tell staff which arm contains my dialysis access."
+            },
+            {
+              "label": "C",
+              "text": "I will check for the usual vibration as my dialysis team taught me."
+            },
+            {
+              "label": "D",
+              "text": "I will report redness or tenderness around the access."
+            }
+          ],
+          "correct_answer": "A",
+          "rationale_correct": "Tight clothing or external pressure is not appropriate access protection; review a non-constricting plan.",
+          "rationale_incorrect": {
+            "B": "Alerting staff helps them avoid routine cuffs and venipuncture in that arm.",
+            "C": "Checking the taught thrill is part of access monitoring.",
+            "D": "These findings warrant review for possible access complications."
+          },
+          "nclex_category": "Reduction of Risk Potential",
+          "difficulty": 2,
+          "key_cue": "External pressure can compromise the access arm.",
+          "one_line_fix": "Protect the AV fistula arm from routine blood-pressure cuffs, non-dialysis venipuncture and IV placement, and external compression."
+        }
+      ]
+    },
+    "packet_sha256": "57d19b87c78e7fecf06ec27ee460bb1fd98092b0778df20c401908da18991833"
+  },
+  {
+    "packet": {
+      "packet_id": "qb4-h08",
+      "version": 1,
+      "distinction_id": "suspected-transfusion-reaction-stop-before-continuing",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Medication reasoning",
+      "references": [
+        {
+          "title": "isbtweb.org",
+          "url": "https://www.isbtweb.org/resources/educational-modules-on-clinical-use-of-blood/adverse-effects-of-transfusion.html"
+        },
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/clinical-nursing-skills/pages/13-4-blood-transfusions"
+        }
+      ],
+      "original": {
+        "question_stem": "Ten minutes after packed red blood cells begin infusing, a client develops new chills and back discomfort. The RN suspects a transfusion reaction. Which action should be taken regarding the blood product?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Reduce the rate and finish the unit if the discomfort is tolerable."
+          },
+          {
+            "label": "B",
+            "text": "Continue the infusion until the next scheduled vital-sign check."
+          },
+          {
+            "label": "C",
+            "text": "Give a prescribed as-needed analgesic before deciding whether to stop."
+          },
+          {
+            "label": "D",
+            "text": "Stop the transfusion and initiate the reaction response protocol."
+          }
+        ],
+        "correct_answer": "D",
+        "rationale_correct": "Interrupt exposure promptly, then assess and carry out the facility’s notification, support, and investigation steps.",
+        "rationale_incorrect": {
+          "A": "Slowing a suspected reaction is not a substitute for initially stopping the product and evaluating the client.",
+          "B": "A suspected reaction requires action before the next routine check.",
+          "C": "Symptom treatment should not delay interruption of the suspected product."
+        },
+        "nclex_category": "Pharmacological Therapies",
+        "difficulty": 2,
+        "key_cue": "New symptoms arose during the infusion and a reaction is suspected.",
+        "one_line_fix": "When a transfusion reaction is suspected, stop the blood product promptly while initiating assessment and the facility response protocol."
+      },
+      "retry": {
+        "question_stem": "During a plasma infusion, a client develops new wheezing and generalized itching. A second nurse calls for urgent help. What should the bedside RN do with the plasma infusion?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Stop the plasma while the team assesses and treats the reaction."
+          },
+          {
+            "label": "B",
+            "text": "Keep plasma running while waiting for the provider to arrive."
+          },
+          {
+            "label": "C",
+            "text": "Slow plasma to half the rate and observe for ten minutes."
+          },
+          {
+            "label": "D",
+            "text": "Increase the plasma rate so the infusion ends sooner."
+          }
+        ],
+        "correct_answer": "A",
+        "rationale_correct": "Stopping the suspected product is part of the immediate response; airway support and other emergency measures proceed as indicated.",
+        "rationale_incorrect": {
+          "B": "Waiting for arrival permits continued exposure during a possible serious reaction.",
+          "C": "A trial of slower infusion delays the appropriate initial stop and evaluation.",
+          "D": "Finishing faster increases exposure rather than managing the suspected reaction."
+        },
+        "nclex_category": "Pharmacological Therapies",
+        "difficulty": 2,
+        "key_cue": "New respiratory and skin symptoms require prompt interruption and emergency assessment.",
+        "one_line_fix": "When a transfusion reaction is suspected, stop the blood product promptly while initiating assessment and the facility response protocol."
+      },
+      "reviews": [
+        {
+          "question_stem": "A transfusion was stopped after a client developed new urticaria. The client now feels better, but no clinician has reviewed or authorized resumption. What is the appropriate plan for the blood product?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Restart immediately at the original rate because the symptoms resolved."
+            },
+            {
+              "label": "B",
+              "text": "Keep it stopped pending clinical review and the facility’s restart instructions."
+            },
+            {
+              "label": "C",
+              "text": "Restart at a slower rate without informing the provider."
+            },
+            {
+              "label": "D",
+              "text": "Change the tubing and restart the same product without further assessment."
+            }
+          ],
+          "correct_answer": "B",
+          "rationale_correct": "Some mild reactions may permit restart after evaluation, but the RN should not restart solely because symptoms improved.",
+          "rationale_incorrect": {
+            "A": "Resolution without review does not establish that resuming is appropriate.",
+            "C": "A slower rate does not replace the required review and authorization.",
+            "D": "Changing tubing alone does not evaluate the reaction or authorize resumption."
+          },
+          "nclex_category": "Pharmacological Therapies",
+          "difficulty": 2,
+          "key_cue": "Improvement alone does not authorize restarting a stopped transfusion.",
+          "one_line_fix": "When a transfusion reaction is suspected, stop the blood product promptly while initiating assessment and the facility response protocol."
+        }
+      ]
+    },
+    "packet_sha256": "4be2f2ac88fcf80ddedcd49bed19dfc98712cb05f7d1a768446877a6ac30b259"
+  },
+  {
+    "packet": {
+      "packet_id": "qb4-h09",
+      "version": 1,
+      "distinction_id": "gastric-tube-feeding-head-elevation",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Safety",
+      "references": [
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/medical-surgical-nursing/pages/19-3-parenteral-and-enteral-nutrition"
+        },
+        {
+          "title": "openstax.org",
+          "url": "https://openstax.org/books/fundamentals-nursing/pages/21-3-specialized-diets"
+        }
+      ],
+      "original": {
+        "question_stem": "A stable adult is receiving continuous gastric tube feeding. Tube placement has been checked per policy, and there is no contraindication to head elevation. Which position supports aspiration-risk reduction?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Keep the head of the bed elevated about 30–45 degrees."
+          },
+          {
+            "label": "B",
+            "text": "Keep the bed flat because the feeding is entering a tube."
+          },
+          {
+            "label": "C",
+            "text": "Lower the head below the feet to help formula move forward."
+          },
+          {
+            "label": "D",
+            "text": "Elevate the knees while leaving the head of the bed flat."
+          }
+        ],
+        "correct_answer": "A",
+        "rationale_correct": "Recommended elevation helps reduce aspiration risk during feeding; continue other prescribed checks and monitoring.",
+        "rationale_incorrect": {
+          "B": "A gastric tube does not remove aspiration risk when the client is supine.",
+          "C": "Head-down positioning does not support aspiration prevention during gastric feeding.",
+          "D": "Knee elevation does not provide the recommended upper-body position."
+        },
+        "nclex_category": "Basic Care and Comfort",
+        "difficulty": 2,
+        "key_cue": "A safe feeding setup includes positioning as well as placement checks.",
+        "one_line_fix": "During gastric tube feeding, maintain prescribed head-of-bed elevation, commonly 30–45 degrees unless contraindicated, alongside the other feeding safety checks."
+      },
+      "retry": {
+        "question_stem": "After a linen change, the RN finds a client lying flat while the ordered gastric feeding continues. The client has no symptoms or contraindication to elevation. Which correction addresses the positioning problem?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Wait until the feeding bag is empty before raising the head."
+          },
+          {
+            "label": "B",
+            "text": "Restore the prescribed head-of-bed elevation and reassess feeding safety."
+          },
+          {
+            "label": "C",
+            "text": "Raise the feet and keep the head flat for comfort."
+          },
+          {
+            "label": "D",
+            "text": "Increase the feeding rate to shorten the period spent flat."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "Re-establish appropriate positioning, commonly 30–45 degrees, and verify the ongoing feeding setup rather than ignoring the change.",
+        "rationale_incorrect": {
+          "A": "The positioning concern exists while feeding is running.",
+          "C": "This does not restore the recommended upper-body elevation.",
+          "D": "Changing the ordered rate is not a correction for unsafe positioning."
+        },
+        "nclex_category": "Basic Care and Comfort",
+        "difficulty": 2,
+        "key_cue": "The client’s position changed while the feeding continued.",
+        "one_line_fix": "During gastric tube feeding, maintain prescribed head-of-bed elevation, commonly 30–45 degrees unless contraindicated, alongside the other feeding safety checks."
+      },
+      "reviews": [
+        {
+          "question_stem": "A caregiver says, \"The feeding tube position was verified, so the client can stay flat during the gastric feeding.\" There is no medical reason to avoid head elevation. Which response is best?",
+          "options": [
+            {
+              "label": "A",
+              "text": "Correct placement makes aspiration impossible regardless of position."
+            },
+            {
+              "label": "B",
+              "text": "A flat bed is appropriate whenever the feeding pump runs slowly."
+            },
+            {
+              "label": "C",
+              "text": "Placement checks do not replace head elevation during feeding."
+            },
+            {
+              "label": "D",
+              "text": "Elevation is needed only when nausea has already developed."
+            }
+          ],
+          "correct_answer": "C",
+          "rationale_correct": "Use the prescribed elevation, commonly 30–45 degrees, as well as placement checks; neither measure guarantees that aspiration cannot occur.",
+          "rationale_incorrect": {
+            "A": "Aspiration can still occur despite correct placement.",
+            "B": "A lower rate does not replace positioning precautions.",
+            "D": "Positioning is preventive and should not wait for symptoms."
+          },
+          "nclex_category": "Basic Care and Comfort",
+          "difficulty": 2,
+          "key_cue": "Placement verification and aspiration precautions address different safety needs.",
+          "one_line_fix": "During gastric tube feeding, maintain prescribed head-of-bed elevation, commonly 30–45 degrees unless contraindicated, alongside the other feeding safety checks."
+        }
+      ]
+    },
+    "packet_sha256": "683b44eabff228de9a63d97d571c45266f37a145636d1c4c8578d06c5da7f441"
+  },
+  {
+    "packet": {
+      "packet_id": "qb4-h10",
+      "version": 1,
+      "distinction_id": "standard-cane-opposite-weak-leg",
+      "learner_level": "NCLEX-RN",
+      "publication_kind": "ai_source_checked",
+      "independent_clinical_validation": false,
+      "difficulty_status": "provisional",
+      "source_check_date": "2026-10-26",
+      "draft_bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+      "editorial_method": "AI-assisted source checking and editorial review",
+      "focus": "Safety",
+      "references": [
+        {
+          "title": "orthoinfo.org",
+          "url": "https://www.orthoinfo.org/recovery/how-to-use-crutches-canes-and-walkers/"
+        },
+        {
+          "title": "together.stjude.org",
+          "url": "https://together.stjude.org/en-us/medical-care/rehabilitation/using-a-cane.html"
+        }
+      ],
+      "original": {
+        "question_stem": "A therapist has prescribed a standard cane for mild left-leg weakness. Both arms function normally, and no alternative technique was ordered. Which hand placement should the nurse reinforce?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Hold the cane in the left hand beside the weak leg."
+          },
+          {
+            "label": "B",
+            "text": "Hold the cane in the right hand."
+          },
+          {
+            "label": "C",
+            "text": "Switch hands every few steps to give each arm a rest."
+          },
+          {
+            "label": "D",
+            "text": "Hold the cane with both hands directly in front of the body."
+          }
+        ],
+        "correct_answer": "B",
+        "rationale_correct": "For this standard plan, the cane goes opposite the weak left leg; confirm fit and follow the therapist’s teaching.",
+        "rationale_incorrect": {
+          "A": "Same-side placement does not match this standard prescribed technique.",
+          "C": "Unplanned switching makes the taught support pattern inconsistent.",
+          "D": "A standard cane is not used as a two-hand walker; reassess the aid if more support is needed."
+        },
+        "nclex_category": "Basic Care and Comfort",
+        "difficulty": 2,
+        "key_cue": "Standard cane support is opposite the weak leg.",
+        "one_line_fix": "With a standard prescribed cane plan for a weak leg, hold the cane in the opposite hand; individualized therapy instructions take precedence."
+      },
+      "retry": {
+        "question_stem": "A client with mild right-leg weakness demonstrates a standard cane plan by holding the cane in the right hand. Both arms are strong, and the therapist prescribed the usual opposite-side technique. Which correction should the RN make?",
+        "options": [
+          {
+            "label": "A",
+            "text": "Keep the right-hand placement because it is closer to the weak leg."
+          },
+          {
+            "label": "B",
+            "text": "Change hands according to which way the client turns."
+          },
+          {
+            "label": "C",
+            "text": "Move the cane to the left hand as taught by the therapist."
+          },
+          {
+            "label": "D",
+            "text": "Let the cane drag behind the right leg for extra balance."
+          }
+        ],
+        "correct_answer": "C",
+        "rationale_correct": "The left hand is opposite the weak right leg and matches the prescribed standard technique.",
+        "rationale_incorrect": {
+          "A": "Proximity to the weak leg is not the basis for the standard opposite-side placement.",
+          "B": "Turning direction does not determine the support hand in this prescribed plan.",
+          "D": "Dragging the aid does not provide the intended stable support and can increase fall risk."
+        },
+        "nclex_category": "Basic Care and Comfort",
+        "difficulty": 2,
+        "key_cue": "The demonstrated hand is on the same side as the weak leg.",
+        "one_line_fix": "With a standard prescribed cane plan for a weak leg, hold the cane in the opposite hand; individualized therapy instructions take precedence."
+      },
+      "reviews": [
+        {
+          "question_stem": "A client using a standard cane for mild left-leg weakness asks, \"Why did the therapist put the cane in my right hand?\" There is no arm impairment or individualized exception. Which explanation is best?",
+          "options": [
+            {
+              "label": "A",
+              "text": "The cane always goes in the dominant hand, regardless of the weak leg."
+            },
+            {
+              "label": "B",
+              "text": "Keeping the cane away from the weak leg means that leg should not bear any weight."
+            },
+            {
+              "label": "C",
+              "text": "The right hand is used now, but the cane must switch to the left hand outdoors."
+            },
+            {
+              "label": "D",
+              "text": "The usual technique places the cane opposite the weak leg to assist support and balance."
+            }
+          ],
+          "correct_answer": "D",
+          "rationale_correct": "This explains the standard placement without claiming every client or mobility impairment uses the same aid or plan.",
+          "rationale_incorrect": {
+            "A": "Dominance alone does not determine hand placement for this standard plan.",
+            "B": "Cane placement does not itself establish a non-weight-bearing order.",
+            "C": "Moving outdoors does not by itself reverse the prescribed hand placement."
+          },
+          "nclex_category": "Basic Care and Comfort",
+          "difficulty": 2,
+          "key_cue": "The right hand is opposite the leg needing support.",
+          "one_line_fix": "With a standard prescribed cane plan for a weak leg, hold the cane in the opposite hand; individualized therapy instructions take precedence."
+        }
+      ]
+    },
+    "packet_sha256": "3d692d09641b9567b124cd7fa26498e81d7785aa8f9cb5fa84ec23b2f342527a"
   }
 ]
