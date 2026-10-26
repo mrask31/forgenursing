@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-26",
+  "code_commit": "fce614273e50dd86b0d0668d7055ba5046645f4f",
+  "deployment": "https://forgenursing-3a6kdq4p4-michaels-projects-b1fddaa4.vercel.app",
+  "preview_families": 70,
+  "preview_questions": 210,
+  "all_packet_hashes_match_compiled_catalog": true,
+  "existing_60_packets_unchanged": true,
+  "production_publications": 0,
+  "synthetic_users_remaining": 0,
+  "new_family_categories": [
+    {
+      "retry": "Management of Care",
+      "family": "qb4-h01",
+      "review": "Management of Care",
+      "original": "Management of Care"
+    },
+    {
+      "retry": "Safety and Infection Control",
+      "family": "qb4-h02",
+      "review": "Safety and Infection Control",
+      "original": "Safety and Infection Control"
+    },
+    {
+      "retry": "Physiological Adaptation",
+      "family": "qb4-h03",
+      "review": "Physiological Adaptation",
+      "original": "Physiological Adaptation"
+    },
+    {
+      "retry": "Health Promotion and Maintenance",
+      "family": "qb4-h04",
+      "review": "Health Promotion and Maintenance",
+      "original": "Health Promotion and Maintenance"
+    },
+    {
+      "retry": "Psychosocial Integrity",
+      "family": "qb4-h05",
+      "review": "Psychosocial Integrity",
+      "original": "Psychosocial Integrity"
+    },
+    {
+      "retry": "Pharmacological Therapies",
+      "family": "qb4-h06",
+      "review": "Pharmacological Therapies",
+      "original": "Pharmacological Therapies"
+    },
+    {
+      "retry": "Reduction of Risk Potential",
+      "family": "qb4-h07",
+      "review": "Reduction of Risk Potential",
+      "original": "Reduction of Risk Potential"
+    },
+    {
+      "retry": "Pharmacological Therapies",
+      "family": "qb4-h08",
+      "review": "Pharmacological Therapies",
+      "original": "Pharmacological Therapies"
+    },
+    {
+      "retry": "Basic Care and Comfort",
+      "family": "qb4-h09",
+      "review": "Basic Care and Comfort",
+      "original": "Basic Care and Comfort"
+    },
+    {
+      "retry": "Basic Care and Comfort",
+      "family": "qb4-h10",
+      "review": "Basic Care and Comfort",
+      "original": "Basic Care and Comfort"
+    }
+  ],
+  "browser_integration_acceptance": "pending Muse",
+  "independent_clinical_validation": false
+}
