@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Brain, CreditCard, Loader2, Settings, Target, User } from 'lucide-react'
 import { isBetaActive } from '@/lib/subscription-access'
 import PasswordSettings from '@/components/account/PasswordSettings'
+import RetakePassDetails from '@/components/account/RetakePassDetails'
 import BillingDetails from '@/components/account/BillingDetails'
 
 type Profile = {
@@ -39,6 +40,7 @@ function accessLabel(profile: Profile | null) {
 }
 
 export default function SettingsPage() {
+  const [passAccess,setPassAccess]=useState<{active:boolean;access_until:string}|null>(null)
   const [email, setEmail] = useState<string | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -56,7 +58,7 @@ export default function SettingsPage() {
         const response = await fetch('/api/account', { cache: 'no-store', signal: controller.signal })
         const data = await response.json()
         if (!response.ok) throw new Error(data.error || 'Your account could not load.')
-        if (!controller.signal.aborted) { setEmail(data.email); setProfile(data.profile) }
+        if (!controller.signal.aborted) { setEmail(data.email); setProfile(data.profile);setPassAccess(data.pass??null) }
       } catch (err) {
         if (disposed) return
         if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Your account could not load.')
@@ -69,6 +71,8 @@ export default function SettingsPage() {
     void load()
     return () => { disposed = true; clearTimeout(timeout); controller.abort() }
   }, [reload])
+
+  useEffect(()=>{const updated=()=>setReload(v=>v+1);window.addEventListener('retake-pass-updated',updated);return()=>window.removeEventListener('retake-pass-updated',updated)},[])
 
   if (loading) {
     return (
@@ -130,9 +134,10 @@ export default function SettingsPage() {
 
           <SettingsCard icon={<CreditCard className="h-5 w-5" />} title="Access">
 
-            <SettingRow label="Access" value={accessLabel(profile)} />
-            <BillingDetails />
-            {profile?.subscription_status !== 'active' && <Link href="/pricing" className="block rounded-xl bg-[#0D8F9C] px-4 py-3 text-center font-bold text-white">View subscription options</Link>}
+            <SettingRow label="Access" value={passAccess ? `${passAccess.active?'Retake Pass active':'Retake Pass ended'} · ${formatDate(passAccess.access_until)}` : accessLabel(profile)} />
+            <RetakePassDetails />
+            <details><summary className="cursor-pointer text-sm">Existing billing account</summary><BillingDetails /></details>
+            {!passAccess?.active && profile?.subscription_status !== 'active' && <Link href="/pricing" className="block rounded-xl bg-[#0D8F9C] px-4 py-3 text-center font-bold text-white">View Retake Pass</Link>}
             <a href="mailto:support@forgenursing.com?subject=Subscription%20help" className="inline-block py-2 text-sm font-semibold text-[#087986] underline">Get help changing or canceling a subscription</a>
           </SettingsCard>
 

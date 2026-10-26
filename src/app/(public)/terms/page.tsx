@@ -1,6 +1,5 @@
-import { STANDARD_OFFER } from '@/lib/offer'
 import { pageMetadata } from '@/lib/seo'
-export const metadata = pageMetadata("Terms of Service", "Read the terms for using ForgeNursing study tools, free trials, and subscriptions.", "/terms")
+export const metadata = pageMetadata("Terms of Service", "Read the terms for using ForgeNursing study tools, free trials, and Retake Pass access.", "/terms")
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-[var(--gray-50)]">
@@ -149,33 +148,13 @@ export default function TermsPage() {
             </p>
           </section>
 
-          {/* 9. Subscription, Billing, and Cancellation */}
-          <section>
-            <h2 className="text-2xl font-semibold text-[var(--navy)] mb-4">9. Subscription, Billing, and Cancellation</h2>
-            <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              ForgeNursing offers the following subscription plans:
-            </p>
-            <ul className="list-disc pl-6 space-y-2 text-[var(--gray-800)] leading-relaxed mb-4">
-              <li><strong>Monthly Access</strong> — ${STANDARD_OFFER.monthly}/month</li>
-              <li><strong>Annual Access</strong> — ${STANDARD_OFFER.annual}/year</li>
-            </ul>
-            <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              <strong>Free Trial:</strong> New accounts receive a {STANDARD_OFFER.trialDays}-day free trial. No credit card or payment is required to start. The trial does not automatically convert to a paid subscription. When it ends, you must choose a paid plan and complete checkout to continue using paid features. If you do not subscribe, you will not be charged.
-            </p>
-            <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              <strong>Paid Subscriptions:</strong> You are charged only after choosing a paid plan and completing checkout. Once purchased, monthly subscriptions renew each month and annual subscriptions renew each year at the agreed rate until canceled. Selecting a plan before signup does not authorize a charge.
-            </p>
-            <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              <strong>Cancellation:</strong> You may cancel your subscription at any time through your account Settings page or by contacting us at{" "}
-              <a href="mailto:support@forgenursing.com" className="text-[#0D8F9C] hover:underline">support@forgenursing.com</a>.
-              When you cancel, your subscription remains active until the end of your current billing period. You will not be charged for subsequent billing periods after cancellation.
-            </p>
-            <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              <strong>No Refunds:</strong> Paid subscription fees are non-refundable except as required by law. We do not provide refunds for partial subscription periods or unused portions of your subscription.
-            </p>
-            <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              <strong>Price Changes:</strong> We reserve the right to modify subscription prices at any time. Price changes will be communicated at least 30 days in advance via email and will apply to subsequent billing periods.
-            </p>
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-[var(--navy)] mb-4">9. Retake Pass, access, and billing</h2>
+            <p className="mb-4">The Retake Pass costs $29.99 one-time for three calendar months. Don’t pass, and the next three months are free. Nothing auto-renews.</p>
+            <p className="mb-4">New accounts receive a seven-day free trial without a card. The trial does not authorize a charge. Paid access begins after you choose the pass and complete payment.</p>
+            <p className="mb-4">At the end of your initial three months, Account offers one free three-month extension. No exam result, proof, or claim process is required. The extension starts when you activate it. It is available once per purchased pass. Without an extension or new purchase, paid study access expires and saved records are retained. No passing result is promised.</p>
+            <p className="mb-4">Calendar-month expiry is calculated in UTC, using the last day of the destination month when needed. Your access-until date is displayed in Account. Invoices and payment details are managed through Stripe.</p>
+            <p className="mb-4">The free-access extension is not a refund. Payments are non-refundable except as required by law. Contact support@forgenursing.com for billing questions. Existing paid arrangements remain visible in Account until their transition is completed; a new Retake Pass itself never renews automatically.</p>
           </section>
 
           {/* 10. Intellectual Property */}

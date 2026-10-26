@@ -17,6 +17,12 @@ export async function middleware(request: NextRequest) {
       },
     })
 
+    const redirectWithCookies = (path:string) => {
+      const redirect=NextResponse.redirect(new URL(path,request.url))
+      response.cookies.getAll().forEach(cookie=>redirect.cookies.set(cookie))
+      return redirect
+    }
+
     const { pathname } = request.nextUrl
 
     // Add aggressive cache control headers for login/signup pages FIRST
@@ -205,13 +211,14 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
         }
 
-        const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
+        const {data:passes}=await supabase.from('retake_passes').select('id').eq('user_id',user.id).eq('audience',process.env.VERCEL_ENV==='production'?'production':'preview').is('refunded_at',null).gt('access_until',new Date().toISOString()).limit(1)
+        const userHasAccess = Boolean(passes?.length) || hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
 
         if (userHasAccess) {
-          return NextResponse.redirect(new URL('/entry', request.url))
+          return redirectWithCookies('/entry')
         } else {
           // No active subscription, redirect to payment required
-          return NextResponse.redirect(new URL('/billing/payment-required', request.url))
+          return redirectWithCookies('/settings?access=ended')
         }
       } catch (error) {
         // If subscription check fails, let them stay on login page to handle it
@@ -293,7 +300,8 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
         }
 
-        const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
+        const {data:passes}=await supabase.from('retake_passes').select('id').eq('user_id',user.id).eq('audience',process.env.VERCEL_ENV==='production'?'production':'preview').is('refunded_at',null).gt('access_until',new Date().toISOString()).limit(1)
+        const userHasAccess = Boolean(passes?.length) || hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
 
         console.log('[Middleware] Protected route access check', {
           userId: user.id,
@@ -317,7 +325,7 @@ export async function middleware(request: NextRequest) {
             subscriptionStatus,
             trialEndsAt
           })
-          return NextResponse.redirect(new URL('/checkout', request.url))
+          return response // Client renders a locked state with Account access; APIs still enforce entitlement.
         }
 
         console.log('[Middleware] ALLOWING: User has active subscription', {

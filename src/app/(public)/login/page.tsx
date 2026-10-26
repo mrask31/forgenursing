@@ -185,7 +185,9 @@ export default function LoginPage() {
         const { data: profile, error: profileError } = profileResult
 
         if (!profileError && profile) {
-          const userHasAccess = hasAccess(
+          const passResponse=await fetch('/api/subscription/status',{credentials:'include',cache:'no-store'})
+          const passStatus=passResponse.ok?await passResponse.json():null
+          const userHasAccess = Boolean(passStatus?.hasAccess) || hasAccess(
             profile?.subscription_status,
             profile?.trial_ends_at,
             profile?.is_beta,

@@ -34,7 +34,7 @@ export default function AppRouteLayout({
   const [accessCheckTimedOut, setAccessCheckTimedOut] = useState(false)
 
   const isUnguarded = UNGUARDED_PATHS.some(p => pathname.startsWith(p))
-  const authCheckComplete = !isLoading || accessCheckTimedOut
+  const authCheckComplete = !isLoading
   const shouldRedirectToCheckout = !isUnguarded && pathname !== '/settings' && authCheckComplete && !!user && !hasAccess
   const shouldRedirectToLogin = !isUnguarded && authCheckComplete && !user
 
@@ -51,9 +51,7 @@ export default function AppRouteLayout({
   }, [isLoading, isUnguarded, pathname])
 
   useEffect(() => {
-    if (shouldRedirectToCheckout) {
-      router.replace('/checkout')
-    }
+
 
     if (shouldRedirectToLogin) {
       router.replace('/login')
@@ -69,8 +67,9 @@ export default function AppRouteLayout({
   }
 
   if (shouldRedirectToCheckout) {
-    return <AccessGateScreen message="Redirecting to checkout…" />
+    return <AppShell variant="app"><div className="mx-auto max-w-xl p-8"><h1 className="text-2xl font-bold">Your study access has ended</h1><p className="mt-3">Your saved work is retained. Open Account to check your pass, use an available free extension, or choose your next step.</p><a className="mt-5 inline-block rounded-xl bg-teal-700 p-4 text-white" href="/settings">Open Account</a></div></AppShell>
   }
+  if (!isUnguarded && isLoading && accessCheckTimedOut) return <AccessGateScreen message="Your account is taking longer to load. Please wait or reload this page." />
 
   if (shouldRedirectToLogin) {
     return <AccessGateScreen message="Redirecting to login…" />

@@ -1,4 +1,5 @@
 import 'server-only'
+import {getRetakePass} from './retake-pass-server'
 
 import { createClient } from '@/lib/supabase/server'
 import { hasAccess, isTrialActive, isBetaActive } from '@/lib/subscription-access'
@@ -53,6 +54,7 @@ export async function getEntitlementForUser(userId?: string | null): Promise<Ent
     }
   }
 
+  const pass = await getRetakePass(userId)
   const status = profile.subscription_status ?? null
   const trialEndsAt = profile.trial_ends_at ?? null
   const trialActive = isTrialActive(trialEndsAt)
@@ -63,7 +65,7 @@ export async function getEntitlementForUser(userId?: string | null): Promise<Ent
   return {
     userId,
     status,
-    hasAccess: hasAccess(status, trialEndsAt, betaFlag, betaExpiresAt),
+    hasAccess: Boolean(pass?.active) || hasAccess(status, trialEndsAt, betaFlag, betaExpiresAt),
     isTrialActive: trialActive,
     trialEndsAt,
     isBeta: betaFlag,

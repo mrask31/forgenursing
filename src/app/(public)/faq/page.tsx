@@ -1,6 +1,5 @@
 'use client'
 
-import { STANDARD_OFFER } from '@/lib/offer'
 import Link from 'next/link'
 import { ChevronDown, ArrowLeft, HelpCircle } from 'lucide-react'
 import { useState } from 'react'
@@ -11,14 +10,14 @@ interface FAQItem {
 }
 
 const faqs: FAQItem[] = [
-  { question: 'Who is ForgeNursing for?', answer: 'The main practice plan is designed for people preparing for another NCLEX-RN attempt. Existing study tools remain available under More study tools.' },
-  { question: 'What will I do in a session?', answer: 'Answer a short set of questions, review the explanation for your selected answer, and use a fresh question to practice after a miss. You can open the tutor from a question for more help.' },
-  { question: 'Do I need a Candidate Performance Report or course uploads?', answer: 'No. You can optionally enter the Below, Near, or Above ratings from your Candidate Performance Report to guide a starting category. You can start practice without a report or uploads.' },
-  { question: 'How much does ForgeNursing cost?', answer: `The standard plan is $${STANDARD_OFFER.monthly} per month or $${STANDARD_OFFER.annual} per year, following a ${STANDARD_OFFER.trialDays}-day free trial. No credit card is required to start the trial. Existing founder and subscriber terms are preserved.` },
-  { question: 'Will I be charged automatically after the free trial?', answer: 'You do not enter a card to create your trial account. To continue after the trial, choose a paid subscription. Paid subscriptions renew according to the terms shown at checkout; you can manage cancellation in your account.' },
-  { question: 'Does ForgeNursing predict or guarantee a pass?', answer: 'No. Practice results describe the questions you answered. They are not a validated NCLEX readiness score, and ForgeNursing cannot diagnose why an exam attempt was unsuccessful.' },
-  { question: 'Does it replace my prep course or nursing references?', answer: 'ForgeNursing supports your existing preparation. AI-generated questions and explanations can contain errors. Check uncertain clinical information against trusted nursing references and use a comprehensive preparation plan.' },
-  { question: 'Can I use it on my phone?', answer: 'Yes. ForgeNursing works in a modern browser on your phone, tablet, or computer.' },
+ {question:'Who is ForgeNursing for?',answer:'NCLEX-RN retakers building a focused plan for their next attempt. Your Candidate Performance Report helps identify where to begin.'},
+ {question:'What does the Retake Pass cost?',answer:'$29.99 one-time for three months. Don’t pass, and the next three are free. Nothing auto-renews. Start with a seven-day free trial, no card required.'},
+ {question:'How does the free extension work?',answer:'When your initial three months end, open Account and activate one free three-month extension. No proof of exam results and no claim process. The extension starts when activated. It can be used once per purchased pass, giving up to six months of access.'},
+ {question:'Will I be charged after the trial or pass ends?',answer:'No. You must explicitly purchase a pass. A Retake Pass never auto-renews.'},
+ {question:'Do you guarantee I will pass?',answer:'No. The guarantee provides one free access extension; it does not guarantee an NCLEX result. Practice results describe your work here, not validated pass probabilities.'},
+ {question:'What happens after a missed question?',answer:'Review why your selected answer does not fit, then practice a related retry scored separately. Eligible bank-original misses also schedule a fresh review. Generated supplement misses do not schedule bank reviews.'},
+ {question:'Is the content clinically validated?',answer:'AI-assisted, source-checked — not independently clinically validated. Check uncertain explanations against your nursing references. ForgeNursing is for learning, not patient-care decisions.'},
+ {question:'Do I need my score report?',answer:'You can start without it. Adding Below, Near, or Above ratings from your Candidate Performance Report helps focus your practice plan.'},
 ]
 
 export default function FAQPage() {
