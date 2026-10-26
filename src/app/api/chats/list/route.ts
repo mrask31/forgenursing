@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
@@ -12,6 +13,13 @@ export async function GET(req: Request) {
     const supabase = createClient()
     const { searchParams } = new URL(req.url)
     const classId = searchParams.get('classId')
+    const cursorText = searchParams.get('cursor')
+    let cursor: {updatedAt:string;id:string} | null = null
+    if (cursorText) {
+      const parsed = z.object({updatedAt:z.string().datetime({offset:true}),id:z.string().uuid()}).safeParse((() => { try { return JSON.parse(cursorText) } catch { return null } })())
+      if (!parsed.success) return NextResponse.json({error:'Invalid history cursor'},{status:400})
+      cursor = parsed.data
+    }
 
     // Authenticate user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -38,19 +46,18 @@ export async function GET(req: Request) {
     // If classId is provided (not null), filter for that specific class
     // If classId is not provided at all, return all chats (for History view)
     if (classId === 'null' || classId === '') {
-      // General Tutor: only chats without a classId in metadata
-      // Use PostgREST filter syntax: metadata->>classId is null OR metadata->>class_id is null
-      // But we actually want AND (both null), so we'll filter client-side for now
-      // TODO: Optimize with proper PostgREST query if needed
+      query = query.is('metadata->>classId', null).is('metadata->>class_id', null)
     } else if (classId) {
       // Specific class: only chats for this class
       query = query.eq('metadata->>classId', classId)
     }
     // If classId is not provided at all, return all chats (no filter)
 
+    if (cursor) query = query.or(`updated_at.lt.${cursor.updatedAt},and(updated_at.eq.${cursor.updatedAt},id.lt.${cursor.id})`)
     const { data: chats, error } = await query
       .order('updated_at', { ascending: false })
-      .limit(50)
+      .order('id', { ascending: false })
+      .limit(51)
 
     if (error) {
       console.error('[API] Chats list error:', error)
@@ -61,17 +68,10 @@ export async function GET(req: Request) {
       }, { status: 500 })
     }
 
-    // Filter for General Tutor chats if classId is 'null' or ''
-    let filteredChats = chats || []
-    if (classId === 'null' || classId === '') {
-      // General Tutor: only chats without a classId in metadata
-      filteredChats = filteredChats.filter((chat: any) => {
-        const chatClassId = chat.metadata?.classId || chat.metadata?.class_id
-        return !chatClassId // No classId means General Tutor
-      })
-    }
-
-    return NextResponse.json({ chats: filteredChats })
+    const page = (chats || []).slice(0,50)
+    const last = page.at(-1)
+    const nextCursor = (chats || []).length > 50 && last ? JSON.stringify({updatedAt:last.updated_at,id:last.id}) : null
+    return NextResponse.json({ chats: page, nextCursor }, {headers:{'Cache-Control':'private, no-store'}})
   } catch (error: any) {
     console.error('[API] Chats list critical error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

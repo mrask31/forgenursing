@@ -87,6 +87,23 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
   }
   const [selectedChatIds, setSelectedChatIds] = useState<Set<string>>(new Set<string>())
   const [isDeleting, setIsDeleting] = useState(false)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [loadingOlder, setLoadingOlder] = useState(false)
+  const [historyError, setHistoryError] = useState('')
+
+  const loadOlder = async () => {
+    if (!nextCursor || loadingOlder) return
+    setLoadingOlder(true); setHistoryError('')
+    try {
+      const response = await fetch(`/api/chats/list?includeArchived=true&cursor=${encodeURIComponent(nextCursor)}`, {credentials:'include',cache:'no-store'})
+      if (!response.ok) throw new Error('Older conversations could not load. Please retry.')
+      const data = await response.json()
+      setChats(previous => { const ids = new Set(previous.map(chat=>chat.id)); return [...previous, ...(data.chats || []).filter((chat:Chat)=>!ids.has(chat.id))] })
+      setNextCursor(data.nextCursor ?? null)
+    } catch (error) { setHistoryError(error instanceof Error ? error.message : 'History could not load.') }
+    finally { setLoadingOlder(false) }
+  }
+
 
   // Fetch chats and classes for history
   useEffect(() => {
@@ -94,15 +111,18 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
 
     const fetchData = async () => {
       setIsLoading(true)
+      setHistoryError(''); setNextCursor(null)
       try {
         // Fetch chats
         const chatsResponse = await fetch('/api/chats/list?includeArchived=true', {
           credentials: 'include',
         })
 
+        if (!chatsResponse.ok) throw new Error('Conversations could not load. Close and reopen history to retry.')
         if (chatsResponse.ok) {
           const chatsData = await chatsResponse.json()
           setChats((chatsData.chats || []) as Chat[])
+          setNextCursor(chatsData.nextCursor ?? null)
         }
 
         // Fetch classes to map IDs to names
@@ -113,7 +133,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
           setClasses(userClasses)
         }
       } catch (error) {
-        console.error('[HistoryButton] Error fetching data:', error)
+        setHistoryError(error instanceof Error ? error.message : 'History could not load.')
       } finally {
         setIsLoading(false)
       }
@@ -399,6 +419,9 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
               })}
             </div>
           )}
+          {historyError && <p role="alert" className="mt-3 text-sm text-red-700">{historyError}</p>}
+          {!isLoading && <p className="mt-3 text-xs text-slate-500">Showing {chats.length} loaded conversations{nextCursor ? ' · Older conversations available' : ''}</p>}
+          {!isLoading && nextCursor && <button disabled={loadingOlder} onClick={loadOlder} className="mt-3 w-full rounded-lg border px-4 py-3 text-sm disabled:opacity-50">{loadingOlder ? 'Loading older conversations…' : 'Load older conversations'}</button>}
         </div>
       </SheetContent>
     </Sheet>

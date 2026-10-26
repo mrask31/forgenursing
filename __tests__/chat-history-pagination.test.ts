@@ -1,0 +1,9 @@
+import { beforeEach, expect, it, vi } from 'vitest'
+const m=vi.hoisted(()=>({user:{id:'owner'} as {id:string}|null,rows:[] as any[],calls:[] as any[]}))
+vi.mock('@/lib/supabase/server',()=>({createClient:()=>({auth:{getUser:async()=>({data:{user:m.user}})},from:()=>{const q:any={};for(const k of ['select','eq','is','or','order'])q[k]=(...args:any[])=>{m.calls.push([k,...args]);return q};q.limit=async(n:number)=>{m.calls.push(['limit',n]);return {data:m.rows}};return q}})}))
+import { GET } from '../src/app/api/chats/list/route'
+const get=(query='')=>GET(new Request(`https://preview.test/api/chats/list?includeArchived=true${query}`))
+beforeEach(()=>{m.calls=[];m.user={id:'owner'};m.rows=Array.from({length:51},(_,i)=>({id:`session-${i}`,updated_at:'2026-10-25T12:00:00Z'}))})
+it('exposes older inventory beyond the first 50 without duplicating the sentinel',async()=>{const r=await get();const b=await r.json();expect(b.chats).toHaveLength(50);expect(JSON.parse(b.nextCursor)).toEqual({id:'session-49',updatedAt:'2026-10-25T12:00:00Z'});expect(m.calls).toContainEqual(['eq','user_id','owner']);expect(m.calls).toContainEqual(['order','id',{ascending:false}]);expect(r.headers.get('Cache-Control')).toBe('private, no-store')})
+it('uses a stable timestamp and ID cursor and ends pagination at the final page',async()=>{m.rows=[{id:'last'}];const cursor=encodeURIComponent(JSON.stringify({updatedAt:'2026-10-25T12:00:00Z',id:'12345678-1234-4234-8234-123456789012'}));const b=await (await get(`&cursor=${cursor}`)).json();expect(b.nextCursor).toBeNull();expect(m.calls).toContainEqual(['or','updated_at.lt.2026-10-25T12:00:00Z,and(updated_at.eq.2026-10-25T12:00:00Z,id.lt.12345678-1234-4234-8234-123456789012)'])})
+it('rejects malformed cursors before constructing filters',async()=>{expect((await get('&cursor=invalid')).status).toBe(400);expect(m.calls).toEqual([])})
