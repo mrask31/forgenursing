@@ -39,7 +39,7 @@ describe('source-checked API boundaries',()=>{
  it('routes review by tier and binds the authenticated owner instead of a supplied one',async()=>{
   state.rpc.mockResolvedValue({data:{question:{id}},error:null})
   expect((await review(req({action:'start',queue_id:id,content_kind:'source_checked',user_id:'attacker'}))).status).toBe(200)
-  expect(state.rpc).toHaveBeenCalledWith('start_source_checked_review',{p_user_id:'owner',p_queue_id:id})
+  expect(state.rpc).toHaveBeenCalledWith('start_source_checked_review_anytime',{p_user_id:'owner',p_queue_id:id})
   state.rpc.mockResolvedValue({data:null,error:{message:'withdrawn'}})
   const r=await review(req({action:'answer',attempt_id:id,answer:'A',content_kind:'source_checked'}));expect(r.status).toBe(409);expect(await r.json()).not.toHaveProperty('feedback')
  })
