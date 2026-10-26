@@ -3,7 +3,7 @@ import {NextResponse} from 'next/server'
 import {createClient} from '@/lib/supabase/server'
 import {getRetakePass,passStripe,passPriceId,passAudience,getPassCheckoutIntent} from '@/lib/retake-pass-server'
 import {matchesRetakePassPrice} from '@/lib/retake-pass'
-export async function POST(req?:Request){if(!passRequestAllowed(req))return NextResponse.json({error:'Invalid request origin.'},{status:403});try{
+export async function POST(req:Request){if(!passRequestAllowed(req))return NextResponse.json({error:'Invalid request origin.'},{status:403});try{
  const {data:{user}}=await createClient().auth.getUser();if(!user)return NextResponse.json({error:'Please sign in.'},{status:401})
  const existing=await getRetakePass(user.id)
  if(existing?.active||existing?.extensionAvailable)return NextResponse.json({error:existing.active?'Your pass is active.':'Your free extension is available in Account.'},{status:409})

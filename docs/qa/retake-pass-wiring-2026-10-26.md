@@ -24,10 +24,12 @@ Production requires live STRIPE_PRICE_RETAKE_PASS and STRIPE_RETAKE_WEBHOOK_SECR
 
 ## Validation
 
-236 tests / 38 files pass (obsolete subscription-purchase tests replaced by retirement/pass-checkout and fulfillment boundaries); TypeScript passes; incremental lint zero new blockers. Supabase transaction-only synthetic fixtures verified grant idempotency, early-extension rejection, one extension, second rejection, and stable checkout tokens. All fixture transactions rolled back; zero synthetic users and zero pass grants persisted at verification. No learner records were backdated. Own-row RLS enabled; authenticated cannot execute grant/extend/checkout-intent RPCs. Security advisor reports intentional service-only/no-policy checkout-intents INFO; existing unrelated mutable-search-path warnings remain and are not claimed resolved.
+237 tests / 38 files pass (obsolete subscription-purchase tests replaced by retirement/pass-checkout and fulfillment boundaries); TypeScript passes; incremental lint zero new blockers. Supabase transaction-only synthetic fixtures verified grant idempotency, early-extension rejection, one extension, second rejection, and stable checkout tokens. All fixture transactions rolled back; zero synthetic users and zero pass grants persisted at verification. No learner records were backdated. Own-row RLS enabled; authenticated cannot execute grant/extend/checkout-intent RPCs. Security advisor reports intentional service-only/no-policy checkout-intents INFO; existing unrelated mutable-search-path warnings remain and are not claimed resolved.
 
 ## Acceptance and remaining release work
 
 Use a fresh test account for pass-only expiry (the paid owner account intentionally retains its legacy access). Verify sandbox checkout, grant dates, invoice portal, refresh/resume, webhook delivery without browser return, duplicate confirmation, incorrect/foreign/unpaid sessions, and extension/expiry boundaries using clearly isolated synthetic fixtures rather than changing real learner dates. Mutation boundary tests do not substitute for Muse's browser pass.
 
 Still pending: anytime review UI/RPCs; Courses removal/General-only tutor; production bank publication and bank-default acceptance; full retaker-positioning/copy sweep; real trial-days acceptance; 30 new question drafts and independent Muse audit to reach 200+; coordinated live catalog switch and production money-path acceptance. This is the pass-wiring acceptance batch, not relaunch readiness.
+
+Build follow-up: Next.js route validation requires a nonoptional Request parameter; checkout/extend/portal signatures corrected after first Vercel build failed. No READY claim made for the failed build. Cross-origin mutation regression added.
