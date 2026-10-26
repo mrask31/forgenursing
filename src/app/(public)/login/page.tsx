@@ -261,8 +261,8 @@ export default function LoginPage() {
                   <Shield className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-900 text-sm mb-1">Your learning library</div>
-                  <div className="text-xs text-slate-600">All your saved explanations and clips</div>
+                  <div className="font-semibold text-slate-900 text-sm mb-1">Understand your answers</div>
+                  <div className="text-xs text-slate-600">Review explanations and practice related retries</div>
                 </div>
               </div>
               <div className="flex items-start gap-3 text-left">
@@ -270,7 +270,7 @@ export default function LoginPage() {
                   <GraduationCap className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-900 text-sm mb-1">Access your dashboard</div>
+                  <div className="font-semibold text-slate-900 text-sm mb-1">See your progress</div>
                   <div className="text-xs text-slate-600">View your progress and study patterns</div>
                 </div>
               </div>

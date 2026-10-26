@@ -1,6 +1,6 @@
 'use client'
 
-import { tutorHistoryTitle } from '@/lib/tutor-history-title'
+import { tutorHistoryTitle, tutorHistoryHref } from '@/lib/tutor-history-title'
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
@@ -214,8 +214,8 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
     return result
   }, [chats, classes])
 
-  const handleChatClick = (chatId: string, mode: string = 'tutor') => {
-    const url = `/tutor?sessionId=${chatId}`
+  const handleChatClick = (chatId: string, classId: string) => {
+    const url = tutorHistoryHref(chatId, classId)
     router.push(url)
     setIsHistoryOpen(false)
     onNavigate?.()
@@ -334,7 +334,6 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                                 const Icon = getSessionIcon(chat.session_type)
                                 const badge = getSessionBadge(chat.session_type)
                                 const isSelected = selectedChatIds.has(chat.id)
-                                const mode = 'tutor' // Always tutor mode now
 
                                 return (
                                   <div
@@ -369,7 +368,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                                       onClick={(e) => e.stopPropagation()}
                                     />
                                     <button
-                                      onClick={() => handleChatClick(chat.id, mode)}
+                                      onClick={() => handleChatClick(chat.id, group.classId)}
                                       className="flex-1 text-left min-w-0 flex items-center gap-2"
                                     >
                                       <Icon className="w-4 h-4 flex-shrink-0 text-slate-500" />

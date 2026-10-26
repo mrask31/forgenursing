@@ -291,6 +291,7 @@ function TutorPageContent() {
             credentials: 'include'
           })
           
+          if (!metadataRes.ok) throw new Error('This conversation could not load. Please retry from Tutor history.')
           if (metadataRes.ok) {
             const metadata = await metadataRes.json()
             const chatClassId = metadata.metadata?.classId || metadata.metadata?.class_id
@@ -325,6 +326,7 @@ function TutorPageContent() {
               
               // Update paramsKey to prevent re-resolution
               lastResolvedParamsRef.current = `${intentParam || ''}-${sessionIdParam || ''}-${normalizedChatClassId || ''}`
+              setResolvedChatId(sessionIdParam)
               router.replace(`/tutor?${newParams.toString()}`)
               setIsResolving(false)
               isResolvingRef.current = false
@@ -332,8 +334,10 @@ function TutorPageContent() {
             }
           }
         } catch (error) {
-          console.error('[Tutor] Error checking session metadata, proceeding anyway:', error)
-          // Continue with normal flow if metadata check fails
+          setError(error instanceof Error ? error.message : 'This conversation could not load. Please retry from Tutor history.')
+          setIsResolving(false)
+          isResolvingRef.current = false
+          return
         }
         
         setResolvedChatId(sessionIdParam)
