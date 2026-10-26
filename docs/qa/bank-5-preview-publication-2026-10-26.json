@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-26",
+  "deployment_id": "dpl_HsU1yVDC1CKe61Hps9cHnmJmNQ5p",
+  "preview_url": "https://forgenursing-eb6nldk0k-michaels-projects-b1fddaa4.vercel.app",
+  "commit": "55d1eb3acca6e76badc237b9493ca3f84fc792c7",
+  "ready": true,
+  "preview_packets": 80,
+  "production_packets": 70,
+  "hash_mismatches": [],
+  "production_batch5_packets": 0,
+  "browser_integration_acceptance": "pending Muse",
+  "production_deployment_unchanged": "db7c65fa",
+  "tests": {
+    "files": 42,
+    "passed": 245,
+    "typecheck": "passed",
+    "lint_gate": "zero new errors; documented baseline remains"
+  }
+}
