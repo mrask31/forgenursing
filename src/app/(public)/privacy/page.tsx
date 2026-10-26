@@ -52,7 +52,7 @@ export default function PrivacyPage() {
               <div>
                 <h3 className="text-lg font-semibold text-[var(--gray-800)] mb-2">Subscription and Billing Data</h3>
                 <p className="text-[var(--gray-800)] leading-relaxed">
-                  We collect subscription status and billing information. Payment processing is handled by Stripe. We do not store your full credit card number — Stripe handles all payment data under their PCI-compliant infrastructure.
+                  We collect access status, purchase records, and billing information. Payment processing is handled by Stripe. We do not store your full credit card number — Stripe handles all payment data under their PCI-compliant infrastructure.
                 </p>
               </div>
               <div>
@@ -72,9 +72,9 @@ export default function PrivacyPage() {
             </p>
             <ul className="list-disc pl-6 space-y-2 text-[var(--gray-800)] leading-relaxed mb-4">
               <li>Provide AI-powered clinical reasoning tutoring and ADPIE-structured responses</li>
-              <li>Generate content tailored to your nursing program level and uploaded course materials</li>
+              <li>Use your study preferences, practice history, and CPR category ratings to personalize your study support</li>
               <li>Save your study session history, learning moments, and flagged content</li>
-              <li>Manage your subscription and process billing through Stripe</li>
+              <li>Manage purchased access and process payments through Stripe</li>
               <li>Send transactional emails (welcome, trial expiration notices, billing receipts)</li>
               <li>Improve our AI systems and educational algorithms</li>
               <li>Ensure platform security and prevent unauthorized access</li>

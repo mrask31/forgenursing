@@ -33,7 +33,7 @@ function accessLabel(profile: Profile | null) {
   if (profile?.subscription_status === 'active') return 'Subscription active'
   if (isBetaActive(profile?.is_beta, profile?.beta_expires_at)) return `Beta access through ${formatDate(profile?.beta_expires_at)}`
   if (profile?.subscription_status === 'trialing') return profile.trial_ends_at && new Date(profile.trial_ends_at).getTime() > Date.now() ? `Trial ends ${formatDate(profile.trial_ends_at)} · ${Math.ceil((new Date(profile.trial_ends_at).getTime() - Date.now()) / 86400000)} day(s) remaining` : 'Your trial has ended'
-  if (profile?.subscription_status === 'expired') return 'Subscription needed'
+  if (profile?.subscription_status === 'expired') return 'Study access ended'
   if (profile?.subscription_status === 'canceled') return 'Subscription canceled'
   if (profile?.subscription_status === 'past_due') return 'Payment update needed'
   return 'Not available'
@@ -115,7 +115,7 @@ export default function SettingsPage() {
           </div>
           <h1 className="mt-3 text-3xl font-bold text-[#0B2545] sm:text-4xl">Your account</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">
-            Your trial, subscription, and study preferences in one place.
+            Your trial, Retake Pass, and study preferences in one place.
           </p>
         </header>
 
@@ -138,7 +138,7 @@ export default function SettingsPage() {
             <RetakePassDetails />
             <details><summary className="cursor-pointer text-sm">Existing billing account</summary><BillingDetails /></details>
             {!passAccess?.active && profile?.subscription_status !== 'active' && <Link href="/pricing" className="block rounded-xl bg-[#0D8F9C] px-4 py-3 text-center font-bold text-white">View Retake Pass</Link>}
-            <a href="mailto:support@forgenursing.com?subject=Subscription%20help" className="inline-block py-2 text-sm font-semibold text-[#087986] underline">Get help changing or canceling a subscription</a>
+            <a href="mailto:support@forgenursing.com?subject=Subscription%20help" className="inline-block py-2 text-sm font-semibold text-[#087986] underline">Get help with access or billing</a>
           </SettingsCard>
 
           <SettingsCard icon={<Target className="h-5 w-5" />} title="Help">

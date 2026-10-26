@@ -229,7 +229,7 @@ export default function SignupPage() {
   if (checkingAccount) return <main className="mx-auto max-w-md px-5 py-16" role="status">Checking your sign-in…</main>
   if (existingAccount) return <main className="mx-auto max-w-md px-5 py-16 text-slate-900">
     <h1 className="text-2xl font-bold">You are already signed in</h1>
-    <p className="my-4">You are signed in as {existingAccount}. Open your account to check your trial or subscription, or sign out to create a different account.</p>
+    <p className="my-4">You are signed in as {existingAccount}. Open your account to check your trial or Retake Pass, or sign out to create a different account.</p>
     <Link href="/settings" className="block rounded-xl bg-teal-700 p-3 text-center font-semibold text-white">Open Account</Link>
     <button type="button" className="mt-4 underline" onClick={async () => {
       const { error } = await supabase.auth.signOut()
@@ -339,13 +339,13 @@ export default function SignupPage() {
                     <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                       3
                     </div>
-                    <p><strong className="text-slate-900">Subscribe when ready</strong> — After your trial ends</p>
+                    <p><strong className="text-slate-900">Choose a Retake Pass</strong> — $29.99 for 3 months. Don’t pass, and the next 3 are free.</p>
                   </div>
                 </div>
               )}
               <p className="text-xs text-[#0D8F9C] font-medium mt-2 pt-2 border-t border-[#0D8F9C]/20 flex items-center gap-1">
                 <Shield className="w-3 h-3" />
-                {betaAvailable ? 'No credit card required · Free for 90 days' : 'No credit card required • Cancel anytime'}
+                {betaAvailable ? 'No credit card required · Free for 90 days' : 'No credit card required · Nothing auto-renews'}
               </p>
             </div>
 

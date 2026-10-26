@@ -39,7 +39,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold text-[var(--navy)] mb-4">3. Educational Use and Acceptable Use</h2>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
-              ForgeNursing is designed exclusively for educational purposes to support nursing students in developing clinical reasoning skills, preparing for the NCLEX examination, and understanding course materials. The service is intended to supplement, not replace, formal clinical instruction, classroom learning, and faculty guidance.
+              ForgeNursing is a three-month NCLEX-RN retake program for educational use. It supports clinical reasoning through short practice sessions, answer explanations, related retries, review questions, and a general tutor. It supplements your nursing references and other preparation; it does not replace clinical instruction or professional guidance.
             </p>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
               <strong>Acceptable Use</strong> — ForgeNursing should be used to:
@@ -48,8 +48,8 @@ export default function TermsPage() {
               <li>Develop clinical reasoning and critical thinking skills</li>
               <li>Practice NCLEX-style question analysis and prioritization</li>
               <li>Understand pathophysiology, pharmacology, and nursing interventions</li>
-              <li>Review and study uploaded course materials and textbooks</li>
-              <li>Prepare for examinations and clinical competencies</li>
+              <li>Review saved answers, explanations, and clinical reasoning concepts</li>
+              <li>Prepare for another NCLEX-RN attempt</li>
             </ul>
             <p className="text-[var(--gray-800)] leading-relaxed mb-4">
               <strong>Prohibited Use</strong> — ForgeNursing should not be used to:
