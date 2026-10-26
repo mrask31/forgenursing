@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Brain, CreditCard, Loader2, Settings, Target, User } from 'lucide-react'
 import { isBetaActive } from '@/lib/subscription-access'
+import PasswordSettings from '@/components/account/PasswordSettings'
 import BillingDetails from '@/components/account/BillingDetails'
 
 type Profile = {
@@ -119,6 +120,8 @@ export default function SettingsPage() {
             <SettingRow label="Email" value={email || 'Not available'} />
             <SettingRow label="Name" value={profile?.preferred_name || 'Student Account'} />
           </SettingsCard>
+
+          <SettingsCard icon={<User className="h-5 w-5" />} title="Security"><PasswordSettings /></SettingsCard>
 
           <SettingsCard icon={<Brain className="h-5 w-5" />} title="Your study plan">
             <p className="text-sm text-slate-600">Update your exam date, preparation notes, or Candidate Performance Report ratings from Home.</p>
