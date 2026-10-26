@@ -221,9 +221,12 @@ function TutorPageContent() {
       (currentClassId !== prevClassIdRef.current) // Class changed
     ) {
       
-      // Clear resolved session to force fresh start
-      setResolvedChatId(null)
-      setAttachedFiles([]) // Clear attached files when context changes
+      // Course/topic hydration can finish after explicit-session resolution.
+      // An explicit URL session owns navigation; context hydration must not erase it.
+      if (!sessionIdParam) {
+        setResolvedChatId(null)
+        setAttachedFiles([])
+      }
       
       // Update refs
       prevTopicIdRef.current = currentTopicId
@@ -235,7 +238,7 @@ function TutorPageContent() {
       prevExamIdRef.current = currentExamId
       prevClassIdRef.current = currentClassId
     }
-  }, [tutorContext.selectedTopicId, tutorContext.activeExamId, tutorContext.selectedClassId])
+  }, [sessionIdParam, tutorContext.selectedTopicId, tutorContext.activeExamId, tutorContext.selectedClassId])
 
   useEffect(() => {
     const resolveSession = async () => {
@@ -645,11 +648,12 @@ function TutorPageContent() {
   // ============================================
   
   // Determine what to render
-  const showLoading = isResolving
+  const explicitSessionPending = Boolean(sessionIdParam && resolvedChatId !== sessionIdParam && !error)
+  const showLoading = isResolving || explicitSessionPending
   const showError = error && !isResolving
   // Show landing when there's no resolved chat (allows welcome message for both General Tutor and class-specific)
   // Only show session if there's an active resolvedChatId (not just structured context)
-  const showLanding = !resolvedChatId && !isResolving && !error
+  const showLanding = !sessionIdParam && !resolvedChatId && !isResolving && !error
   // Show session only if there's an active resolved chat
   const showSession = !!resolvedChatId && !isResolving && !error
 
