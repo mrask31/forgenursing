@@ -3,12 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Plus, Volume2, VolumeX } from 'lucide-react'
-import { getBrowserClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { useTutorContext } from './TutorContext'
-import ExamModeDialog from './ExamModeDialog'
-import { ExamPlan, StudentClass, NotebookTopic } from '@/lib/types'
-import { listExams } from '@/lib/api/exams'
+import { StudentClass, NotebookTopic } from '@/lib/types'
 
 type Mode = 'tutor'
 
@@ -30,19 +26,13 @@ export default function TutorHeader({
   selectedTopic,
   onClearTopic,
   onStartNewSession,
-  classes = [],
-  selectedClassId,
-  onSelectClass,
   currentSessionId,
 }: TutorHeaderProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentMode = mode
-  const [isExamDialogOpen, setIsExamDialogOpen] = useState(false)
-  const [activeExam, setActiveExam] = useState<ExamPlan | null>(null)
   const [voiceEnabled, setVoiceEnabled] = useState(false)
   const [canGoBack, setCanGoBack] = useState(false)
-  const tutorContext = useTutorContext()
 
   const returnTo = searchParams.get('returnTo')
   const returnLabel = searchParams.get('returnLabel') || 'Back to Practice'
@@ -80,33 +70,6 @@ export default function TutorHeader({
     }
   }
 
-
-  // Load active exam if examId is present
-  useEffect(() => {
-    const loadActiveExam = async () => {
-      if (tutorContext.activeExamId && tutorContext.selectedClassId) {
-        try {
-   const supabase = getBrowserClient()
-          const { data: { user } } = await supabase.auth.getUser()
-          if (user) {
-            const exams = await listExams(user.id, tutorContext.selectedClassId)
-            const found = exams.find((e) => e.id === tutorContext.activeExamId)
-            setActiveExam(found || null)
-          }
-        } catch (error) {
-          console.error('[TutorHeader] Failed to load exam:', error)
-        }
-      } else {
-        setActiveExam(null)
-      }
-    }
-
-    loadActiveExam()
-  }, [tutorContext.activeExamId, tutorContext.selectedClassId])
-
-  const handleModeChange = (mode: Mode) => {
-    router.push(`/tutor?mode=${mode}`)
-  }
 
   return (
     <>
@@ -150,21 +113,7 @@ export default function TutorHeader({
 
         {/* Right: Class selector + New Session */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Class select */}
-          <select
-            value={selectedClassId ?? ""}
-            onChange={(e) => onSelectClass?.(e.target.value || undefined)}
-            data-testid="course-switcher"
-            className="rounded-lg border border-[var(--gray-200)] bg-white px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-[var(--gray-800)] focus:outline-none focus:ring-2 focus:ring-[var(--teal)]/30 focus:border-[var(--teal)] w-[120px] sm:w-[160px] transition-colors"
-          >
-            <option value="">General Tutor</option>
-            {classes.map((cls) => (
-              <option key={cls.id} value={cls.id}>
-                {cls.code} – {cls.name}
-              </option>
-            ))}
-          </select>
-
+          <span className="text-xs text-slate-500">General Tutor</span>
           {/* New Session button - only show when there's an active session */}
           {currentSessionId && (
             <Button
@@ -212,17 +161,6 @@ export default function TutorHeader({
           )}
         </div>
       </header>
-      {/* Exam Mode Dialog - outside header for portal rendering */}
-      {tutorContext.selectedClassId && (
-        <ExamModeDialog
-          isOpen={isExamDialogOpen}
-          onClose={() => setIsExamDialogOpen(false)}
-          classId={tutorContext.selectedClassId as string}
-          onStartSession={(examId) => {
-            tutorContext.setActiveExamId(examId)
-          }}
-        />
-      )}
     </>
   )
 }

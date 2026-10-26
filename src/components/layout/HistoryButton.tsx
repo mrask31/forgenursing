@@ -15,9 +15,6 @@ import {
 } from '@/components/ui/sheet'
 import { Checkbox } from '@/components/ui/checkbox'
 import { MessageSquare, FileText, Stethoscope, Brain } from 'lucide-react'
-import { listClasses } from '@/lib/api/classes'
-import { StudentClass } from '@/lib/types'
-import { getBrowserClient } from '@/lib/supabase/client'
 
 interface Chat {
   id: string
@@ -68,10 +65,9 @@ const getSessionBadge = (sessionType: string | null) => {
 export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
   const router = useRouter()
   const [chats, setChats] = useState<Chat[]>([])
-  const [classes, setClasses] = useState<StudentClass[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
-  const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set<string>())
+  const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set<string>(['general']))
   
   // Toggle class expansion
   const toggleClass = (classId: string) => {
@@ -125,13 +121,6 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
           setNextCursor(chatsData.nextCursor ?? null)
         }
 
-        // Fetch classes to map IDs to names
-    const supabase = getBrowserClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          const userClasses = await listClasses(user.id)
-          setClasses(userClasses)
-        }
       } catch (error) {
         setHistoryError(error instanceof Error ? error.message : 'History could not load.')
       } finally {
@@ -166,16 +155,10 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
     const thisWeek = new Date(today)
     thisWeek.setDate(thisWeek.getDate() - 7)
 
-    // Create a map of classId -> class name/code
-    const classMap = new Map<string, { code: string; name: string }>()
-    classes.forEach((cls) => {
-      classMap.set(cls.id, { code: cls.code, name: cls.name })
-    })
-
     const chatsByClass = new Map<string, Chat[]>()
     
     chats.forEach((chat) => {
-      const classId = chat.metadata?.classId || chat.metadata?.class_id || 'general'
+      const classId = 'general'
       if (!chatsByClass.has(classId)) {
         chatsByClass.set(classId, [])
       }
@@ -212,17 +195,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
       const filteredTimeGroups = timeGroups.filter(group => group.chats.length > 0)
       if (filteredTimeGroups.length > 0) {
         // Get class name from map, or fallback to classId
-        let classLabel = 'General Tutor'
-        if (classId !== 'general') {
-          const classInfo = classMap.get(classId)
-          if (classInfo) {
-            classLabel = `${classInfo.code} - ${classInfo.name}`
-          } else {
-            // Fallback if class not found (might have been deleted)
-            classLabel = `Class ${classId.substring(0, 8)}...`
-          }
-        }
-        
+        const classLabel = 'General Tutor'
         result.push({
           classLabel,
           classId,
@@ -232,7 +205,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
     })
 
     return result
-  }, [chats, classes])
+  }, [chats])
 
   const handleChatClick = (chatId: string, classId: string) => {
     const url = tutorHistoryHref(chatId, classId)

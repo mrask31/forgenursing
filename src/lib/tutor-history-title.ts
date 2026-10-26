@@ -5,9 +5,9 @@ export function tutorHistoryTitle(value: string | null | undefined): string {
  return text.length > 90 ? `${text.slice(0, 87).trimEnd()}…` : text
 }
 
-/** Keep course-owned transcript navigation consistent with My Courses. */
-export function tutorHistoryHref(sessionId: string, classId?: string | null): string {
+/** Historical course conversations now open in General Tutor by their owner-checked session ID. */
+export function tutorHistoryHref(sessionId: string, _classId?: string | null): string {
+ void _classId // Compatibility for old callers; course context is retired.
  const params = new URLSearchParams({sessionId})
- if (classId && classId !== 'general') params.set('classId', classId)
  return `/tutor?${params.toString()}`
 }

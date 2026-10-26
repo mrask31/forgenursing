@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
+import { loginReturnPath } from './src/lib/login-return-path'
 import { hasAccess } from '@/lib/subscription-access'
 
 export async function middleware(request: NextRequest) {
@@ -142,6 +143,8 @@ export async function middleware(request: NextRequest) {
     // CRITICAL: For login/signup pages, only redirect if we have a VALID authenticated user
     // If getUser() failed or returned no user (stale token), let the page handle cleanup
     if (pathname === '/login' && user && supabase) {
+      const returnPath = loginReturnPath(request.nextUrl.searchParams.get('next') || request.nextUrl.searchParams.get('redirect'))
+      if (returnPath) return redirectWithCookies(returnPath)
       // Only redirect if we have a valid user - this means the token is good
       // If token is stale, getUser() will fail and user will be null, so we skip this
       try {

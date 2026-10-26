@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, BarChart3, GraduationCap, BookOpen, Settings, LogOut, ChevronUp, ClipboardList, Home } from 'lucide-react'
+import { MessageSquare, BarChart3, BookOpen, Settings, LogOut, ChevronUp, ClipboardList, Home } from 'lucide-react'
 import { getBrowserClient, resetBrowserClient } from '@/lib/supabase/client'
 import { clearSupabaseStorage } from '@/lib/auth-utils'
 import HistoryButton from './HistoryButton'
@@ -105,7 +105,6 @@ export default function Sidebar({ onNavigate, secondaryOnly = false }: SidebarPr
   ]
   const clinicalTools = [
     { label: 'Clinical Tutor', href: '/tutor', icon: MessageSquare },
-    { label: 'My Courses', href: '/classes', icon: GraduationCap },
     { label: 'Med Dictionary', href: '/dictionary', icon: BookOpen },
   ]
 

@@ -9,9 +9,7 @@ import { useDensity } from '@/contexts/DensityContext'
 import { getDensityTokens } from '@/lib/density-tokens'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { getBrowserClient } from '@/lib/supabase/client'
 import type { ChatMessage } from '@/components/tutor/ChatMessageList'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
@@ -34,7 +32,6 @@ function TutorPageContent() {
   const [attachedFiles, setAttachedFiles] = useState<{ id: string, name: string, document_type: string | null }[]>([])
   const [isLoadingAttachedFiles, setIsLoadingAttachedFiles] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [showUploadBanner, setShowUploadBanner] = useState(false)
 
   // Refs
   const prevTopicIdRef = useRef<string | undefined>(undefined)
@@ -46,7 +43,7 @@ function TutorPageContent() {
   // URL params
   const intentParam = searchParams.get('intent')
   const sessionIdParam = searchParams.get('sessionId') || searchParams.get('chatId') || searchParams.get('id')
-  const classIdParam = searchParams.get('classId') // Get classId from URL
+  const classIdParam: string | null = null // Course URL context is retired // Get classId from URL
   const messageIdParam = searchParams.get('messageId') // Get messageId from URL for scrolling
   const currentMode = 'tutor' // Always tutor mode now
   
@@ -285,10 +282,9 @@ function TutorPageContent() {
         return
       }
 
-      // PRIORITY 1: If explicit sessionId provided, verify it matches current class context
+      // PRIORITY 1: Explicit session IDs are checked against the authenticated owner.
       if (sessionIdParam) {
-        // First, check if the sessionId's class matches the current class context
-        // We need to fetch the chat metadata to verify
+        // Legacy course metadata does not change General Tutor context.
         try {
           const metadataRes = await fetch(`/api/chats/metadata?chatId=${sessionIdParam}`, {
             credentials: 'include'
@@ -296,45 +292,8 @@ function TutorPageContent() {
           
           if (!metadataRes.ok) throw new Error('This conversation could not load. Please retry from Tutor history.')
           if (metadataRes.ok) {
-            const metadata = await metadataRes.json()
-            const chatClassId = metadata.metadata?.classId || metadata.metadata?.class_id
-            // Use classId from URL first (from navigation), then fall back to context
-            const urlClassId = classIdParam || undefined
-            const contextClassId = tutorContext.selectedClassId || undefined
-            const currentClassId = urlClassId || contextClassId
-            
-            // Normalize both to undefined for comparison
-            const normalizedChatClassId = chatClassId || undefined
-            const normalizedCurrentClassId = currentClassId || undefined
-            
-            // Use URL classId as the source of truth when present (from navigation)
-            // This prevents race conditions with context syncing
-            const effectiveClassId = urlClassId || contextClassId
-            
-            // Check if chat's class matches the effective class (URL or context)
-            // Match if: both are undefined/null (General Tutor), or both have the same classId
-            const normalizedEffectiveClassId = effectiveClassId || undefined
-            const classMatches = normalizedChatClassId === normalizedEffectiveClassId
-            
-            if (!classMatches) {
-              
-              // Update URL to match chat's classId (if URL doesn't already have it)
-              // This will trigger context sync naturally without clearing sessionId
-              const newParams = new URLSearchParams(searchParams.toString())
-              if (normalizedChatClassId) {
-                newParams.set('classId', normalizedChatClassId)
-              } else {
-                newParams.delete('classId')
-              }
-              
-              // Update paramsKey to prevent re-resolution
-              lastResolvedParamsRef.current = `${intentParam || ''}-${sessionIdParam || ''}-${normalizedChatClassId || ''}`
-              setResolvedChatId(sessionIdParam)
-              router.replace(`/tutor?${newParams.toString()}`)
-              setIsResolving(false)
-              isResolvingRef.current = false
-              return
-            }
+            await metadataRes.json()
+
           }
         } catch (error) {
           setError(error instanceof Error ? error.message : 'This conversation could not load. Please retry from Tutor history.')
@@ -522,10 +481,8 @@ function TutorPageContent() {
         
         // Build API URL - for General Tutor, explicitly request null classId
         // For class-specific, filter by classId
-        const listUrl = tutorContext.selectedClassId 
-          ? `/api/chats/list?classId=${tutorContext.selectedClassId}`
-          : '/api/chats/list?classId=null' // Explicitly request General Tutor chats
-        
+        const listUrl = '/api/chats/list'
+
         // For Tutor and Reflections modes, auto-resume most recent session
         const response = await fetch(listUrl, {
           credentials: 'include',
@@ -536,27 +493,12 @@ function TutorPageContent() {
           const chats = data.chats || []
           
           // Filter chats - only tutor mode chats (not reflections)
-          let filteredChats = chats.filter((chat: any) => 
+          const filteredChats = chats.filter((chat: any) =>
             !chat.session_type || 
             chat.session_type === 'general' || 
             chat.session_type === 'question' || 
             chat.session_type === 'snapshot'
           )
-          
-          // Filter chats by class context
-          if (tutorContext.selectedClassId) {
-            // For class-specific: only show chats for this class
-            filteredChats = filteredChats.filter((chat: any) => {
-              const chatClassId = chat.metadata?.classId || chat.metadata?.class_id
-              return chatClassId === tutorContext.selectedClassId
-            })
-          } else {
-            // For General Tutor: only show chats without a classId
-            filteredChats = filteredChats.filter((chat: any) => {
-              const chatClassId = chat.metadata?.classId || chat.metadata?.class_id
-              return !chatClassId
-            })
-          }
           
           // Get most recent active chat for this mode and class context
           if (filteredChats.length > 0) {
@@ -624,24 +566,6 @@ function TutorPageContent() {
     }
   }, [resolvedChatId, isResolving])
 
-  useEffect(() => {
-    const checkUploadBanner = async () => {
-      if (typeof window !== 'undefined' && localStorage.getItem('forge_upload_banner_dismissed') === 'true') {
-        return
-      }
-      const supabase = getBrowserClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { count } = await supabase
-        .from('documents')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-      if (count === 0) {
-        setShowUploadBanner(true)
-      }
-    }
-    checkUploadBanner()
-  }, [])
 
   // ============================================
   // SINGLE RETURN - Conditional rendering only
@@ -725,33 +649,6 @@ function TutorPageContent() {
 
         {/* Chat area with scrollable messages and fixed input */}
         <div className="flex-1 flex flex-col min-h-0 mt-2 sm:mt-4 overflow-hidden">
-          {/* Upload nudge banner — shown when user has zero documents */}
-          {showUploadBanner && (
-            <div className="flex-shrink-0 mb-2">
-              <div
-                style={{ background: '#E0F4F6', borderLeft: '4px solid #0D8F9C', color: '#0B2545' }}
-                className="flex items-start justify-between gap-3 rounded-lg px-4 py-3"
-              >
-                <p className="text-sm leading-snug flex-1">
-                  💡 Get more from Forge — upload your study guide in{' '}
-                  <Link href="/classes" className="font-semibold underline" style={{ color: '#0D8F9C' }}>
-                    My Courses
-                  </Link>{' '}
-                  and I&apos;ll quiz you on your exact exam material.
-                </p>
-                <button
-                  onClick={() => {
-                    localStorage.setItem('forge_upload_banner_dismissed', 'true')
-                    setShowUploadBanner(false)
-                  }}
-                  className="flex-shrink-0 text-xl leading-none hover:opacity-60 transition-opacity"
-                  aria-label="Dismiss banner"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          )}
           {showLanding ? (
             <>
               <div className="flex-1 overflow-y-auto">

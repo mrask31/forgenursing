@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 
 
 const NCLEX_CATEGORIES = [
@@ -36,8 +35,8 @@ interface QuizSetupProps {
   onResume?: () => void
 }
 
-export default function QuizSetup({hasDocuments, setSourceType, category, setCategory, onStart, loading, resumeSession, onResume}: QuizSetupProps) {
-  const [mode, setMode] = useState<'mixed' | 'topic' | 'documents' | 'suggested' | 'generated'>('mixed')
+export default function QuizSetup({setSourceType, category, setCategory, onStart, loading, resumeSession, onResume}: QuizSetupProps) {
+  const [mode, setMode] = useState<'mixed' | 'topic' | 'suggested' | 'generated'>('mixed')
   const [suggestion, setSuggestion] = useState<{focus: string; focus_explanation: string} | null>(null)
   useEffect(() => {
     const controller = new AbortController()
@@ -54,7 +53,7 @@ export default function QuizSetup({hasDocuments, setSourceType, category, setCat
   }, [])
   function choose(next: typeof mode) {
     setMode(next)
-    setSourceType(next === 'documents' ? 'document' : 'generic')
+    setSourceType('generic')
     setCategory('All Categories')
   }
   return <div className="mx-auto w-full max-w-3xl px-5 py-8 sm:py-12 text-[#0B2545]">
@@ -74,11 +73,10 @@ export default function QuizSetup({hasDocuments, setSourceType, category, setCat
       </fieldset>
       {mode === 'topic' && <label className="mt-5 block text-sm font-semibold">NCLEX topic<select value={category} onChange={e=>setCategory(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3">{NCLEX_CATEGORIES.map(c=><option key={c}>{c}</option>)}</select></label>}
       <details className="mt-5 border-t border-slate-100 pt-4"><summary className="cursor-pointer text-sm font-semibold text-slate-600">Generated supplement</summary><p className="mt-3 text-sm text-slate-600">Additional AI-generated practice. These misses do not schedule bank reviews.</p><label className="mt-3 block text-sm"><input type="radio" name="practice-mode" checked={mode==='generated'} onChange={()=>choose('generated')} className="mr-2" />Use generated questions for this session</label></details>
-      <p className="mt-4 text-xs text-slate-500">Missed bank originals schedule a fresh delayed review after 24 hours. Retry and generated misses do not. Source-checked means AI-assisted and checked against sources, not independently clinically validated.</p>
-      <details className="mt-5 border-t border-slate-100 pt-4"><summary className="cursor-pointer text-sm font-semibold text-slate-600">Practice from uploaded notes</summary><p className="mt-3 text-sm text-slate-600">Use your existing course materials for a separate study session.</p>{hasDocuments ? <label className="mt-3 block text-sm"><input type="radio" name="practice-mode" checked={mode==='documents'} onChange={()=>choose('documents')} className="mr-2" />Use my notes for this session</label> : <Link href="/binder" className="mt-3 inline-block text-sm font-semibold text-[#087986] underline">Add study materials</Link>}</details>
-      <p className="mt-6 text-sm text-slate-600">{mode === 'suggested' ? 3 : 5} questions · Go at your own pace{mode==='documents' ? ' · From your notes' : ''}</p>
+      <p className="mt-4 text-xs text-slate-500">Missed bank originals schedule a fresh review available anytime; revisiting it after about 24 hours is recommended. Retry and generated misses do not. Source-checked means AI-assisted and checked against sources, not independently clinically validated.</p>
+      <p className="mt-6 text-sm text-slate-600">{mode === 'suggested' ? 3 : 5} questions · Go at your own pace</p>
       {resumeSession && <p className="mt-2 text-sm text-slate-500">Starting a new session ends the unfinished set. Answers already submitted remain in your progress.</p>}
-      <button disabled={loading || (mode==='documents' && !hasDocuments)} onClick={()=>onStart(mode === 'suggested' && suggestion ? {quizMode:'targeted_drill',totalQuestions:3,targetMistakeType:suggestion.focus,targetFocus:suggestion.focus_explanation} : {quizMode:'standard',totalQuestions:5,practiceSource:mode==='generated'?'generated':'bank'})} className="mt-4 min-h-12 w-full rounded-xl bg-[#0D8F9C] px-5 py-3 font-bold text-white disabled:opacity-50">{loading ? 'Starting…' : `Start ${mode === 'suggested' ? 3 : 5} questions →`}</button>
+      <button disabled={loading} onClick={()=>onStart(mode === 'suggested' && suggestion ? {quizMode:'targeted_drill',totalQuestions:3,targetMistakeType:suggestion.focus,targetFocus:suggestion.focus_explanation} : {quizMode:'standard',totalQuestions:5,practiceSource:mode==='generated'?'generated':'bank'})} className="mt-4 min-h-12 w-full rounded-xl bg-[#0D8F9C] px-5 py-3 font-bold text-white disabled:opacity-50">{loading ? 'Starting…' : `Start ${mode === 'suggested' ? 3 : 5} questions →`}</button>
     </section>
     <p className="mt-6 text-xs text-slate-500">AI-assisted study practice. Check uncertain explanations against your nursing references.</p>
   </div>
