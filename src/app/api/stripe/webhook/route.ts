@@ -167,6 +167,8 @@ async function processWebhookEvent(
         return await recordInvoicePayment(event, supabase)
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
+        // One-time Retake Pass fulfillment has its own signed webhook.
+        if (session.mode !== 'subscription') return { success: true }
         
         // Get user ID from client_reference_id
         let userId = session.client_reference_id
