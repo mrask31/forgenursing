@@ -4,7 +4,7 @@ import { pageMetadata } from '@/lib/seo'
 export const metadata = pageMetadata("NCLEX-RN Study Guides and Practice", "Explore study guides for your NCLEX-RN retake, from reviewing missed answers to delegation and prioritization. Try three free practice questions.", "/nclex-practice")
 
 const guides = [
-  { path: '/failed-nclex-what-to-do-next', title: 'Failed the NCLEX? Start here.', text: 'Use your Candidate Performance Report and practice review to choose a manageable starting focus.' },
+  { path: '/failed-nclex-what-to-do-next', title: 'Failed the NCLEX? Start here.', text: 'Use your Candidate Performance Report, a five-part mistake log, and an adaptable weekly review routine.' },
   { path: '/why-do-i-get-nclex-questions-down-to-two-answers', title: 'Stuck between two answers?', text: 'Compare the choices against the question and the information you have.' },
   { path: '/nclex-answer-traps', title: 'Common answer traps', text: 'Turn a missed question into a specific note you can use next time.' },
   { path: '/nclex-priority-vs-assessment', title: 'Priority versus assessment', text: 'Review how urgency and available information change the next action.' },

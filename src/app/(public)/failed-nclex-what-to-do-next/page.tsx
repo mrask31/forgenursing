@@ -19,34 +19,32 @@ export default function Page() {
             'A stronger recovery plan starts by asking what kind of miss happened: content knowledge, assessment-first thinking, priority setting, safety, delegation, medication reasoning, or another repeatable pattern.',
           ],
           bullets: [
-            'Review your candidate performance report, but do not stop at broad categories.',
+            'Use your Candidate Performance Report to identify areas needing attention; it is not a question-by-question diagnosis.',
             'Create a mistake log that captures why the wrong answer felt right.',
             'Group missed questions by reasoning pattern before choosing drills.',
           ],
         },
         {
-          eyebrow: 'Example',
-          title: 'A failed attempt can hide multiple kinds of misses.',
+          eyebrow: 'Your mistake log',
+          title: 'Write a useful note after each practice question.',
           body: [
-            'The same score can come from very different problems. One student may need more pharmacology content. Another may know the facts but choose the wrong first action under pressure.',
+            'Keep a simple notebook or document. A useful entry records the decision you made, the detail you missed, and what you will check on a related question. You do not need to copy the entire question.',
+            'Fictional study example: “I chose an answer before noticing that the question asked for the first action. Next time I will restate the task before comparing the options.” This describes a review habit, not a clinical rule or an explanation of an exam result.',
           ],
-          example: {
-            scenario:
-              'A client taking a new medication reports dizziness and has a low blood pressure reading. What should the nurse do first?',
-            temptingAnswer:
-              'Teach the client to rise slowly because dizziness can happen with blood pressure medication.',
-            betterMove:
-              'Assess the client further, confirm the blood pressure, and identify whether the medication should be held or the provider notified based on the scenario details.',
-            why:
-              'Teaching may be useful later, but low blood pressure plus symptoms requires assessment and safety thinking first. The miss may be medication reasoning, safety, or assessment-first depending on the full question.',
-          },
+          bullets: [
+            'Topic: What knowledge or skill was this practice question testing?',
+            'My choice: Why did that answer seem right at the time?',
+            'Missed detail: What information in the explanation changes my reasoning?',
+            'Reference check: Which course or nursing reference will I use if the explanation is unclear?',
+            'Next attempt: Can I explain my choice on a different question testing the same skill?',
+          ],
         },
         {
           eyebrow: 'Recovery loop',
-          title: 'Use a pattern-based weekly review plan.',
+          title: 'Adapt this example week to your study needs.',
           body: [
             'A practical recovery plan does not need to be complicated. Each week, pick the top one or two patterns that are costing you points, review the rule, and practice questions that test that same pattern.',
-            'The goal is to reduce repeat misses. If you keep missing the same way, changing the number of questions is less important than changing the review loop after each miss.',
+            'This is a sample review routine, not a seven-day retake schedule or a readiness assessment. Adjust the pace with your instructor or tutor, and continue reviewing other exam content areas.',
           ],
           bullets: [
             'Day 1: review your report and choose one topic to revisit.',
@@ -58,6 +56,11 @@ export default function Page() {
         },
       ]}
       relatedLinks={[
+        {
+          href: 'https://www.nclex.com/candidate-performance-report.page',
+          label: 'Official Candidate Performance Report guidance',
+          description: 'Read what the report can and cannot tell you about your exam performance.',
+        },
         {
           href: '/why-do-i-get-nclex-questions-down-to-two-answers',
           label: 'Down to two answers',
