@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { submitSampleAnswer, AnswerSubmissionError } from '@/lib/submit-sample-answer'
 import { captureLoop } from '@/lib/analytics/learning-loop'
 import { opportunityId } from '@/lib/learning/distinctions'
 import { captureSample, measurementContext } from '@/lib/analytics/measurement'
@@ -159,23 +160,12 @@ export default function AnswerTrapClient() {
     const question = questions[currentIndex]
 
     try {
-      const res = await fetch('/api/answer-trap-check/answer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: sessionId,
-          question_id: question.id,
-          question_index: currentIndex,
-          selected_answer: selectedAnswer,
-        }),
+      const feedback = await submitSampleAnswer({
+        session_id: sessionId,
+        question_id: question.id,
+        question_index: currentIndex,
+        selected_answer: selectedAnswer,
       })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to submit answer')
-      }
-
-      const feedback: AnswerFeedback = await res.json()
       captureLoop('question_answered', { experience: 'free_sample', sample_session_id: sessionId, retry_opportunity_id: opportunityId('free_sample', question.id, sessionId), distinction_id: feedback.distinction_id || null, distinction_status: feedback.distinction_id ? 'provisional' : 'unmapped', question_id: question.id, source_question_id: null, correct: feedback.is_correct, attempt: 1, retry_eligible: !feedback.is_correct && !!feedback.retry_available }, `answer:${sessionId}:${question.id}`)
       setCurrentFeedback(feedback)
       setPhase('feedback')
@@ -193,8 +183,14 @@ export default function AnswerTrapClient() {
           trap_display_name: feedback.trap_display_name,
         })
       } catch {}
-    } catch (err: any) {
-      setError(err.message || 'Failed to submit answer. Please try again.')
+    } catch (err: unknown) {
+      if (err instanceof AnswerSubmissionError) {
+        captureLoop('question_answer_failed', {
+          experience: 'free_sample', sample_session_id: sessionId, question_id: question.id,
+          attempt: 1, request_id: err.requestId, error_code: err.code, http_status: err.status,
+        })
+      }
+      setError(err instanceof Error ? err.message : 'Unable to save your answer. Please try again.')
     } finally {
       setLoading(false)
     }

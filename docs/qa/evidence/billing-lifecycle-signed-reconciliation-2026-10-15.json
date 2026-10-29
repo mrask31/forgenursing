@@ -1,0 +1,102 @@
+{
+  "date": "2026-10-15",
+  "environment": "ForgeNursing dedicated Stripe sandbox; livemode false",
+  "scope": "Genuine signed customer.subscription.updated events triggered by metadata changes after simulated lifecycle outcomes. Current-state reconciliation verified. Not original renewal-event redelivery or browser/server access acceptance.",
+  "qa_profile": "b3aabc19-9155-4dc3-8741-de8bfb31284a",
+  "results": [
+    {
+      "scenario": "successful-renewal",
+      "profile": {
+        "id": "b3aabc19-9155-4dc3-8741-de8bfb31284a",
+        "subscription_status": "active",
+        "stripe_customer_id": "cus_VRlFRDNcYCH4lR",
+        "stripe_subscription_id": "sub_1UQrjHGnwd1bHIvc3c2hq8fr",
+        "quiz_first_enabled": true
+      },
+      "events": [
+        {
+          "stripe_event_id": "evt_1UQtWnGnwd1bHIvcuw3DaTTV",
+          "event_type": "customer.subscription.updated",
+          "status": "succeeded",
+          "last_error": null,
+          "subscription_id": "sub_1UQrjHGnwd1bHIvc3c2hq8fr",
+          "succeeded_at": "2026-10-15 18:37:23.958+00"
+        }
+      ]
+    },
+    {
+      "scenario": "failed-renewal",
+      "events": [
+        {
+          "status": "succeeded",
+          "event_type": "customer.subscription.updated",
+          "last_error": null,
+          "succeeded_at": "2026-10-15T18:37:53.974+00:00",
+          "stripe_event_id": "evt_1UQtXIGnwd1bHIvc8WfLhIR5",
+          "subscription_id": "sub_1UQrjLGnwd1bHIvcqaIAx39u"
+        }
+      ],
+      "profile": {
+        "id": "b3aabc19-9155-4dc3-8741-de8bfb31284a",
+        "quiz_first_enabled": true,
+        "stripe_customer_id": "cus_VRlFukrjHpLZT9",
+        "subscription_status": "past_due",
+        "stripe_subscription_id": "sub_1UQrjLGnwd1bHIvcqaIAx39u"
+      }
+    },
+    {
+      "scenario": "period-end-cancellation",
+      "events": [
+        {
+          "status": "succeeded",
+          "event_type": "customer.subscription.updated",
+          "last_error": null,
+          "succeeded_at": "2026-10-15T18:38:17.4+00:00",
+          "stripe_event_id": "evt_1UQtXgGnwd1bHIvcZsYi8SuW",
+          "subscription_id": "sub_1UQrjPGnwd1bHIvcRoUUe2Pd"
+        }
+      ],
+      "profile": {
+        "id": "b3aabc19-9155-4dc3-8741-de8bfb31284a",
+        "quiz_first_enabled": true,
+        "stripe_customer_id": "cus_VRlFNH54j7CFJv",
+        "subscription_status": "expired",
+        "stripe_subscription_id": "sub_1UQrjPGnwd1bHIvcRoUUe2Pd"
+      }
+    }
+  ],
+  "cleanup": {
+    "original_profile": {
+      "id": "b3aabc19-9155-4dc3-8741-de8bfb31284a",
+      "subscription_status": "trialing",
+      "trial_ends_at": "2026-10-22 14:39:51.839167+00",
+      "is_beta": false,
+      "beta_expires_at": null,
+      "stripe_customer_id": null,
+      "stripe_subscription_id": null,
+      "quiz_first_enabled": true,
+      "tier_type": "free_trial"
+    },
+    "restored_profile": {
+      "id": "b3aabc19-9155-4dc3-8741-de8bfb31284a",
+      "subscription_status": "trialing",
+      "trial_ends_at": "2026-10-22 14:39:51.839167+00",
+      "is_beta": false,
+      "beta_expires_at": null,
+      "stripe_customer_id": null,
+      "stripe_subscription_id": null,
+      "quiz_first_enabled": true,
+      "tier_type": "free_trial"
+    },
+    "exact_restore_match": true,
+    "sandbox_endpoint": "we_1UQn2AGnwd1bHIvcjoDX2Nxk",
+    "endpoint_status": "disabled",
+    "bypass_revocation": "BLOCKED: Vercel 403 permission denied; owner must remove temporary bypass. No secret included."
+  },
+  "remaining": [
+    "Browser/server access checks for these outcomes",
+    "Fresh tutor probes on latest prompt",
+    "Authenticated mobile acceptance",
+    "Genuine delayed review after due time"
+  ]
+}

@@ -1,3 +1,6 @@
+import { z } from 'zod';
+import { sourceCheckedEnabled, sourceCheckedRpc } from '@/lib/learning/source-checked-server';
+import { normalizeBankCategory } from '@/lib/learning/source-checked-content';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getEntitlementForUser } from '@/lib/entitlement';
@@ -22,6 +25,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       sourceType = 'generic',
+      practiceSource = 'bank',
       classId,
       nclexCategory,
       quizMode = 'standard',
@@ -29,6 +33,8 @@ export async function POST(req: NextRequest) {
       targetFocus = null,
       totalQuestions,
     } = body;
+
+    if (!['bank', 'generated'].includes(practiceSource)) return NextResponse.json({ error: 'Invalid practice source' }, { status: 400 });
 
     if (!['document', 'generic', 'mixed'].includes(sourceType)) {
       return NextResponse.json({ error: 'Invalid sourceType' }, { status: 400 });
@@ -51,6 +57,24 @@ export async function POST(req: NextRequest) {
         ? 5
         : Math.max(1, Math.min(Number(totalQuestions) || 10, 20));
 
+    if (sourceType !== 'document' && practiceSource === 'bank') {
+      if (!sourceCheckedEnabled()) return NextResponse.json({ error: 'Source-checked bank practice is not enabled here yet. Choose Generated supplement for additional practice.', code: 'bank_not_enabled' }, { status: 503 });
+      const requestId = z.string().uuid().safeParse(body.requestId);
+      if (!requestId.success) return NextResponse.json({ error: 'A valid session request ID is required.' }, { status: 400 });
+      if (quizMode === 'retest') return NextResponse.json({ error: 'Start a retry from a missed question.' }, { status: 400 });
+      const { data, error } = await sourceCheckedRpc('start_source_checked_session', {
+        p_user_id: user.id, p_request_id: requestId.data,
+        p_total: Math.min(5, Math.floor(sessionTotalQuestions)),
+        p_category: normalizeBankCategory(typeof nclexCategory === 'string' ? nclexCategory : null),
+        p_focus: isTargetedDrill && typeof targetMistakeType === 'string' ? targetMistakeType : null,
+      });
+      if (error || !data) {
+        const exhausted = error?.message?.includes('No fresh');
+        return NextResponse.json({ error: exhausted ? 'No fresh questions remain in this focus. Try another topic, revisit saved explanations, or check your review queue.' : error?.message?.includes('NCLEX-RN') ? 'This question bank supports the NCLEX-RN track.' : 'Your practice could not start. Please retry.', code: exhausted ? 'fresh_content_exhausted' : 'practice_unavailable' }, { status: exhausted ? 409 : 503 });
+      }
+      return NextResponse.json(data);
+    }
+
     await supabase
       .from('quiz_sessions')
       .update({ status: 'abandoned', abandoned_at: new Date().toISOString() })
@@ -62,6 +86,7 @@ export async function POST(req: NextRequest) {
       .insert({
         user_id: user.id,
         source_type: sourceType,
+        content_policy: practiceSource === 'generated' && sourceType !== 'document' ? 'generated_supplement_v1' : null,
         class_id: classId || null,
         nclex_category: nclexCategory || null,
         status: 'in_progress',

@@ -1,3 +1,4 @@
+import {getRetakePass} from '@/lib/retake-pass-server'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
@@ -11,7 +12,8 @@ export async function GET() {
       .select('is_beta, beta_expires_at, preferred_name, subscription_status, trial_ends_at')
       .eq('id', user.id).single()
     if (profileError) return NextResponse.json({ error: 'Your account details could not load. Please retry.' }, { status: 503 })
-    return NextResponse.json({ email: user.email, profile }, { headers: { 'Cache-Control': 'private, no-store' } })
+    const pass=await getRetakePass(user.id)
+    return NextResponse.json({ email: user.email, profile, pass:pass?{active:pass.active,access_until:pass.access_until}:null }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch {
     return NextResponse.json({ error: 'Your account is temporarily unavailable. Please retry.' }, { status: 503 })
   }

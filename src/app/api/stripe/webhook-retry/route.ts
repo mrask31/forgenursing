@@ -1,3 +1,4 @@
+import { syncSubscriptionEvent } from '@/lib/stripe-subscription-sync'
 import { checkoutSubscriptionStatus } from '@/lib/checkout-validation'
 import { recordInvoicePayment } from '@/lib/analytics/stripe-payment'
 import { NextResponse } from 'next/server'
@@ -94,41 +95,7 @@ async function processWebhookEvent(
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
-        const customerId = subscription.customer as string
-
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('stripe_customer_id', customerId)
-          .single()
-
-        if (!profile) {
-          return { success: false, error: 'No profile found' }
-        }
-
-        let status: string
-        if (subscription.status === 'trialing') {
-          status = 'trialing'
-        } else if (subscription.status === 'active') {
-          status = 'active'
-        } else {
-          status = 'expired'
-        }
-
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            subscription_status: status,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscription.id,
-          })
-          .eq('id', profile.id)
-
-        if (updateError) {
-          return { success: false, error: updateError.message }
-        }
-
-        return { success: true }
+        return await syncSubscriptionEvent(subscription.id, supabase, stripe)
       }
 
       default:

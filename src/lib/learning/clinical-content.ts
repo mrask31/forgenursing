@@ -24,8 +24,8 @@ export const ClinicalPacket = z.object({
 })
 export type ClinicalPacketData = z.infer<typeof ClinicalPacket>
 export function packetHash(packet: ClinicalPacketData) {
-  const canonical = (value: any): any => Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object'
-    ? Object.fromEntries(Object.keys(value).sort().map(k => [k, canonical(value[k])])) : value
+  const canonical = (value: unknown): unknown => Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object'
+    ? Object.fromEntries(Object.keys(value).sort().map(k => [k, canonical((value as Record<string, unknown>)[k])])) : value
   return createHash('sha256').update(JSON.stringify(canonical(packet))).digest('hex')
 }
 export const ClinicalApproval = z.object({

@@ -1,3 +1,4 @@
+import { syncSubscriptionEvent } from '@/lib/stripe-subscription-sync'
 import { checkoutSubscriptionStatus } from '@/lib/checkout-validation'
 import { recordInvoicePayment } from '@/lib/analytics/stripe-payment'
 import { NextResponse } from 'next/server'
@@ -166,6 +167,8 @@ async function processWebhookEvent(
         return await recordInvoicePayment(event, supabase)
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
+        // One-time Retake Pass fulfillment has its own signed webhook.
+        if (session.mode !== 'subscription') return { success: true }
         
         // Get user ID from client_reference_id
         let userId = session.client_reference_id
@@ -256,60 +259,7 @@ async function processWebhookEvent(
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
-        const customerId = subscription.customer as string
-
-        // Find user by Stripe customer ID
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('stripe_customer_id', customerId)
-          .single()
-
-        if (!profile) {
-          const error = `No profile found for customer: ${customerId}`
-          console.warn('[Webhook]', error)
-          return { success: false, error }
-        }
-
-        // Map Stripe status to our status
-        let status: string
-        if (subscription.status === 'trialing') {
-          status = 'trialing'
-        } else if (subscription.status === 'active') {
-          status = 'active'
-        } else if (subscription.status === 'past_due' || subscription.status === 'unpaid') {
-          status = 'past_due'
-        } else if (subscription.status === 'canceled' || subscription.status === 'incomplete_expired') {
-          status = 'expired'
-        } else {
-          status = 'expired'
-        }
-
-        const updatePayload: Record<string, any> = {
-          subscription_status: status,
-          stripe_customer_id: customerId,
-          stripe_subscription_id: subscription.id,
-        }
-
-        if (status === 'active' || status === 'trialing') {
-          updatePayload.quiz_first_enabled = true
-        }
-
-        // Update profile
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update(updatePayload)
-          .eq('id', profile.id)
-
-        if (updateError) {
-          console.error('[Webhook] Error updating subscription:', updateError)
-          return { 
-            success: false, 
-            error: `Failed to update subscription: ${updateError.message}` 
-          }
-        }
-
-        return { success: true }
+        return await syncSubscriptionEvent(subscription.id, supabase, stripe)
       }
 
       default:

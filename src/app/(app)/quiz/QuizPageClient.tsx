@@ -1,4 +1,5 @@
 'use client'
+import { CONTENT_HOLD_MESSAGE } from '@/lib/learning/content-hold'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -13,6 +14,7 @@ import QuizRationale from './components/QuizRationale'
 type Phase = 'setup' | 'question' | 'rationale' | 'loading'
 
 type StartOptions = {
+  practiceSource?: 'bank' | 'generated'
   quizMode?: 'standard' | 'targeted_drill'
   targetMistakeType?: string | null
   targetFocus?: string | null
@@ -23,6 +25,7 @@ interface QuestionData {
   distinction_id?: string | null
   source_question_id?: string | null
   learning_attempt?: number
+  source_checked_content_id?: string | null
   clinical_content_id?: string | null
   id: string
   session_id: string
@@ -66,6 +69,7 @@ export default function QuizPageClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const directSessionId = searchParams.get('sessionId')
+  const feedbackQuestionId = searchParams.get('feedbackQuestionId')
   const returnSessionId = searchParams.get('returnSessionId')
 
   const [phase, setPhase] = useState<Phase>('setup')
@@ -90,6 +94,7 @@ export default function QuizPageClient() {
 
   const [resumeSession, setResumeSession] = useState<any>(null)
 
+  const startRequest = useRef<{id:string; key:string}|null>(null)
   const initRef = useRef(false)
   const prefetchingIndexesRef = useRef<Set<string>>(new Set())
 
@@ -166,7 +171,7 @@ export default function QuizPageClient() {
       setQuestionStartTime(Date.now())
       setPhase('question')
 
-      prefetchQuestions(sessId, index + 1, 2)
+      if (!question.source_checked_content_id) prefetchQuestions(sessId, index + 1, 2)
     } catch (err: any) {
       setError(err.message || 'Failed to generate question. Please try again.')
       setPhase('question')
@@ -200,6 +205,21 @@ export default function QuizPageClient() {
           ? sessions?.find((s: any) => s.id === directSessionId)
           : null
 
+        if (directSession && feedbackQuestionId) {
+          const response = await fetch(`/api/quiz/feedback?questionId=${encodeURIComponent(feedbackQuestionId)}`, { cache: 'no-store' })
+          const saved = await response.json()
+          if (!response.ok) throw new Error(saved.error || 'Saved feedback could not load.')
+          if (saved.question.session_id !== directSession.id) throw new Error('This feedback does not belong to the selected session.')
+          setSessionId(directSession.id)
+          setSessionTotalQuestions(directSession.total_questions || 10)
+          setCurrentQuizMode(directSession.quiz_mode || 'standard')
+          setCurrentIndex(saved.question.question_index)
+          setCurrentQuestion(saved.question)
+          setSelectedAnswer(saved.answer.user_answer)
+          setAnswerResult(saved.answer)
+          setPhase('rationale')
+          return
+        }
         if (directSession) {
           if (directSession.status === 'completed') { router.replace(`/quiz/results?sessionId=${directSession.id}`); return }
           setSessionId(directSession.id)
@@ -208,7 +228,7 @@ export default function QuizPageClient() {
           setResumeSession(null)
           try {
             const posthog = (await import('posthog-js')).default
-            posthog.capture('quiz_started', {
+            posthog.capture('quiz_resumed', {
               session_id: directSession.id,
               source_type: sourceType,
               nclex_category: category === 'All Categories' ? null : category,
@@ -234,18 +254,22 @@ export default function QuizPageClient() {
       } finally { setInitializing(false) }
     }
     void init()
-  }, [directSessionId, generateQuestion, sourceType, category])
+  }, [directSessionId, feedbackQuestionId, generateQuestion, sourceType, category])
 
   const handleStart = useCallback(async (options?: StartOptions) => {
     setLoading(true)
     setError(null)
     try {
       const quizMode = options?.quizMode || 'standard'
+      const requestKey = JSON.stringify([sourceType,category,options])
+      if (!startRequest.current || startRequest.current.key !== requestKey) startRequest.current = {id:crypto.randomUUID(),key:requestKey}
       const res = await fetch('/api/quiz/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          requestId: startRequest.current.id,
           sourceType,
+          practiceSource: options?.practiceSource || 'bank',
           nclexCategory: category === 'All Categories' ? null : category,
           quizMode,
           targetMistakeType: options?.targetMistakeType ?? null,
@@ -259,6 +283,7 @@ export default function QuizPageClient() {
         throw new Error(data.error || 'Failed to create session')
       }
       const { session } = await res.json()
+      startRequest.current = null
       setSessionId(session.id)
       setSessionTotalQuestions(session.total_questions || 10)
       setCurrentQuizMode(session.quiz_mode || quizMode)
@@ -341,7 +366,7 @@ export default function QuizPageClient() {
       setAnswerResult(result)
       setPhase('rationale')
 
-      prefetchQuestions(sessionId, currentIndex + 1, 2)
+      if (!currentQuestion.source_checked_content_id) prefetchQuestions(sessionId, currentIndex + 1, 2)
 
       try {
         const timeSpent = Math.round((Date.now() - questionStartTime) / 1000)
@@ -434,6 +459,9 @@ export default function QuizPageClient() {
   const handleNext = useCallback(async () => {
     if (!sessionId) return
     const nextIndex = currentIndex + 1
+    const nextUrl = new URL(window.location.href)
+    nextUrl.searchParams.delete('feedbackQuestionId')
+    window.history.replaceState(null, '', nextUrl.pathname + nextUrl.search)
 
     if (nextIndex >= sessionTotalQuestions || answerResult?.session_complete) {
       try {
@@ -457,7 +485,8 @@ export default function QuizPageClient() {
 
   return (
     <div className="min-h-screen px-4 py-6 max-w-md mx-auto" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      {error && sessionId && !currentQuestion && <button className="mb-4 rounded-lg bg-[#0D8F9C] px-4 py-3 text-white" onClick={() => generateQuestion(sessionId, currentIndex)}>Retry this question</button>}
+      {error && error !== CONTENT_HOLD_MESSAGE && sessionId && !currentQuestion && <button className="mb-4 rounded-lg bg-[#0D8F9C] px-4 py-3 text-white" onClick={() => generateQuestion(sessionId, currentIndex)}>Retry this question</button>}
+      {error === CONTENT_HOLD_MESSAGE && <a href="/quiz" className="mb-4 block underline">Choose another practice topic</a>}
       {error && (
         <div role="alert" className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
           {error}
@@ -484,7 +513,7 @@ export default function QuizPageClient() {
       {phase === 'loading' && (
         <div className="flex flex-col items-center justify-center py-20 space-y-3">
           <div className="w-8 h-8 border-3 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0D8F9C', borderTopColor: 'transparent' }} />
-          <p className="text-sm text-gray-500">Generating your next question...</p>
+          <p className="text-sm text-gray-500">Loading your next question...</p>
         </div>
       )}
 
@@ -492,6 +521,7 @@ export default function QuizPageClient() {
         <div className="space-y-5">
           <QuizProgress current={currentIndex} total={sessionTotalQuestions} />
           <QuizQuestion
+            sourceChecked={!!currentQuestion.source_checked_content_id}
             stem={currentQuestion.question_stem}
             options={currentQuestion.options}
             selectedAnswer={selectedAnswer}
@@ -506,6 +536,7 @@ export default function QuizPageClient() {
         <div className="space-y-5">
           <QuizProgress current={currentIndex} total={sessionTotalQuestions} />
           <QuizRationale
+            sourceChecked={!!currentQuestion.source_checked_content_id}
             reviewed={!!currentQuestion.clinical_content_id}
             sources={answerResult.sources}
             isCorrect={answerResult.is_correct}

@@ -1,3 +1,4 @@
+import {getRetakePass} from '@/lib/retake-pass-server'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
@@ -127,7 +128,8 @@ export async function GET(req: Request) {
       }
     }
 
-    const userHasAccess = hasAccess(subscriptionStatus, profile?.trial_ends_at, profile?.is_beta, profile?.beta_expires_at)
+    const pass = await getRetakePass(user.id)
+    const userHasAccess = Boolean(pass?.active) || hasAccess(subscriptionStatus, profile?.trial_ends_at, profile?.is_beta, profile?.beta_expires_at)
     const trial_end_display =
       subscriptionStatus === 'trialing' && trial_end
         ? new Date(trial_end * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })

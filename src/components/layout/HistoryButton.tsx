@@ -1,5 +1,7 @@
 'use client'
 
+import { tutorHistoryTitle, tutorHistoryHref } from '@/lib/tutor-history-title'
+
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Clock, Trash2, X, ChevronDown, ChevronRight } from 'lucide-react'
@@ -13,9 +15,6 @@ import {
 } from '@/components/ui/sheet'
 import { Checkbox } from '@/components/ui/checkbox'
 import { MessageSquare, FileText, Stethoscope, Brain } from 'lucide-react'
-import { listClasses } from '@/lib/api/classes'
-import { StudentClass } from '@/lib/types'
-import { getBrowserClient } from '@/lib/supabase/client'
 
 interface Chat {
   id: string
@@ -66,10 +65,9 @@ const getSessionBadge = (sessionType: string | null) => {
 export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
   const router = useRouter()
   const [chats, setChats] = useState<Chat[]>([])
-  const [classes, setClasses] = useState<StudentClass[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
-  const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set<string>())
+  const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set<string>(['general']))
   
   // Toggle class expansion
   const toggleClass = (classId: string) => {
@@ -85,6 +83,23 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
   }
   const [selectedChatIds, setSelectedChatIds] = useState<Set<string>>(new Set<string>())
   const [isDeleting, setIsDeleting] = useState(false)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [loadingOlder, setLoadingOlder] = useState(false)
+  const [historyError, setHistoryError] = useState('')
+
+  const loadOlder = async () => {
+    if (!nextCursor || loadingOlder) return
+    setLoadingOlder(true); setHistoryError('')
+    try {
+      const response = await fetch(`/api/chats/list?includeArchived=true&cursor=${encodeURIComponent(nextCursor)}`, {credentials:'include',cache:'no-store'})
+      if (!response.ok) throw new Error('Older conversations could not load. Please retry.')
+      const data = await response.json()
+      setChats(previous => { const ids = new Set(previous.map(chat=>chat.id)); return [...previous, ...(data.chats || []).filter((chat:Chat)=>!ids.has(chat.id))] })
+      setNextCursor(data.nextCursor ?? null)
+    } catch (error) { setHistoryError(error instanceof Error ? error.message : 'History could not load.') }
+    finally { setLoadingOlder(false) }
+  }
+
 
   // Fetch chats and classes for history
   useEffect(() => {
@@ -92,26 +107,22 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
 
     const fetchData = async () => {
       setIsLoading(true)
+      setHistoryError(''); setNextCursor(null)
       try {
         // Fetch chats
         const chatsResponse = await fetch('/api/chats/list?includeArchived=true', {
           credentials: 'include',
         })
 
+        if (!chatsResponse.ok) throw new Error('Conversations could not load. Close and reopen history to retry.')
         if (chatsResponse.ok) {
           const chatsData = await chatsResponse.json()
           setChats((chatsData.chats || []) as Chat[])
+          setNextCursor(chatsData.nextCursor ?? null)
         }
 
-        // Fetch classes to map IDs to names
-    const supabase = getBrowserClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          const userClasses = await listClasses(user.id)
-          setClasses(userClasses)
-        }
       } catch (error) {
-        console.error('[HistoryButton] Error fetching data:', error)
+        setHistoryError(error instanceof Error ? error.message : 'History could not load.')
       } finally {
         setIsLoading(false)
       }
@@ -144,16 +155,10 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
     const thisWeek = new Date(today)
     thisWeek.setDate(thisWeek.getDate() - 7)
 
-    // Create a map of classId -> class name/code
-    const classMap = new Map<string, { code: string; name: string }>()
-    classes.forEach((cls) => {
-      classMap.set(cls.id, { code: cls.code, name: cls.name })
-    })
-
     const chatsByClass = new Map<string, Chat[]>()
     
     chats.forEach((chat) => {
-      const classId = chat.metadata?.classId || chat.metadata?.class_id || 'general'
+      const classId = 'general'
       if (!chatsByClass.has(classId)) {
         chatsByClass.set(classId, [])
       }
@@ -190,17 +195,7 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
       const filteredTimeGroups = timeGroups.filter(group => group.chats.length > 0)
       if (filteredTimeGroups.length > 0) {
         // Get class name from map, or fallback to classId
-        let classLabel = 'General Tutor'
-        if (classId !== 'general') {
-          const classInfo = classMap.get(classId)
-          if (classInfo) {
-            classLabel = `${classInfo.code} - ${classInfo.name}`
-          } else {
-            // Fallback if class not found (might have been deleted)
-            classLabel = `Class ${classId.substring(0, 8)}...`
-          }
-        }
-        
+        const classLabel = 'General Tutor'
         result.push({
           classLabel,
           classId,
@@ -210,10 +205,10 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
     })
 
     return result
-  }, [chats, classes])
+  }, [chats])
 
-  const handleChatClick = (chatId: string, mode: string = 'tutor') => {
-    const url = `/tutor?sessionId=${chatId}`
+  const handleChatClick = (chatId: string, classId: string) => {
+    const url = tutorHistoryHref(chatId, classId)
     router.push(url)
     setIsHistoryOpen(false)
     onNavigate?.()
@@ -332,7 +327,6 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                                 const Icon = getSessionIcon(chat.session_type)
                                 const badge = getSessionBadge(chat.session_type)
                                 const isSelected = selectedChatIds.has(chat.id)
-                                const mode = 'tutor' // Always tutor mode now
 
                                 return (
                                   <div
@@ -367,14 +361,14 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
                                       onClick={(e) => e.stopPropagation()}
                                     />
                                     <button
-                                      onClick={() => handleChatClick(chat.id, mode)}
+                                      onClick={() => handleChatClick(chat.id, group.classId)}
                                       className="flex-1 text-left min-w-0 flex items-center gap-2"
                                     >
                                       <Icon className="w-4 h-4 flex-shrink-0 text-slate-500" />
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
                                           <span className="text-sm font-medium text-slate-900 truncate">
-                                            {chat.title || 'Untitled Chat'}
+                                            {tutorHistoryTitle(chat.title)}
                                           </span>
                                           <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded shrink-0">
                                             {badge}
@@ -398,6 +392,9 @@ export default function HistoryButton({ onNavigate }: HistoryButtonProps) {
               })}
             </div>
           )}
+          {historyError && <p role="alert" className="mt-3 text-sm text-red-700">{historyError}</p>}
+          {!isLoading && <p className="mt-3 text-xs text-slate-500">Showing {chats.length} loaded conversations{nextCursor ? ' · Older conversations available' : ''}</p>}
+          {!isLoading && nextCursor && <button disabled={loadingOlder} onClick={loadOlder} className="mt-3 w-full rounded-lg border px-4 py-3 text-sm disabled:opacity-50">{loadingOlder ? 'Loading older conversations…' : 'Load older conversations'}</button>}
         </div>
       </SheetContent>
     </Sheet>

@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deliverTrialEngagement, trialEmailAuthorized, stableTrialPayload, TRIAL_RETRY_WINDOW_MS } from '../src/lib/emails/trial-engagement'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+vi.mock('../src/lib/emails/retake-pass-eligibility', () => ({ hasPurchasedRetakePass: vi.fn(async () => false) }))
+import { hasPurchasedRetakePass } from '../src/lib/emails/retake-pass-eligibility'
+
 const now = Date.parse('2026-10-29T02:00:00Z')
 const candidate = { user_id: 'fixture', email: 'fixture@example.invalid', trial_ends_at: '2026-11-02T02:00:00Z' }
 function fixture(options: { saveFails?: boolean; claimFails?: boolean; paid?: boolean; optedOut?: boolean; throws?: boolean; emptyId?: boolean } = {}) {
@@ -43,7 +46,7 @@ function fixture(options: { saveFails?: boolean; claimFails?: boolean; paid?: bo
   return { rows,requests,transport,send: (at=now) => deliverTrialEngagement(admin,candidate,'trial_day_3',{now:at,transport}) }
 }
 describe('trial engagement delivery', () => {
-  beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(now) })
+  beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(now); vi.mocked(hasPurchasedRetakePass).mockResolvedValue(false) })
   afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs() })
   it('claims once under concurrency and skips a recorded success', async () => {
     const f=fixture(); const results=await Promise.all([f.send(),f.send()])
@@ -55,6 +58,10 @@ describe('trial engagement delivery', () => {
   })
   it.each([{paid:true},{optedOut:true}])('rechecks eligibility after the claim: %j', async options => {
     const f=fixture(options); expect(await f.send()).toBe('skipped'); expect(f.requests).toHaveLength(0)
+  })
+  it('suppresses a pass holder even when the profile still says trialing', async () => {
+    vi.mocked(hasPurchasedRetakePass).mockResolvedValue(true)
+    const f=fixture(); expect(await f.send()).toBe('skipped'); expect(f.requests).toHaveLength(0)
   })
   it('keeps a lost receipt safe and retries the identical provider request', async () => {
     const options={saveFails:true}; const f=fixture(options)

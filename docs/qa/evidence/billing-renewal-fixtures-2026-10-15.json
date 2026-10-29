@@ -1,0 +1,51 @@
+{
+  "clock": "clock_1UQriKGnwd1bHIvc6t7uRygA",
+  "name": "Forge release remaining lifecycle QA 2026-10-15",
+  "frozen_time": "2026-10-15T17:00:00Z",
+  "advance_to": "2026-11-16T17:00:00Z",
+  "scope": "Stripe-side simulation only. No app profiles linked. Sandbox webhook remains disabled.",
+  "scenarios": [
+    {
+      "scenario": "successful-renewal",
+      "customer": "cus_VRlFRDNcYCH4lR",
+      "subscription": "sub_1UQrjHGnwd1bHIvc3c2hq8fr",
+      "initial_invoice": "in_1UQrjHGnwd1bHIvciez7M5fP",
+      "initial_amount_paid": 999,
+      "initial_status": "active",
+      "subscription_default_payment_method": null,
+      "subscription_default_source": null,
+      "cancel_at": null,
+      "current_period_end": 1794762000
+    },
+    {
+      "scenario": "failed-renewal",
+      "customer": "cus_VRlFukrjHpLZT9",
+      "subscription": "sub_1UQrjLGnwd1bHIvcqaIAx39u",
+      "initial_invoice": "in_1UQrjLGnwd1bHIvcxIKyM85t",
+      "initial_amount_paid": 999,
+      "initial_status": "active",
+      "subscription_default_payment_method": null,
+      "subscription_default_source": null,
+      "cancel_at": null,
+      "current_period_end": 1794762000
+    },
+    {
+      "scenario": "period-end-cancel",
+      "customer": "cus_VRlFNH54j7CFJv",
+      "subscription": "sub_1UQrjPGnwd1bHIvcRoUUe2Pd",
+      "initial_invoice": "in_1UQrjPGnwd1bHIvcIHNMWVfu",
+      "initial_amount_paid": 999,
+      "initial_status": "active",
+      "subscription_default_payment_method": null,
+      "subscription_default_source": null,
+      "cancel_at": 1794762000,
+      "current_period_end": 1794762000
+    }
+  ],
+  "failure_card": "Customer default payment method cleared; default source changed to documented tok_chargeCustomerFail (ending 0341).",
+  "expected": [
+    "successful-renewal: active, new paid 999-cent subscription_cycle invoice",
+    "failed-renewal: renewal payment fails; invoice unpaid and subscription follows configured retry policy",
+    "period-end-cancel: canceled at scheduled end without a new paid renewal invoice"
+  ]
+}

@@ -1,5 +1,7 @@
 'use client'
 
+import { tutorHistoryTitle } from '@/lib/tutor-history-title'
+
 import { useState, useEffect, useRef } from 'react'
 import { StudentClass } from '@/lib/types'
 import { Button } from '@/components/ui/button'
@@ -607,7 +609,7 @@ export default function ClassWithMaterials({ classItem, onEdit, onRefresh }: Cla
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <MessageSquare className="w-4 h-4 text-[var(--gray-400)] shrink-0 group-hover/chat:text-[var(--teal)] transition-colors" />
                         <span className="text-sm text-[var(--gray-800)] truncate group-hover/chat:text-[var(--teal)] font-medium">
-                          {chat.title || 'Untitled Chat'}
+                          {tutorHistoryTitle(chat.title)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">

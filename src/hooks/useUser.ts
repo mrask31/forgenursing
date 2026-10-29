@@ -51,6 +51,7 @@ export function useUser(): UseUserReturn {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [serverAccess,setServerAccess]=useState<boolean|null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -67,15 +68,19 @@ export function useUser(): UseUserReturn {
         if (cancelled || current !== request) return
         setUser(data?.user_id ? makeServerUser(data.user_id, data.email) : null)
         setProfile(data?.profile ?? null)
+        setServerAccess(data ? Boolean(data.hasAccess) : false)
       } catch (error) {
         if (cancelled || current !== request) return
         console.error('[useUser] Server status load failed:', error)
         setUser(null)
         setProfile(null)
+        setServerAccess(false)
       } finally {
         if (!cancelled && current === request) setIsLoading(false)
       }
     }
+    const passUpdated=()=>{void loadUser()}
+    window.addEventListener('retake-pass-updated',passUpdated)
     void loadUser()
     // Return immediately: Supabase auth notifications can hold its session lock.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, _session: Session | null) => {
@@ -85,6 +90,7 @@ export function useUser(): UseUserReturn {
         ++request
         setUser(null)
         setProfile(null)
+        setServerAccess(false)
         setIsLoading(false)
         return
       }
@@ -94,6 +100,7 @@ export function useUser(): UseUserReturn {
       cancelled = true
       clearTimeout(authReload)
       subscription.unsubscribe()
+      window.removeEventListener('retake-pass-updated',passUpdated)
     }
   }, [])
 
@@ -102,7 +109,7 @@ export function useUser(): UseUserReturn {
 
   const isTrialActive = checkTrialActive(profile?.trial_ends_at)
   const isSubscribed = profile?.subscription_status === 'active'
-  const hasAccess = hasAccessCheck(
+  const hasAccess = serverAccess ?? hasAccessCheck(
     profile?.subscription_status,
     profile?.trial_ends_at,
     profile?.is_beta,

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { hasPurchasedRetakePass } from './retake-pass-eligibility'
 
 export type TrialStep = 'trial_day_3' | 'trial_day_5'
 type Candidate = { user_id: string; email: string; trial_ends_at: string }
@@ -33,7 +34,7 @@ export function buildTrialPayload(candidate: Candidate, step: TrialStep): Payloa
     subject: first ? 'Try one question, then one related retry' : 'Your ForgeNursing trial: what happens next',
     text: first
       ? `Hey — Mike here.\n\nStart with one practice question. Answer it, read the explanation, then try the related retry to put that reasoning to work. You do not need to finish a long study session to get started.\n\nOpen practice: https://forgenursing.com/quiz\n\nYour free trial ends on ${ends}. No card was required, and the free trial does not automatically charge you.\n\nIf something is getting in the way, reply and tell me.\n\nMike\nFounder, ForgeNursing`
-      : `Hey — Mike here.\n\nYour ForgeNursing free trial ends on ${ends}. It does not automatically charge you. If you choose to subscribe, the current options are $9.99/month or $79/year; a paid subscription renews until canceled.\n\nBefore the trial ends, try one practice question, read the explanation and complete the related retry.\n\nReview plans: https://forgenursing.com/pricing\n\nQuestions or feedback? Reply here.\n\nMike\nFounder, ForgeNursing`,
+      : `Hey — Mike here.\n\nYour ForgeNursing free trial ends on ${ends}. It does not automatically charge you. If you choose to continue, the Retake Pass is $29.99 one-time for three months. Nothing auto-renews. Don't pass? Activate one free three-month extension after your initial access ends, with no proof required.\n\nBefore the trial ends, try one practice question, read the explanation and complete the related retry.\n\nReview plans: https://forgenursing.com/pricing\n\nQuestions or feedback? Reply here.\n\nMike\nFounder, ForgeNursing`,
   }
 }
 
@@ -55,6 +56,8 @@ export async function deliverTrialEngagement(
       || now - created >= TRIAL_RETRY_WINDOW_MS || !previous.payload) return 'reconciliation_required'
     if (now - updated < LEASE_MS) return 'skipped'
   }
+  // Do not replay frozen messages advertising the retired subscription offer.
+  if (previous?.payload && /\$9\.99|\$79/.test(previous.payload.text)) return 'reconciliation_required'
   const claimedAt = new Date(now).toISOString()
   const payload = previous?.payload ?? buildTrialPayload(candidate, step)
   const claim = previous
@@ -72,16 +75,17 @@ export async function deliverTrialEngagement(
   }
   // Recheck after the claim: payment, expiry or changed address must suppress
   // a stale trial prompt. Never change the stored recipient on a retry.
-  const [profile, auth] = await Promise.all([
+  const [profile, auth, purchasedPass] = await Promise.all([
     admin.from('profiles').select('is_beta,subscription_status,stripe_subscription_id,trial_ends_at').eq('id', candidate.user_id).maybeSingle(),
     admin.auth.admin.getUserById(candidate.user_id),
+    hasPurchasedRetakePass(admin, candidate.user_id),
   ])
   if (profile.error || auth.error) {
     await finish({ status: 'uncertain', error_code: 'eligibility_unavailable' })
     return 'failed'
   }
   const p = profile.data, user = auth.data.user
-  if (!p || p.is_beta || p.subscription_status !== 'trialing' || p.stripe_subscription_id
+  if (purchasedPass || !p || p.is_beta || p.subscription_status !== 'trialing' || p.stripe_subscription_id
     || !Number.isFinite(Date.parse(p.trial_ends_at)) || Date.parse(p.trial_ends_at) <= now
     || !user?.email_confirmed_at || user.email !== payload.to[0]
     || user.user_metadata?.email_opt_out === true || user.user_metadata?.marketing_emails === false) {

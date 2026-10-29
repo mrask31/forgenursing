@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { Search, BookOpen, Bookmark, BookmarkCheck } from 'lucide-react'
-import { MEDICAL_TERMS } from '@/lib/medicalTerms'
+import { DICTIONARY_TERMS, isMedicalTermSaved } from '@/lib/medicalTerms'
 import MedicalTermPopover from '@/components/tutor/MedicalTermPopover'
 
 export default function DictionaryPage() {
@@ -14,13 +14,13 @@ export default function DictionaryPage() {
 
   // Get unique categories
   const categories = useMemo(() => {
-    const cats = new Set(MEDICAL_TERMS.map(t => t.category).filter(Boolean))
+    const cats = new Set(DICTIONARY_TERMS.map(t => t.category).filter(Boolean))
     return Array.from(cats).sort()
   }, [])
 
   // Filter terms based on search, category, and saved status
   const filteredTerms = useMemo(() => {
-    let filtered = MEDICAL_TERMS
+    let filtered = DICTIONARY_TERMS
 
     // Filter by category
     if (selectedCategory) {
@@ -38,9 +38,9 @@ export default function DictionaryPage() {
 
     // Filter by saved status
     if (savedFilter === 'saved') {
-      filtered = filtered.filter(t => savedWords.has(t.term.toLowerCase()))
+      filtered = filtered.filter(t => isMedicalTermSaved(t.term, savedWords))
     } else if (savedFilter === 'not-saved') {
-      filtered = filtered.filter(t => !savedWords.has(t.term.toLowerCase()))
+      filtered = filtered.filter(t => !isMedicalTermSaved(t.term, savedWords))
     }
 
     return filtered.sort((a, b) => a.term.localeCompare(b.term))
@@ -110,36 +110,16 @@ export default function DictionaryPage() {
   }
 
   const handleUnsaveWord = async (term: string) => {
-    try {
-      const termLower = term.toLowerCase()
-      const wordId = savedWordIds.get(termLower)
-      
-      if (!wordId) {
-        console.error('Word ID not found for term:', term)
-        return
-      }
-
-      const response = await fetch(`/api/wordbank?id=${wordId}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        setSavedWords(prev => {
-          const arr = Array.from(prev)
-          const index = arr.indexOf(termLower)
-          if (index > -1) {
-            arr.splice(index, 1)
-          }
-          return new Set<string>(arr)
-        })
-        setSavedWordIds(prev => {
-          const newMap = new Map(prev)
-          newMap.delete(termLower)
-          return newMap
-        })
-      }
-    } catch (error) {
-      console.error('Failed to unsave word:', error)
+    const aliases = term === 'jugular venous distention' ? ['jugular venous distention','jugular venous distension','jvd'] : [term.toLowerCase()]
+    for (const alias of aliases) {
+      const id = savedWordIds.get(alias)
+      if (!id) continue
+      try {
+        const response = await fetch(`/api/wordbank?id=${encodeURIComponent(id)}`, {method:'DELETE'})
+        if (!response.ok) continue
+        setSavedWords(previous => { const next = new Set(previous); next.delete(alias); return next })
+        setSavedWordIds(previous => { const next = new Map(previous); next.delete(alias); return next })
+      } catch { /* Keep the saved state when deletion fails. */ }
     }
   }
 
@@ -265,7 +245,7 @@ export default function DictionaryPage() {
           <div className="divide-y divide-slate-100">
             {filteredTerms.length > 0 ? (
               filteredTerms.map((term, index) => {
-                const isSaved = savedWords.has(term.term.toLowerCase())
+                const isSaved = isMedicalTermSaved(term.term, savedWords)
                 return (
                   <div 
                     key={term.term} 

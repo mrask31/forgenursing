@@ -1,4 +1,6 @@
 'use client'
+import { nclexCategoryLabel } from '@/lib/nclex-categories'
+import { CONTENT_HOLD_MESSAGE } from '@/lib/learning/content-hold'
 
 import { captureLoop } from '@/lib/analytics/learning-loop'
 import { loopProperties } from '@/lib/learning/distinctions'
@@ -10,6 +12,7 @@ interface QuizQuestion {
   distinction_id?: string | null
   source_question_id?: string | null
   learning_attempt?: number
+  source_checked_content_id?: string | null
   clinical_content_id?: string | null
   id: string
   question_index: number
@@ -47,6 +50,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 }
 
 function fallbackMistakeType(category: string | null | undefined) {
+  category = nclexCategoryLabel(category)
   if (category === 'Psychosocial Integrity') return 'Therapeutic communication'
   if (category === 'Pharmacological Therapies') return 'Medication reasoning'
   if (category === 'Safety and Infection Control') return 'Safety'
@@ -179,9 +183,9 @@ export default function QuizResultsClient() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 text-center">
         <p className="text-gray-500">{loadError}</p>
-        <button onClick={() => window.location.reload()} className="rounded-lg text-white font-semibold px-5 py-3" style={{ backgroundColor: '#0D8F9C' }}>
+        {loadError !== CONTENT_HOLD_MESSAGE && <button onClick={() => window.location.reload()} className="rounded-lg text-white font-semibold px-5 py-3" style={{ backgroundColor: '#0D8F9C' }}>
           Try Again
-        </button>
+        </button>}
         <Link href="/quiz" className="underline" style={{ color: '#0D8F9C' }}>Start a new quiz</Link>
       </div>
     )
@@ -207,10 +211,10 @@ export default function QuizResultsClient() {
   const catMap = new Map<string, { correct: number; total: number }>()
   questions.forEach(q => {
     if (!q.nclex_category) return
-    const entry = catMap.get(q.nclex_category) ?? { correct: 0, total: 0 }
+    const entry = catMap.get(nclexCategoryLabel(q.nclex_category)) ?? { correct: 0, total: 0 }
     entry.total++
     if (q.is_correct) entry.correct++
-    catMap.set(q.nclex_category, entry)
+    catMap.set(nclexCategoryLabel(q.nclex_category), entry)
   })
   const categories: CategoryBreakdown[] = Array.from(catMap.entries()).map(
     ([category, { correct, total }]) => ({ category, correct, total })
@@ -365,6 +369,7 @@ export default function QuizResultsClient() {
 
                     {reviewingId === q.id && (
                       <div className="rounded-lg p-3 text-sm space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
+                        {q.source_checked_content_id && <p className="text-xs">AI-assisted, source-checked • Not independently clinically validated</p>}
                         <p><span className="font-medium">Your answer:</span> {q.user_answer} — {q.options.find(option => option.label === q.user_answer)?.text}</p>
                         <p><span className="font-medium">Correct:</span> {q.correct_answer} — {q.options.find(option => option.label === q.correct_answer)?.text}</p>
                         {!q.is_correct && q.user_answer && q.rationale_incorrect?.[q.user_answer] && <p><span className="font-medium">Why your choice does not fit:</span> {q.rationale_incorrect[q.user_answer]}</p>}

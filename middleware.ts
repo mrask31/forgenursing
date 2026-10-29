@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
+import { loginReturnPath } from './src/lib/login-return-path'
 import { hasAccess } from '@/lib/subscription-access'
 
 export async function middleware(request: NextRequest) {
@@ -16,6 +17,12 @@ export async function middleware(request: NextRequest) {
         headers: request.headers,
       },
     })
+
+    const redirectWithCookies = (path:string) => {
+      const redirect=NextResponse.redirect(new URL(path,request.url))
+      response.cookies.getAll().forEach(cookie=>redirect.cookies.set(cookie))
+      return redirect
+    }
 
     const { pathname } = request.nextUrl
 
@@ -135,7 +142,9 @@ export async function middleware(request: NextRequest) {
 
     // CRITICAL: For login/signup pages, only redirect if we have a VALID authenticated user
     // If getUser() failed or returned no user (stale token), let the page handle cleanup
-    if ((pathname === '/login' || pathname === '/signup') && user && supabase) {
+    if (pathname === '/login' && user && supabase) {
+      const returnPath = loginReturnPath(request.nextUrl.searchParams.get('next') || request.nextUrl.searchParams.get('redirect'))
+      if (returnPath) return redirectWithCookies(returnPath)
       // Only redirect if we have a valid user - this means the token is good
       // If token is stale, getUser() will fail and user will be null, so we skip this
       try {
@@ -205,13 +214,14 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
         }
 
-        const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
+        const {data:passes}=await supabase.from('retake_passes').select('id').eq('user_id',user.id).eq('audience',process.env.VERCEL_ENV==='production'?'production':'preview').is('refunded_at',null).gt('access_until',new Date().toISOString()).limit(1)
+        const userHasAccess = Boolean(passes?.length) || hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
 
         if (userHasAccess) {
-          return NextResponse.redirect(new URL('/entry', request.url))
+          return redirectWithCookies('/entry')
         } else {
           // No active subscription, redirect to payment required
-          return NextResponse.redirect(new URL('/billing/payment-required', request.url))
+          return redirectWithCookies('/settings?access=ended')
         }
       } catch (error) {
         // If subscription check fails, let them stay on login page to handle it
@@ -293,7 +303,8 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/billing/payment-required', request.url))
         }
 
-        const userHasAccess = hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
+        const {data:passes}=await supabase.from('retake_passes').select('id').eq('user_id',user.id).eq('audience',process.env.VERCEL_ENV==='production'?'production':'preview').is('refunded_at',null).gt('access_until',new Date().toISOString()).limit(1)
+        const userHasAccess = Boolean(passes?.length) || hasAccess(subscriptionStatus, trialEndsAt, isBeta, betaExpiresAt)
 
         console.log('[Middleware] Protected route access check', {
           userId: user.id,
@@ -317,7 +328,7 @@ export async function middleware(request: NextRequest) {
             subscriptionStatus,
             trialEndsAt
           })
-          return NextResponse.redirect(new URL('/checkout', request.url))
+          return response // Client renders a locked state with Account access; APIs still enforce entitlement.
         }
 
         console.log('[Middleware] ALLOWING: User has active subscription', {

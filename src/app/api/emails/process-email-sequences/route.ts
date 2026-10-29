@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
+import { trialEmailAuthorized } from '@/lib/emails/trial-engagement'
+import { hasPurchasedRetakePass } from '@/lib/emails/retake-pass-eligibility'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -164,8 +166,8 @@ function betaDay85(name: string): { subject: string; html: string } {
     html: emailShell("Beta Access Ending Soon", `
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">You've had 85 days of free access to ForgeNursing as one of our earliest beta users. That means a lot — you helped shape what this product became.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your beta access ends in 5 days. After that, you'll need a subscription to keep using Forge.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">The monthly plan is <strong>$9.99/month</strong> — cancel anytime. Or save with the annual plan at <strong>$79/year</strong>.</p>
+      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your beta access ends in 5 days. After that, you can choose a Retake Pass to keep using Forge.</p>
+      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">The Retake Pass is <strong>$29.99 one-time for three months</strong>. Nothing auto-renews. Don't pass? Activate one free three-month extension after the initial period, with no proof required.</p>
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">If Forge has helped you think through clinical scenarios more clearly, now's the time to lock it in.</p>
       ${ctaButton('Subscribe Before Beta Ends', 'https://forgenursing.com/checkout')}
       ${signoff()}
@@ -180,7 +182,7 @@ function betaDay91(name: string): { subject: string; html: string } {
     html: emailShell("Beta Access Ended", `
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your 90-day beta period ended yesterday. Your account and all your session history are still there — nothing has been deleted.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">To pick up where you left off, subscribe below. Plans start at $9.99/month.</p>
+      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">To pick up where you left off, choose a Retake Pass: $29.99 one-time for three months. No auto-renewal. Don't pass? One free three-month extension after the initial period, no proof required.</p>
       ${ctaButton('Subscribe Now', 'https://forgenursing.com/checkout')}
       ${signoff()}
     `),
@@ -243,14 +245,14 @@ function trialDay6(name: string): { subject: string; html: string } {
     subject: 'Your trial ends tomorrow',
     html: emailShell("Trial Ending Tomorrow", `
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your free trial ends tomorrow. After that, your account stays intact but access to Forge pauses until you subscribe.</p>
+      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your free trial ends tomorrow. After that, your account stays intact but access to Forge pauses until you choose a Retake Pass.</p>
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Here's what you'll lose access to:</p>
       <ul style="margin: 0 0 16px 0; color: #334155; font-size: 16px; padding-left: 24px;">
         <li style="margin-bottom: 8px;">Unlimited clinical reasoning sessions</li>
         <li style="margin-bottom: 8px;">Upload your own class materials for Socratic teaching</li>
         <li style="margin-bottom: 8px;">24/7 AI preceptor on any nursing topic</li>
       </ul>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Plans start at <strong>$9.99/month</strong> — cancel anytime. Or save with the annual plan at $79/year.</p>
+      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">The Retake Pass is <strong>$29.99 one-time for three months</strong>. No auto-renewal. Don't pass? One free three-month extension after the initial period, no proof required.</p>
       ${ctaButton('Subscribe Now', 'https://forgenursing.com/checkout')}
       ${signoff()}
     `),
@@ -264,7 +266,7 @@ function trialDay8(name: string): { subject: string; html: string } {
     html: emailShell("Trial Ended", `
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
       <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your 7-day free trial has ended. Your account and session history are still there — nothing has been deleted.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">To continue using Forge, subscribe below. Plans start at $9.99/month.</p>
+      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">To continue, choose a Retake Pass: $29.99 one-time for three months. No auto-renewal. Don't pass? One free three-month extension after the initial period, no proof required.</p>
       ${ctaButton('Subscribe to Continue', 'https://forgenursing.com/checkout')}
       ${signoff()}
     `),
@@ -295,13 +297,8 @@ function getEmailContent(emailType: string, name: string): { subject: string; ht
 async function processEmailSequences(request: Request) {
   try {
     // Auth: accept Bearer CRON_SECRET, Bearer SUPABASE_SERVICE_ROLE_KEY, or x-cron-secret header
-    const authHeader = request.headers.get('authorization')
-    const cronSecret = request.headers.get('x-cron-secret')
-
-    const isAuthorized =
-      authHeader === `Bearer ${process.env.CRON_SECRET}` ||
-      authHeader === `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` ||
-      cronSecret === process.env.CRON_SECRET
+    const isAuthorized = trialEmailAuthorized(request)
+    if (process.env.VERCEL_ENV !== 'production') return NextResponse.json({ error: 'production_only' }, { status: 503 })
 
     if (!isAuthorized) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -329,7 +326,7 @@ async function processEmailSequences(request: Request) {
     // Step 1: Query all users — profiles joined with auth.users for email + created_at
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, is_beta, preferred_name')
+      .select('id, is_beta, preferred_name, subscription_status, stripe_subscription_id')
 
     if (profilesError) {
       console.error('[Email Sequences] Error fetching profiles:', profilesError)
@@ -416,6 +413,7 @@ async function processEmailSequences(request: Request) {
       if (!content) continue
 
       try {
+        if (profile.subscription_status === 'active' || profile.stripe_subscription_id || await hasPurchasedRetakePass(supabase, profile.id)) continue
         const { data: emailData, error: emailError } = await resend.emails.send({
           from: 'ForgeNursing <support@forgenursing.com>',
           to: auth.email,

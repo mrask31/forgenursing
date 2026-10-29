@@ -28,7 +28,7 @@ export const MEDICAL_TERMS: MedicalTerm[] = [
   { term: 'jugular venous distension', definition: 'Abnormal bulging of the jugular veins in the neck, indicating increased central venous pressure. Common sign of right-sided heart failure, fluid overload, or cardiac tamponade.', category: 'Cardiovascular' },
   { term: 'JVD', definition: 'Jugular Venous Distention. Abnormal bulging of the jugular veins in the neck, indicating increased central venous pressure. Common sign of right-sided heart failure.', category: 'Cardiovascular' },
   { term: 'hepatomegaly', definition: 'Enlargement of the liver. Can be caused by heart failure (especially right-sided), liver disease, infections, or tumors. Often assessed through palpation and percussion.', category: 'Cardiovascular' },
-  { term: 'ascites', definition: 'Accumulation of fluid in the peritoneal cavity (abdominal cavity). Common in right-sided heart failure, liver disease, and kidney failure. Manifests as abdominal distention and increased abdominal girth.', category: 'Cardiovascular' },
+  { term: 'ascites', definition: 'Accumulation of fluid in the peritoneal cavity (abdominal cavity). Common in right-sided heart failure, liver disease, and kidney failure. Manifests as abdominal distention and increased abdominal girth.', category: 'Gastrointestinal' },
   
   // Respiratory Terms
   { term: 'oxygen saturation', definition: 'The percentage of hemoglobin binding sites in the bloodstream occupied by oxygen. Normal range is 95-100%. Measured via pulse oximetry (SpO2).', category: 'Respiratory' },
@@ -141,3 +141,9 @@ export function findMedicalTerms(text: string): Array<{ term: string; definition
   return matches.sort((a, b) => a.startIndex - b.startIndex)
 }
 
+
+/** One visible JVD concept; keep aliases above for in-text term recognition. */
+export const DICTIONARY_TERMS = MEDICAL_TERMS.filter(item => !['jugular venous distension','JVD'].includes(item.term)).map(item => item.term === 'jugular venous distention' ? {...item, definition:`Also called jugular venous distension or JVD. ${item.definition}`} : item)
+export function isMedicalTermSaved(term:string, saved:Set<string>):boolean {
+ return term==='jugular venous distention' ? ['jugular venous distention','jugular venous distension','jvd'].some(alias=>saved.has(alias)) : saved.has(term.toLowerCase())
+}

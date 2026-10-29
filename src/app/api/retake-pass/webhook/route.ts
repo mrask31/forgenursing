@@ -1,0 +1,8 @@
+import {NextResponse} from 'next/server'
+import {passAudience,passStripe,fulfillRetakePass} from '@/lib/retake-pass-server'
+import {learningAdmin} from '@/lib/learning/server'
+export async function POST(req:Request){let stripe;try{stripe=passStripe()}catch{return NextResponse.json({error:'Webhook Stripe configuration unavailable'},{status:503})}const secret=passAudience()==='preview'?process.env.STRIPE_RETAKE_WEBHOOK_SECRET_TEST:process.env.STRIPE_RETAKE_WEBHOOK_SECRET;if(!secret)return NextResponse.json({error:'Webhook not configured'},{status:503});let event;try{event=stripe.webhooks.constructEvent(await req.text(),req.headers.get('stripe-signature')||'',secret)}catch{return NextResponse.json({error:'Invalid signature'},{status:400})}try{
+ if(event.type==='checkout.session.completed'||event.type==='checkout.session.async_payment_succeeded'){const session=await stripe.checkout.sessions.retrieve(event.data.object.id);if(session.metadata?.offer==='retake_pass_v1')await fulfillRetakePass(session,stripe)}
+ if(event.type==='charge.refunded'||event.type==='charge.dispute.created') {const charge=event.type==='charge.refunded'?event.data.object:await stripe.charges.retrieve(typeof event.data.object.charge==='string'?event.data.object.charge:event.data.object.charge.id);const pi=typeof charge.payment_intent==='string'?charge.payment_intent:charge.payment_intent?.id;if(pi){const {error}=await learningAdmin().from('retake_passes').update({refunded_at:new Date().toISOString()}).eq('audience',passAudience()).eq('payment_intent_id',pi);if(error)throw error}}
+ return NextResponse.json({received:true})
+ }catch{return NextResponse.json({error:'Payment event could not be fulfilled. Retry required.'},{status:500})}}

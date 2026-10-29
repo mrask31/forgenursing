@@ -1,7 +1,7 @@
 'use client'
 
 import ReactMarkdown from 'react-markdown'
-import { FileIcon, ClipboardCheck, Bookmark, Star, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ClipboardCheck, Star } from 'lucide-react'
 import { useTutorContext } from './TutorContext'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { setTopicSummaryAndStudiedAt } from '@/lib/api/notebook'
@@ -93,20 +93,6 @@ function splitIntoAdpieSections(content: string): AdpieSection[] {
   return sections
 }
 
-// Helper to detect if message likely used binder context
-const detectBinderUsage = (content: string): boolean => {
-  const binderIndicators = [
-    'from your',
-    'your uploaded',
-    'your materials',
-    'your binder',
-    'your document',
-  ]
-  return binderIndicators.some(indicator => 
-    content.toLowerCase().includes(indicator)
-  )
-}
-
 export default function ChatMessageList({
   messages,
   selectedMessageId,
@@ -115,15 +101,12 @@ export default function ChatMessageList({
   chatId,
   onSaveToNotebook,
   savingToNotebook,
-  onSaveClip,
   onSendMessage,
   activeCourse,
   activeCourseType,
   messageImageMap,
 }: ChatMessageListProps) {
   const tutorContext = useTutorContext()
-  const [isTogglingHelp, setIsTogglingHelp] = useState<boolean>(false)
-  const [savedClipId, setSavedClipId] = useState<string | null>(null)
   const [voiceEnabled, setVoiceEnabled] = useState(false)
   // Track message IDs we've already seen so we never autoPlay historical messages
   const seenMessageIdsRef = useRef<Set<string>>(new Set())
@@ -158,74 +141,13 @@ export default function ChatMessageList({
     }
   }, [messages])
 
-  // Track which messages are flagged (per message, not per chat)
-  const [flaggedMessages, setFlaggedMessages] = useState<Set<string>>(new Set())
-
-  // Load flagged messages from chat metadata
-  useEffect(() => {
-    if (!chatId) return
-
-    const loadFlaggedMessages = async () => {
-      try {
-        const response = await fetch(`/api/chats/metadata?chatId=${chatId}`, {
-          credentials: 'include'
-        })
-        if (response.ok) {
-          const data = await response.json()
-          const flaggedMessageIds = data.metadata?.flaggedMessages || []
-          setFlaggedMessages(new Set(flaggedMessageIds))
-        }
-      } catch (error) {
-        console.error('[ChatMessageList] Error loading flagged messages:', error)
-      }
-    }
-
-    loadFlaggedMessages()
-  }, [chatId])
-
-  const handleToggleNeedsHelp = async (messageId: string) => {
-    if (!chatId || isTogglingHelp) return
-
-    setIsTogglingHelp(true)
-    const isCurrentlyFlagged = flaggedMessages.has(messageId)
-    const newFlaggedSet = new Set(flaggedMessages)
-    
-    if (isCurrentlyFlagged) {
-      newFlaggedSet.delete(messageId)
-    } else {
-      newFlaggedSet.add(messageId)
-    }
-
-    try {
-      const response = await fetch('/api/chats/metadata', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          chatId,
-          metadata: { flaggedMessages: Array.from(newFlaggedSet) }
-        })
-      })
-
-      if (response.ok) {
-        setFlaggedMessages(newFlaggedSet)
-      } else {
-        console.error('[ChatMessageList] Failed to update flagged messages')
-      }
-    } catch (error) {
-      console.error('[ChatMessageList] Error toggling flagged messages:', error)
-    } finally {
-      setIsTogglingHelp(false)
-    }
-  }
-
   const handleSaveToNotebook = async (messageId: string, content: string) => {
     if (!tutorContext.selectedTopicId || savingToNotebook === messageId) return
-    
+
     if (onSaveToNotebook) {
       onSaveToNotebook(messageId)
     }
-    
+
     try {
   const supabase = getBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -253,7 +175,6 @@ export default function ChatMessageList({
       <div className="mx-auto max-w-2xl space-y-4 pt-2">
         {messages.map((m, index) => {
         if (m.role === 'assistant') {
-          const hasBinderContext = detectBinderUsage(m.content)
           const hasEvidence = m.evidence && m.evidence.length > 0
           const isSelected = selectedMessageId === m.id
           const prevMessage = index > 0 ? messages[index - 1] : null
@@ -283,84 +204,18 @@ export default function ChatMessageList({
                 {/* Grounding Indicator Strip + Actions */}
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--gray-200)]">
                   <div className="flex items-center gap-2">
-                    {hasBinderContext ? (
-                      <div className="flex items-center gap-2">
-                        <FileIcon className="w-4 h-4 text-[var(--teal)]" />
-                        <span className="text-xs text-[var(--teal)] font-medium">
-                          ✅ Using: {(() => {
-                            const filenameMatches = m.content.match(/From\s+["']?([^"'\n]+\.(pdf|docx?|txt))["']?/gi)
-                            if (filenameMatches && filenameMatches.length > 0) {
-                              const filenames = filenameMatches
-                                .map(match => match.replace(/From\s+["']?/i, '').replace(/["']?/g, ''))
-                                .filter((f, i, arr) => arr.indexOf(f) === i)
-                                .slice(0, 3)
-                              return filenames.join(', ') + (filenameMatches.length > 3 ? '...' : '')
-                            }
-                            const patternMatches = m.content.match(/([A-Z][a-zA-Z0-9_\-]+\.(pdf|docx?|txt))/g)
-                            if (patternMatches && patternMatches.length > 0) {
-                              const filenames = patternMatches
-                                .filter((f, i, arr) => arr.indexOf(f) === i)
-                                .slice(0, 3)
-                              return filenames.join(', ') + (patternMatches.length > 3 ? '...' : '')
-                            }
-                            return 'your uploaded materials'
-                          })()}
-                        </span>
-                      </div>
-                    ) : (
+
                       <>
                         <ClipboardCheck className="w-4 h-4 text-[var(--gray-400)]" />
                         <span className="text-xs text-[var(--gray-400)] font-medium">NCLEX Reasoning (Learning Only)</span>
                       </>
-                    )}
+
                   </div>
                   <div className="flex items-center gap-2">
                     {voiceEnabled && (
                       <ForgeAudioPlayer text={m.content} autoPlay={m.id === newestAssistantId} />
                     )}
-                    <button
-                      onClick={() => {
-                        if (onSaveClip) {
-                          onSaveClip(m.id, m.content)
-                          setSavedClipId(m.id)
-                          setTimeout(() => setSavedClipId(null), 3000)
-                        }
-                      }}
-                      className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all duration-200 ${
-                        savedClipId === m.id
-                          ? 'text-emerald-600 bg-emerald-50'
-                          : 'text-[var(--gray-400)] hover:text-[var(--teal)] hover:bg-[var(--teal-light)]'
-                      }`}
-                      title="Save this explanation to your Learning Library (accessible from sidebar)"
-                    >
-                      {savedClipId === m.id ? (
-                        <>
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Saved!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Bookmark className="w-3 h-3" />
-                          <span>Save</span>
-                        </>
-                      )}
-                    </button>
-                    {chatId && (
-                      <button
-                        onClick={() => handleToggleNeedsHelp(m.id)}
-                        disabled={isTogglingHelp}
-                        className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all duration-200 ${
-                          flaggedMessages.has(m.id)
-                            ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 font-medium'
-                            : 'text-[var(--gray-400)] hover:text-amber-600 hover:bg-amber-50'
-                        } disabled:opacity-50`}
-                        title={flaggedMessages.has(m.id) ? 'Flagged for review - Click to remove. This appears in your Dashboard under "Flagged for Review"' : 'Flag this Q&A pair for focused review (appears in Dashboard)'}
-                      >
-                        <AlertCircle className="w-3 h-3" />
-                        <span>{flaggedMessages.has(m.id) ? 'Flagged' : 'Flag'}</span>
-                      </button>
-                    )}
-                    {tutorContext.selectedTopicId && !hasBinderContext && (
+                    {tutorContext.selectedTopicId && (
                       <button
                         onClick={() => handleSaveToNotebook(m.id, m.content)}
                         disabled={savingToNotebook === m.id}

@@ -18,7 +18,9 @@
     "test:e2e:report": "playwright show-report",
     "test:e2e:quiz-routing": "playwright test tests/e2e/quiz-first-routing.spec.ts --project=desktop-chromium",
     "test:e2e:tutor-save": "playwright test tests/e2e/tutor-message-save.spec.ts --project=desktop-chromium",
-    "test:e2e:quiz-mistake-map": "playwright test tests/e2e/quiz-mistake-map.spec.ts --project=desktop-chromium"
+    "test:e2e:quiz-mistake-map": "playwright test tests/e2e/quiz-mistake-map.spec.ts --project=desktop-chromium",
+    "lint:gate": "node scripts/quality/lint-gate.mjs",
+    "prebuild": "npm run lint:gate"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
@@ -60,8 +62,8 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "dotenv": "^17.4.2",
-    "eslint": "^8",
-    "eslint-config-next": "^16.1.0",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.35",
     "fast-check": "^4.6.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",

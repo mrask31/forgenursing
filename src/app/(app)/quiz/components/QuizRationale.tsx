@@ -1,10 +1,13 @@
 'use client'
+import { nclexCategoryLabel } from '@/lib/nclex-categories'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Brain } from 'lucide-react'
 
 interface QuizRationaleProps {
+  previewOnly?: boolean
+  sourceChecked?: boolean
   reviewed?: boolean
   sources?: {title:string;url:string}[]
   isCorrect: boolean
@@ -35,12 +38,13 @@ interface QuizRationaleProps {
 const clearTutorAutoSendState = () => {
   if (typeof window === 'undefined') return
 
-  localStorage.removeItem('forgenursing-tutor-prefill')
-  localStorage.removeItem('forgenursing-tutor-auto-send')
-  localStorage.removeItem('forgenursing-tutor-has-images')
+  sessionStorage.removeItem('forgenursing-tutor-prefill')
+  sessionStorage.removeItem('forgenursing-tutor-auto-send')
+  sessionStorage.removeItem('forgenursing-tutor-has-images')
 }
 
 function fallbackMistakeType(category: string) {
+  category = nclexCategoryLabel(category)
   if (category === 'Psychosocial Integrity') return 'Therapeutic communication'
   if (category === 'Pharmacological Therapies') return 'Medication reasoning'
   if (category === 'Safety and Infection Control') return 'Safety'
@@ -53,7 +57,8 @@ function fallbackMistakeType(category: string) {
 }
 
 export default function QuizRationale({
-  reviewed = false, sources = [], isCorrect, userAnswer, correctAnswer, options, rationaleCorrect,
+  previewOnly = false,
+  sourceChecked = false, reviewed = false, sources = [], isCorrect, userAnswer, correctAnswer, options, rationaleCorrect,
   rationaleIncorrect, nclexCategory, difficulty, mistakeType, reasoningTrap,
   fixInstruction, retestFocus, keyCue, whyCorrectShort, oneLineFix,
   sessionId, questionId, questionIndex, onNext,
@@ -70,6 +75,7 @@ export default function QuizRationale({
 
   const handleToggleFullRationale = () => {
     setShowFullRationale(prev => !prev)
+    if (previewOnly) return
     try {
       const posthog = require('posthog-js').default
       posthog.capture('show_full_rationale_clicked', {
@@ -84,6 +90,7 @@ export default function QuizRationale({
   }
 
   const handleFixWeakness = async () => {
+    if (previewOnly) return
     if (isDiggingDeeper) return
 
     setIsDiggingDeeper(true)
@@ -140,6 +147,11 @@ export default function QuizRationale({
       }
 
       clearTutorAutoSendState()
+      // Preserve this answered step in browser history before leaving for the tutor.
+      const back = new URL(window.location.href)
+      back.searchParams.set('sessionId', sessionId)
+      back.searchParams.set('feedbackQuestionId', questionId)
+      window.history.replaceState(null, '', back.pathname + back.search)
       router.push(`/tutor?sessionId=${data.chatId}`)
     } catch (error) {
       console.error('[QuizRationale] Fix weakness error:', error)
@@ -233,12 +245,12 @@ export default function QuizRationale({
       )}
 
       <div className="flex items-center gap-3 text-xs text-gray-400">
-        <span className="px-2 py-1 rounded bg-gray-100">{nclexCategory}</span>
-        <span>{'●'.repeat(difficulty)}{'○'.repeat(5 - difficulty)}</span>
+        <span className="px-2 py-1 rounded bg-gray-100">{nclexCategoryLabel(nclexCategory)}</span>
+        {!sourceChecked && <span>{'●'.repeat(difficulty)}{'○'.repeat(5 - difficulty)}</span>}
       </div>
 
       <p className="text-center text-[10px] leading-snug text-gray-400">
-        {reviewed ? 'Reviewed practice explanation • Educational use only' : 'AI-generated rationale • Educational use only'}
+        {sourceChecked ? 'AI-assisted, source-checked explanation • Not independently clinically validated' : reviewed ? 'Reviewed practice explanation • Educational use only' : 'AI-generated rationale • Educational use only'}
       </p>
 
       {sources.length > 0 && <details><summary className="cursor-pointer text-sm font-semibold">Supporting references</summary><ul className="mt-2 space-y-2">{sources.map(source => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="text-sm underline">{source.title}</a></li>)}</ul></details>}
@@ -259,7 +271,7 @@ export default function QuizRationale({
               className="block w-full rounded-lg text-white text-center font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#0D8F9C', minHeight: '44px' }}
             >
-              {isRetestingWeakness ? 'Building Retest…' : 'Try a related question →'}
+              {isRetestingWeakness ? 'Loading related question…' : 'Try a related question →'}
             </button>
           )}
           <button
@@ -274,7 +286,7 @@ export default function QuizRationale({
             <button
               type="button"
               onClick={handleFixWeakness}
-              disabled={isDiggingDeeper}
+              disabled={previewOnly || isDiggingDeeper}
               className="block w-full rounded-lg border text-center font-semibold text-sm py-3 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ borderColor: '#0B2545', color: '#0B2545', minHeight: '44px' }}
             >

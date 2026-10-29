@@ -6,6 +6,7 @@ import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield } from
 import Link from 'next/link'
 import { clearSupabaseStorage, isSessionError, debugAuthLog, resetSession } from '@/lib/auth-utils'
 import { hasAccess } from '@/lib/subscription-access'
+import { loginReturnPath } from '@/lib/login-return-path'
 import { resolveEntryPath } from '@/lib/resolve-entry-path'
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
@@ -161,6 +162,10 @@ export default function LoginPage() {
         return
       }
 
+      const params = new URLSearchParams(window.location.search)
+      const returnPath = loginReturnPath(params.get('next') || params.get('redirect'))
+      if (returnPath) { window.location.replace(returnPath); return }
+
       try {
         await withTimeout(
           fetch('/api/stripe/sync-subscription', { method: 'POST', credentials: 'include' }),
@@ -185,7 +190,9 @@ export default function LoginPage() {
         const { data: profile, error: profileError } = profileResult
 
         if (!profileError && profile) {
-          const userHasAccess = hasAccess(
+          const passResponse=await fetch('/api/subscription/status',{credentials:'include',cache:'no-store'})
+          const passStatus=passResponse.ok?await passResponse.json():null
+          const userHasAccess = Boolean(passStatus?.hasAccess) || hasAccess(
             profile?.subscription_status,
             profile?.trial_ends_at,
             profile?.is_beta,
@@ -261,8 +268,8 @@ export default function LoginPage() {
                   <Shield className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-900 text-sm mb-1">Your learning library</div>
-                  <div className="text-xs text-slate-600">All your saved explanations and clips</div>
+                  <div className="font-semibold text-slate-900 text-sm mb-1">Understand your answers</div>
+                  <div className="text-xs text-slate-600">Review explanations and practice related retries</div>
                 </div>
               </div>
               <div className="flex items-start gap-3 text-left">
@@ -270,7 +277,7 @@ export default function LoginPage() {
                   <GraduationCap className="w-5 h-5 text-[#0D8F9C]" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-900 text-sm mb-1">Access your dashboard</div>
+                  <div className="font-semibold text-slate-900 text-sm mb-1">See your progress</div>
                   <div className="text-xs text-slate-600">View your progress and study patterns</div>
                 </div>
               </div>

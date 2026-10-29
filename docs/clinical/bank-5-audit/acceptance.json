@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-26",
+  "reported_by": "Michael, relaying Muse blind audit",
+  "full_report_reference": "batch-5-audit.md (referenced by user; full document not available in this workspace)",
+  "initial_verdicts": {
+    "APPROVE": 29,
+    "EDIT": 1,
+    "REJECT": 0
+  },
+  "blind_key_agreement": "30/30",
+  "edited_item": "qb5-h10",
+  "key_unchanged": "D",
+  "applied_options": {
+    "B": "The tracing indicates hyperkalemia, because flattened T waves reflect potassium excess.",
+    "C": "The client has hypokalemia, but prominent U waves show the potassium is returning to normal."
+  },
+  "integration_acceptance": "PASS, relayed by Michael after Muse browser acceptance",
+  "production_publication": true,
+  "independent_clinical_validation": false,
+  "integration_evidence": {
+    "preview_families": 80,
+    "preview_questions": 240,
+    "all_new_variants_rendered": 30,
+    "edited_distractors": "verbatim; D unchanged",
+    "labels": "all eight canonical across chooser, Progress, CPR",
+    "family_tested": "qb5-h02 oral care",
+    "review_queue": [
+      10,
+      11,
+      10
+    ],
+    "original_totals_answered": [
+      109,
+      114
+    ],
+    "original_totals_correct": [
+      55,
+      59
+    ],
+    "basic_care_delta": {
+      "answered": 5,
+      "correct": 4
+    },
+    "other_categories_unchanged": true
+  }
+}

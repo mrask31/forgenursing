@@ -65,7 +65,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <Link href="/privacy" className="inline-flex min-h-11 items-center hover:text-[#087986]">Privacy</Link>
               <a href="mailto:support@forgenursing.com" className="inline-flex min-h-11 items-center hover:text-[#087986]">Support</a>
             </nav>
-            <p className="text-center text-[10px]">© 2026 MJR Intelligence Group LLC</p>
+            <p className="text-center text-[10px]">ForgeNursing · <span data-nosnippet="">© 2026 MJR Intelligence Group LLC</span></p>
           </div>
         ) : <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 text-xs sm:text-sm text-[#1E2D3D]">
@@ -86,7 +86,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               </a>
             </div>
             <div className="text-[#1E2D3D]/60 text-center sm:text-right">
-              <p>© 2026 MJR Intelligence Group LLC</p>
+              <p>ForgeNursing · <span data-nosnippet="">© 2026 MJR Intelligence Group LLC</span></p>
             </div>
           </div>
         </div>}

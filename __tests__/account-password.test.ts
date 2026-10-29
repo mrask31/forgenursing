@@ -1,0 +1,3 @@
+import {expect,it,vi} from 'vitest'
+import {changeAccountPassword} from '../src/lib/account-password'
+it('requires current-password verification before mutation',async()=>{const auth:any={getUser:vi.fn().mockResolvedValue({data:{user:{id:'u',email:'qa@example.test'}}}),signInWithPassword:vi.fn().mockResolvedValue({error:{}}),updateUser:vi.fn()};await expect(changeAccountPassword(auth,'old','a-long-new-password')).rejects.toThrow('verified');expect(auth.updateUser).not.toHaveBeenCalled();auth.signInWithPassword.mockResolvedValue({data:{user:{id:'u'}}});auth.updateUser.mockResolvedValue({});await changeAccountPassword(auth,'old','a-long-new-password');expect(auth.updateUser).toHaveBeenCalledWith({password:'a-long-new-password'})})

@@ -1,0 +1,132 @@
+{
+  "mode": "dry_run_only",
+  "revision": 1,
+  "bank_sha256": "39ee7387589cfe0d681d166a7fc5b7d1f8c2eb7c11368ab78c57e9f6070504fc",
+  "question_count": 30,
+  "family_count": 10,
+  "publishable_count": 0,
+  "database_writes": 0,
+  "held_item_ids": [],
+  "families": [
+    {
+      "family_id": "qb4-h01",
+      "draft_distinction_id": "unanswered-procedure-questions-before-consent",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb4-h02",
+      "draft_distinction_id": "pulmonary-tb-airborne-controls",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb4-h03",
+      "draft_distinction_id": "convulsive-seizure-protect-without-restraint",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb4-h04",
+      "draft_distinction_id": "infant-sleep-back-firm-flat-empty",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb4-h05",
+      "draft_distinction_id": "suicide-cue-direct-nonjudgmental-inquiry",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb4-h06",
+      "draft_distinction_id": "lithium-consistent-salt-and-fluid-plan",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb4-h07",
+      "draft_distinction_id": "dialysis-access-arm-protection",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb4-h08",
+      "draft_distinction_id": "suspected-transfusion-reaction-stop-before-continuing",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb4-h09",
+      "draft_distinction_id": "gastric-tube-feeding-head-elevation",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    },
+    {
+      "family_id": "qb4-h10",
+      "draft_distinction_id": "standard-cane-opposite-weak-leg",
+      "runtime_distinction_id": null,
+      "delayed_variant_count": 1,
+      "blockers": [
+        "Draft content has no publication approval",
+        "No exact runtime taxonomy entry; do not guess a broad mapping",
+        "Current ClinicalPacket requires at least three delayed variants; draft contains one",
+        "Difficulty, key_cue, one_line_fix and full packet provenance/reference details are not authored"
+      ]
+    }
+  ]
+}

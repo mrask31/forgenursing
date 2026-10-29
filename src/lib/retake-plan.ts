@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { normalizeNclexCategory } from './nclex-categories'
 
 export const CPR_CATEGORIES = [
   'Management of Care', 'Safety and Infection Prevention and Control',
@@ -22,7 +23,5 @@ export function readRetakePlan(value: unknown): RetakePlan {
 }
 export function cprPracticeCategory(plan: RetakePlan): string | null {
   const category = CPR_CATEGORIES.find(c => plan.cpr[c] === 'Below') || CPR_CATEGORIES.find(c => plan.cpr[c] === 'Near')
-  if (category === 'Safety and Infection Prevention and Control') return 'Safety and Infection Control'
-  if (category === 'Pharmacological and Parenteral Therapies') return 'Pharmacological Therapies'
-  return category || null
+  return normalizeNclexCategory(category)
 }
