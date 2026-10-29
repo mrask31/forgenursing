@@ -25,3 +25,5 @@ Validation: 266 tests across 45 files pass; TypeScript passes; focused demo suit
 
 ## Unfinished acceptance remains open
 Fresh-trial countdown/expiry (reported Nov 2/Nov 5 observation points); CPR save-to-focus; Topic/Suggested sessions and generated-question labeling; inline tutor response; first real paid-pass fulfillment, analytics receipt and deduplication; economics and explicit ad budget. Organic video clearance is reported in the owner’s v3 brief; it does not authorize paid ads. No automation or purchase created.
+
+Initial live start returned 503 with stem-based lookup. Replaced the long punctuation-bearing stem filter with stable seeded UUID lookup; 16 focused start/retry tests pass, including no answer-key disclosure and missing-seed fail-closed behavior. TypeScript passes.

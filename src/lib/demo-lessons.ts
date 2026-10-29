@@ -17,6 +17,7 @@ export interface DemoItem {
 export interface DemoLesson {
   sourceStem: string;
   bankQuestionId?: string;
+  demoId?: string;
   distinctionId?: string;
   topic: string;
   trap_type: string;
@@ -246,7 +247,7 @@ export const LEGACY_DEMO_LESSONS: DemoLesson[] = [
 ];
 
 // Preserve the signed-in packet verbatim; only adapt its field names for the public UI.
-export const DEMO_LESSONS: DemoLesson[] = rotation.map(({ question_id }) => {
+export const DEMO_LESSONS: DemoLesson[] = rotation.map(({ question_id, demo_id }) => {
   const packet = bank.find(entry => entry.packet.packet_id === question_id)?.packet;
   if (!packet) throw new Error(`Missing demo bank packet: ${question_id}`);
   const item = (question: typeof packet.original): DemoItem => ({
@@ -257,7 +258,7 @@ export const DEMO_LESSONS: DemoLesson[] = rotation.map(({ question_id }) => {
       .filter((entry): entry is [string, string] => typeof entry[1] === 'string')),
     one_line_fix: question.one_line_fix,
   });
-  return { bankQuestionId: question_id, distinctionId: packet.distinction_id,
+  return { bankQuestionId: question_id, demoId: demo_id, distinctionId: packet.distinction_id,
     sourceStem: packet.original.question_stem, topic: packet.focus,
     trap_type: packet.focus, sources: packet.references,
     initial: item(packet.original), retry: item(packet.retry) };

@@ -60,10 +60,10 @@ export async function POST(req: NextRequest) {
       .from('answer_trap_questions')
       .select('id, question_stem')
       .eq('is_active', true)
-      .in('question_stem', DEMO_LESSONS.map(lesson => lesson.sourceStem));
+      .in('id', DEMO_LESSONS.map(lesson => lesson.demoId!));
     const selectedLessons = selectDemoLessons();
     const questions = selectedLessons.map((lesson, index) => {
-      const row = bank?.find(q => q.question_stem === lesson.sourceStem);
+      const row = bank?.find(q => q.id === lesson.demoId);
       return row ? publicDemoQuestion(lesson.initial, row.id, index) : null;
     }).filter((q): q is PublicQuestion => q !== null);
     if (questionsError || questions.length !== selectedLessons.length) {
