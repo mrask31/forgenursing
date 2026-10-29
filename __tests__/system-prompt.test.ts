@@ -16,10 +16,11 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('commit to an answer');
   });
 
-  it('BSN + notes mode contains uploaded materials ONLY', () => {
+  it('retired notes mode uses general reasoning without promoting uploads', () => {
     const prompt = buildSystemPrompt('BSN', 'notes');
     
-    expect(prompt).toContain('uploaded materials ONLY');
+    expect(prompt).toContain('Use general NCLEX-RN reasoning');
+    expect(prompt).not.toContain('uploaded materials ONLY');
   });
 
   it('all outputs contain ADPIE framework and the five ADPIE response sections', () => {

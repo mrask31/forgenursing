@@ -14,11 +14,15 @@
     },
     {
       "path": "/api/emails/process-welcome-queue",
-      "schedule": "15 * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/expire-trials",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/emails/process-purchase-queue",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

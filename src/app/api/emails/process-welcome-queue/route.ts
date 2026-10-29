@@ -1,3 +1,4 @@
+import { trialEmailAuthorized } from '@/lib/emails/trial-engagement'
 import { retakeLifecycleEmail } from '@/lib/emails/retake-lifecycle'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
@@ -23,13 +24,7 @@ export async function GET(request: Request) {
 async function processWelcomeQueue(request: Request) {
   try {
     // Verify authorization (can be cron secret or service role key)
-    const authHeader = request.headers.get('authorization')
-    const cronSecret = request.headers.get('x-cron-secret')
-    
-    const isAuthorized = 
-      authHeader === `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` ||
-      authHeader === `Bearer ${process.env.CRON_SECRET}` ||
-      cronSecret === process.env.CRON_SECRET
+    const isAuthorized = trialEmailAuthorized(request)
 
     if (!isAuthorized) {
       return NextResponse.json(
@@ -95,6 +90,7 @@ async function processWelcomeQueue(request: Request) {
         const { data: emailData, error: emailError } = await resend.emails.send({
           from: 'ForgeNursing <welcome@forgenursing.com>',
           to: item.email,
+          replyTo: 'support@forgenursing.com',
           subject: 'You\'re in — here\'s what to do first',
           html: generateWelcomeEmailHTML(trialEndDate),
         })

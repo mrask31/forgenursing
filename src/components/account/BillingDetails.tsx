@@ -3,15 +3,14 @@ import { useEffect, useState } from 'react'
 
 type Billing = { stripeMode: 'live' | 'test' | 'unknown'; canManage: boolean; subscription: null | { status: string; amount: number | null; currency: string | null; interval: string | null; intervalCount: number | null; currentPeriodEnd: number | null; cancelAtPeriodEnd: boolean } }
 export default function BillingDetails() {
-  const [mode, setMode] = useState<string | null>(null)
   const [code, setCode] = useState<string | null>(null)
   const [data, setData] = useState<Billing | null>(null)
   const [error, setError] = useState(''), [busy, setBusy] = useState(false), [reload, setReload] = useState(0)
   useEffect(() => {
     const controller = new AbortController()
-    setError(''); setData(null); setMode(null); setCode(null)
+    setError(''); setData(null); setCode(null)
     fetch('/api/account/billing', { cache: 'no-store', signal: controller.signal }).then(async response => {
-      const body = await response.json(); setMode(body.stripeMode ?? null); setCode(body.code ?? null)
+      const body = await response.json(); setCode(body.code ?? null)
       if (!response.ok) throw new Error(body.error)
       setData(body)
     }).catch(err => { if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Billing could not load.') })
@@ -28,7 +27,6 @@ export default function BillingDetails() {
   }
   const subscription = data?.subscription
   return <div className="space-y-3 text-sm text-slate-700">
-    {mode && <p><strong>Configured Stripe key mode: </strong>{mode === 'live' ? 'Live' : mode === 'test' ? 'Sandbox / test' : 'Unknown or missing'}</p>}
     {code && <p className="text-xs">Billing diagnostic: {code}</p>}
     {!data && !error && <p role="status">Loading billing details…</p>}
     {subscription && <>
