@@ -11,6 +11,11 @@ export type TrialDeliveryResult = 'sent' | 'skipped' | 'failed' | 'reconciliatio
 export const TRIAL_RETRY_WINDOW_MS = 23 * 60 * 60 * 1000
 const LEASE_MS = 5 * 60 * 1000
 const TABLE = 'trial_engagement_deliveries'
+// jsonb can reorder object keys. Canonicalize the first request and retries.
+export function stableTrialPayload(payload: unknown): string {
+  return JSON.stringify(payload, (_key,value) => value && typeof value === 'object' && !Array.isArray(value)
+    ? Object.fromEntries(Object.entries(value).sort(([a],[b]) => a < b ? -1 : a > b ? 1 : 0)) : value)
+}
 
 export function trialEmailAuthorized(request: Request): boolean {
   const bearer = request.headers.get('authorization')
@@ -86,7 +91,7 @@ export async function deliverTrialEngagement(
     const response = await (options.transport ?? fetch)('https://api.resend.com/emails', {
       method: 'POST', headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY?.trim()}`,
         'Content-Type': 'application/json', 'Idempotency-Key': `trial-engagement/${candidate.user_id}/${step}` },
-      body: JSON.stringify(payload), signal: AbortSignal.timeout(15000), redirect: 'error', cache: 'no-store',
+      body: stableTrialPayload(payload), signal: AbortSignal.timeout(15000), redirect: 'error', cache: 'no-store',
     })
     const body = await response.json().catch(() => ({}))
     if (response.ok && typeof body.id === 'string' && body.id) {

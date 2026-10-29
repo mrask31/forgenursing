@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { deliverTrialEngagement, trialEmailAuthorized, TRIAL_RETRY_WINDOW_MS } from '../src/lib/emails/trial-engagement'
+import { deliverTrialEngagement, trialEmailAuthorized, stableTrialPayload, TRIAL_RETRY_WINDOW_MS } from '../src/lib/emails/trial-engagement'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 const now = Date.parse('2026-10-29T02:00:00Z')
@@ -74,6 +74,10 @@ describe('trial engagement delivery', () => {
   it('never replays held legacy records', async () => {
     const f=fixture(); f.rows.push({id:'old',user_id:candidate.user_id,step:'trial_day_3',status:'legacy_hold'})
     expect(await f.send()).toBe('skipped'); expect(f.requests).toHaveLength(0)
+  })
+  it('keeps a jsonb-reordered payload byte-identical', () => {
+    expect(stableTrialPayload({to:['fixture@example.invalid'],text:'same',subject:'same'}))
+      .toBe(stableTrialPayload({subject:'same',text:'same',to:['fixture@example.invalid']}))
   })
   it('rejects missing secrets including a literal undefined bearer', () => {
     vi.stubEnv('CRON_SECRET',''); vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY','')
