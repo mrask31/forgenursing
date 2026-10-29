@@ -1,3 +1,5 @@
+import bank from '../../content/source-checked-bank.json';
+import rotation from '../../content/demo-rotation-2026-10-29.json';
 import { demoDistinction } from './learning/demo-distinction';
 import { ADDITIONAL_DEMO_LESSONS } from "./additional-demo-lessons";
 // Server-side demo content. Import only from API routes; never ship answer keys in client bundles.
@@ -14,13 +16,15 @@ export interface DemoItem {
 }
 export interface DemoLesson {
   sourceStem: string;
+  bankQuestionId?: string;
+  distinctionId?: string;
   topic: string;
   trap_type: string;
   sources: { title: string; url: string }[];
   initial: DemoItem;
   retry: DemoItem;
 }
-export const DEMO_LESSONS: DemoLesson[] = [
+export const LEGACY_DEMO_LESSONS: DemoLesson[] = [
   {
     "sourceStem": "A patient is admitted with a serum potassium level of 6.2 mEq/L. Which ECG change should the nurse expect to see?",
     "topic": "Potassium and ECG changes",
@@ -241,6 +245,24 @@ export const DEMO_LESSONS: DemoLesson[] = [
   ...ADDITIONAL_DEMO_LESSONS
 ];
 
+// Preserve the signed-in packet verbatim; only adapt its field names for the public UI.
+export const DEMO_LESSONS: DemoLesson[] = rotation.map(({ question_id }) => {
+  const packet = bank.find(entry => entry.packet.packet_id === question_id)?.packet;
+  if (!packet) throw new Error(`Missing demo bank packet: ${question_id}`);
+  const item = (question: typeof packet.original): DemoItem => ({
+    question_stem: question.question_stem, options: question.options,
+    correct_answer: question.correct_answer, key_cue: question.key_cue,
+    why_correct_short: question.rationale_correct,
+    rationales: Object.fromEntries(Object.entries(question.rationale_incorrect)
+      .filter((entry): entry is [string, string] => typeof entry[1] === 'string')),
+    one_line_fix: question.one_line_fix,
+  });
+  return { bankQuestionId: question_id, distinctionId: packet.distinction_id,
+    sourceStem: packet.original.question_stem, topic: packet.focus,
+    trap_type: packet.focus, sources: packet.references,
+    initial: item(packet.original), retry: item(packet.retry) };
+});
+
 export const DEMO_SESSION_SIZE = 3;
 
 export function selectDemoLessons(random = Math.random): DemoLesson[] {
@@ -253,7 +275,7 @@ export function selectDemoLessons(random = Math.random): DemoLesson[] {
 }
 
 export function demoLesson(stem: string) {
-  return DEMO_LESSONS.find(lesson => lesson.sourceStem === stem);
+  return [...DEMO_LESSONS, ...LEGACY_DEMO_LESSONS].find(lesson => lesson.sourceStem === stem);
 }
 export function publicDemoQuestion(item: DemoItem, id: string, index = 0): PublicQuestion {
   return { id, question_stem: item.question_stem, options: item.options, question_index: index };
@@ -261,7 +283,7 @@ export function publicDemoQuestion(item: DemoItem, id: string, index = 0): Publi
 export function demoFeedback(lesson: DemoLesson, selected: string, retry = false): AnswerFeedback {
   const item = retry ? lesson.retry : lesson.initial;
   return {
-    distinction_id: demoDistinction(lesson.topic),
+    distinction_id: lesson.distinctionId ?? demoDistinction(lesson.topic),
     is_correct: selected === item.correct_answer,
     correct_answer: item.correct_answer,
     trap_type: lesson.trap_type,

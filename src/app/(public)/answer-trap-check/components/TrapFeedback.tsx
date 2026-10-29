@@ -74,6 +74,7 @@ export default function TrapFeedback({
 
         {/* Feedback card */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#0D8F9C]">Quick why</p>
           {/* Trap type badge (only on incorrect) */}
           {!is_correct && (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEF2F2] border border-red-100">

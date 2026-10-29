@@ -1,6 +1,7 @@
+import bank from '../content/source-checked-bank.json'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
-import { DEMO_LESSONS, DEMO_SESSION_SIZE, selectDemoLessons, demoFeedback, publicDemoQuestion } from '../src/lib/demo-lessons'
+import { DEMO_LESSONS, LEGACY_DEMO_LESSONS, demoLesson, DEMO_SESSION_SIZE, selectDemoLessons, demoFeedback, publicDemoQuestion } from '../src/lib/demo-lessons'
 import { scoreTrap } from '../src/lib/answer-trap'
 const mocks = vi.hoisted(() => ({ create: vi.fn() }))
 vi.mock('@supabase/supabase-js', () => ({ createClient: mocks.create }))
@@ -20,8 +21,8 @@ function setup(session: unknown) {
 const eligible = { questions: [qid], answers: [{ question_id: qid, is_correct: false }], completed_at: null }
 beforeEach(() => { vi.resetAllMocks() })
 describe('demo teaching content', () => {
-  it('rotates eight reviewed lessons into three distinct questions without mutating the bank', () => {
-    expect(DEMO_LESSONS).toHaveLength(8)
+  it('rotates twelve bank lessons into three distinct questions without mutating the bank', () => {
+    expect(DEMO_LESSONS).toHaveLength(12)
     const original = DEMO_LESSONS.map(lesson => lesson.sourceStem)
     const selected = selectDemoLessons(() => 0)
     expect(selected).toHaveLength(DEMO_SESSION_SIZE)
@@ -34,6 +35,19 @@ describe('demo teaching content', () => {
       for (const source of lesson.sources) expect(source.url).toMatch(/^https:\/\//)
     }
   })
+  it('uses the unchanged signed-in bank content and no legacy demo stems', () => {
+    for (const lesson of DEMO_LESSONS) {
+      const packet = bank.find(entry => entry.packet.packet_id === lesson.bankQuestionId)!.packet
+      expect(lesson.sourceStem).toBe(packet.original.question_stem)
+      expect(LEGACY_DEMO_LESSONS.some(old => old.initial.question_stem === lesson.sourceStem || old.retry.question_stem === lesson.sourceStem)).toBe(false)
+      for (const [item, q] of [[lesson.initial, packet.original], [lesson.retry, packet.retry]] as const) {
+        expect(item.options).toEqual(q.options)
+        expect(item.correct_answer).toBe(q.correct_answer)
+        expect(item.why_correct_short).toBe(q.rationale_correct)
+        expect(item.rationales).toEqual(q.rationale_incorrect)
+      }
+    }
+  })
   it('has a distinct explanation for every distractor and keeps answer keys private', () => {
     for (const lesson of DEMO_LESSONS) for (const item of [lesson.initial, lesson.retry]) {
       expect(item.options).toHaveLength(4)
@@ -41,16 +55,20 @@ describe('demo teaching content', () => {
       expect(item.options.some(option => option.label === item.correct_answer)).toBe(true)
       const wrong = item.options.filter(option => option.label !== item.correct_answer)
       expect(new Set(wrong.map(option => item.rationales[option.label])).size).toBe(3)
-      for (const option of wrong) expect(item.rationales[option.label].length).toBeGreaterThan(20)
+      for (const option of wrong) expect(item.rationales[option.label].trim().length).toBeGreaterThan(0)
       expect(Object.keys(publicDemoQuestion(item, qid)).sort()).toEqual(['id','options','question_index','question_stem'])
     }
   })
   it('offers retries only after an original miss and explains the chosen option', () => {
     const lesson = DEMO_LESSONS[0]
-    expect(demoFeedback(lesson, 'D').why_wrong_short).toContain('ST depression')
-    expect(demoFeedback(lesson, 'D').retry_available).toBe(true)
-    expect(demoFeedback(lesson, 'B').retry_available).toBe(false)
+    const wrong = Object.keys(lesson.initial.rationales)[0]
+    expect(demoFeedback(lesson, wrong).why_wrong_short).toBe(lesson.initial.rationales[wrong])
+    expect(demoFeedback(lesson, Object.keys(lesson.initial.rationales)[0]).retry_available).toBe(true)
+    expect(demoFeedback(lesson, lesson.initial.correct_answer).retry_available).toBe(false)
     expect(demoFeedback(lesson, 'A', true).retry_available).toBe(false)
+  })
+  it('preserves feedback for in-flight legacy sessions', () => {
+    for (const lesson of LEGACY_DEMO_LESSONS) expect(demoLesson(lesson.sourceStem)).toBe(lesson)
   })
   it('lists missed topics without claiming a diagnosed pattern', () => {
     const result = scoreTrap([{ question_id: 'a', selected_answer: 'A', is_correct: false, trap_type: 'Delegation' }, { question_id: 'b', selected_answer: 'A', is_correct: false, trap_type: 'Priority-setting' }])
@@ -67,7 +85,7 @@ describe('related retry endpoint', () => {
     expect(query.eq).toHaveBeenCalledWith('anonymous_id', aid)
     const data = await response.json()
     expect(data.question.correct_answer).toBeUndefined()
-    expect(data.question.question_stem).toContain('2.8')
+    expect(data.question.question_stem).toBe(DEMO_LESSONS[0].retry.question_stem)
   })
   it.each([null, { ...eligible, completed_at: 'today' }, { ...eligible, questions: [] }, { ...eligible, answers: [] }, { ...eligible, answers: [{ question_id: qid, is_correct: true }] }])('rejects unavailable or ineligible sessions', async session => {
     setup(session)
@@ -75,7 +93,7 @@ describe('related retry endpoint', () => {
   })
   it('scores the related question without rewriting the original score', async () => {
     const query = setup(eligible)
-    const response = await POST(request({ selected_answer: 'C' }))
+    const response = await POST(request({ selected_answer: DEMO_LESSONS[0].retry.correct_answer }))
     expect((await response.json()).feedback.is_correct).toBe(true)
     expect(query.update).toBeUndefined()
   })

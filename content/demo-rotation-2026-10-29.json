@@ -1,0 +1,62 @@
+[
+  {
+    "question_id": "qb1-d05",
+    "demo_id": "3a34000b-33aa-5bbd-8681-67efe85ab23d",
+    "area": "Delegation"
+  },
+  {
+    "question_id": "qb1-d06",
+    "demo_id": "d9c30d7e-9859-5f6d-84f6-ac9b4281d198",
+    "area": "Delegation"
+  },
+  {
+    "question_id": "qb2-f03",
+    "demo_id": "59ee80b5-120b-5bf1-97cc-578f29a14335",
+    "area": "Pharmacological therapies"
+  },
+  {
+    "question_id": "qb2-f05",
+    "demo_id": "d02faee7-4dcf-569b-8a66-0047700a3718",
+    "area": "Pharmacological therapies"
+  },
+  {
+    "question_id": "qb2-f10",
+    "demo_id": "d7be5455-a7ac-51b6-9084-ac4705d9251f",
+    "area": "Pharmacological therapies"
+  },
+  {
+    "question_id": "qb1-i05",
+    "demo_id": "da9b69ad-747d-54f0-a625-3ab928b4c8ac",
+    "area": "Safety/infection control"
+  },
+  {
+    "question_id": "qb4-h02",
+    "demo_id": "faff07ef-3854-5c5d-a9e6-b93a71373222",
+    "area": "Safety/infection control"
+  },
+  {
+    "question_id": "qb5-h08",
+    "demo_id": "01e8b36a-ce69-5434-a071-45a5289382c7",
+    "area": "Safety/infection control"
+  },
+  {
+    "question_id": "qb4-h06",
+    "demo_id": "ca33e716-cd3f-5c2f-b3c9-61cf31ff5f96",
+    "area": "Electrolytes/fluid"
+  },
+  {
+    "question_id": "qb5-h10",
+    "demo_id": "46d7efa7-96f7-59cb-ae33-0e52196d8868",
+    "area": "Electrolytes/fluid"
+  },
+  {
+    "question_id": "qb3-g10",
+    "demo_id": "de2ac7c4-52f8-597d-9b0f-5a5e404ca2b5",
+    "area": "Med-surg"
+  },
+  {
+    "question_id": "qb4-h09",
+    "demo_id": "ae5df3fc-98e4-5217-ab8d-f5047b69ca4a",
+    "area": "Med-surg"
+  }
+]
