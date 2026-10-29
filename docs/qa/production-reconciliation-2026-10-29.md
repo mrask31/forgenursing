@@ -21,3 +21,17 @@ Day-five and expiry emails now describe the $29.99 nonrenewing pass and one free
 ## Remaining checks
 
 Record new deployment ID/commit and confirm custom-domain assignment. Crawl homepage/pricing/FAQ/Terms/Privacy and signed-out checkout. Authenticated production checkout, default bank, immediate review, trial-days display and regression acceptance remain separate checks; no live purchase authorized or performed. Verify completed pass receipt/analytics when a legitimate payment exists. Keep the November 2 marketing video on hold until production acceptance passes. No paid campaigns launched.
+
+## Authenticated production verification — October 29
+
+Verified on the live custom domain using the founder's existing subscription account, not a fresh trial. Internal test original session c7d4088a-165c-47b6-8ef2-300c14187b9e remains saved at 1/5 answered; its intentional miss and subsequent correct retry/review are test activity, not customer outcomes. No learner dates or payments were altered.
+
+- Mixed bank practice selected by default; served the source-checked AV-fistula family original. Wrong selection showed its own explanation, key cue and related-retry control.
+- Related retry completed 1/1 and saved separately, with return-to-original link. Original session resumed at question 2/5 after navigation.
+- The original miss created one review, suggested October 30 but available immediately October 29. Review now opened a fresh family question, accepted the answer, saved separately and emptied the queue. No timing gate.
+- Signed-in Buy opened Stripe showing ForgeNursing Retake Pass — 3 months, $29.99, and explicit Live mode / test data not accepted. Returned using Back to ForgeNursing without payment. Stripe Link requested verification automatically; no code entered or payment credentials supplied. A test checkout was created but not paid.
+- General Tutor rendered without a course selector; historical conversation was retained. No new tutor response or inline handoff tested this pass. CPR intake controls rendered; no ratings/date were saved, so recalculated-focus behavior is not freshly verified.
+- Generated supplement is explicitly optional and labeled; no generated question was requested. Topic/Suggested bank sessions not exercised in this pass.
+- Corrected results-page wording that called all practice AI-generated; the neutral score disclaimer now fits bank and generated questions.
+
+Remaining: fresh trial signup/countdown/expiry, CPR save-to-focus, Topic/Suggested sessions and generated-question labels, inline tutor response, actual paid-pass receipt/webhook/analytics and economics/ad approval. Production acceptance is substantially advanced, not fully closed.

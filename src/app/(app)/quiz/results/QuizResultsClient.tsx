@@ -315,7 +315,7 @@ export default function QuizResultsClient() {
           <p className="text-4xl font-bold text-[#0B2545]">{score} / {total}</p>
           <p className="text-sm text-slate-600">Correct answers in this session</p>
           <p className="text-[11px] leading-snug text-gray-400">
-            Scores reflect AI-generated practice questions for study only and do not predict exam performance.
+            Scores reflect your answers in this practice session only and do not predict exam performance.
           </p>
         </div>
 
