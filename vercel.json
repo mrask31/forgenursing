@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/emails/process-trial-engagement",
-      "schedule": "0 15 * * *"
+      "schedule": "0 * * * *"
     },
     {
       "path": "/api/emails/process-welcome-queue",
