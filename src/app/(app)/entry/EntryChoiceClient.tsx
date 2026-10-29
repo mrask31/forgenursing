@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
-import { CPR_CATEGORIES, EMPTY_RETAKE_PLAN, cprPracticeCategory, type RetakePlan } from '@/lib/retake-plan'
+import { CPR_CATEGORIES, EMPTY_RETAKE_PLAN, cprPracticeCategory, cprFocusCategories, type RetakePlan } from '@/lib/retake-plan'
 import { captureLoop } from '@/lib/analytics/learning-loop'
 
 type StarterCheck = { score: number; total_questions: number; detected_trap: string | null }
@@ -108,6 +108,7 @@ export default function EntryChoiceClient() {
     {claimNotice && <div role="status" className="mt-5 rounded-xl bg-teal-50 p-4 text-sm">{claimNotice} {claimNotice.includes('not been') && <button onClick={load} className="underline">Retry handoff</button>}</div>}
     {check && focus && focus.total_attempted < 5 && <p className="mt-4 text-sm text-slate-600 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Starter check saved: {check.score}/{check.total_questions}. A starting point, not a readiness score.</p>}
     {!plan.completed && !editing && <button onClick={() => setEditing(true)} className="mt-5 text-sm font-semibold text-[#087986] underline">Add your exam date or performance report (optional)</button>}
+    {!editing && cprFocusCategories(plan).length > 0 && <section aria-live="polite" className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-5"><h2 className="font-bold">Your score-report study focus</h2><p className="mt-2">{cprFocusCategories(plan).join(' · ')}</p><p className="mt-2 text-sm text-slate-600">Based on your lowest saved ratings: Below first, then Near. Keep reviewing other areas too.</p><Link href="/quiz?suggested=1" className="mt-3 inline-block font-semibold underline">Suggested bank practice →</Link></section>}
     {editing ? <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 space-y-5">
       <div><h2 className="text-xl font-bold">Make this plan yours</h2><p className="mt-2 text-sm text-slate-600">These details are optional. This plan focuses on NCLEX-RN preparation.</p></div>
       <label className="block text-sm font-semibold">Target exam date <span className="font-normal text-slate-500">(optional)</span><input type="date" value={plan.targetDate} onChange={e => setPlan({ ...plan, targetDate: e.target.value })} className="mt-2 block w-full rounded-lg border border-slate-300 p-3" /></label>

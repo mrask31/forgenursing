@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { cprPracticeCategory, readRetakePlan } from '@/lib/retake-plan'
 import { NCLEX_CATEGORIES } from '@/lib/nclex-categories'
 
 
 const TOPIC_OPTIONS = ['All Categories', ...NCLEX_CATEGORIES]
 
 type StartOptions = {
+  nclexCategory?: string | null
   practiceSource?: 'bank' | 'generated'
   quizMode?: 'standard' | 'targeted_drill'
   targetMistakeType?: string | null
@@ -28,18 +30,17 @@ interface QuizSetupProps {
 
 export default function QuizSetup({setSourceType, category, setCategory, onStart, loading, resumeSession, onResume}: QuizSetupProps) {
   const [mode, setMode] = useState<'mixed' | 'topic' | 'suggested' | 'generated'>('mixed')
-  const [suggestion, setSuggestion] = useState<{focus: string; focus_explanation: string} | null>(null)
+  const [suggestion, setSuggestion] = useState<{focus: string; focus_explanation: string; category?: string | null; mistake?: string | null} | null>(null)
   useEffect(() => {
     const controller = new AbortController()
-    fetch('/api/fix-plan', { signal: controller.signal, cache: 'no-store' })
-      .then(response => response.ok ? response.json() : null)
-      .then(data => {
-        if (data?.has_personal_plan) {
-          setSuggestion(data)
-          if (new URLSearchParams(window.location.search).get('suggested') === '1') setMode('suggested')
-        }
-      })
-      .catch(() => {})
+    Promise.all(['/api/fix-plan','/api/retake-plan'].map(url => fetch(url, {signal:controller.signal,cache:'no-store'}).then(r => r.ok ? r.json() : null)))
+      .then(([recent, saved]) => {
+        const category = cprPracticeCategory(readRetakePlan(saved?.plan))
+        setSuggestion(category ? {focus:category,focus_explanation:'Based on your lowest score-report rating.',category}
+          : recent?.has_personal_plan ? {...recent,mistake:recent.focus}
+          : {focus:'Mixed starting session',focus_explanation:'Build a starting point with source-checked bank originals.'})
+        if (new URLSearchParams(window.location.search).get('suggested') === '1') setMode('suggested')
+      }).catch(() => setSuggestion({focus:'Mixed starting session',focus_explanation:'Your saved focus could not load. This suggestion uses mixed bank originals.'}))
     return () => controller.abort()
   }, [])
   function choose(next: typeof mode) {
@@ -58,7 +59,7 @@ export default function QuizSetup({setSourceType, category, setCategory, onStart
     </section>}
     <section className="mt-7 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7">
       <h2 className="text-xl font-bold">{resumeSession ? 'Or begin a new session' : 'Choose your practice'}</h2>
-      {suggestion && <label className={`mt-5 block cursor-pointer rounded-xl border p-4 ${mode === 'suggested' ? 'border-teal-600 bg-teal-50' : 'border-slate-200'}`}><input type="radio" name="practice-mode" checked={mode === 'suggested'} onChange={() => choose('suggested')} className="mr-2 accent-teal-700" /><span className="font-bold">Suggested: {suggestion.focus}</span><p className="mt-2 text-sm text-slate-600">Based on missed practice answers. {suggestion.focus_explanation}</p><p className="mt-2 text-xs text-slate-500">Up to 3 focused questions · Keep reviewing other areas too</p></label>}
+      {suggestion && <label className={`mt-5 block cursor-pointer rounded-xl border p-4 ${mode === 'suggested' ? 'border-teal-600 bg-teal-50' : 'border-slate-200'}`}><input type="radio" name="practice-mode" checked={mode === 'suggested'} onChange={() => choose('suggested')} className="mr-2 accent-teal-700" /><span className="font-bold">Suggested bank practice: {suggestion.focus}</span><p className="mt-2 text-sm text-slate-600">{suggestion.focus_explanation}</p><p className="mt-2 text-xs text-slate-500">Up to 3 focused questions · Keep reviewing other areas too</p></label>}
       <fieldset className="mt-5 grid gap-3 sm:grid-cols-2"><legend className="sr-only">Question source</legend>
         {[{id:'mixed',title:'Mixed bank practice',body:'Source-checked originals across NCLEX-RN topics.'},{id:'topic',title:'Choose a bank topic',body:'Source-checked originals in an area you want to revisit.'}].map(item => <label key={item.id} className={`cursor-pointer rounded-xl border p-4 ${mode === item.id ? 'border-teal-600 bg-teal-50' : 'border-slate-200'}`}><input type="radio" name="practice-mode" checked={mode===item.id} onChange={() => choose(item.id as 'mixed' | 'topic')} className="mr-2 accent-teal-700" /><span className="font-bold">{item.title}</span><p className="mt-2 text-sm text-slate-600">{item.body}</p></label>)}
       </fieldset>
@@ -68,7 +69,7 @@ export default function QuizSetup({setSourceType, category, setCategory, onStart
       <p className="mt-6 text-sm text-slate-600">{mode === 'generated' ? '' : 'Up to '}{mode === 'suggested' ? 3 : 5} questions · Go at your own pace</p>
       {mode !== 'generated' && <p className="mt-2 text-sm text-slate-500">Your set may be shorter when fewer fresh originals remain in this topic or focus. Try another topic or your review queue when you finish.</p>}
       {resumeSession && <p className="mt-2 text-sm text-slate-500">Starting a new session ends the unfinished set. Answers already submitted remain in your progress.</p>}
-      <button disabled={loading} onClick={()=>onStart(mode === 'suggested' && suggestion ? {quizMode:'targeted_drill',totalQuestions:3,targetMistakeType:suggestion.focus,targetFocus:suggestion.focus_explanation} : {quizMode:'standard',totalQuestions:5,practiceSource:mode==='generated'?'generated':'bank'})} className="mt-4 min-h-12 w-full rounded-xl bg-[#0D8F9C] px-5 py-3 font-bold text-white disabled:opacity-50">{loading ? 'Starting…' : `Start ${mode === 'generated' ? '' : 'up to '}${mode === 'suggested' ? 3 : 5} questions →`}</button>
+      <button disabled={loading} onClick={()=>onStart(mode === 'suggested' && suggestion ? {practiceSource:'bank',quizMode:suggestion.mistake?'targeted_drill':'standard',totalQuestions:3,nclexCategory:suggestion.category||null,targetMistakeType:suggestion.mistake||null,targetFocus:suggestion.focus_explanation} : {quizMode:'standard',totalQuestions:5,practiceSource:mode==='generated'?'generated':'bank'})} className="mt-4 min-h-12 w-full rounded-xl bg-[#0D8F9C] px-5 py-3 font-bold text-white disabled:opacity-50">{loading ? 'Starting…' : `Start ${mode === 'generated' ? '' : 'up to '}${mode === 'suggested' ? 3 : 5} questions →`}</button>
     </section>
     <p className="mt-6 text-xs text-slate-500">AI-assisted study practice. Check uncertain explanations against your nursing references.</p>
   </div>

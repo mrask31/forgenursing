@@ -1,3 +1,4 @@
+import { retakeLifecycleEmail } from '@/lib/emails/retake-lifecycle'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
@@ -35,242 +36,61 @@ const TRIAL_SCHEDULE: Record<number, string> = {
 
 // ─── Email content generators ───────────────────────────────────────────────
 
-function emailShell(header: string, body: string): string {
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin: 0; padding: 0; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f8fafc; line-height: 1.6;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
-          <tr>
-            <td style="background: linear-gradient(135deg, #0B2545 0%, #0D8F9C 100%); padding: 32px 30px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700;">${header}</h1>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 32px 30px;">
-              ${body}
-            </td>
-          </tr>
-          <tr>
-            <td style="background-color: #f8fafc; padding: 24px 30px; text-align: center; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0 0 8px 0; color: #64748b; font-size: 14px;">ForgeNursing — Your AI clinical preceptor</p>
-              <p style="margin: 0; color: #94a3b8; font-size: 12px;">Questions? Just reply to this email.</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`
+function betaDay0(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('beta')
 }
 
-function ctaButton(text: string, url: string = 'https://forgenursing.com/tutor'): string {
-  return `<table role="presentation" style="width: 100%; margin: 28px 0;">
-  <tr>
-    <td align="center">
-      <a href="${url}" style="display: inline-block; background: linear-gradient(135deg, #0B2545 0%, #0D8F9C 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; font-size: 16px;">${text}</a>
-    </td>
-  </tr>
-</table>`
+function betaDay2(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('beta')
 }
 
-function signoff(): string {
-  return `<p style="margin: 24px 0 0 0; color: #334155; font-size: 16px;">Michael</p>`
+function betaDay5(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('beta')
 }
 
-
-// ─── Beta email templates ───────────────────────────────────────────────────
-
-function betaDay0(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: "You're in — here's what to do first",
-    html: emailShell("Welcome to ForgeNursing", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">I'm Michael — Navy Corpsman turned developer. I built ForgeNursing because I saw the gap between memorizing nursing content and actually knowing how to think through a patient scenario. Most study tools quiz you. Forge teaches you.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Here's the difference: when you bring Forge a clinical question, it doesn't just give you the answer. It walks you through the reasoning — Socratic style — the way a great preceptor would on the floor. You learn to think like a nurse, not just recall like a textbook.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Try this right now to see what I mean:</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px; background: #f0fdf4; border-left: 4px solid #0D8F9C; padding: 12px 16px; font-style: italic;">"A patient with heart failure is short of breath and has crackles in both lungs. What are my priority interventions and why?"</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Paste that in and watch how Forge thinks through it with you. That's the experience.</p>
-      ${ctaButton('Start Your First Session')}
-      ${signoff()}
-    `),
-  }
+function betaDay10(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('beta')
 }
 
-function betaDay2(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: 'Did you try it yet?',
-    html: emailShell("Quick check-in", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">If you haven't asked Forge a question yet, try this one right now:</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px; background: #f0fdf4; border-left: 4px solid #0D8F9C; padding: 12px 16px; font-style: italic;">"My patient is a 68-year-old on warfarin who just fell. What do I assess first and what labs do I need?"</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Takes two minutes. You'll see exactly how Forge thinks through clinical scenarios differently than any quiz app.</p>
-      ${ctaButton('Ask Forge Now')}
-      ${signoff()}
-    `),
-  }
+function betaDay85(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('beta')
 }
 
-function betaDay5(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: 'Clinical tip: the one thing NCLEX always tests',
-    html: emailShell("The ABCs Priority Framework", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">NCLEX loves priority questions — and the framework that unlocks most of them is simpler than you think. Airway, Breathing, Circulation. In that order. If a question gives you four patients or four interventions, the one that addresses the highest ABC threat is almost always the answer.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">The hard part isn't knowing ABCs exist — it's recognizing which clinical signs map to which level. That's exactly what Forge walks you through.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Try asking Forge: <em>"Give me a priority question with four patients and walk me through the ABC framework to find the answer."</em></p>
-      ${ctaButton('Practice With Forge')}
-      ${signoff()}
-    `),
-  }
-}
-
-function betaDay10(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: "Here's what a real Forge session looks like",
-    html: emailShell("Inside a Forge Session", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Here's a condensed look at how Forge works through a clinical scenario using the ADPIE framework:</p>
-      <p style="margin: 0 0 8px 0; color: #0B2545; font-size: 15px; font-weight: 600;">ORIENT — Forge sets the scene:</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 15px; padding-left: 16px; border-left: 3px solid #e2e8f0;"><em>"Your patient is a 72-year-old admitted for pneumonia. Temp 101.8°F, RR 28, SpO2 89% on room air. What's your first assessment priority?"</em></p>
-      <p style="margin: 0 0 8px 0; color: #0B2545; font-size: 15px; font-weight: 600;">MAP — You identify the key data:</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 15px; padding-left: 16px; border-left: 3px solid #e2e8f0;"><em>You answer, and Forge guides you to connect the SpO2 and RR to the airway/breathing priority.</em></p>
-      <p style="margin: 0 0 8px 0; color: #0B2545; font-size: 15px; font-weight: 600;">REASONING — Forge pushes your thinking:</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 15px; padding-left: 16px; border-left: 3px solid #e2e8f0;"><em>"Why would you address oxygenation before the fever? What happens if you reverse that order?"</em></p>
-      <p style="margin: 0 0 8px 0; color: #0B2545; font-size: 15px; font-weight: 600;">TRAP — Forge flags the common mistake:</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 15px; padding-left: 16px; border-left: 3px solid #e2e8f0;"><em>"Many students jump to antipyretics first. NCLEX wants you to stabilize the ABCs before treating symptoms."</em></p>
-      <p style="margin: 0 0 8px 0; color: #0B2545; font-size: 15px; font-weight: 600;">CHECK — Forge confirms your understanding:</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 15px; padding-left: 16px; border-left: 3px solid #e2e8f0;"><em>"Now apply that same logic: new scenario, same patient develops chest pain. What's your priority now?"</em></p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">That's one session. Five minutes. And you walked away understanding the reasoning, not just the answer.</p>
-      ${ctaButton('Try It Yourself')}
-      ${signoff()}
-    `),
-  }
-}
-
-function betaDay85(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: 'Your beta access ends in 5 days',
-    html: emailShell("Beta Access Ending Soon", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">You've had 85 days of free access to ForgeNursing as one of our earliest beta users. That means a lot — you helped shape what this product became.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your beta access ends in 5 days. After that, you can choose a Retake Pass to keep using Forge.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">The Retake Pass is <strong>$29.99 one-time for three months</strong>. Nothing auto-renews. Don't pass? Activate one free three-month extension after the initial period, with no proof required.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">If Forge has helped you think through clinical scenarios more clearly, now's the time to lock it in.</p>
-      ${ctaButton('Subscribe Before Beta Ends', 'https://forgenursing.com/checkout')}
-      ${signoff()}
-    `),
-  }
-}
-
-function betaDay91(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: 'Your beta access has ended',
-    html: emailShell("Beta Access Ended", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your 90-day beta period ended yesterday. Your account and all your session history are still there — nothing has been deleted.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">To pick up where you left off, choose a Retake Pass: $29.99 one-time for three months. No auto-renewal. Don't pass? One free three-month extension after the initial period, no proof required.</p>
-      ${ctaButton('Subscribe Now', 'https://forgenursing.com/checkout')}
-      ${signoff()}
-    `),
-  }
+function betaDay91(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('beta')
 }
 
 // ─── Trial email templates ──────────────────────────────────────────────────
 
-function trialDay0(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: 'Welcome — you have 7 days free',
-    html: emailShell("Welcome to ForgeNursing", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">You have 7 days of free access to ForgeNursing — an AI clinical preceptor that teaches you to think like a nurse, not just memorize like a textbook.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">When you bring Forge a clinical question, it doesn't hand you the answer. It walks you through the reasoning — Socratic style — so you actually understand the "why" behind every intervention.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Try this right now:</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px; background: #f0fdf4; border-left: 4px solid #0D8F9C; padding: 12px 16px; font-style: italic;">"A patient with diabetes has a blood sugar of 52 mg/dL and is confused. What do I do first and why?"</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Paste that in and see how Forge thinks through it with you. That's the experience — and you have 7 days to use it as much as you want.</p>
-      ${ctaButton('Start Your First Session')}
-      ${signoff()}
-    `),
-  }
+function trialDay0(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('welcome')
 }
 
-function trialDay1(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: 'Try this right now',
-    html: emailShell("One question, two minutes", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Here's a clinical question to ask Forge today:</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px; background: #f0fdf4; border-left: 4px solid #0D8F9C; padding: 12px 16px; font-style: italic;">"I have a post-op patient with sudden chest pain and dyspnea. Walk me through my assessment and priority interventions."</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Two minutes. One question. You'll see exactly why this is different from a quiz app.</p>
-      ${ctaButton('Ask Forge Now')}
-      ${signoff()}
-    `),
-  }
+function trialDay1(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('practice')
 }
 
-function trialDay3(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: 'Clinical tip: how to eliminate wrong NCLEX answers',
-    html: emailShell("Test-Taking Strategy", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Here's a strategy that works on almost every NCLEX priority question: eliminate the assessment options when the question already gives you enough data to act.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">NCLEX loves to include "assess vital signs" or "gather more data" as distractors when the stem already tells you everything you need. If the patient is in distress and you have the clinical picture, the answer is an intervention — not more assessment.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">The trick is recognizing when you have enough information. That's the clinical judgment piece — and it's exactly what Forge builds in every session.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Try asking: <em>"Give me a priority question where assessment is a distractor and walk me through why."</em></p>
-      ${ctaButton('Practice With Forge')}
-      ${signoff()}
-    `),
-  }
+function trialDay3(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('day3')
 }
 
-function trialDay6(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: 'Your trial ends tomorrow',
-    html: emailShell("Trial Ending Tomorrow", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your free trial ends tomorrow. After that, your account stays intact but access to Forge pauses until you choose a Retake Pass.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Here's what you'll lose access to:</p>
-      <ul style="margin: 0 0 16px 0; color: #334155; font-size: 16px; padding-left: 24px;">
-        <li style="margin-bottom: 8px;">Unlimited clinical reasoning sessions</li>
-        <li style="margin-bottom: 8px;">Upload your own class materials for Socratic teaching</li>
-        <li style="margin-bottom: 8px;">24/7 AI preceptor on any nursing topic</li>
-      </ul>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">The Retake Pass is <strong>$29.99 one-time for three months</strong>. No auto-renewal. Don't pass? One free three-month extension after the initial period, no proof required.</p>
-      ${ctaButton('Subscribe Now', 'https://forgenursing.com/checkout')}
-      ${signoff()}
-    `),
-  }
+function trialDay6(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('day6')
 }
 
-function trialDay8(name: string): { subject: string; html: string } {
-  const firstName = name || 'there'
-  return {
-    subject: 'Your free trial has ended',
-    html: emailShell("Trial Ended", `
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Hey ${firstName},</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">Your 7-day free trial has ended. Your account and session history are still there — nothing has been deleted.</p>
-      <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px;">To continue, choose a Retake Pass: $29.99 one-time for three months. No auto-renewal. Don't pass? One free three-month extension after the initial period, no proof required.</p>
-      ${ctaButton('Subscribe to Continue', 'https://forgenursing.com/checkout')}
-      ${signoff()}
-    `),
-  }
+function trialDay8(_name: string): { subject: string; html: string } {
+  void _name
+  return retakeLifecycleEmail('expired')
 }
 
 // ─── Template dispatcher ────────────────────────────────────────────────────

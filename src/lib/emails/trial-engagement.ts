@@ -1,3 +1,4 @@
+import { retakeLifecycleEmail } from '@/lib/emails/retake-lifecycle'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { hasPurchasedRetakePass } from './retake-pass-eligibility'
 
@@ -28,14 +29,9 @@ export function trialEmailAuthorized(request: Request): boolean {
 
 export function buildTrialPayload(candidate: Candidate, step: TrialStep): Payload {
   const ends = new Date(candidate.trial_ends_at).toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'long', day: 'numeric' })
-  const first = step === 'trial_day_3'
-  return {
-    from: 'ForgeNursing <trial@forgenursing.com>', to: [candidate.email], reply_to: 'support@forgenursing.com',
-    subject: first ? 'Try one question, then one related retry' : 'Your ForgeNursing trial: what happens next',
-    text: first
-      ? `Hey — Mike here.\n\nStart with one practice question. Answer it, read the explanation, then try the related retry to put that reasoning to work. You do not need to finish a long study session to get started.\n\nOpen practice: https://forgenursing.com/quiz\n\nYour free trial ends on ${ends}. No card was required, and the free trial does not automatically charge you.\n\nIf something is getting in the way, reply and tell me.\n\nMike\nFounder, ForgeNursing`
-      : `Hey — Mike here.\n\nYour ForgeNursing free trial ends on ${ends}. It does not automatically charge you. If you choose to continue, the Retake Pass is $29.99 one-time for three months. Nothing auto-renews. Don't pass? Activate one free three-month extension after your initial access ends, with no proof required.\n\nBefore the trial ends, try one practice question, read the explanation and complete the related retry.\n\nReview plans: https://forgenursing.com/pricing\n\nQuestions or feedback? Reply here.\n\nMike\nFounder, ForgeNursing`,
-  }
+  const content = retakeLifecycleEmail(step === 'trial_day_3' ? 'day3' : 'day5', ends)
+  return {from:'ForgeNursing <trial@forgenursing.com>',to:[candidate.email],reply_to:'support@forgenursing.com',subject:content.subject,text:content.text}
+
 }
 
 // Claim a unique user/step row before the provider. Freeze the payload so a

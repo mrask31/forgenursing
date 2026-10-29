@@ -1,3 +1,4 @@
+import { RETAKE_TUTOR_PRODUCT_CONTEXT } from '@/lib/ai/retake-tutor-context';
 import { anthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
 import { buildSystemPrompt, FINAL_EVIDENCE_CHECK } from '@/lib/ai/system-prompt';
@@ -314,7 +315,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Rest of handler uses `body` directly — NOT req.json() again
-  const { messages, strictMode, filterMode = 'mixed', selectedDocIds = [], chatId, topicTitle, className, selectedClassName, attachedFileIds: rawAttachedFileIds, imageData: rawImageData } = body;
+  const { messages, strictMode, selectedDocIds = [], chatId, attachedFileIds: rawAttachedFileIds, imageData: rawImageData } = body;
   
   // CRITICAL: Ensure attachedFileIds is always an array, never 'none' or undefined
   const attachedFileIds = Array.isArray(rawAttachedFileIds) 
@@ -370,22 +371,6 @@ export async function POST(req: NextRequest) {
   }
 
   // Get user's program_level from profile
-  let programLevel: 'LPN' | 'ADN' | 'BSN' | 'MSN' = 'ADN'; // Default to ADN
-  try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('program_level')
-      .eq('id', user.id)
-      .single();
-    
-    if (profile?.program_level) {
-      programLevel = profile.program_level as 'LPN' | 'ADN' | 'BSN' | 'MSN';
-    }
-  } catch (error) {
-    console.error('[CHAT] Error loading program_level:', error);
-    // Continue with default ADN
-  }
-
   // Extract latest user message FIRST (before any usage)
   const userMessages = (messages || []).filter((m: any) => m.role === 'user');
   let latestUserMessage: string | null = userMessages.length > 0 && userMessages[userMessages.length - 1]?.content
@@ -396,7 +381,6 @@ export async function POST(req: NextRequest) {
   let chatAttachedFileIds: string[] = []
   let chatMode: 'tutor' | 'notes' = 'tutor'
   let chatSelectedNoteIds: string[] = []
-  let isFirstAssistantReply = false
   
   if (chatId) {
     const { data: chat } = await supabase
@@ -417,37 +401,20 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    // Check if this is the first assistant reply (no prior assistant messages in history)
-    const { data: priorMessages } = await supabase
-      .from('messages')
-      .select('role')
-      .eq('chat_id', chatId)
-      .eq('role', 'assistant')
-    
-    isFirstAssistantReply = !priorMessages || priorMessages.length === 0
+
   }
   
   // Ensure latestUserMessage is always a string (not null) for downstream usage
   const latestUserMessageStr = latestUserMessage || '';
 
   // Use chat mode if available, otherwise use filterMode from request
-  const effectiveMode = chatMode === 'notes' ? 'notes' : (filterMode === 'notes' ? 'notes' : 'mixed')
   const effectiveSelectedIds = chatMode === 'notes' ? chatSelectedNoteIds : selectedDocIds
 
   // Priority: Use attachedFileIds from chat metadata if available, otherwise use selectedDocIds from request
   const effectiveAttachedIds = chatAttachedFileIds.length > 0 ? chatAttachedFileIds : (selectedDocIds.length > 0 ? selectedDocIds : [])
 
-  // Safety fallback: if mode=notes but no selectedDocIds, return error
-  if (effectiveMode === 'notes' && (!effectiveSelectedIds || effectiveSelectedIds.length === 0)) {
-    return new Response(JSON.stringify({ error: 'No notes selected. Please select notes to study.' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
   // Extract classId and topicTerm from chat metadata
   let chatClassId: string | null = null
-  let chatTopicTerm: string | null = null
   let chatTopicId: string | null = null
   
   if (chatId) {
@@ -461,7 +428,6 @@ export async function POST(req: NextRequest) {
     if (chatMeta?.metadata && typeof chatMeta.metadata === 'object') {
       chatClassId = (chatMeta.metadata as any).classId || null
       chatTopicId = (chatMeta.metadata as any).topicId || null
-      chatTopicTerm = (chatMeta.metadata as any).topicTerm || (chatMeta.metadata as any).topicTitle || null
     }
   }
 
@@ -502,18 +468,16 @@ export async function POST(req: NextRequest) {
 
 ### BINDER CONTEXT
 
-You have been given excerpts from the student's uploaded files ("binder context"). Use the following binder excerpts as your primary reference. Mention the filenames you are using. Treat them as primary for this conversation. Use them as the main source of truth, mention which file(s) you used by filename and type, and do not invent content that obviously isn't supported by the excerpts.
+Historical reference excerpts follow. Use them only as evidence relevant to this question; identify uncertainty or conflicts. Do not invent content beyond the excerpts or advertise a product feature based on their presence.
 
 ${binderContext}
 `;
   } else {
     systemPrompt += `
 
-### NO BINDER CONTEXT
+### GENERAL TUTOR
 
-You currently have no uploaded materials for this question. Answer using your general nursing/NCLEX knowledge. In the YOUR MATERIALS section of your response, include exactly this soft note (do not rephrase it, do not say you lack access, do not treat it as an error):
-
-"No materials uploaded for this course yet — I'm teaching from general nursing principles. Upload your textbook or class notes from My Courses to get responses grounded in your curriculum."
+Teach general NCLEX-RN retake reasoning. Do not add a materials or curriculum-status section. Do not direct the learner to removed features. Start with the question and its reasoning.
 `;
   }
 
@@ -559,118 +523,15 @@ You currently have no uploaded materials for this question. Answer using your ge
     }
   }
 
-  // Notes Mode behavior (when in notes mode with selected documents)
-  if (effectiveMode === 'notes' && effectiveSelectedIds.length > 0) {
-    systemPrompt += `
-### 🗒 NOTES MODE BEHAVIOR
-
-You are in **Notes Mode**.
-
-Context Rules:
-- You may ONLY use the student's selected class notes.
-- Do NOT introduce textbook facts unless the student explicitly asks to compare.
-
-Tone Rules:
-- Teach from the student's perspective.
-- Use language like:
-  "In your notes, you wrote…"
-  "Based on what you covered in class…"
-- If information is missing or unclear, say so.
-
-Conflict Rule:
-- If notes are incomplete or inaccurate:
-  - Gently flag it:
-    "Your notes mention X. Would you like to compare this with standard NCLEX guidance?"
-
-DO NOT:
-- Hallucinate missing details
-- Override the notes silently
-- Introduce external facts without permission
-`;
-  }
-
-  // Topic Context: Always include topic context when a topic is selected
-  const effectiveTopicTitle = topicTitle || chatTopicTerm
-  const effectiveClassName = className || selectedClassName
-  
-  // Map existing mode values to new system prompt mode type
-  const modeMap: Record<string, 'tutor' | 'strict' | 'notes' | 'topic'> = {
-    'general': 'tutor',
-    'strict': 'strict',
-    'notes': 'notes',
-    'topic': 'topic',
-    'mixed': 'tutor', // Default mixed mode to tutor
-  };
-  
-  // Determine mode based on effectiveMode and topic presence
-  let promptMode: 'tutor' | 'strict' | 'notes' | 'topic' = 'tutor';
-  if (strictMode === true) {
-    promptMode = 'strict';
-  } else if (effectiveMode === 'notes') {
-    promptMode = 'notes';
-  } else if (effectiveTopicTitle) {
-    promptMode = 'topic';
-  } else {
-    promptMode = modeMap[effectiveMode] ?? 'tutor';
-  }
-
   // Save binder context + vision + notes mode sections built above
   const _extraContext = systemPrompt;
 
   // Build base system prompt (this replaces the placeholder)
-  systemPrompt = buildSystemPrompt(programLevel, promptMode);
+  systemPrompt = buildSystemPrompt('ADN', 'tutor');
 
   // Re-append binder context, gemini vision results, and notes mode behavior
   systemPrompt += _extraContext;
   
-  if (effectiveTopicTitle) {
-    if (isFirstAssistantReply) {
-      // First reply: Include warm start with Snapshot
-      systemPrompt += `
-### TOPIC WARM START MODE
-
-You are responding to the FIRST question in a study session for the topic: "${effectiveTopicTitle}"${effectiveClassName ? ` from ${effectiveClassName}` : ''}.
-
-**CRITICAL: Your response MUST begin with a structured "Snapshot" section before continuing with normal tutoring.**
-
-Begin your reply with this exact structure:
-
-### Snapshot
-
-[Provide a 1-2 sentence simple definition of the topic "${effectiveTopicTitle}". Make it clear and accessible.]
-
-**What we'll cover:**
-- Key priorities for this topic
-- Key assessment findings
-- Relevant medications/interventions
-- Safety considerations and NCLEX themes
-
-Then I'll walk you through it step-by-step and quiz you with NCLEX-style questions.
-
----
-
-After the Snapshot section, continue with your normal tutoring style (step-by-step explanations, NCLEX-style questions, etc.). The Snapshot is ONLY for the first reply.
-`;
-    } else {
-      // Subsequent replies: Always reference the topic context
-      systemPrompt += `
-### TOPIC CONTEXT MODE
-
-You are in a study session focused on the topic: "${effectiveTopicTitle}"${effectiveClassName ? ` from ${effectiveClassName}` : ''}.
-
-**CRITICAL INSTRUCTIONS:**
-- ALL your responses must be contextualized within this topic: "${effectiveTopicTitle}"
-- When answering questions, relate them back to this topic when relevant
-- If the student asks about something outside this topic, acknowledge it but guide them back: "That's a great question! While we're focusing on ${effectiveTopicTitle}, let me address that and then relate it back to our topic..."
-- Use the topic as the primary lens through which you teach and explain concepts
-- When providing examples, prioritize examples related to "${effectiveTopicTitle}"
-- If the student's question is directly about this topic, emphasize that you're teaching them about "${effectiveTopicTitle}" specifically
-
-Remember: The student selected this topic because they want to study it. Keep your responses focused and relevant to "${effectiveTopicTitle}".
-`;
-    }
-  }
-
   // Strict mode (optional)
   if (strictMode === true) {
     const { getStrictModePrompt } = await import('@/lib/ai/prompts');
@@ -721,7 +582,7 @@ FORMATTING RULES:
         model: anthropic('claude-sonnet-4-6') as any,
         maxTokens: 1200,
         messages: processedMessages,
-        system: systemPrompt + FINAL_EVIDENCE_CHECK,
+        system: systemPrompt + FINAL_EVIDENCE_CHECK + RETAKE_TUTOR_PRODUCT_CONTEXT,
         experimental_transform: evidenceOutputGuard(latestUserMessageStr),
       });
     } catch (claudeError: any) {

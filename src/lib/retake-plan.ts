@@ -25,3 +25,8 @@ export function cprPracticeCategory(plan: RetakePlan): string | null {
   const category = CPR_CATEGORIES.find(c => plan.cpr[c] === 'Below') || CPR_CATEGORIES.find(c => plan.cpr[c] === 'Near')
   return normalizeNclexCategory(category)
 }
+
+export function cprFocusCategories(plan: RetakePlan): string[] {
+  const rating = CPR_CATEGORIES.some(c => plan.cpr[c] === 'Below') ? 'Below' : 'Near'
+  return CPR_CATEGORIES.filter(c => plan.cpr[c] === rating).map(c => normalizeNclexCategory(c)!)
+}

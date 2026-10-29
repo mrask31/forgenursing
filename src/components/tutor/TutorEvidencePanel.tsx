@@ -68,8 +68,7 @@ function EvidenceCard({ evidence }: { evidence?: TutorEvidenceItem[] }) {
         </ul>
       ) : (
         <p className="text-xs text-slate-500 leading-relaxed">
-          When the tutor uses your uploaded materials, you'll see the key
-          lines and file names here.
+          General Tutor uses the question and its supplied facts. Check uncertain clinical details against trusted nursing references.
         </p>
       )}
     </div>

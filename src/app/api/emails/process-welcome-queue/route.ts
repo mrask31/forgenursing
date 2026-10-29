@@ -1,3 +1,4 @@
+import { retakeLifecycleEmail } from '@/lib/emails/retake-lifecycle'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
@@ -153,45 +154,5 @@ async function processWelcomeQueue(request: Request) {
 
 // Helper function to generate email HTML
 function generateWelcomeEmailHTML(trialEndDate: string): string {
-  return `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a; font-size: 16px; line-height: 1.6;">
-
-  <p>Welcome to ForgeNursing. Whatever brought you here — nursing school, NCLEX prep, or just looking for a smarter way to study — you now have a tool that works differently than anything else you've tried.</p>
-
-  <p>Here's the problem with most nursing study tools: they test what you know. ForgeNursing teaches you how to think like a nurse. That's a different thing entirely — and it's the thing NCLEX actually measures.</p>
-
-  <p style="font-weight: bold;">Here's what makes us different:</p>
-
-  <p>When you bring a question or a patient scenario to Forge, it doesn't give you the answer. It thinks through it with you — asking what you notice first, what matters most, what you'd do and why. It reasons like a clinical preceptor, not a textbook.</p>
-
-  <p>And if you're still in school, you don't have to wait for NCLEX prep to matter. Upload your class materials — your syllabus, lecture notes, study guides — and Forge will teach you that content in the same clinical reasoning style. Better understanding now. NCLEX readiness built in automatically.</p>
-
-  <p style="font-weight: bold;">Your first step:</p>
-
-  <p>Log in and try one of these right now:</p>
-
-  <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-weight: bold;">
-    → "Walk me through an NCLEX-style priority question"
-  </p>
-
-  <p>or if you're currently in a nursing course:</p>
-
-  <p style="background: #f0f9f8; border-left: 4px solid #00B4A6; padding: 12px 16px; font-style: italic;">
-    → "I'm studying [topic]. Teach me this the way NCLEX would test it."
-  </p>
-
-  <p>You have 7 days free. No credit card. No obligation. Just try it once and see if it clicks.</p>
-
-  <p>Reply to this email anytime — I read every one personally.</p>
-
-  <p>
-    — Michael<br>
-    Founder, ForgeNursing<br>
-    Former Navy Hospital Corpsman, FMF
-  </p>
-
-  <a href="https://forgenursing.com" style="background: #00B4A6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-    Log In and Get Started →
-  </a>
-
-</div>`
+  return retakeLifecycleEmail('welcome',trialEndDate).html
 }
