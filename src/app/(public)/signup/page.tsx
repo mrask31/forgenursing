@@ -6,7 +6,7 @@ import { isDisposableEmailDomain } from '@/lib/disposable-email-domains'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { isValidSignupEmail } from '@/lib/signup-validation'
+import { isValidSignupEmail, signupFormHint, SIGNUP_PASSWORD_MIN_LENGTH } from '@/lib/signup-validation'
 
 export default function SignupPage() {
   const [existingAccount, setExistingAccount] = useState<string | null>(null)
@@ -16,8 +16,12 @@ export default function SignupPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null)
+  const [emailTouched, setEmailTouched] = useState(false)
+  const [passwordTouched, setPasswordTouched] = useState(false)
   const emailIsValid = isValidSignupEmail(email)
-  const showEmailError = email.length > 0 && !emailIsValid
+  const showEmailError = emailTouched && !emailIsValid
+  const showPasswordError = passwordTouched && password.length < SIGNUP_PASSWORD_MIN_LENGTH
+  const formHint = signupFormHint(email, password, acceptedTerms, loading)
   const betaAvailable = false
   const router = useRouter()
 
@@ -102,7 +106,7 @@ export default function SignupPage() {
     }
 
     // 4. Password strength check
-    if (password.length < 8) {
+    if (password.length < SIGNUP_PASSWORD_MIN_LENGTH) {
       setMessage({ text: 'Password must be at least 8 characters long.', type: 'error' })
       setLoading(false)
       return
@@ -398,6 +402,7 @@ export default function SignupPage() {
                         formInteractedRef.current = true
                       }}
                       onFocus={() => formInteractedRef.current = true}
+                      onBlur={() => setEmailTouched(true)}
                       required
                     />
                   </div>
@@ -411,6 +416,10 @@ export default function SignupPage() {
                       autoComplete="new-password"
                       placeholder="Password (8+ characters)"
                       data-testid="signup-password"
+                      aria-label="Password"
+                      aria-invalid={showPasswordError}
+                      aria-describedby={showPasswordError ? 'signup-password-rule signup-password-error' : 'signup-password-rule'}
+                      onBlur={() => setPasswordTouched(true)}
                       className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D8F9C] focus:border-transparent transition-all"
                       value={password}
                       onChange={(e) => {
@@ -419,12 +428,13 @@ export default function SignupPage() {
                       }}
                       onFocus={() => formInteractedRef.current = true}
                       required
-                      minLength={8}
+                      minLength={SIGNUP_PASSWORD_MIN_LENGTH}
                     />
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p id="signup-password-rule" className="text-xs text-slate-600">
                     Use at least 8 characters. You can change this later in settings.
                   </p>
+                  {showPasswordError && <p id="signup-password-error" role="status" className="text-sm text-red-700">Your password needs at least 8 characters.</p>}
                 </div>
 
                 {message && (
@@ -473,7 +483,8 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   data-testid="signup-submit"
-                  disabled={loading || !emailIsValid || password.length < 8 || !acceptedTerms}
+                  aria-describedby={formHint ? 'signup-form-hint' : undefined}
+                  disabled={loading || !emailIsValid || password.length < SIGNUP_PASSWORD_MIN_LENGTH || !acceptedTerms}
                   className="w-full flex items-center justify-center gap-2 px-6 py-2.5 min-h-[44px] bg-[#0D8F9C] text-white rounded-lg text-sm font-semibold hover:bg-[#0A7A85] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {loading ? (
@@ -488,6 +499,7 @@ export default function SignupPage() {
                     </>
                   )}
                 </button>
+                {formHint && <p id="signup-form-hint" role="status" aria-live="polite" className="text-sm text-slate-600">{formHint}</p>}
                 <p className="text-sm text-gray-500 text-center">
                   No credit card required • Full access • 2-minute setup
                 </p>

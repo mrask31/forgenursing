@@ -152,13 +152,15 @@ export default function TrapResults({ result, sessionId, anonymousId }: TrapResu
               Keep your result, choose a study focus, and continue with short practice sessions.
             </p>
           </div>
+          <p className="text-sm leading-relaxed text-white/90">$29.99 one-time after your trial · No credit card required · Don’t pass? The next 3 months are free.</p>
+          <p className="text-xs leading-relaxed text-white/70">Choose whether to buy three months of access after your trial. Nothing auto-renews. One free three-month extension, no proof required.</p>
           <button
             onClick={handleSignupClick}
             className="w-full rounded-xl bg-white py-3 px-4 flex items-center justify-center gap-2 text-sm font-bold transition-all hover:bg-slate-100"
             style={{ color: '#0B2545', minHeight: '48px' }}
           >
             <UserPlus className="w-4 h-4" />
-            Create Free Account
+            Start my free trial
           </button>
         </div>
 

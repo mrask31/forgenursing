@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { readSampleRecap, saveSampleRecap, clearSampleRecap } from '@/lib/sample-recap'
 import { submitSampleAnswer, AnswerSubmissionError } from '@/lib/submit-sample-answer'
 import { captureLoop } from '@/lib/analytics/learning-loop'
 import { opportunityId } from '@/lib/learning/distinctions'
@@ -15,6 +16,9 @@ import type { PublicQuestion, AnswerFeedback, TrapResult } from '@/lib/answer-tr
 type Phase = 'landing' | 'question' | 'feedback' | 'retry-question' | 'retry-feedback' | 'results'
 
 export default function AnswerTrapClient() {
+  const restoredRecap = useRef(false)
+  const [recapSaved, setRecapSaved] = useState(false)
+  const [restoringRecap, setRestoringRecap] = useState(true)
   const [phase, setPhase] = useState<Phase>('landing')
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [anonymousId, setAnonymousId] = useState<string | null>(null)
@@ -30,6 +34,26 @@ export default function AnswerTrapClient() {
   const [retryAnswer, setRetryAnswer] = useState<string | null>(null)
   const [retryFeedback, setRetryFeedback] = useState<AnswerFeedback | null>(null)
   const [retryOutcomes, setRetryOutcomes] = useState<Record<string, { topic: string; correct: boolean }>>({})
+
+  useEffect(() => {
+    const restore = () => {
+      let saved = null
+      try { saved = readSampleRecap(window.localStorage) } catch { /* Storage may be blocked. */ }
+      if (saved) {
+        restoredRecap.current = true
+        setRecapSaved(true)
+        setSessionId(saved.sessionId)
+        setAnonymousId(saved.anonymousId)
+        setResult(saved.result)
+        setRetryOutcomes(saved.retryOutcomes)
+        setPhase('results')
+      }
+      setRestoringRecap(false)
+    }
+    restore()
+    window.addEventListener('pageshow', restore)
+    return () => window.removeEventListener('pageshow', restore)
+  }, [])
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }) }, [phase, currentIndex])
 
@@ -93,7 +117,7 @@ export default function AnswerTrapClient() {
   }, [])
 
   useEffect(() => {
-    if (phase === 'results' && result) captureSample('sample_completed', { score: `${result.score}/${result.total}`, score_correct: result.score, total: result.total, retry_correct_count: Object.values(retryOutcomes).filter(outcome => outcome.correct).length, sample_session_id: sessionId }, `result:${sessionId}`)
+    if (phase === 'results' && result && !restoredRecap.current) captureSample('sample_completed', { score: `${result.score}/${result.total}`, score_correct: result.score, total: result.total, retry_correct_count: Object.values(retryOutcomes).filter(outcome => outcome.correct).length, sample_session_id: sessionId }, `result:${sessionId}`)
   }, [phase, result, retryOutcomes, sessionId])
 
   const handleStart = useCallback(async () => {
@@ -132,6 +156,8 @@ export default function AnswerTrapClient() {
       }
 
       const data = await res.json()
+      try { clearSampleRecap(window.localStorage) } catch {}
+      restoredRecap.current = false
       setSessionId(data.session_id)
       setAnonymousId(data.anonymous_id)
       setQuestions(data.questions)
@@ -226,6 +252,9 @@ export default function AnswerTrapClient() {
         }
 
         const trapResult: TrapResult = await res.json()
+        if (sessionId && anonymousId) {
+          try { setRecapSaved(saveSampleRecap(window.localStorage, {sessionId,anonymousId,result:trapResult,retryOutcomes})) } catch { /* The recap still works for this visit. */ }
+        }
         setResult(trapResult)
         setPhase('results')
 
@@ -252,7 +281,9 @@ export default function AnswerTrapClient() {
       setCurrentFeedback(null)
       setPhase('question')
     }
-  }, [currentIndex, questions.length, sessionId, anonymousId, currentFeedback])
+  }, [currentIndex, questions.length, sessionId, anonymousId, currentFeedback, retryOutcomes])
+
+  if (restoringRecap) return <p role="status" className="px-4 py-8 text-center text-slate-600">Loading your practice…</p>
 
   return (
     <div className="bg-white" style={{ fontFamily: 'DM Sans, sans-serif' }}>
@@ -297,8 +328,17 @@ export default function AnswerTrapClient() {
       {phase === 'results' && Object.keys(retryOutcomes).length > 0 && <div className="mx-auto max-w-lg px-4 pt-6">
         <div className="rounded-xl bg-teal-50 p-4"><h2 className="font-bold text-lg">Your related-question practice</h2>
           <ul className="mt-2 space-y-2 text-sm">{Object.entries(retryOutcomes).map(([id, outcome]) => <li key={id}>{outcome.topic}: {outcome.correct ? 'correct on the related question' : 'worth another review'}.</li>)}</ul>
-          <p className="mt-3 text-xs text-slate-600">Practice after feedback, shown separately from your original score. This retry summary is for this visit only.</p>
+          <p className="mt-3 text-xs text-slate-600">Practice after feedback, shown separately from your original score. Shown separately from your original score in your saved recap.</p>
         </div>
+      </div>}
+      {phase === 'results' && result && <div className="mx-auto max-w-lg px-4 pt-5 text-center">
+        <p className="text-xs text-slate-500">{recapSaved ? 'This recap is saved on this browser for 30 days.' : 'To keep a copy of this recap, use Copy My Result.'}</p>
+        <button type="button" className="mt-2 min-h-11 underline text-sm text-[#087986]" onClick={() => {
+          try { clearSampleRecap(window.localStorage) } catch {}
+          restoredRecap.current = false
+          setRecapSaved(false)
+          setResult(null); setSessionId(null); setAnonymousId(null); setRetryOutcomes({}); setPhase('landing')
+        }}>Start a new sample</button>
       </div>}
       {phase === 'results' && result && (
         result.all_correct ? (
