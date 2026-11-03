@@ -1,227 +1,26 @@
-import { retakeLifecycleEmail } from '@/lib/emails/retake-lifecycle'
 import { NextResponse } from 'next/server'
-import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
-import { trialEmailAuthorized } from '@/lib/emails/trial-engagement'
-import { hasPurchasedRetakePass } from '@/lib/emails/retake-pass-eligibility'
+import { deliverTrialEngagement, trialEmailAuthorized, type TrialStep } from '@/lib/emails/trial-engagement'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
-// This endpoint processes trial expiration emails (Day 6 and Day 7)
-// Should be called daily via cron job
-
+export const maxDuration = 300
 export async function POST(request: Request) {
-  try {
-    // Verify authorization
-    const isAuthorized = trialEmailAuthorized(request)
-
-    if (!isAuthorized) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    if (process.env.VERCEL_ENV !== 'production') return NextResponse.json({ error: 'production_only' }, { status: 503 })
-
-    if (!process.env.RESEND_API_KEY) {
-      console.error('[Trial Expiration] RESEND_API_KEY not configured')
-      return NextResponse.json(
-        { error: 'Email service not configured' },
-        { status: 500 }
-      )
-    }
-
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-
-    const results = {
-      day_6_queued: 0,
-      day_7_queued: 0,
-      sent: 0,
-      failed: 0,
-      errors: [] as any[],
-    }
-
-    // Step 1: Find and queue Day 6 reminders (24h before expiration)
-    const { data: day6Users, error: day6Error } = await supabase
-      .rpc('get_users_for_day_6_reminder')
-
-    if (day6Error) {
-      console.error('[Trial Expiration] Error fetching Day 6 users:', day6Error)
-    } else if (day6Users && day6Users.length > 0) {
-      
-      for (const user of day6Users) {
-        await supabase.rpc('queue_trial_expiration_email', {
-          p_user_id: user.user_id,
-          p_email: user.email,
-          p_email_type: 'day_6_reminder',
-          p_trial_ends_at: user.trial_ends_at,
-          p_questions_answered: user.questions_answered || 0,
-        })
-        results.day_6_queued++
-      }
-    }
-
-    // Step 2: Find and queue Day 7 expiration notices (trial expired)
-    const { data: day7Users, error: day7Error } = await supabase
-      .rpc('get_users_for_day_7_expiration')
-
-    if (day7Error) {
-      console.error('[Trial Expiration] Error fetching Day 7 users:', day7Error)
-    } else if (day7Users && day7Users.length > 0) {
-      
-      for (const user of day7Users) {
-        await supabase.rpc('queue_trial_expiration_email', {
-          p_user_id: user.user_id,
-          p_email: user.email,
-          p_email_type: 'day_7_expiration',
-          p_trial_ends_at: user.trial_ends_at,
-          p_questions_answered: user.questions_answered || 0,
-        })
-        results.day_7_queued++
-      }
-    }
-
-    // Step 3: Process pending emails from queue
-    const { data: pendingEmails, error: queueError } = await supabase
-      .rpc('get_pending_trial_expiration_emails', { batch_size: 50 })
-
-    if (queueError) {
-      console.error('[Trial Expiration] Error fetching queue:', queueError)
-      return NextResponse.json(
-        { error: 'Failed to fetch queue', details: queueError },
-        { status: 500 }
-      )
-    }
-
-    if (!pendingEmails || pendingEmails.length === 0) {
-      return NextResponse.json({
-        success: true,
-        day_6_queued: results.day_6_queued,
-        day_7_queued: results.day_7_queued,
-        sent: 0,
-        message: 'No pending emails to send',
-      })
-    }
-
-
-    // Step 4: Send each email — ONLY process valid email_type values
-    const VALID_TYPES = ['day_6_reminder', 'day_7_expiration']
-
-    for (const item of pendingEmails) {
-      // Reject invalid email_type — do NOT send, mark as invalid
-      if (!VALID_TYPES.includes(item.email_type)) {
-        console.error(`[Trial Expiration] INVALID email_type '${item.email_type}' for ${item.email} — skipping send, marking invalid`)
-        await supabase.rpc('mark_trial_expiration_email_sent', {
-          p_email_id: item.id,
-          p_resend_email_id: null,
-          p_success: false,
-          p_error_message: `Invalid email_type: ${item.email_type}. Only day_6_reminder and day_7_expiration are valid.`,
-        })
-        results.failed++
-        results.errors.push({
-          email: item.email,
-          type: item.email_type,
-          error: `Invalid email_type: ${item.email_type}`,
-        })
-        continue
-      }
-
-      try {
-        if (await hasPurchasedRetakePass(supabase, item.user_id)) continue
-        const { data: profile, error: profileError } = await supabase.from('profiles')
-          .select('is_beta,subscription_status,stripe_subscription_id').eq('id', item.user_id).maybeSingle()
-        if (profileError || !profile) throw new Error('Trial eligibility unavailable')
-        if (profile.is_beta || profile.subscription_status === 'active' || profile.stripe_subscription_id) continue
-        let subject: string
-        let html: string
-
-        switch (item.email_type) {
-          case 'day_6_reminder':
-            subject = 'Your trial ends tomorrow'
-            html = generateDay6Email()
-            break
-          case 'day_7_expiration':
-            subject = 'Your trial has ended'
-            html = generateDay7Email()
-            break
-          default:
-            // Should never reach here due to VALID_TYPES check above
-            throw new Error(`Unexpected email_type: ${item.email_type}`)
-        }
-
-        const { data: emailData, error: emailError } = await resend.emails.send({
-          from: 'ForgeNursing <trial@forgenursing.com>',
-          to: item.email,
-          subject,
-          html,
-        })
-
-        if (emailError) {
-          throw emailError
-        }
-
-        const { error: markError } = await supabase.rpc('mark_trial_expiration_email_sent', {
-          p_email_id: item.id,
-          p_resend_email_id: emailData?.id || null,
-          p_success: true,
-          p_error_message: null,
-        })
-        if (markError) {
-          console.error(`[Trial Expiration] Failed to mark email as sent for ${item.email}:`, markError)
-        }
-
-        results.sent++
-      } catch (error: any) {
-        const { error: markError } = await supabase.rpc('mark_trial_expiration_email_sent', {
-          p_email_id: item.id,
-          p_resend_email_id: null,
-          p_success: false,
-          p_error_message: error.message || 'Unknown error',
-        })
-        if (markError) {
-          console.error(`[Trial Expiration] Failed to mark email as failed for ${item.email}:`, markError)
-        }
-
-        results.failed++
-        results.errors.push({
-          email: item.email,
-          type: item.email_type,
-          error: error.message,
-        })
-        console.error(`[Trial Expiration] Failed to send to ${item.email}:`, error)
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      day_6_queued: results.day_6_queued,
-      day_7_queued: results.day_7_queued,
-      sent: results.sent,
-      failed: results.failed,
-      errors: results.errors,
-    })
-  } catch (error: any) {
-    console.error('[Trial Expiration] Unexpected error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
-    )
+  if (!trialEmailAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (process.env.VERCEL_ENV !== 'production') return NextResponse.json({ error: 'production_only' }, { status: 503 })
+  if (!process.env.RESEND_API_KEY?.trim() || !process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || !process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()) {
+    return NextResponse.json({ error: 'email_configuration_missing' }, { status: 503 })
   }
+  const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  const results = { sent: 0, skipped: 0, failed: 0, reconciliation_required: 0 }
+  const steps: TrialStep[] = ['trial_day_6', 'trial_expired']
+  for (const step of steps) {
+    const { data, error } = await admin.rpc('get_trial_expiry_candidates', { p_step: step })
+    if (error) { results.failed++; continue }
+    for (const user of data ?? []) {
+      try { results[await deliverTrialEngagement(admin, user, step)]++ }
+      catch { results.failed++ }
+    }
+  }
+  return NextResponse.json({ success: results.failed === 0 && results.reconciliation_required === 0, ...results },
+    { status: results.failed || results.reconciliation_required ? 503 : 200 })
 }
-
-// Vercel cron invokes routes via GET with Authorization: Bearer $CRON_SECRET
 export const GET = POST
-
-// Day 6 Email Template (24h before expiration)
-function generateDay6Email(): string {
-  return retakeLifecycleEmail('day6').html
-}
-
-// Day 7 Email Template (Trial expired)
-function generateDay7Email(): string {
-  return retakeLifecycleEmail('expired').html
-}

@@ -6,6 +6,7 @@ import { isDisposableEmailDomain } from '@/lib/disposable-email-domains'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, Loader2, BookOpen, GraduationCap, Shield, Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import { ga4Conversion } from '@/lib/analytics/ga4-conversions'
 import { isValidSignupEmail, signupFormHint, SIGNUP_PASSWORD_MIN_LENGTH } from '@/lib/signup-validation'
 
 export default function SignupPage() {
@@ -184,16 +185,11 @@ export default function SignupPage() {
         return
       }
       
-      // Fire GA4 sign_up conversion event (only once per signup)
-      if (!signUpEventFiredRef.current && typeof window !== 'undefined') {
-        const dataLayer = (window as any).dataLayer
-        if (dataLayer && Array.isArray(dataLayer)) {
-          dataLayer.push({
-            event: 'sign_up',
-            method: 'email'
-          })
-          signUpEventFiredRef.current = true
-        }
+      // Supabase may return an obfuscated existing user when confirmation is on.
+      // That response is not a newly created account.
+      if (!signUpEventFiredRef.current && data.user.identities?.length !== 0) {
+        ga4Conversion('sign_up', { method: 'email' }, data.user.id)
+        signUpEventFiredRef.current = true
       }
       
       if (!data.session) {

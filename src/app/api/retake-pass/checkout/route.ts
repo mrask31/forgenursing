@@ -13,5 +13,5 @@ export async function POST(req:Request){if(!passRequestAllowed(req))return NextR
  const origin=passAudience()==='preview'&&host?`https://${host}`:configured?.startsWith('https://')?configured:'https://forgenursing.com'
  const intent=await getPassCheckoutIntent(user.id)
  const session=await stripe.checkout.sessions.create({expires_at:Math.floor(Date.parse(intent.expires_at)/1000),mode:'payment',line_items:[{price:id,quantity:1}],customer_creation:'always',customer_email:user.email,client_reference_id:user.id,metadata:{offer:'retake_pass_v1',audience:passAudience()},invoice_creation:{enabled:true},payment_method_types:['card'],success_url:`${origin}/settings?pass_checkout={CHECKOUT_SESSION_ID}`,cancel_url:`${origin}/checkout?canceled=1`},{idempotencyKey:`retake-v1:${intent.token}`})
- return NextResponse.json({url:session.url})
+ return NextResponse.json({url:session.url,checkoutId:session.id})
  }catch(error){return NextResponse.json({error:error instanceof Error?error.message:'Pass checkout unavailable.'},{status:503})}}

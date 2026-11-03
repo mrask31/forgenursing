@@ -2,7 +2,7 @@ import { retakeLifecycleEmail } from '@/lib/emails/retake-lifecycle'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { hasPurchasedRetakePass } from './retake-pass-eligibility'
 
-export type TrialStep = 'trial_day_3' | 'trial_day_5'
+export type TrialStep = 'trial_day_3' | 'trial_day_5' | 'trial_day_6' | 'trial_expired'
 type Candidate = { user_id: string; email: string; trial_ends_at: string }
 type Payload = { from: string; to: string[]; reply_to: string; subject: string; text: string }
 type Delivery = {
@@ -29,7 +29,7 @@ export function trialEmailAuthorized(request: Request): boolean {
 
 export function buildTrialPayload(candidate: Candidate, step: TrialStep): Payload {
   const ends = new Date(candidate.trial_ends_at).toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'long', day: 'numeric' })
-  const content = retakeLifecycleEmail(step === 'trial_day_3' ? 'day3' : 'day5', ends)
+  const content = retakeLifecycleEmail(step === 'trial_day_3' ? 'day3' : step === 'trial_day_5' ? 'day5' : step === 'trial_day_6' ? 'day6' : 'expired', ends)
   return {from:'ForgeNursing <trial@forgenursing.com>',to:[candidate.email],reply_to:'support@forgenursing.com',subject:content.subject,text:content.text}
 
 }
@@ -81,8 +81,8 @@ export async function deliverTrialEngagement(
     return 'failed'
   }
   const p = profile.data, user = auth.data.user
-  if (purchasedPass || !p || p.is_beta || p.subscription_status !== 'trialing' || p.stripe_subscription_id
-    || !Number.isFinite(Date.parse(p.trial_ends_at)) || Date.parse(p.trial_ends_at) <= now
+  if (purchasedPass || !trialStepEligible(p, step, now)
+    || Date.parse(p?.trial_ends_at || '') !== Date.parse(candidate.trial_ends_at)
     || !user?.email_confirmed_at || user.email !== payload.to[0]
     || user.user_metadata?.email_opt_out === true || user.user_metadata?.marketing_emails === false) {
     return await finish({ status: 'skipped', error_code: 'no_longer_eligible' }) ? 'skipped' : 'failed'
@@ -103,4 +103,14 @@ export async function deliverTrialEngagement(
     await finish({ status: 'uncertain', error_code: 'provider_outcome_unknown' })
     return 'failed'
   }
+}
+
+/** Recheck the actual clock and access immediately before contacting the provider. */
+export function trialStepEligible(profile: { is_beta: boolean | null; subscription_status: string | null; stripe_subscription_id: string | null; trial_ends_at: string | null } | null, step: TrialStep, now: number): boolean {
+  if (!profile || profile.is_beta || profile.stripe_subscription_id) return false
+  const ends = Date.parse(profile.trial_ends_at || '')
+  if (!Number.isFinite(ends)) return false
+  if (step === 'trial_expired') return ['trialing', 'expired'].includes(profile.subscription_status || '') && ends <= now && ends > now - 86400000
+  if (profile.subscription_status !== 'trialing' || ends <= now) return false
+  return step !== 'trial_day_6' || ends <= now + 25 * 3600000
 }

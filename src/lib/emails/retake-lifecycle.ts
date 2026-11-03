@@ -14,7 +14,7 @@ export function retakeLifecycleEmail(step: RetakeEmailStep, ends?: string): {sub
   ] : [
     step === 'expired' ? 'Your free trial has ended. Your saved work remains, and you can choose whether to continue your NCLEX-RN retake preparation.' : step === 'day6' ? 'Your free trial is ending soon. Review your saved plan and decide whether you want to continue. There is no automatic charge.' : 'Preparing for another NCLEX-RN attempt does not require doing everything today. Start with one bank question and explain why you chose your answer.',
     'Read the explanation, try a related retry after a miss, and use Review to revisit the distinction. Practice results are not predictions of passing.',
-    ...(ends ? [`Your trial ends ${ends}.`] : []),
+    ...(ends ? [step === 'expired' ? `Your trial ended ${ends}.` : `Your trial ends ${ends}.`] : []),
     ...(step === 'day5' || step === 'day6' || step === 'expired' ? [RETAKE_TERMS] : step === 'beta' ? [] : ['Your 7-day trial requires no card and does not automatically charge you.']),
     'Questions about your next step? Reply here.',
   ]

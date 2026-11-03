@@ -134,7 +134,7 @@ export default function TrapFeedback({
         {isRetry && <p className="mt-4 text-sm text-slate-600">{is_correct ? 'You applied the lesson to a new question.' : 'Review the distinction above and revisit this topic in your next session.'} This exercise is separate from your original score.</p>}
         {onRetry && <div className="mt-5 rounded-xl bg-teal-50 p-4">
           <p className="font-semibold text-[#0B2545]">Put it into practice.</p>
-          <p className="mt-1 text-sm text-slate-600">A new question on the same topic. No account needed.</p>
+          <p className="mt-1 text-sm text-slate-600">Same concept; it doesn’t change your original score. No account needed.</p>
           <button onClick={onRetry} disabled={loading} className="mt-3 w-full min-h-12 rounded-xl bg-[#0D8F9C] px-4 py-3 font-semibold text-white disabled:opacity-50">{loading ? 'Loading…' : 'Try a related question'}</button>
         </div>}
         {/* Next button */}

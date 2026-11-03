@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { deliverTrialEngagement, trialEmailAuthorized, stableTrialPayload, TRIAL_RETRY_WINDOW_MS } from '../src/lib/emails/trial-engagement'
+import { deliverTrialEngagement, trialEmailAuthorized, stableTrialPayload, TRIAL_RETRY_WINDOW_MS, trialStepEligible, buildTrialPayload, type TrialStep } from '../src/lib/emails/trial-engagement'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 vi.mock('../src/lib/emails/retake-pass-eligibility', () => ({ hasPurchasedRetakePass: vi.fn(async () => false) }))
@@ -7,7 +7,7 @@ import { hasPurchasedRetakePass } from '../src/lib/emails/retake-pass-eligibilit
 
 const now = Date.parse('2026-10-29T02:00:00Z')
 const candidate = { user_id: 'fixture', email: 'fixture@example.invalid', trial_ends_at: '2026-11-02T02:00:00Z' }
-function fixture(options: { saveFails?: boolean; claimFails?: boolean; paid?: boolean; optedOut?: boolean; throws?: boolean; emptyId?: boolean } = {}) {
+function fixture(options: { saveFails?: boolean; claimFails?: boolean; paid?: boolean; optedOut?: boolean; throws?: boolean; emptyId?: boolean } = {}, step: TrialStep = 'trial_day_3', expiry = candidate.trial_ends_at) {
   const rows: any[] = []
   const requests: any[] = []
   const transport = vi.fn(async (_url: any, init: any) => {
@@ -26,7 +26,7 @@ function fixture(options: { saveFails?: boolean; claimFails?: boolean; paid?: bo
         insert: (value: any) => { insert = value; return q }, update: (value: any) => { update = value; return q },
         then(resolve: any, reject: any) { return Promise.resolve().then(() => {
           if (table === 'profiles') return { data: { is_beta: false, subscription_status: options.paid ? 'active' : 'trialing',
-            stripe_subscription_id: null, trial_ends_at: candidate.trial_ends_at }, error: null }
+            stripe_subscription_id: null, trial_ends_at: expiry }, error: null }
           if (insert) {
             if (options.claimFails) return { data: null, error: { code: 'database_unavailable' } }
             if (rows.some(r => r.user_id===insert.user_id && r.step===insert.step)) return { data: null, error: { code: '23505' } }
@@ -43,7 +43,7 @@ function fixture(options: { saveFails?: boolean; claimFails?: boolean; paid?: bo
       }; return q
     },
   } as unknown as SupabaseClient
-  return { rows,requests,transport,send: (at=now) => deliverTrialEngagement(admin,candidate,'trial_day_3',{now:at,transport}) }
+  return { rows,requests,transport,send: (at=now) => deliverTrialEngagement(admin,{...candidate,trial_ends_at:expiry},step,{now:at,transport}) }
 }
 describe('trial engagement delivery', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(now); vi.mocked(hasPurchasedRetakePass).mockResolvedValue(false) })
@@ -90,4 +90,43 @@ describe('trial engagement delivery', () => {
     vi.stubEnv('CRON_SECRET',''); vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY','')
     expect(trialEmailAuthorized(new Request('https://example.invalid',{headers:{authorization:'Bearer undefined'}}))).toBe(false)
   })
+})
+
+describe('expiry eligibility and wording', () => {
+  const profile = {is_beta:false,subscription_status:'trialing',stripe_subscription_id:null,trial_ends_at:new Date(now+3600000).toISOString()}
+  it('includes a trialing account in Day 6, suppresses it before the window and after expiry', () => {
+    expect(trialStepEligible(profile,'trial_day_6',now)).toBe(true)
+    expect(trialStepEligible(profile,'trial_day_6',now-26*3600000)).toBe(false)
+    expect(trialStepEligible(profile,'trial_day_6',now+3600000)).toBe(false)
+  })
+  it.each(['trialing','expired'])('expiry does not depend on a separate status job: %s', subscription_status => {
+    const p={...profile,subscription_status,trial_ends_at:new Date(now-3600000).toISOString()}
+    expect(trialStepEligible(p,'trial_expired',now)).toBe(true)
+    expect(trialStepEligible(p,'trial_expired',now+86400000)).toBe(false)
+  })
+  it.each([{subscription_status:'active'},{is_beta:true},{stripe_subscription_id:'sub_paid'},{trial_ends_at:'invalid'}])('suppresses ineligible recipients %j', change => {
+    expect(trialStepEligible({...profile,...change},'trial_day_6',now)).toBe(false)
+    expect(trialStepEligible({...profile,trial_ends_at:new Date(now-1).toISOString(),...change},'trial_expired',now)).toBe(false)
+  })
+  it('uses the actual expiry date, past tense after expiry, reply-to and current offer', () => {
+    const payload=buildTrialPayload(candidate,'trial_expired')
+    expect(payload.text).toContain('Your trial ended November 1')
+    expect(payload.text).toContain('$29.99 one-time for 3 months')
+    expect(payload.text).toContain('Nothing auto-renews')
+    expect(payload.reply_to).toBe('support@forgenursing.com')
+    expect(payload.text).not.toContain('Your trial ends')
+  })
+})
+
+it('sends an expiry message for a still-trialing profile exactly once under concurrency', async () => {
+  const f=fixture({},'trial_expired',new Date(now-3600000).toISOString())
+  const results=await Promise.all([f.send(),f.send()])
+  expect(results.filter(x=>x==='sent')).toHaveLength(1)
+  expect(f.requests).toHaveLength(1)
+  expect(JSON.parse(f.requests[0].body).subject).toBe('Your ForgeNursing trial has ended')
+  expect(await f.send()).toBe('skipped')
+})
+it('never sends a Day 6 reminder that has become an expiry notice while queued', async () => {
+  const f=fixture({},'trial_day_6',new Date(now-3600000).toISOString())
+  expect(await f.send()).toBe('skipped');expect(f.requests).toHaveLength(0)
 })
