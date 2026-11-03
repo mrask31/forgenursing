@@ -328,7 +328,7 @@ export default function AnswerTrapClient() {
       {phase === 'results' && Object.keys(retryOutcomes).length > 0 && <div className="mx-auto max-w-lg px-4 pt-6">
         <div className="rounded-xl bg-teal-50 p-4"><h2 className="font-bold text-lg">Your related-question practice</h2>
           <ul className="mt-2 space-y-2 text-sm">{Object.entries(retryOutcomes).map(([id, outcome]) => <li key={id}>{outcome.topic}: {outcome.correct ? 'correct on the related question' : 'worth another review'}.</li>)}</ul>
-          <p className="mt-3 text-xs text-slate-600">Practice after feedback, shown separately from your original score. Shown separately from your original score in your saved recap.</p>
+          <p className="mt-3 text-xs text-slate-600">Practice after feedback, shown separately from your original score. Included in your saved recap.</p>
         </div>
       </div>}
       {phase === 'results' && result && <div className="mx-auto max-w-lg px-4 pt-5 text-center">
