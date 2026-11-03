@@ -339,10 +339,12 @@ export default function SignupPage() {
                     <div className="w-5 h-5 rounded-full bg-[#0D8F9C] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                       3
                     </div>
-                    <p><strong className="text-slate-900">Choose a Retake Pass</strong> — $29.99 for 3 months. Don’t pass, and the next 3 are free.</p>
+                    <p><strong className="text-slate-900">Choose a Retake Pass</strong> — $29.99 one-time for 3 months. Nothing auto-renews.</p>
                   </div>
                 </div>
               )}
+              <p className="mt-3 text-xs text-slate-700">Don’t pass? One free three-month extension — no proof required.</p>
+              <p className="mt-2 text-xs text-slate-600">240+ practice questions — more added weekly.</p>
               <p className="text-xs text-[#0D8F9C] font-medium mt-2 pt-2 border-t border-[#0D8F9C]/20 flex items-center gap-1">
                 <Shield className="w-3 h-3" />
                 {betaAvailable ? 'No credit card required · Free for 90 days' : 'No credit card required · Nothing auto-renews'}
