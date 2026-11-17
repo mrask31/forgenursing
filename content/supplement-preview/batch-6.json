@@ -1,0 +1,127 @@
+{
+  "batch": "batch-6",
+  "label": "supplement",
+  "source": "Batch 6 site build handoff — q37-q42 (2026-11-16); Muse-drafted, validated by Michael 2026-11-16",
+  "questions": [
+    {
+      "id": "supp-b6-q37",
+      "q": "q37",
+      "topic": "Pharm: Warfarin / INR",
+      "nclex_category": "Pharmacological Therapies",
+      "question_stem": "A client on warfarin for atrial fibrillation has a routine INR of 4.8. No bleeding is noted. What does the nurse do first?",
+      "options": [
+        { "label": "A", "text": "Hold the warfarin and notify the provider" },
+        { "label": "B", "text": "Give vitamin K immediately" },
+        { "label": "C", "text": "Give the warfarin — the level is therapeutic" },
+        { "label": "D", "text": "Encourage vitamin K-rich foods to balance the level" }
+      ],
+      "correct_answer": "A",
+      "rationale_correct": "4.8 is above the usual 2.0–3.0 therapeutic range, but a high INR with NO bleeding is not an emergency reversal case.",
+      "rationale_incorrect": {
+        "B": "vitamin K is a provider-ordered decision, and reversing a non-bleeding client fully re-exposes them to clot risk.",
+        "C": "4.8 is not therapeutic — giving the dose pushes it higher.",
+        "D": "dietary vitamin K works against warfarin, slowly and unpredictably — it is never the fix for a supratherapeutic INR."
+      }
+    },
+    {
+      "id": "supp-b6-q38",
+      "q": "q38",
+      "topic": "Med-Surg: Chest tube chambers",
+      "nclex_category": "Physiological Adaptation",
+      "question_stem": "A client has a chest tube connected to a closed drainage system. The nurse notes continuous bubbling in the WATER-SEAL chamber. What does this most likely mean?",
+      "options": [
+        { "label": "A", "text": "This is normal and expected" },
+        { "label": "B", "text": "There is an air leak in the system or the client's lung" },
+        { "label": "C", "text": "The suction is set too high" },
+        { "label": "D", "text": "The tube is ready to be removed" }
+      ],
+      "correct_answer": "B",
+      "rationale_correct": "bubbling belongs in the SUCTION-CONTROL chamber (gentle, continuous). The water-seal chamber should only bubble intermittently, with exhalation/cough.",
+      "rationale_incorrect": {
+        "A": "continuous water-seal bubbling is never \"normal.\"",
+        "C": "suction level shows in the suction chamber, not the water seal.",
+        "D": "an air leak is a reason to assess and report — not remove."
+      }
+    },
+    {
+      "id": "supp-b6-q39",
+      "q": "q39",
+      "topic": "Endocrine: SIADH",
+      "nclex_category": "Physiological Adaptation",
+      "question_stem": "A client with SIADH has a sodium of 118 mEq/L and new confusion. Which action is the priority?",
+      "options": [
+        { "label": "A", "text": "Encourage oral fluids to flush the excess sodium" },
+        { "label": "B", "text": "Institute fluid restriction and seizure precautions" },
+        { "label": "C", "text": "Start a rapid IV bolus of hypotonic fluid" },
+        { "label": "D", "text": "Recheck the sodium in one week" }
+      ],
+      "correct_answer": "B",
+      "rationale_correct": "in SIADH the problem is water retention diluting the sodium — the client is not short on fluid, they are drowning in it.",
+      "rationale_incorrect": {
+        "A": "more fluid dilutes the sodium further.",
+        "C": "hypotonic fluid makes hyponatremia worse, and rapid shifts in sodium are dangerous in either direction.",
+        "D": "Na 118 with confusion is symptomatic — it is acted on today."
+      }
+    },
+    {
+      "id": "supp-b6-q40",
+      "q": "q40",
+      "topic": "OB: Magnesium sulfate toxicity",
+      "nclex_category": "Pharmacological Therapies",
+      "question_stem": "A client with preeclampsia is receiving magnesium sulfate. Respirations are 10/min, deep tendon reflexes are absent, and urine output is falling. What does the nurse do first?",
+      "options": [
+        { "label": "A", "text": "Increase the infusion — it is not working yet" },
+        { "label": "B", "text": "Stop the infusion and prepare calcium gluconate" },
+        { "label": "C", "text": "Document the findings and reassess in one hour" },
+        { "label": "D", "text": "Give a fluid bolus to increase urine output" }
+      ],
+      "correct_answer": "B",
+      "rationale_correct": "RR 10 + absent reflexes + falling output is the magnesium toxicity triad. The drug level is too high — the infusion is the problem.",
+      "rationale_incorrect": {
+        "A": "increasing the infusion deepens respiratory depression.",
+        "C": "these are toxicity signs, not chart-and-wait findings.",
+        "D": "fluids do not reverse magnesium toxicity; calcium gluconate is the antidote, and the infusion stops first."
+      }
+    },
+    {
+      "id": "supp-b6-q41",
+      "q": "q41",
+      "topic": "Med-Surg: Post-thyroidectomy calcium",
+      "nclex_category": "Physiological Adaptation",
+      "question_stem": "The day after a total thyroidectomy, a client reports tingling around the mouth and in the fingertips. The nurse elicits a positive Chvostek sign. Which problem is most likely?",
+      "options": [
+        { "label": "A", "text": "Hypercalcemia from overactive parathyroids" },
+        { "label": "B", "text": "Hypocalcemia from parathyroid injury or removal" },
+        { "label": "C", "text": "Hypokalemia from poor oral intake" },
+        { "label": "D", "text": "Hypermagnesemia from antacid use" }
+      ],
+      "correct_answer": "B",
+      "rationale_correct": "the parathyroids sit on the thyroid — surgery that removes the thyroid can take calcium regulation with it. Tingling + Chvostek = low calcium.",
+      "rationale_incorrect": {
+        "A": "hypercalcemia does not cause perioral tingling or Chvostek.",
+        "C": "hypokalemia causes weakness and cardiac changes, not this picture.",
+        "D": "hypermagnesemia causes depressed reflexes and sedation — nearly the opposite presentation."
+      }
+    },
+    {
+      "id": "supp-b6-q42",
+      "q": "q42",
+      "topic": "Prioritization: Post-op day 2",
+      "nclex_category": "Management of Care",
+      "question_stem": "Which post-operative client does the nurse see FIRST?",
+      "options": [
+        { "label": "A", "text": "Day 1 after hip replacement, reporting pain 6/10 at the incision" },
+        { "label": "B", "text": "Day 2 after abdominal surgery, now suddenly short of breath with sharp chest pain" },
+        { "label": "C", "text": "Day 1 after appendectomy, asking for more ice chips" },
+        { "label": "D", "text": "Day 3 after hernia repair, ready for discharge teaching" }
+      ],
+      "correct_answer": "B",
+      "rationale_correct": "sudden dyspnea + sharp chest pain on post-op day 2 is the classic pulmonary embolism picture — immobility plus surgery is the setup.",
+      "rationale_incorrect": {
+        "A": "expected post-op pain is real, but it is not an airway/breathing threat.",
+        "C": "a comfort request waits.",
+        "D": "discharge teaching is important and completely schedulable."
+      }
+    }
+  ]
+}
